@@ -42,7 +42,7 @@ R_entry_point <- function() {
   if(exists('YtempScreenExp')){rm(YtempScreenExp)}
   if(exists('XtempScreenExp')){rm(XtempScreenExp)}
   
-  library(tcltk)
+  # library(tcltk)
   
   pb<-tkProgressBar('GWSDAT Progress', 'Loading R packages...',0, 1, 0)
   #GWSDAT_Options[['RScriptFilename']]<-'C:/Users/ANDRUS~1/AppData/Local/Temp/VBAF3A9RScript.R'
@@ -67,6 +67,6 @@ R_entry_point <- function() {
   
   #source(paste(GWSDAT_Options[['GWDSDATHome']],'/R/GWSDAT Run.R',sep=''))
   source(paste(GWSDAT_Options[['GWDSDATHome']],'/R/GWSDAT_Run_shiny.R',sep=''))
-  GWSDAT_Run_shiny()
+  GWSDAT_Run_shiny(GWSDAT_Options)
   
 }

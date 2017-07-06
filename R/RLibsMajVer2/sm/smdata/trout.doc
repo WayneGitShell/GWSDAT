@@ -1,0 +1,22 @@
+			Trout data
+			
+These data were collected in a toxocological experiment conducted
+at the University of Waterloo.  Different concentrations of
+potassium cyanate were applied to vials of trout eggs.  The eggs
+in half of the vials were allowed to water-harden before the
+toxicant was applied.
+
+The variables are:
+	Concentr: toxicant concentration
+	Trouts:   number of trout eggs
+	Dead:     number of eggs which died
+	Insert:   an indicator of whether the eggs were allowed
+		  	to water-harden
+
+Source: O'Hara Hines & Carter (1993).  Improved added variable
+	and partial residual plots for the detection of influential
+	observations in generalized linear models. 
+	Applied Statistics 42, 3-20.
+	The data are also reported by Hand et al. (1994), A Handbook
+	of Small Data Sets, data set no.418.
+

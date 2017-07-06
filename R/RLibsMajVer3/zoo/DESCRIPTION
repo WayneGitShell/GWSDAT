@@ -1,0 +1,32 @@
+Package: zoo
+Version: 1.7-9
+Date: 2012-11-04
+Title: S3 Infrastructure for Regular and Irregular Time Series (Z's
+        ordered observations)
+Authors@R: c(person(given = "Achim", family = "Zeileis", role =
+        c("aut", "cre"), email = "Achim.Zeileis@R-project.org"),
+        person(given = "Gabor", family = "Grothendieck", role = "aut",
+        email = "ggrothendieck@gmail.com"), person(given = c("Jeffrey",
+        "A."), family = "Ryan", role = "aut", email =
+        "jeff.a.ryan@gmail.com"), person(given = "Felix", family =
+        "Andrews", role = "ctb", email = "felix@nfrac.org"))
+Description: An S3 class with methods for totally ordered indexed
+        observations. It is particularly aimed at irregular time series
+        of numeric vectors/matrices and factors. zoo's key design goals
+        are independence of a particular index/date/time class and
+        consistency with ts and base R by providing methods to extend
+        standard generics.
+Depends: R (>= 2.10.0), stats
+Suggests: coda, chron, DAAG, fts, its, lattice, ggplot2, mondate,
+        strucchange, timeDate, timeSeries, tis, tseries, xts
+Imports: stats, utils, graphics, grDevices, lattice (>= 0.18-1)
+License: GPL-2
+URL: http://zoo.R-Forge.R-project.org/
+Packaged: 2012-11-04 09:14:19 UTC; zeileis
+Author: Achim Zeileis [aut, cre], Gabor Grothendieck [aut], Jeffrey A.
+        Ryan [aut], Felix Andrews [ctb]
+Maintainer: Achim Zeileis <Achim.Zeileis@R-project.org>
+Repository: CRAN
+Date/Publication: 2012-11-04 16:28:51
+Built: R 3.0.0; x86_64-w64-mingw32; 2013-03-17 19:15:17 UTC; windows
+Archs: i386, x64

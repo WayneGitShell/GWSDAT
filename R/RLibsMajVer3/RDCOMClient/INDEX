@@ -1,0 +1,25 @@
+.COM                    Full access to client COM invocation
+.COMInit                Activate and de-activate COM facilities in R
+COMAccessors            COM Object Accesors
+COMCreate               Create a COM object
+COMDate-class           Classes for representing COM VARIANT values as
+                        numbers
+COMIDispatch-class      Representation of generic COM object in R
+COMList                 Create an instance of COMList class
+COMList-class           COMList collection types
+COMStop                 General Error function for COM errors
+COMTypedList-class      Classes for representing DCOM objects that have
+                        list-like facilities
+CompiledCOMIDispatch-class
+                        DCOM Interface object with knowledge of its
+                        methods and their types.
+DispatchMethods         S-level constants
+EnumValue               Create instance of enumeration value class in R
+EnumValue-class         A class to represent a value of an enumerated
+                        constant
+SCOMErrorInfo-class     S version of COM Error structure
+VARIANT-class           Reference to a C-level VARIANT object
+asCOMArray              Create COM SAFEARRAY from R matrix
+createCOMReference      Creates S object for COM reference
+getCLSID                Get the UUID/GUID from the human-readable name
+                        of an application.

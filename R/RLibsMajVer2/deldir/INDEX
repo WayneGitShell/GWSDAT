@@ -1,0 +1,9 @@
+deldir                  Delaunay triangulation and Dirichlet
+                        tessellation
+plot.deldir             Plot objects produced by deldir
+plot.tile.list          Plot Dirchlet (Voronoi) tiles
+plot.triang.list        Plot Delaunay triangles
+tile.centroids          Compute centroids of Dirchlet (Voronoi) tiles
+tile.list               Create a list of tiles in a tessellation
+triMat                  Produce matrix of triangle vertex indices.
+triang.list             Create a list of Delaunay triangles

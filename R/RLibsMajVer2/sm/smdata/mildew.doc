@@ -1,0 +1,17 @@
+			Mildew data
+			
+The data refer to study of mildew control sponsored by Bainbridge,
+Jenkyn and Dyke at Rothamsted Experimental Station.  There were four
+treatments, one of which was a control.  There were 36 adjacent plots,
+with an extra plot at each end.  Nine blocks were created by grouping
+the plots in fours.
+
+The variables are:
+	t1, t2, t3:  indicators of the four treatment groups
+	p1, ..., p8: indicators of the nine blocks
+	Yield:       tons of grain per hectare
+
+Source: Draper & Guttman (1980).  Incorporating overlap effects from
+	neighbouring units into response surface models.
+	Applied Statistics 29, 128-134.
+

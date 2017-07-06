@@ -1,0 +1,18 @@
+			Mackerel data
+			
+These data record the abundance of mackerel eggs off the coast of
+north-western Europe, from a multi-country survey in 1992.
+
+The variables are:
+	Density:     egg density
+	mack.lat:    latitude of sampling position
+	mack.long:   longitude of sampling position
+	mack.depth:  bottom depth
+	Temperature: surface temperature
+	Salinity:    salinity
+	
+Source: Background to the survey and the data are provided by
+	Watson et al. (1992), Priede and Watson (1993) and
+	Priede et al (1995).  Borchers et al (1997) describe an analysis
+	of the data.
+	

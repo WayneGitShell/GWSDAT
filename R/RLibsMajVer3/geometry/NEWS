@@ -1,0 +1,82 @@
+CHANGES IN VERSION 0.3-2  - Released 2012/05/12
+
+BUG FIXES
+
+* Fix for Issue #1968: convhulln crash with T0 option
+  (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1968&group_id=1149&atid=4552)
+  Thanks to Thomas Kirschstein, Oskar Knapik and Uwe Ligges for
+  reporting this and to Duncan Murdoch for help on the r-devel mailing
+  list.
+
+* Fix for Issue #1983: NA in an input to delaunayn crashes R
+  (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1983&group_id=1149&atid=4552)
+  Thanks to Bill Denny for reporting this and suggestiong a way
+  forward with a fix.
+
+CHANGES IN VERSION 0.3-1  - Released 2012/05/01
+
+BUG FIXES
+
+* Fix for Issue #1964: R crashes when using convhulln/delaunayn
+  (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1964&group_id=1149&atid=4552).
+  Thanks to Thomas Kirschstein, Oskar Knapik and Paolo Piras for
+  reporting this.
+
+CHANGES IN VERSION 0.3-0  - Released 2012/04/17
+
+NEW FEATURES
+
+ * New function dot() to compute dot product. Syntax is shared with
+   Octave dot() function.  
+
+ * New function polyarea() to compute area of polygons. Syntax is shared with
+   Octave polyarea() function.  
+
+BUG FIXES
+
+ * Fix for Issue #1578: convhulln crashes when running 2 instances of
+   R in the same directory: output to qhull_out.txt removed
+   (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1578&group_id=1149&atid=4552).
+   Thanks to Francois Rousset and Bernd Bischl for reporting this.
+
+ * Fix for Issue #1923: Compilation on Windows 64 doesn't work (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1923&group_id=1149&atid=4552)
+
+ * Fix for Issue #1924: Silent operation is not supported (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1924&group_id=1149&atid=4552)
+   Thanks to Raphael Leblois for reporting this.
+
+ * Fix for Issue #1930:	delaunayn should always return a matrix (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1930&group_id=1149&atid=4552)
+
+ * Fix for Issue #1915: geometry segfaults during tests (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1915&group_id=1149&atid=4552)
+
+ * Fix for Issue #1947: convhulln crash when Qhull error reported
+   (https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1947&group_id=1149&atid=4552).
+   Thanks to Petr Savicky for reporting this.
+
+OTHER CHANGES
+
+ * Updated to qhull version 2011.2.
+
+ * The default qhull option "QJ" for delaunayn() has been replaced by
+   "Qt". One or other option is always provided to the qhull code (see
+   https://r-forge.r-project.org/tracker/index.php?func=detail&aid=1915&group_id=1149&atid=4552).
+
+ * Documentation improvements.
+
+ * Added some tests.
+
+CHANGES IN VERSION 0.2-0  - Released 2011/09/09
+
+NEW FEATURES
+
+ * The tsearch and tsearchn functions have been ported from
+   Octave. These functions have the same syntax as the Octave
+   versions, though it also possible to get tsearch to output
+   barycentric coordinates. tsearch only works for 2D simplexes
+   (i.e. triangles), but is fast because it is written in C. By
+   default, tsearchn uses the fast tsearch function when presented
+   with 2D data.
+
+NEW MAINTAINER
+
+ * David Sterratt has taken over from Bobby Gramacy. Thank-you to
+   Bobby for his work on the package.

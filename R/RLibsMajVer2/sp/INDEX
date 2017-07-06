@@ -1,0 +1,110 @@
+CRS-class               Class "CRS" of coordinate reference system
+                        arguments
+DMS-class               Class "DMS" for degree, minute, decimal second
+                        values
+GridTopology-class      Class "GridTopology"
+Line                    create objects of class Line or Lines
+Line-class              Class "Line"
+Lines-class             Class "Lines"
+Polygon-class           Class "Polygon"
+Polygons-class          Class "Polygons"
+Rlogo                   Rlogo jpeg image
+Spatial-class           Class "Spatial"
+SpatialGrid-class       Class "SpatialGrid"
+SpatialGridDataFrame-class
+                        Class "SpatialGridDataFrame"
+SpatialLines            create objects of class SpatialLines or
+                        SpatialLinesDataFrame
+SpatialLines-class      a class for spatial lines
+SpatialLinesDataFrame-class
+                        a class for spatial lines with attributes
+SpatialPixels           define spatial grid
+SpatialPixels-class     Class "SpatialPixels"
+SpatialPixelsDataFrame
+                        define spatial grid with attribute data
+SpatialPixelsDataFrame-class
+                        Class "SpatialPixelsDataFrame"
+SpatialPoints           create objects of class SpatialPoints or
+                        SpatialPointsDataFrame
+SpatialPoints-class     Class "SpatialPoints"
+SpatialPointsDataFrame-class
+                        Class "SpatialPointsDataFrame"
+SpatialPolygons         create objects of class SpatialPolygons or
+                        SpatialPolygonsDataFrame
+SpatialPolygons-class   Class "SpatialPolygons"
+SpatialPolygonsDataFrame-class
+                        Class "SpatialPolygonsDataFrame"
+addAttrToGeom-methods   constructs SpatialXxxDataFrame from geometry
+                        and attributes
+as.SpatialPolygons.GridTopology
+                        Make SpatialPolygons object from GridTopology
+                        object
+as.SpatialPolygons.PolygonsList
+                        Making SpatialPolygons objects
+bbox,Spatial-method     retrieve bbox from spatial data
+bpy.colors              blue-pink-yellow color scheme that prints well
+                        on black/white printers
+bubble                  Create a bubble plot of spatial data
+char2dms                Convert character vector to DMS-class object
+compassRose             Display a compass rose.
+coordinates             sets spatial coordinates to create spatial
+                        data, or retrieves spatial coordinates
+coordinates-methods     retrieve (or set) spatial coordinates
+coordnames-methods      retrieve or assign coordinate names for classes
+                        in sp
+degAxis                 axis with degrees
+dimensions,Spatial-method
+                        retrieve spatial dimensions from spatial data
+flipHorizontal          rearrange data in SpatialPointsDataFrame or
+                        SpatialGridDataFrame for plotting with spplot
+                        (levelplot/xyplot wrapper)
+geometry-methods        Methods for retrieving the geometry from a
+                        composite (geometry + attributes) object
+gridIndex2nb            create neighbourhood (nb) object from grid
+                        geometry
+gridded-methods         specify spatial data as being gridded, or find
+                        out whether they are
+gridlines               Create N-S and E-W grid lines over a geographic
+                        region
+image.SpatialGridDataFrame
+                        image gridded spatial data, or convert to
+                        format for image
+is.projected            Sets or retrieves projection attributes on
+                        classes extending SpatialData
+loadMeuse               load the Meuse data set
+mapasp                  Calculate aspect ratio for plotting geographic
+                        maps
+meuse                   Meuse river data set
+meuse.grid              Prediction Grid for Meuse Data Set
+meuse.grid_ll           Prediction Grid for Meuse Data Set,
+                        geographical coordinates
+meuse.riv               River Meuse outline
+nowrapSpatialLines      Split SpatialLines components at offset
+over-methods            consistent spatial overlay for points, grids
+                        and polygons
+overlay                 spatial overlay for points, grids and polygons
+overlay-methods         Methods for spatially overlay-ing points
+                        (grids) and polygons layers
+panel.spplot            panel and panel utility functions for spplot
+point.in.polygon        do point(s) fall in a given polygon?
+polygons                sets spatial coordinates to create spatial
+                        data, or retrieves spatial coordinates
+polygons-methods        Retrieve polygons from SpatialPolygonsDataFrame
+                        object
+read.asciigrid          read/write to/from (ESRI) asciigrid format
+recenter-methods        Methods for Function recenter in Package 'sp'
+select.spatial          select points spatially
+sp                      A package providing classes and methods for
+                        spatial data: points, lines, polygons and grids
+spChFIDs-methods        change feature IDs in spatial objects
+spDistsN1               Euclidean or Great Circle distance between
+                        points
+spmap.to.lev            rearrange data in SpatialPointsDataFrame or
+                        SpatialGridDataFrame for plotting with spplot
+                        (levelplot/xyplot wrapper)
+spplot                  Plot methods for spatial data with attributes
+spsample                sample point locations in (or on) a spatial
+                        object
+surfaceArea             Compute surface area of a digital elevation
+                        model.
+zerodist                find point pairs with equal spatial coordinates

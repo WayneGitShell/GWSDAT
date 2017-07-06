@@ -1,0 +1,17 @@
+Package: splancs
+Version: 2.01-31
+Date: 2012-01-20
+Title: Spatial and Space-Time Point Pattern Analysis
+Author: Barry Rowlingson <b.rowlingson@lancaster.ac.uk> and Peter
+        Diggle, adapted and packaged for R by Roger Bivand, pcp
+        functions by Giovanni Petris, goodness of fit by Stephen Eglen
+Maintainer: Roger Bivand <Roger.Bivand@nhh.no>
+Depends: R (>= 2.10.0), sp (>= 0.9)
+Description: Spatial and Space-Time Point Pattern Analysis Functions
+License: GPL (>= 2)
+URL: http://www.maths.lancs.ac.uk/~rowlings/Splancs/
+Packaged: 2012-01-22 10:46:06 UTC; rsb
+Repository: CRAN
+Date/Publication: 2012-01-22 12:03:11
+Built: R 2.15.1; x86_64-pc-mingw32; 2012-07-04 10:00:23 UTC; windows
+Archs: i386, x64

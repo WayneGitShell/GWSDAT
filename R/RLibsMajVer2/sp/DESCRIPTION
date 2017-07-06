@@ -1,0 +1,42 @@
+Package: sp
+Version: 0.9-95
+Date: 2012-02-13
+Title: classes and methods for spatial data
+Author: Edzer Pebesma <edzer.pebesma@uni-muenster.de>, Roger Bivand
+        <Roger.Bivand@nhh.no> and others
+Authors@R: c(person("Edzer", "Pebesma", role = c("aut", "cre"), email =
+        "edzer.pebesma@uni-muenster.de"), person("Roger", "Bivand",
+        role = c("aut", "cre"), email = "Roger.Bivand@nhh.no"))
+Maintainer: Edzer Pebesma <edzer.pebesma@uni-muenster.de>
+Depends: R (>= 2.10.0), methods, graphics
+Suggests: lattice, RColorBrewer, rgdal, rgeos (>= 0.1-8)
+Imports: utils, lattice, grid
+Description: A package that provides classes and methods for spatial
+        data. The classes document where the spatial location
+        information resides, for 2D or 3D data. Utility functions are
+        provided, e.g. for plotting data as maps, spatial selection, as
+        well as methods for retrieving coordinates, for subsetting,
+        print, summary, etc.
+License: GPL (>= 2)
+URL: http://rspatial.r-forge.r-project.org/
+Collate: AAA.R Class-CRS.R CRS-methods.R Class-Spatial.R
+        Spatial-methods.R projected.R Class-SpatialPoints.R
+        SpatialPoints-methods.R Class-SpatialPointsDataFrame.R
+        SpatialPointsDataFrame-methods.R Class-GridTopology.R
+        Class-SpatialGrid.R Class-SpatialGridDataFrame.R
+        Class-SpatialLines.R SpatialLines-methods.R
+        Class-SpatialLinesDataFrame.R SpatialLinesDataFrame-methods.R
+        Class-SpatialPolygons.R Class-SpatialPolygonsDataFrame.R
+        SpatialPolygons-methods.R SpatialPolygonsDataFrame-methods.R
+        GridTopology-methods.R SpatialGrid-methods.R
+        SpatialGridDataFrame-methods.R SpatialPolygons-internals.R
+        point.in.polygon.R SpatialPolygons-displayMethods.R zerodist.R
+        image.R stack.R bpy.colors.R bubble.R mapasp.R select.spatial.R
+        gridded.R asciigrid.R spplot.R over.R overlay.R spsample.R
+        recenter.R dms.R gridlines.R spdists.R rbind.R flipSGDF.R
+        chfids.R loadmeuse.R compassRose.R surfaceArea.R spOptions.R
+Packaged: 2012-02-13 22:09:01 UTC; edzer
+Repository: CRAN
+Date/Publication: 2012-02-14 07:21:00
+Built: R 2.13.2; i386-pc-mingw32; 2012-02-25 01:54:06 UTC; windows
+Archs: i386, x64

@@ -1,0 +1,15 @@
+useDynLib(Kendall)
+
+import("boot")
+
+export(
+"Kendall",
+"MannKendall",
+"SeasonalMannKendall"
+)
+
+#methods
+	S3method("print",   	"Kendall")
+	S3method("summary",		"Kendall")
+
+

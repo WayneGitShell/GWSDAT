@@ -11,13 +11,18 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
-  titlePanel(h1("Shiny GWDAT")),
+  titlePanel(h2("Shiny GWDAT")),
   
-  actionButton("action", label = "Run"),
   
   sidebarLayout(
-    sidebarPanel(h3("sidebar panel")),
-    mainPanel(h3("main panel"))
+    sidebarPanel(
+      helpText("Execute the GWSDAT R script with the basic example."),
+      actionButton("run_gwsdat", "Run")
+      ),
+    
+    mainPanel(
+      textOutput("text1")
+      )
   )
 ))
   

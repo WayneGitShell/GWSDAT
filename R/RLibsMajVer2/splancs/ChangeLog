@@ -1,0 +1,373 @@
+2012-01-20 10:30  rsbivand
+
+	* DESCRIPTION, R/kernel2d.S, man/kernel2d.Rd: add quiet to kernel2d
+
+2011-11-05 13:24  rsbivand
+
+	* ChangeLog, inst/ChangeLog: harden as.points
+
+2011-11-05 13:23  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/as.points.S: harden as.points
+
+2011-08-20 17:32  rsbivand
+
+	* src/ptinpoly.c: fix unused i in ptinpoly.c
+
+2011-08-19 17:42  rsbivand
+
+	* ChangeLog, inst/ChangeLog: coercion to two-column matrix points
+	  in inout()
+
+2011-08-19 17:41  rsbivand
+
+	* DESCRIPTION, R/as.points.S, R/inout.S, R/inpip.S: coercion to
+	  two-column matrix points in inout()
+
+2011-08-17 10:45  rsbivand
+
+	* ChangeLog, inst/ChangeLog: adding NAMESPACE, .onLoad()
+
+2011-08-17 10:41  rsbivand
+
+	* DESCRIPTION, INDEX, NAMESPACE, R/First.lib.S, R/spkernel2d.R,
+	  data/00Index, data/bodmin.rda, data/cardiff.rda,
+	  data/okblack.rda, data/okwhite.rda, data/southlancs.rda,
+	  data/uganda.rda, man/kernel2d.Rd: adding NAMESPACE, .onLoad()
+
+2011-02-22 16:24  rsbivand
+
+	* oChangeLog, svn2cl.xsl: tidy
+
+2011-02-22 16:18  rsbivand
+
+	* .: tidy
+
+2011-02-12 11:33  rsbivand
+
+	* clearup after sourceforge outage
+
+2010-08-28 15:33  rsbivand
+
+	* as.double to storage.mode
+
+2010-06-17 14:40  rsbivand
+
+	* bboxx docs
+
+2009-10-09 19:06  rsbivand
+
+	* stmctest modifications
+
+2009-09-17 07:36  rsbivand
+
+	* fix licence
+
+2008-01-30 16:30  rsbivand
+
+	* grd in spkernel2d
+
+2007-09-04 12:55  rsbivand
+
+	* Changelog
+
+2007-08-23 07:37  rsbivand
+
+	* n2dist docs
+
+2007-04-23 04:48  rsbivand
+
+	* wrong polygon on khat
+
+2007-03-30 05:05  rsbivand
+
+	* tidy
+
+2007-03-29 14:34  rsbivand
+
+	* disambiguate rlabel and shift
+
+2006-09-22 14:14  rsbivand
+
+	* bounds.h
+
+2006-09-21 19:46  rsbivand
+
+	* R 2.4.0
+
+2006-04-11 18:27  rsbivand
+
+	* spkernel2d and bboxx
+
+2006-04-10 19:16  rsbivand
+
+	* spkernel2d and bboxx
+
+2005-04-11 18:14  rsbivand
+
+	* e40 to d40
+
+2004-11-01 17:54  rsb
+
+	* pre lancs
+
+2003-10-28 18:26  rsb
+
+	* over 10
+
+2002-07-30 16:28  rsb
+
+	* PACKAGE
+
+2002-07-29 18:23  rsb
+
+	* cleanup
+
+2002-07-29 18:09  rsb
+
+	* to rda
+
+2002-07-29 17:48  rsb
+
+	* rest
+
+2002-07-29 13:08  rsb
+
+	* Licence and T/F
+
+2002-07-29 11:37  rsb
+
+	* added inst
+
+2002-02-13 14:52  rsb
+
+	* tribble bug
+
+2002-01-24 13:44  rsb
+
+	* data to rda
+
+2002-01-16 17:49  rsb
+
+	* count as integer
+
+2001-12-11 13:02  rsb
+
+	* 1.4.0 fixes
+
+2001-06-18 09:48  rsb
+
+	* raised inc
+
+2001-06-18 09:36  rsb
+
+	* raised inc
+
+2001-06-18 08:49  rsb
+
+	* raised inc
+
+2001-06-17 13:13  rsb
+
+	* undoc
+
+2001-06-17 13:03  rsb
+
+	* undoc
+
+2001-06-15 17:57  rsb
+
+	* documenting stk
+
+2001-06-14 15:30  rsb
+
+	* added ptinpoly etc.
+
+2001-06-13 16:38  rsb
+
+	* args matching
+
+2001-06-13 06:54  rsb
+
+	* rel 3 final
+
+2001-06-12 21:50  rsb
+
+	* date
+
+2001-06-12 21:45  rsb
+
+	* pcp and pip
+
+2001-06-12 09:03  rsb
+
+	* small things
+
+2001-06-12 08:53  rsb
+
+	* small things
+
+2000-11-03 20:08  rsb
+
+	* tidy 3
+
+2000-11-03 19:20  rsb
+
+	* tidy again
+
+2000-11-03 11:19  rsb
+
+	* tidy
+
+2000-11-03 10:18  rsb
+
+	* README
+
+2000-11-03 10:09  rsb
+
+	* missing doc
+
+2000-11-03 09:37  rsb
+
+	* TITLE
+
+2000-11-03 09:37  rsb
+
+	* keywords
+
+2000-11-03 09:03  rsb
+
+	* refs and rusk in man
+
+2000-11-03 08:32  rsb
+
+	* Recreating README
+
+2000-11-01 21:26  rsb
+
+	* changed licence
+
+1999-12-22 10:00  rsb
+
+	* rusk
+
+1999-12-22 09:49  rsb
+
+	* rusk
+
+1999-12-22 09:36  rsb
+
+	* updated INDEX
+
+1999-12-22 09:32  rsb
+
+	* edited man files and removed unused data files
+
+1999-12-21 20:44  rsb
+
+	* more examples
+
+1999-12-21 15:41  rsb
+
+	* adding examples
+
+1999-12-21 09:59  rsb
+
+	* added MASS, spatial dependencies
+
+1999-12-21 09:58  rsb
+
+	* added polygon
+
+1999-12-21 09:50  rsb
+
+	* added polygon
+
+1999-12-21 09:42  rsb
+
+	* changed \fC to \code{
+
+1999-12-21 09:37  rsb
+
+	* corrected alias
+
+1999-12-21 09:16  rsb
+
+	* added polygon details
+
+1999-12-21 09:07  rsb
+
+	* examples
+
+1999-12-21 08:39  rsb
+
+	* examples 1
+
+1999-12-21 08:39  rsb
+
+	* examples
+
+1999-12-21 08:34  rsb
+
+	* remove pty=s checks
+
+1999-12-21 08:22  rsb
+
+	* reversed y data
+
+1999-12-21 08:13  rsb
+
+	* removed density from polygon()
+
+1999-12-20 14:53  rsb
+
+	* revised data
+
+1999-12-20 09:12  rsb
+
+	* renamed area to areapl
+
+1999-12-20 09:07  rsb
+
+	* area to areapl functions
+
+1999-12-19 22:14  rsb
+
+	* help for data files
+
+1999-12-19 22:13  rsb
+
+	* data files
+
+1999-12-19 21:48  rsb
+
+	* creating file
+
+1999-12-19 21:10  rsb
+
+	* reversed pkg<->lib
+
+1999-12-18 20:53  rsb
+
+	* Removed comment on dynam()
+
+1999-12-18 20:52  rsb
+
+	* Changed _ to <- and commented out *.dynam()
+
+1999-12-18 20:40  rsb
+
+	* Added library.dynam("splancs", ...)
+
+1999-12-18 20:23  rsb
+
+	* changed order of implicit and common block
+
+1999-12-15 10:41  rsb
+
+	* Initial revision
+
+1999-12-15 10:41  
+
+	* New repository initialized by cvs2svn.
+

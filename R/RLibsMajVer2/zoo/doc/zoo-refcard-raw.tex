@@ -1,0 +1,88 @@
+\begin{tabular}{rp{9cm}}
+\multicolumn{2}{l}{\textbf{Creation}} \\
+\code{zoo(x, order.by)} & creation of a \code{"zoo"} object
+  from the observations \code{x} (a vector or a matrix) and an index
+  \code{order.by} by which the observations are ordered. \\
+& For computations on arbitrary index classes, methods to the 
+  following generic functions are assumed to work: combining \code{c()},
+  querying length \code{length()}, subsetting \code{[}, ordering
+  \code{ORDER()} and value matching \code{MATCH()}. For pretty
+  printing an \code{as.character} and/or \code{index2char} method
+  might be helpful.\\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Creation of regular series}} \\
+\code{zoo(x, order.by, freq)} & works as above but creates a \code{"zooreg"}
+  object which inherits from \code{"zoo"} if the frequency \code{freq} complies
+  with the index \code{order.by}. An \code{as.numeric} method has to be
+  available for the index class.\\
+\code{zooreg(x, start, end, freq)} & creates a \code{"zooreg"} series
+  with a numeric index as above and has (almost) the same interface as
+  \code{ts()}.\\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Standard methods}} \\
+\code{plot} & plotting \\
+\code{lines} & adding a \code{"zoo"} series to a plot \\
+\code{print} & printing \\
+\code{summary} & summarizing (column-wise) \\
+\code{str} & displaying structure of \code{"zoo"} objects \\
+\code{head}, \code{tail} & head and tail of \code{"zoo"} objects \\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Coercion}} \\
+\code{as.zoo} & coercion to \code{"zoo"} is available for objects
+    of class \code{"ts"}, \code{"its"}, \code{"irts"} (plus a default
+    method).\\
+\code{as.}\textit{class}\code{.zoo} & coercion from \code{"zoo"} to
+    other classes. Currently available for \textit{class} in \code{"matrix"},
+    \code{"vector"}, \code{"data.frame"}, \code{"list"}, \code{"irts"},
+    \code{"its"} and \code{"ts"}. \\
+\code{is.zoo} & querying wether an object is of class \code{"zoo"} \\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Merging and binding}} \\
+\code{merge} & union, intersection, left join, right join along indexes\\
+\code{cbind} & column binding along the intersection of the index\\
+\code{c}, \code{rbind} & combining/row binding (indexes may not overlap)\\
+\code{aggregate} & compute summary statistics along a coarser grid of indexes \\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Mathematical operations}} \\
+\code{Ops} & group generic functions performed along the intersection of indexes\\
+\code{t} & transposing (coerces to \code{"matrix"} before) \\
+\code{cumsum} & compute (columnwise) cumulative quantities: sums
+    \code{cumsum()}, products \code{cumprod()}, maximum \code{cummax()},
+    minimum \code{cummin()}.\\[0.5cm]
+\end{tabular}
+
+\newpage
+
+\begin{tabular}{rp{9cm}}
+\multicolumn{2}{l}{\textbf{Extracting and replacing data and index}} \\
+\code{index, time} & extract the index of a series\\
+\code{index<-}, \code{time<-} & replace the index of a series\\
+\code{coredata}, \code{coredata<-} & extract and replace the data associated with a \code{"zoo"} object\\
+\code{lag} & lagged observations \\
+\code{diff} & arithmetic and geometric differences \\
+\code{start, end} & querying start and end of a series \\
+\code{window, window<-} & subsetting of \code{"zoo"} objects
+    using their index\\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{\code{NA} handling}} \\
+\code{na.omit} & omit \code{NA}s \\
+\code{na.contiguous} & compute longest sequence of non-\code{NA} observations \\
+\code{na.locf} & impute \code{NA}s by carrying forward the last observation\\
+\code{na.approx} & impute \code{NA}s by interpolation\\[0.5cm]
+\code{na.trim} & remove leading and/or trailing \code{NA}s\\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Rolling functions}} \\
+\code{rollapply} & apply a function to rolling margin of an array \\
+\code{rollmean} & more efficient functions for computing the rolling mean, median
+  and maximum are \code{rollmean()}, \code{rollmedian()} and \code{rollmax()}, respectively\\[0.5cm]
+
+\multicolumn{2}{l}{\textbf{Methods for regular series}} \\
+\code{is.regular} & checks whether a series is weakly (or strictly if \code{strict = TRUE})
+  regular \\
+\code{frequency}, \code{deltat} & extracts the frequency or its reciprocal value
+  respectively from a series, for \code{"zoo"} series the functions try to determine
+  the regularity and frequency in a data-driven way\\
+\code{cycle} & gives the position in the cycle of a regular series \\[0.5cm]
+
+
+\end{tabular}

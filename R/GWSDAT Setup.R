@@ -26,10 +26,12 @@ win.metafile(width = 4 * hscale, height = 4 * vscale, restoreConsole =FALSE)
 GWSDAT.Setup<-function(GWSDAT_Options){
 
 
-GWSDATHome<-GWSDAT_Options$GWDSDATHome
-UseGWSDATLib<-GWSDAT_Options$UseGWSDATLib
+GWSDATHome <- GWSDAT_Options$GWDSDATHome
+UseGWSDATLib <- GWSDAT_Options$UseGWSDATLib
 
-
+##
+## Setup the libPaths to the additional packages required by GWSDAT.
+##
 if( as.numeric(R.Version()$major)==2){
 
 	try(.libPaths(c(paste(GWSDATHome,'R',paste('RLibsMajVer2',sep=''),sep='/'),.libPaths())))
@@ -43,7 +45,6 @@ if( as.numeric(R.Version()$major)==2){
 
 
 try(assign('.lib.loc', shortPathName(get('.lib.loc', envir = environment(.libPaths))),envir = environment(.libPaths)))
-
 
 
 if(!UseGWSDATLib){
@@ -60,10 +61,15 @@ if(!UseGWSDATLib){
 	
 	if(!GWSDAT.Load.Libs()){stop("Missing packages")}
 
-}else{
+} else{
 
-
-	if(!require(GWSDAT)){
+  ##
+  ## Try to load the GWSDAT package. [CURRENTLY NOT SUPPORTED]
+  ##  
+  ##Note: the tcltk code has to be changed to Shiny; if this is going to be low level, just 
+  ##      print to stdout.
+  ##
+  	if(!require(GWSDAT)){
 	
 		require("tcltk")
 		tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"","GWSDAT","\"",sep=""),icon="error",type="ok")

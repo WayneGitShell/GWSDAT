@@ -1,0 +1,10 @@
+exportPattern("^[[:alpha:]]+")
+exportPattern("%eq%")
+exportPattern("%ne%")
+
+exportPattern("%gt%")
+exportPattern("%ge%")
+
+exportPattern("%lt%")
+exportPattern("%le%")
+

@@ -1,0 +1,43 @@
+citHeader("To cite the rpanel package in publications use:")
+
+citEntry(entry = "Article",
+  title        = "{rpanel}: Simple Interactive Controls for {R} Functions Using the {tcltk} Package",
+  author       = personList(as.person("Adrian Bowman"),
+                   as.person("Ewan Crawford"),
+                   as.person("Gavin Alexander"),
+                   as.person("Richard W. Bowman")),
+  journal      = "Journal of Statistical Software",
+  year         = "2007",
+  volume       = "17",
+  number       = "9",
+  pages        = "1--18",
+  url          = "http://www.jstatsoft.org/v17/i09/",
+
+  textVersion  =
+  paste("Adrian Bowman, Ewan Crawford, Gavin Alexander, Richard W. Bowman (2007).",
+        "rpanel: Simple Interactive Controls for R Functions Using the tcltk Package.",
+        "Journal of Statistical Software, 17(9), 1-18.",
+        "URL http://www.jstatsoft.org/v17/i09/.")
+)
+
+citEntry(entry = "Article",
+  title        = "Interactive Teaching Tools for Spatial Sampling",
+  author       = personList(as.person("Adrian W. Bowman"),
+                   as.person("Iain Gibson"),
+                   as.person("E. Marian Scott"),
+                   as.person("Ewan Crawford")),
+  journal      = "Journal of Statistical Software",
+  year         = "2010",
+  volume       = "36",
+  number       = "13",
+  pages        = "1--17",
+  url          = "http://www.jstatsoft.org/v36/i13/",
+
+  textVersion  =
+  paste("Adrian W. Bowman, Iain Gibson, E. Marian Scott, Ewan Crawford (2010).",
+        "Interactive Teaching Tools for Spatial Sampling.",
+        "Journal of Statistical Software, 36(13), 1-17.",
+        "URL http://www.jstatsoft.org/v36/i13/."),
+	
+  header       = "To cite rpanel's spatial teaching tools (rp.geosim, rp.mururoa, rp.firth) use:"
+)
