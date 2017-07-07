@@ -1,46 +1,47 @@
 ##############################################################################################################
 
-GWSDAT.Load.Libs<-function(){
+GWSDAT_Load_Libs <- function(){
 
-require("tcltk")
-Require <- function(pkg)
-{
+  Require <- function(pkg) {
+     
     if (data.class(result<-try(find.package(pkg,lib.loc=.libPaths()),TRUE))=="try-error")
     {
-        tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
-        return (FALSE)
+      # tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
+      
+      ## pass error+message somehow back without calling tkmessageBox
+      # return(GWSDAT_Error(paste("Cannot find package \"",pkg,"\"",sep="")))  
+      # .. not doing this here because we need FALSE back.
+      return (FALSE)
     }
     else
     {
         require(pkg,character.only=TRUE)
         return (TRUE)
     }
+  }
+
+
+
+  try(options(editor="notepad"))
+  if(!Require("sm")){return(FALSE)}
+  if(!Require("zoo")){return(FALSE)}
+  if(!Require("tkrplot")){return(FALSE)}
+  if(!Require("splancs")){return(FALSE)}
+  if(!Require("Kendall")){return(FALSE)}
+  if(!Require("animation")){return(FALSE)}
+  if(!Require("rpanel")){return(FALSE)}
+  if(!Require("deldir")){return(FALSE)}
+  if(!Require("maptools")){return(FALSE)}
+  if(!Require("geometry")){return(FALSE)}
+  if(!Require("Matrix")){return(FALSE)}
+  Require("RDCOMClient")
+  
+  
+  return(TRUE)
 }
 
 
 
-try(options(editor="notepad"))
-if(!Require("sm")){return(FALSE)}
-if(!Require("zoo")){return(FALSE)}
-if(!Require("tkrplot")){return(FALSE)}
-if(!Require("splancs")){return(FALSE)}
-if(!Require("Kendall")){return(FALSE)}
-if(!Require("animation")){return(FALSE)}
-if(!Require("rpanel")){return(FALSE)}
-if(!Require("deldir")){return(FALSE)}
-if(!Require("maptools")){return(FALSE)}
-if(!Require("geometry")){return(FALSE)}
-if(!Require("Matrix")){return(FALSE)}
-Require("RDCOMClient")
-
-
-
-
-
-return(TRUE)
-
-
-}
 #------------------------------------------------------------------------------------------------------------#
 
 
@@ -159,7 +160,7 @@ return(x)
 
 ################################# GWSDAT.Init Function #######################################################
 
-GWSDAT.Init<-function(AG.ALL,Well.Coords,GWSDAT_Options){
+GWSDAT.Init.Data <- function(AG.ALL,Well.Coords,GWSDAT_Options){
 
 
 #################Input Shapefiles ########################

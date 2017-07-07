@@ -9,7 +9,9 @@
 
 library(shiny)
 
-source("R/R_entry_point.R")
+source("R/GWSDAT_Setup.R")
+
+
 
 # Define server logic 
 shinyServer(
@@ -21,9 +23,29 @@ shinyServer(
   
     observeEvent(input$run_gwsdat, {
       output$text1 <- renderText({ "clicked.." })
-      R_entry_point()
-      output$text1 <- renderText({ "Done action after click.." })
+      
+      GWSDAT_Options = GWSDAT_Setup()
+      
+      ret = GWSDAT_Init(GWSDAT_Options)
+      
+      ## Get return status and display on page.
+      if(class(ret$status) == "GWSDAT_Error")
+        output$errors <- renderText({ ret$status$msg })
+      if(class(ret$status) == "GWSDAT_Warning")
+        output$warnings <- renderText({ ret$status$msg })
+      
+      if(class(ret$status) == "GWSDAT_OK") {
+        output$errors <- renderText({ "No error for GWSDAT_Run_shiny()." })
+        output$warnings <- renderText({ "No warnings for GWSDAT_Run_shiny()." })
+      }
+      
+      ##
+      ## Do the plotting 
+      ##
+      #plot.GWSDAT.Data(ret$Curr_Site_Data)
+      
       # session$sendCustomMessage(type = 'testmessage', message = 'Thank you for clicking')
-    })
+    
+      })
     
 })

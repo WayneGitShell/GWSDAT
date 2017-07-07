@@ -5,163 +5,59 @@
 
 ############################################### Create the GWSDAT rpanel ###################################################
 
-GWSDAT.Make.Panel<-function(Curr.Site.Data){
+GWSDAT.Make.Panel<-function(Curr.Site.Data) {
 
 
 
-#### Data Initialisation
-
-All.Data<-Curr.Site.Data$All.Data
-Fitted.Data<-Curr.Site.Data$Fitted.Data
-Cont.Names<-names(Fitted.Data)
-Num.Conts<-length(Cont.Names)
-GWSDAT_Options<-Curr.Site.Data$GWSDAT_Options
-
-
+  #### Data Initialisation
+  
+  All.Data<-Curr.Site.Data$All.Data
+  Fitted.Data<-Curr.Site.Data$Fitted.Data
+  Cont.Names<-names(Fitted.Data)
+  Num.Conts<-length(Cont.Names)
+  GWSDAT_Options<-Curr.Site.Data$GWSDAT_Options
 
 
+  ####### Local admin Panel Functions for GWSDAT ###################
 
-
-####### Local admin Panel Functions for GWSDAT ###################
-
-redraw <- function(panel) {
+  redraw <- function(panel) {
 
         rp.tkrreplot(panel, ImagePlot)
         rp.tkrreplot(panel, SmoothPlot)
         rp.tkrreplot(panel, TrafficLightPlot)
-	#print("panel<<-panel")
-	#panel<<-panel
-	return(panel)
+	  #print("panel<<-panel")
+	  #panel<<-panel
+	  return(panel)
 
-}
+  }
 
-replot.SmoothPlot<-function(panel){
+  replot.SmoothPlot<-function(panel){
 
-	rp.tkrreplot(panel, SmoothPlot)
-	return(panel)
-}
-
-
-replot.ImagePlot<-function(panel){
-
-	rp.tkrreplot(panel, ImagePlot)
-	return(panel)
-}
-
-replot.Make.Traffic.Plot<-function(panel){
-
-	rp.tkrreplot(panel, TrafficLightPlot)
-	rp.tkrreplot(panel, SmoothPlot)
-	return(panel)
-}
+	  rp.tkrreplot(panel, SmoothPlot)
+	  return(panel)
+  }
 
 
-listbox.Well.Select<-function(panel){
+  replot.ImagePlot<-function(panel){
 
-	#panel$Well<-panel$Well.Select
-	replot.SmoothPlot(panel)
-	return(panel)
-}
+	  rp.tkrreplot(panel, ImagePlot)
+	  return(panel)
+  }
 
-#----------------------------------------------------------------#
+  replot.Make.Traffic.Plot<-function(panel){
 
-
-
-
-
-
+	  rp.tkrreplot(panel, TrafficLightPlot)
+	  rp.tkrreplot(panel, SmoothPlot)
+	  return(panel)
+  }
 
 
+  listbox.Well.Select<-function(panel){
 
-
-
-
-################Calculate Max Concentration on Plume Boundary#############################
-
-
-
-TunePlumeQuant<-function(panel){
-
-
-#### Get Hull data points function ########
-Getchulldatapoints<-function(myhull){
-myhull<-rbind(myhull,myhull[1,,drop=FALSE])
-
-
-
-Perimeters<-sqrt(apply((apply(myhull,2,diff)^2),1,sum))
-Npts<-250
-Ptsperunitlength=Npts/sum(Perimeters)
-Perimeter.Npts<-round(Ptsperunitlength*Perimeters,0)
-chullseglist<-list()
-
-	for(i in 1:(nrow(myhull)-1)){
-		chullseglist[[i]]<-as.data.frame(approx(myhull[i:(i+1),],n=max(Perimeter.Npts[i],3)))
-	}
-
-return(do.call("rbind",chullseglist))
-}
-#----------------------------------------#
-
-
-Well.Coords<-panel$All.Data$Well.Coords
-jjj<-panel$jjj
-Cont<-panel$Cont.rg
-Time.Eval<-panel$Fitted.Data[[Cont]]$Time.Eval
-temp.df<-data.frame(Time.Eval=panel$Fitted.Data[[Cont]]$Time.Eval)
-temp.df$MaxConc<-rep(NA,nrow(temp.df))
-temp.df$MaxInteriorConc<-rep(NA,nrow(temp.df))
-
-model<-panel$Fitted.Data[[Cont]][["Model.tune"]]$best.model
-
-
-
-
-for(i in 1:length(panel$Fitted.Data[[Cont]]$Time.Eval)){
-
-temp.time.eval<-panel$Fitted.Data[[Cont]]$Time.Eval[i]
-Good.Wells<-as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate)<=temp.time.eval,]$WellName))
-Good.Wells<-intersect(Good.Wells,as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate)>=temp.time.eval,]$WellName)))
-
-
-if(length(Good.Wells)>2){
-
-	### Calculate Max Conc on hull boundary
-	my.area<-as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
-	myhull<-my.area[chull(my.area),]
-	hulldatapoints<-Getchulldatapoints(myhull)
-	my.df<-data.frame(XCoord=hulldatapoints$x,YCoord=hulldatapoints$y,AggDate=temp.time.eval)
-	temp.df$MaxConc[i]=max(exp(predict(model,newdata=my.df)$predicted))
-
-	### Calculate Max Conc on interior points of hull. 
-	InteriorPoints<-gridpts(myhull,200)
-	my.df<-data.frame(XCoord=InteriorPoints[,1],YCoord=InteriorPoints[,2],AggDate=temp.time.eval)
-	temp.df$MaxInteriorConc[i]=max(exp(predict(model,newdata=my.df)$predicted))
-	
-}
-
-
-
-}
-
-
-temp.df$MaxInteriorConc[temp.df$MaxInteriorConc<temp.df$MaxConc]<- temp.df$MaxConc[temp.df$MaxInteriorConc<temp.df$MaxConc]
-
-my.ylim=c(min(temp.df[,c("MaxInteriorConc","MaxConc")],na.rm=T),max(temp.df[,c("MaxInteriorConc","MaxConc")],na.rm=T))
-graphics.off();
-windows(record=T,width =11, height = 9)
-
-plot(MaxInteriorConc~Time.Eval,data=temp.df,log = "y",type="b",ylim=my.ylim,xlab="Date",ylab="Concentration(ug/l)",main=paste("Estimated Plume Delineation Concentration Region for",Cont,"at",panel$GWSDAT_Options$SiteName,""), pch=19,cex.main=.85)
-lines(MaxConc~Time.Eval,data=temp.df,type="b",pch=19,col="black")
-
-try(polygon(c(temp.df$Time.Eval, rev(temp.df$Time.Eval)), c(temp.df$MaxInteriorConc, rev(temp.df$MaxConc)),col = "grey", border = NA))
-try(grid(NA,NULL,lwd = 1,lty=1,equilogs = FALSE))
-try(abline(h=as.numeric(panel$PlumeLim[panel$Cont.rg]),col="red",lwd=2,lty=2))
-try(bringToTop())
-
-return(panel)
-
-}
+	  #panel$Well<-panel$Well.Select
+	  replot.SmoothPlot(panel)
+	  return(panel)
+  }
 
 #----------------------------------------------------------------#
 
@@ -171,6 +67,96 @@ return(panel)
 
 
 
+
+
+
+
+
+  ################Calculate Max Concentration on Plume Boundary#############################
+
+
+
+  TunePlumeQuant<-function(panel){
+
+
+    #### Get Hull data points function ########
+    Getchulldatapoints<-function(myhull){
+    myhull<-rbind(myhull,myhull[1,,drop=FALSE])
+  
+  
+    Perimeters<-sqrt(apply((apply(myhull,2,diff)^2),1,sum))
+    Npts<-250
+    Ptsperunitlength=Npts/sum(Perimeters)
+    Perimeter.Npts<-round(Ptsperunitlength*Perimeters,0)
+    chullseglist<-list()
+  
+  	for(i in 1:(nrow(myhull)-1)){
+  		chullseglist[[i]]<-as.data.frame(approx(myhull[i:(i+1),],n=max(Perimeter.Npts[i],3)))
+  	}
+  
+    return(do.call("rbind",chullseglist))
+  }
+    
+  #----------------------------------------#
+
+
+  Well.Coords<-panel$All.Data$Well.Coords
+  jjj<-panel$jjj
+  Cont<-panel$Cont.rg
+  Time.Eval<-panel$Fitted.Data[[Cont]]$Time.Eval
+  temp.df<-data.frame(Time.Eval=panel$Fitted.Data[[Cont]]$Time.Eval)
+  temp.df$MaxConc<-rep(NA,nrow(temp.df))
+  temp.df$MaxInteriorConc<-rep(NA,nrow(temp.df))
+
+  model<-panel$Fitted.Data[[Cont]][["Model.tune"]]$best.model
+
+
+
+
+  for(i in 1:length(panel$Fitted.Data[[Cont]]$Time.Eval)){
+
+    temp.time.eval<-panel$Fitted.Data[[Cont]]$Time.Eval[i]
+    Good.Wells<-as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate)<=temp.time.eval,]$WellName))
+    Good.Wells<-intersect(Good.Wells,as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate)>=temp.time.eval,]$WellName)))
+    
+    
+    if(length(Good.Wells)>2){
+    
+    	### Calculate Max Conc on hull boundary
+    	my.area<-as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
+    	myhull<-my.area[chull(my.area),]
+    	hulldatapoints<-Getchulldatapoints(myhull)
+    	my.df<-data.frame(XCoord=hulldatapoints$x,YCoord=hulldatapoints$y,AggDate=temp.time.eval)
+    	temp.df$MaxConc[i]=max(exp(predict(model,newdata=my.df)$predicted))
+    
+    	### Calculate Max Conc on interior points of hull. 
+    	InteriorPoints<-gridpts(myhull,200)
+    	my.df<-data.frame(XCoord=InteriorPoints[,1],YCoord=InteriorPoints[,2],AggDate=temp.time.eval)
+    	temp.df$MaxInteriorConc[i]=max(exp(predict(model,newdata=my.df)$predicted))
+    	
+    }
+  }
+
+
+  temp.df$MaxInteriorConc[temp.df$MaxInteriorConc<temp.df$MaxConc]<- temp.df$MaxConc[temp.df$MaxInteriorConc<temp.df$MaxConc]
+
+  my.ylim=c(min(temp.df[,c("MaxInteriorConc","MaxConc")],na.rm=T),max(temp.df[,c("MaxInteriorConc","MaxConc")],na.rm=T))
+  graphics.off();
+  windows(record=T,width =11, height = 9)
+
+  plot(MaxInteriorConc~Time.Eval,data=temp.df,log = "y",type="b",ylim=my.ylim,xlab="Date",ylab="Concentration(ug/l)",main=paste("Estimated Plume Delineation Concentration Region for",Cont,"at",panel$GWSDAT_Options$SiteName,""), pch=19,cex.main=.85)
+  lines(MaxConc~Time.Eval,data=temp.df,type="b",pch=19,col="black")
+
+  try(polygon(c(temp.df$Time.Eval, rev(temp.df$Time.Eval)), c(temp.df$MaxInteriorConc, rev(temp.df$MaxConc)),col = "grey", border = NA))
+  try(grid(NA,NULL,lwd = 1,lty=1,equilogs = FALSE))
+  try(abline(h=as.numeric(panel$PlumeLim[panel$Cont.rg]),col="red",lwd=2,lty=2))
+  try(bringToTop())
+
+  return(panel)
+
+}
+
+#----------------------------------------------------------------#
 
 
 
@@ -187,19 +173,19 @@ return(panel)
 #### GW ContourInterpolation Function
 "GWSDAT.GW.Contour"<-function(temp.GW.Flows){
 
-options(warn=-1)
-my.lo<-try(loess(Result~XCoord+YCoord,temp.GW.Flows,span=1,degree=if(nrow(temp.GW.Flows)<20){1}else{2},control = loess.control(surface = c("interpolate", "direct")[1])),silent=T)
-if(inherits(my.lo, "try-error")){options(warn=0); stop("Unable to fit loess")}
-options(warn=0)
-xo=seq(min(temp.GW.Flows$XCoord),max(temp.GW.Flows$XCoord),l=40)
-yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
-my.df<-expand.grid(XCoord=xo,YCoord=yo)
-
-lo.pred<-predict(my.lo,my.df)
-my.hull<-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
-temp.pip<-point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
-lo.pred[matrix(temp.pip,nrow=length(xo))]<-NA
-return(list(x=xo,y=yo,z=lo.pred))
+  options(warn=-1)
+  my.lo<-try(loess(Result~XCoord+YCoord,temp.GW.Flows,span=1,degree=if(nrow(temp.GW.Flows)<20){1}else{2},control = loess.control(surface = c("interpolate", "direct")[1])),silent=T)
+  if(inherits(my.lo, "try-error")){options(warn=0); stop("Unable to fit loess")}
+  options(warn=0)
+  xo=seq(min(temp.GW.Flows$XCoord),max(temp.GW.Flows$XCoord),l=40)
+  yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
+  my.df<-expand.grid(XCoord=xo,YCoord=yo)
+  
+  lo.pred<-predict(my.lo,my.df)
+  my.hull<-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
+  temp.pip<-point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
+  lo.pred[matrix(temp.pip,nrow=length(xo))]<-NA
+  return(list(x=xo,y=yo,z=lo.pred))
 
 }
 
@@ -236,9 +222,9 @@ panel$Porosity<-Porosity #fix for R-3.0.0 tkrplot bug
 
 
 if(fromDoubleButton){
-my.jjj<-panel$shadow.jjj%%length(panel$All.Data$All.Agg.Dates)
-if(my.jjj==0){my.jjj=length(panel$All.Data$All.Agg.Dates)}
-panel$jjj=my.jjj
+  my.jjj<-panel$shadow.jjj%%length(panel$All.Data$All.Agg.Dates)
+  if(my.jjj==0){my.jjj=length(panel$All.Data$All.Agg.Dates)}
+  panel$jjj=my.jjj
 
 }
 
@@ -974,7 +960,7 @@ return(panel)
 #################################### Smooth Time Series Plot functions ########################################################
 
 click.MakeSmoothPlot<-function(panel,x,y){
-
+  browser()
 	graphics.off();
 	windows(record=T,width =11, height = 9)
 	MakeSmoothPlot(panel,showvline=FALSE)
@@ -3414,6 +3400,13 @@ hscale=1.5*Scale.panelImage$hscale,vscale=1.1*Scale.panelImage$vscale)
 
 #--------------------------------------------------- End Build Panel ---------------------------------------------------------#
 
+#--------------------------------------------------------------------------------------------------------------------------#
+#browser()
+#graphics.off();
+#windows(record=T,width =11, height = 9)
+#MakeSmoothPlot(GWSDATpnl,showvline=FALSE)
+#try(bringToTop())
+
 
 
 
@@ -3424,51 +3417,6 @@ if(!interactive()){
 
 
 }
-#--------------------------------------------------------------------------------------------------------------------------#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-######################################## Plot GWSDAT Site Data Set GUI #####################################################
-plot.GWSDAT.Data<-function(data){
-GWSDAT.Make.Panel(data)
-}
-#--------------------------------------------------------------------------------------------------------------------------#
-
-
 
 
 

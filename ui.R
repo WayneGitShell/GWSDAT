@@ -21,7 +21,10 @@ shinyUI(fluidPage(
       ),
     
     mainPanel(
-      textOutput("text1")
+      h4("Errors:"),
+      textOutput("errors"),
+      h4("Warnings:"),
+      textOutput("warnings")
       )
   )
 ))
