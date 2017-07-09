@@ -42,6 +42,7 @@ shinyServer(
       ##
       ## Do the plotting 
       ##
+      GWSDAT.Make.Panel(ret$Curr_Site_Data)
       #plot.GWSDAT.Data(ret$Curr_Site_Data)
       
       # session$sendCustomMessage(type = 'testmessage', message = 'Thank you for clicking')

@@ -5,9 +5,12 @@
 
 source("R/GWSDAT_Setup.R")
 
+options(warn=1)
 
 GWSDAT_Options = GWSDAT_Setup()
-  
+
+
+
 ret = GWSDAT_Init(GWSDAT_Options)
 
 ## Get return status and display on page.
@@ -17,6 +20,6 @@ if(class(ret$status) == "GWSDAT_Warning")
   stop(ret$status$msg)
 
 
-GWSDAT.Make.Panel(ret$Curr_Site_Data)
+# GWSDAT.Make.Panel(ret$Curr_Site_Data)
 
-
+Plot_SmoothTimeSeries(ret$Curr_Site_Data)

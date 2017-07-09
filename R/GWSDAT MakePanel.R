@@ -974,7 +974,7 @@ click.MakeSmoothPlot<-function(panel,x,y){
 
 
 MakeSmoothPlot<-function(panel,showvline=TRUE,fromDoubleButton=T){
-
+browser()
 panel$ContLimEntry<-ContLimEntry #fix for R-3.0.0 tkrplot bug
 
 if(fromDoubleButton){
@@ -3382,7 +3382,7 @@ action=replot.MakeImagePlotNoPlot)
 
 #rp.button(GWSDATpnl,title="Edit Plume Thresholds",action=Edit.Plume.Lims,grid="ContourControlsGrid" ,row = 3, column = 0)
 
-
+browser()
 
 ##### Image Plot
 rp.tkrplot(GWSDATpnl, ImagePlot,  MakeImagePlotNoPlot, 	,grid="topright",row=0,column=0,action=click.MakeSmoothPlotNoPlot,

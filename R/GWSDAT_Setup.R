@@ -104,6 +104,7 @@ GWSDAT_Setup <- function(){
   	source(paste(GWSDATHome, "R/GWSDAT Shapefile Functions.R", sep="/"))
     source(paste(GWSDATHome, "R/GWSDAT_Init.R", sep="/"))
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep="/"))
+    source(paste(GWSDATHome, "R/Plot_SmoothTimeSeries.R", sep="/"))
   	
   	if(!GWSDAT_Load_Libs()){stop("Missing packages")}
   

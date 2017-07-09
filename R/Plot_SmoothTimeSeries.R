@@ -4,31 +4,153 @@
 
 
 
-Plot_SmoothTimeSeries <- function(panel,showvline=TRUE,fromDoubleButton=T){
+Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   
-  panel$ContLimEntry<-ContLimEntry #fix for R-3.0.0 tkrplot bug
+  #
+  # Define variables used for plotting.
+  #
+  # Note: not all might be used here, This might go outside this function.
+  #
   
-  if(fromDoubleButton){
-    my.jjj<-panel$shadow.jjj%%length(panel$All.Data$All.Agg.Dates)
-    if(my.jjj==0){my.jjj=length(panel$All.Data$All.Agg.Dates)}
-    panel$jjj=my.jjj
-    
+  All.Data <- Curr.Site.Data$All.Data
+  GWSDAT_Options <- Curr.Site.Data$GWSDAT_Options
+  Fitted.Data <- Curr.Site.Data$Fitted.Data
+  Cont.Names <- names(Fitted.Data)
+  Num.Conts <- length(Cont.Names)
+  Scale.panelImage = list( hscale = GWSDAT_Options$Scale.panelImage$hscale, vscale = GWSDAT_Options$Scale.panelImage$vscale )
+  my.lev.cut <- c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
+  sd.lev.cut <- 100*c(seq(0,3,by=0.25),10000000)
+  
+ 
+  #
+  # Set 'Use.Defaults'.
+  #
+  if(!is.null(attributes(Curr.Site.Data)$Default.panel.Values)) {
+    Use.Defaults <- TRUE
+    Default.Values<-attributes(Curr.Site.Data)$Default.panel.Values
+  } else { 
+    Use.Defaults <- FALSE
   }
   
-  Use.LogScale=panel$dlines["Log Conc. Scale"]
   
-  Well.Data<-panel$Cont.Data[as.character(panel$Cont.Data$WellName)==panel$Well & panel$Cont.Data$Constituent==panel$Cont.rg,]
+  #
+  # Set 'ContLimEntry'
+  #
+  if(Use.Defaults && !is.null(Default.Values$ContLimEntry)) { 
+    ContLimEntry <- Default.Values$ContLimEntry
+  } else {
+    ContLimEntry <- as.character(rep(GWSDAT_Options$DefContThresh,Num.Conts)); 
+    names(ContLimEntry) <- Cont.Names
+  }
   
   
-  if(panel$rgUnits=="mg/l"){Well.Data$Result.Corr.ND<-Well.Data$Result.Corr.ND/1000}
-  if(panel$rgUnits=="ng/l"){Well.Data$Result.Corr.ND<-Well.Data$Result.Corr.ND*1000}
+  #
+  # Set 'PlumeLimEntry'
+  #
+  if(Use.Defaults && !is.null(Default.Values$PlumeLimEntry)) { 
+    PlumeLimEntry <- Default.Values$PlumeLimEntry
+  } else {
+    PlumeLimEntry <- as.character(rep(GWSDAT_Options$DefPlumeThresh,Num.Conts)); 
+    names(PlumeLimEntry) <- Cont.Names
+  }
+  
+  
+  #
+  # Set 'Porosity'
+  #
+  if(Use.Defaults && !is.null(Default.Values$Porosity)) {
+    Porosity <- Default.Values$Porosity
+  } else {
+    Porosity <- as.character(GWSDAT_Options$DefPorosity)
+  }
+  
+  
+  
+  #
+  # This is 'GWSDATpnl'
+  #
+  #  !! It has rpanel stuff, model and data mixed up .. need to untangle this.
+  #
+  #
+
+  panel <- rp.control(
+    if(All.Data$Aq.sel==""){ 
+      GWSDAT_Options$SiteName 
+    } else { 
+      paste(GWSDAT_Options$SiteName,": Aquifer-",All.Data$Aq.sel,sep="")
+      }, 
+    jjj = if(Use.Defaults && !is.null(Default.Values$jjj)) { 
+      Default.Values$jjj } else { length(All.Data$All.Agg.Dates) 
+        },
+    Cont.Data = All.Data$Cont.Data,
+    Well = if(Use.Defaults && !is.null(Default.Values$Well)) { 
+      Default.Values$Well 
+      } else { 
+        sort(All.Data$All.Wells)[1]
+        },
+    All.Dates = All.Data$All.Dates,
+    All.Agg.Dates = All.Data$All.Agg.Dates,
+    Cont.Names = Cont.Names,
+    All.Data = All.Data,
+    Fitted.Data = Fitted.Data,
+    Scale.panelImage = Scale.panelImage,
+    Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
+    lev.cut = my.lev.cut,
+    sd.lev.cut = sd.lev.cut,
+    GWSDAT_Options=GWSDAT_Options,
+    ContLimEntry = ContLimEntry,
+    PlumeLimEntry = PlumeLimEntry, 
+    Porosity = Porosity,
+    tempTotalPlumeDetails = NULL,
+    panelname = "GWSDATpnl"
+    )
+  
+  #
+  # Set 'rgUnits' - done with Combo control (GWSDAT MakePanel.R:3305)
+  #
+  panel$rgUnits <- "mg/l"
+  
+  
+  #
+  # Set 'rg1' - done with Combo control (GWSDAT MakePanel.R:3338)
+  #
+  panel$rg1 <- "Trend"
+  
+  
+  #
+  # Set 'dlines' - Done with Checkbox (GWSDAT MakePanel.R:3278)
+  #
+  #rp.checkbox(GWSDATpnl, dlines, replot.SmoothPlot, labels = c("Conc. Trend Smoother","Conc. Linear Trend Fit","Show Legend","Scale to Conc. Data","Log Conc. Scale","Overlay GW levels","Overlay NAPL Thickness")[c(rep(TRUE,6),NAPLThickPresent)],
+  #            title = "Time Series Plot Options",initval=if(Use.Defaults  && !is.null(Default.Values$dlines)){Default.Values$dlines}else{c(TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE)[c(rep(TRUE,6),NAPLThickPresent)]},
+  #            grid = "ControlsGrid", row = 1, column = 0)
+  panel$dlines <- "Conc. Trend Smoother"
+  
+  
+  
+  panel$ContLimEntry <- ContLimEntry #fix for R-3.0.0 tkrplot bug
+  
+  #if(fromDoubleButton){
+  #  my.jjj<-panel$shadow.jjj%%length(panel$All.Data$All.Agg.Dates)
+  #if(my.jjj==0){
+  panel$jjj = length(panel$All.Data$All.Agg.Dates)
+  #}
+  
+  Use.LogScale = panel$dlines["Log Conc. Scale"]
+  browser()
+  ## !!!!!!!!!!!!!!!!
+  Well.Data <- panel$Cont.Data[as.character(panel$Cont.Data$WellName)==panel$Well & panel$Cont.Data$Constituent==panel$Cont.rg,]
+  
+  
+  
+  if(panel$rgUnits=="mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
+  if(panel$rgUnits=="ng/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND*1000 }
   
   Num.Data.Pts<-nrow(Well.Data)
   smThreshSe<-panel$GWSDAT_Options$smThreshSe
   Det.Pts<-Well.Data$ND==FALSE
   ND.Pts<-Well.Data$ND==TRUE
   NAPL.Present<-any("napl" %in% tolower(as.character(Well.Data$Result))) ||   nrow(panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,])>0
-  if(is.na( NAPL.Present)){NAPL.Present<-FALSE}
+  if(is.na( NAPL.Present)){ NAPL.Present<-FALSE }
   
   
   Stat.Lim<-as.numeric(panel$ContLimEntry[match(panel$Cont.rg,panel$Cont.Names)])
@@ -38,8 +160,8 @@ Plot_SmoothTimeSeries <- function(panel,showvline=TRUE,fromDoubleButton=T){
   
   
   
-  GWAxis<-panel$dlines["Overlay GW levels"] && "GWFlows" %in% names(attributes(panel$Fitted.Data)) && any(as.character(panel$All.Data$GW.Data$WellName)==panel$Well)
-  NAPLAxis<-(panel$dlines["Overlay NAPL Thickness"] && NAPL.Present)
+  GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% names(attributes(panel$Fitted.Data)) && any(as.character(panel$All.Data$GW.Data$WellName)==panel$Well)
+  NAPLAxis <- (panel$dlines["Overlay NAPL Thickness"] && NAPL.Present)
   
   tempinc<-0.4
   if(NAPLAxis | GWAxis){
@@ -71,12 +193,13 @@ Plot_SmoothTimeSeries <- function(panel,showvline=TRUE,fromDoubleButton=T){
     if(!is.finite(my.ylim[2])){my.ylim[2]<-100000}
     my.xlim<-range(Well.Data$SampleDate)
     
-  }else{
+  } else {
     
     if(nrow(Well.Data)>0){my.ylim<-c(min(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
     else{my.ylim=c(0.01,100)}
     my.xlim<-range(c(panel$Cont.Data$SampleDate,panel$All.Data$GW.Data$SampleDate),na.rm=T) #maybe change to AggDate!
-  }
+  
+    }
   
   
   sm.fit<-NULL
@@ -109,9 +232,7 @@ Plot_SmoothTimeSeries <- function(panel,showvline=TRUE,fromDoubleButton=T){
         my.ylim<-c(min(my.ylim[1],sm.95low,na.rm=T),max(my.ylim[2],sm.95up,na.rm=T))
         if(!is.finite(my.ylim[2])){my.ylim[2]<-100000}
       }
-      
     }
-    
   }
   
   
@@ -303,6 +424,8 @@ Plot_SmoothTimeSeries <- function(panel,showvline=TRUE,fromDoubleButton=T){
   
   par(op)
   return(panel)
+  
 }
+
 
 ############################################### End Time Series Plot ###########################################################
