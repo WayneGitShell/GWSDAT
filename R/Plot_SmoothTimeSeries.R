@@ -4,7 +4,7 @@
 
 
 
-Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHINY = TRUE){
+Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = FALSE, RUNNING_SHINY = TRUE){
   
   
   #graphics.off();
@@ -84,11 +84,6 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
     Default.Values$jjj } else { length(All.Data$All.Agg.Dates) 
     }
   DRV$Cont.Data = All.Data$Cont.Data
-  DRV$Well = if(Use.Defaults && !is.null(Default.Values$Well)) { 
-    Default.Values$Well 
-  } else { 
-    sort(All.Data$All.Wells)[1]
-  }
   DRV$All.Dates = All.Data$All.Dates
   DRV$All.Agg.Dates = All.Data$All.Agg.Dates
   DRV$Cont.Names = Cont.Names
@@ -124,7 +119,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   #
   # Set 'rgUnits' - done with Combo control (GWSDAT MakePanel.R:3305)
   #
-  panel$rgUnits <- "mg/l"
+  panel$rgUnits <- Curr.Site.Data$rgUnits
   
   
   #
@@ -135,24 +130,22 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   #
   # Set 'Cont.rg' - done with Listbox (GWSDAT MakePanel.R:3268)
   #   (set the contaminant to be drawn)
-  panel$Cont.rg <- Cont.Names[1]
+  panel$Cont.rg <- Curr.Site.Data$Cont.rg
+ 
   
   
-  #
   # Set 'dlines' - Done with Checkbox (GWSDAT MakePanel.R:3278)
+  panel$dlines <- Curr.Site.Data$ts_options
+  
+  # Set 'Well'. Note, there is a Default setting procedure:
   #
-  #rp.checkbox(GWSDATpnl, dlines, replot.SmoothPlot, labels = c("Conc. Trend Smoother","Conc. Linear Trend Fit","Show Legend","Scale to Conc. Data","Log Conc. Scale","Overlay GW levels","Overlay NAPL Thickness")[c(rep(TRUE,6),NAPLThickPresent)],
-  #            title = "Time Series Plot Options",initval=if(Use.Defaults  && !is.null(Default.Values$dlines)){Default.Values$dlines}else{c(TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE)[c(rep(TRUE,6),NAPLThickPresent)]},
-  #            grid = "ControlsGrid", row = 1, column = 0)
-  panel$dlines <- 0
-  panel$dlines["Conc. Trend Smoother"] <- TRUE
-  panel$dlines["Conc. Linear Trend Fit"] <- FALSE
-  panel$dlines["Show Legend"] <- FALSE
-  panel$dlines["Scale to Conc. Data"] <- FALSE
-  panel$dlines["Log Conc. Scale"] <- TRUE
-  panel$dlines["Overlay GW levels"] <- FALSE
-  panel$dlines["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
-
+  #   #if(Use.Defaults && !is.null(Default.Values$Well)) { 
+  #  Default.Values$Well 
+  #} else { 
+  #  Curr.Site.Data$Well
+  #}
+  panel$Well = Curr.Site.Data$Well
+  
   
   panel$ContLimEntry <- ContLimEntry #fix for R-3.0.0 tkrplot bug
   
@@ -164,7 +157,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   
   Use.LogScale = panel$dlines["Log Conc. Scale"]
   
-  Well.Data <- panel$DRV$Cont.Data[as.character(panel$DRV$Cont.Data$WellName) == panel$DRV$Well & panel$DRV$Cont.Data$Constituent == panel$Cont.rg,]
+  Well.Data <- panel$DRV$Cont.Data[as.character(panel$DRV$Cont.Data$WellName) == panel$Well & panel$DRV$Cont.Data$Constituent == panel$Cont.rg,]
   
   
   
@@ -175,7 +168,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   smThreshSe <- panel$DRV$GWSDAT_Options$smThreshSe
   Det.Pts <- Well.Data$ND==FALSE
   ND.Pts <- Well.Data$ND==TRUE
-  NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) ||   nrow(panel$DRV$All.Data$NAPL.Thickness.Data[as.character(panel$DRV$All.Data$NAPL.Thickness.Data$WellName)==panel$DRV$Well,])>0
+  NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) ||   nrow(panel$DRV$All.Data$NAPL.Thickness.Data[as.character(panel$DRV$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,])>0
   if(is.na( NAPL.Present)){ NAPL.Present<-FALSE }
   
   
@@ -188,7 +181,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   
   
   
-  GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% names(attributes(panel$DRV$Fitted.Data)) && any(as.character(panel$DRV$All.Data$GW.Data$WellName)==panel$DRV$Well)
+  GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% names(attributes(panel$DRV$Fitted.Data)) && any(as.character(panel$DRV$All.Data$GW.Data$WellName)==panel$Well)
   NAPLAxis <- (panel$dlines["Overlay NAPL Thickness"] && NAPL.Present)
   
   tempinc<-0.4
@@ -231,7 +224,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   
   
   sm.fit<-NULL
-  sm.h<-panel$DRV$Traffic.Lights$h[panel$DRV$Well,panel$Cont.rg]
+  sm.h<-panel$DRV$Traffic.Lights$h[panel$Well,panel$Cont.rg]
   
   
   if(panel$dlines["Conc. Trend Smoother"] & !is.na(sm.h)){
@@ -321,7 +314,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   
   if(nrow(panel$DRV$Cont.Data[as.character(panel$DRV$Cont.Data$Result)!="NAPL" & !is.na(panel$DRV$Cont.Data$Result),])!=0){axis(2)} #if no Conc Data suppress Y-axis
   box()	
-  title(main = paste(panel$Cont.rg, if(panel$Cont.rg!=" "){"in"}else{""}, panel$DRV$Well,if(panel$DRV$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$DRV$All.Data$Aq.sel,sep="")}else{""}), font.main = 4, cex.main = 1)
+  title(main = paste(panel$Cont.rg, if(panel$Cont.rg!=" "){"in"}else{""}, panel$Well,if(panel$DRV$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$DRV$All.Data$Aq.sel,sep="")}else{""}), font.main = 4, cex.main = 1)
   
   
   grid(NA,NULL,lwd = 1,lty=1,equilogs = FALSE)
@@ -400,7 +393,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   
   if(panel$dlines["Overlay GW levels"]){
     
-    Well.GW.Data<-panel$DRV$All.Data$GW.Data[as.character(panel$DRV$All.Data$GW.Data$WellName)==panel$DRV$Well,]
+    Well.GW.Data<-panel$DRV$All.Data$GW.Data[as.character(panel$DRV$All.Data$GW.Data$WellName)==panel$Well,]
     Well.GW.Data<-Well.GW.Data[order(Well.GW.Data$SampleDate),]
     
     if(nrow(Well.GW.Data)>0){
@@ -420,7 +413,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHIN
   
   if(panel$dlines["Overlay NAPL Thickness"] & !is.null(panel$DRV$All.Data$NAPL.Thickness.Data)){
     
-    Well.NAPL.Thickness.Data<-panel$DRV$All.Data$NAPL.Thickness.Data[as.character(panel$DRV$All.Data$NAPL.Thickness.Data$WellName)==panel$DRV$Well,]
+    Well.NAPL.Thickness.Data<-panel$DRV$All.Data$NAPL.Thickness.Data[as.character(panel$DRV$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,]
     Well.NAPL.Thickness.Data<-Well.NAPL.Thickness.Data[order(Well.NAPL.Thickness.Data$SampleDate),]
     
     if(nrow(Well.NAPL.Thickness.Data)>0 && GWInc==FALSE){

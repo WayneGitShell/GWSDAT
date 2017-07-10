@@ -233,10 +233,43 @@ GWSDAT_Init <- function(GWSDAT_Options) {
   #----------------------------------------------------------------------------------------------------------------------#
   
   
+  ############################ Set initial panel control attributes ###############################################################
+
+    
+  Cont.rg = names(Fitted.Data)[1]    
+  rgUnits = "ug/l"
+  ts_options = NULL  # list("Conc. Trend Smoother","Conc. Linear Trend Fit","Show Legend","Scale to Conc. Data","Log Conc. Scale","Overlay GW levels")
+  
+  ts_options["Conc. Trend Smoother"] <- TRUE
+  ts_options["Conc. Linear Trend Fit"] <- FALSE
+  ts_options["Show Legend"] <- FALSE
+  ts_options["Scale to Conc. Data"] <- FALSE
+  ts_options["Log Conc. Scale"] <- TRUE
+  ts_options["Overlay GW levels"] <- FALSE
+  #ts_options["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
+  
+  
+  #rp.listbox(GWSDATpnl,Well,labels=sort(as.character(All.Data$All.Wells)),
+  #           vals=sort(as.character(All.Data$All.Wells)),
+  #           grid="ControlsGrid" ,
+  #           initval=if(Use.Defaults && !is.null(Default.Values$Well)){Default.Values$Well}else{sort(as.character(All.Data$All.Wells))[1]},  
+  #           row = 1, column = 1,title="Select Monitoring Well",rows =min(10,length(as.character(All.Data$All.Wells))),action=listbox.Well.Select)
+  sorted_Wells = sort(as.character(All.Data$All.Wells))
+  Well = sorted_Wells[1]
+  
+  
   
   ############################ Clean Up #################################################################################
   
-  Curr.Site.Data=list(All.Data=All.Data,Fitted.Data=Fitted.Data,GWSDAT_Options=GWSDAT_Options)
+  #Curr.Site.Data=list(All.Data=All.Data,Fitted.Data=Fitted.Data,GWSDAT_Options=GWSDAT_Options)
+  Curr.Site.Data=list(All.Data=All.Data,
+                      Fitted.Data=Fitted.Data,
+                      GWSDAT_Options=GWSDAT_Options, 
+                      Cont.rg = Cont.rg,
+                      rgUnits = rgUnits,
+                      ts_options = ts_options,
+                      Well = Well
+                      )
   attr(Curr.Site.Data, 'class') <- 'GWSDAT.Data'
   
   #TK stuff:
