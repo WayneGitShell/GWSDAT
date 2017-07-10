@@ -17,14 +17,13 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       helpText("Execute the GWSDAT R script with the basic example."),
-      actionButton("run_gwsdat", "Run")
+      actionButton("run_gwsdat", "Run"),
+      h4("Status:"),
+      textOutput("status")
       ),
     
     mainPanel(
-      h4("Errors:"),
-      textOutput("errors"),
-      h4("Warnings:"),
-      textOutput("warnings")
+      plotOutput("time_series")
       )
   )
 ))

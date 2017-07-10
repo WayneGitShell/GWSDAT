@@ -4,7 +4,11 @@
 
 
 
-Plot_SmoothTimeSeries <- function(Curr.Site.Data){
+Plot_SmoothTimeSeries <- function(Curr.Site.Data, showvline = TRUE, RUNNING_SHINY = TRUE){
+  
+  
+  #graphics.off();
+  # windows(width =11, height = 9)
   
   #
   # Define variables used for plotting.
@@ -69,41 +73,53 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   #
   # This is 'GWSDATpnl'
   #
-  #  !! It has rpanel stuff, model and data mixed up .. need to untangle this.
+  #  !! It has rpanel stuff + model + data all together .. 
+  #     Need to untangle this to get MVC in place.
   #
   #
+  
+  # Drawing Related Variables - directly usable for panel drawing.
+  DRV = list()
+  DRV$jjj = if(Use.Defaults && !is.null(Default.Values$jjj)) { 
+    Default.Values$jjj } else { length(All.Data$All.Agg.Dates) 
+    }
+  DRV$Cont.Data = All.Data$Cont.Data
+  DRV$Well = if(Use.Defaults && !is.null(Default.Values$Well)) { 
+    Default.Values$Well 
+  } else { 
+    sort(All.Data$All.Wells)[1]
+  }
+  DRV$All.Dates = All.Data$All.Dates
+  DRV$All.Agg.Dates = All.Data$All.Agg.Dates
+  DRV$Cont.Names = Cont.Names
+  DRV$All.Data = All.Data
+  DRV$Fitted.Data = Fitted.Data
+  DRV$Scale.panelImage = Scale.panelImage
+  DRV$Traffic.Lights = attr(Fitted.Data,"TrafficLights")
+  DRV$lev.cut = my.lev.cut
+  DRV$sd.lev.cut = sd.lev.cut
+  DRV$GWSDAT_Options=GWSDAT_Options
+  DRV$ContLimEntry = ContLimEntry
+  DRV$PlumeLimEntry = PlumeLimEntry 
+  DRV$Porosity = Porosity
+  DRV$tempTotalPlumeDetails = NULL
+  
+  if(!RUNNING_SHINY) {
 
-  panel <- rp.control(
-    if(All.Data$Aq.sel==""){ 
-      GWSDAT_Options$SiteName 
-    } else { 
-      paste(GWSDAT_Options$SiteName,": Aquifer-",All.Data$Aq.sel,sep="")
-      }, 
-    jjj = if(Use.Defaults && !is.null(Default.Values$jjj)) { 
-      Default.Values$jjj } else { length(All.Data$All.Agg.Dates) 
-        },
-    Cont.Data = All.Data$Cont.Data,
-    Well = if(Use.Defaults && !is.null(Default.Values$Well)) { 
-      Default.Values$Well 
+    # Create the TK panel when running Stand-Alone.
+    panel <- rp.control(
+      title = if(All.Data$Aq.sel==""){ 
+        GWSDAT_Options$SiteName 
       } else { 
-        sort(All.Data$All.Wells)[1]
-        },
-    All.Dates = All.Data$All.Dates,
-    All.Agg.Dates = All.Data$All.Agg.Dates,
-    Cont.Names = Cont.Names,
-    All.Data = All.Data,
-    Fitted.Data = Fitted.Data,
-    Scale.panelImage = Scale.panelImage,
-    Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
-    lev.cut = my.lev.cut,
-    sd.lev.cut = sd.lev.cut,
-    GWSDAT_Options=GWSDAT_Options,
-    ContLimEntry = ContLimEntry,
-    PlumeLimEntry = PlumeLimEntry, 
-    Porosity = Porosity,
-    tempTotalPlumeDetails = NULL,
-    panelname = "GWSDATpnl"
-    )
+        paste(GWSDAT_Options$SiteName,": Aquifer-",All.Data$Aq.sel,sep="")
+      }, 
+      panelname = "GWSDATpnl",
+      DRV = DRV )
+    } else {
+      
+      # Create panel variable for Shiny.
+      panel <- list(DRV = DRV)
+  }
   
   #
   # Set 'rgUnits' - done with Combo control (GWSDAT MakePanel.R:3305)
@@ -116,6 +132,11 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   #
   panel$rg1 <- "Trend"
   
+  #
+  # Set 'Cont.rg' - done with Listbox (GWSDAT MakePanel.R:3268)
+  #   (set the contaminant to be drawn)
+  panel$Cont.rg <- Cont.Names[1]
+  
   
   #
   # Set 'dlines' - Done with Checkbox (GWSDAT MakePanel.R:3278)
@@ -123,44 +144,51 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   #rp.checkbox(GWSDATpnl, dlines, replot.SmoothPlot, labels = c("Conc. Trend Smoother","Conc. Linear Trend Fit","Show Legend","Scale to Conc. Data","Log Conc. Scale","Overlay GW levels","Overlay NAPL Thickness")[c(rep(TRUE,6),NAPLThickPresent)],
   #            title = "Time Series Plot Options",initval=if(Use.Defaults  && !is.null(Default.Values$dlines)){Default.Values$dlines}else{c(TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE)[c(rep(TRUE,6),NAPLThickPresent)]},
   #            grid = "ControlsGrid", row = 1, column = 0)
-  panel$dlines <- "Conc. Trend Smoother"
-  
-  
+  panel$dlines <- 0
+  panel$dlines["Conc. Trend Smoother"] <- TRUE
+  panel$dlines["Conc. Linear Trend Fit"] <- FALSE
+  panel$dlines["Show Legend"] <- FALSE
+  panel$dlines["Scale to Conc. Data"] <- FALSE
+  panel$dlines["Log Conc. Scale"] <- TRUE
+  panel$dlines["Overlay GW levels"] <- FALSE
+  panel$dlines["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
+
   
   panel$ContLimEntry <- ContLimEntry #fix for R-3.0.0 tkrplot bug
   
   #if(fromDoubleButton){
   #  my.jjj<-panel$shadow.jjj%%length(panel$All.Data$All.Agg.Dates)
   #if(my.jjj==0){
-  panel$jjj = length(panel$All.Data$All.Agg.Dates)
+  panel$jjj = length(panel$DRV$All.Data$All.Agg.Dates)
   #}
   
   Use.LogScale = panel$dlines["Log Conc. Scale"]
-  browser()
-  ## !!!!!!!!!!!!!!!!
-  Well.Data <- panel$Cont.Data[as.character(panel$Cont.Data$WellName)==panel$Well & panel$Cont.Data$Constituent==panel$Cont.rg,]
+  
+  Well.Data <- panel$DRV$Cont.Data[as.character(panel$DRV$Cont.Data$WellName) == panel$DRV$Well & panel$DRV$Cont.Data$Constituent == panel$Cont.rg,]
   
   
   
   if(panel$rgUnits=="mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
   if(panel$rgUnits=="ng/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND*1000 }
   
-  Num.Data.Pts<-nrow(Well.Data)
-  smThreshSe<-panel$GWSDAT_Options$smThreshSe
-  Det.Pts<-Well.Data$ND==FALSE
-  ND.Pts<-Well.Data$ND==TRUE
-  NAPL.Present<-any("napl" %in% tolower(as.character(Well.Data$Result))) ||   nrow(panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,])>0
+  Num.Data.Pts <- nrow(Well.Data)
+  smThreshSe <- panel$DRV$GWSDAT_Options$smThreshSe
+  Det.Pts <- Well.Data$ND==FALSE
+  ND.Pts <- Well.Data$ND==TRUE
+  NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) ||   nrow(panel$DRV$All.Data$NAPL.Thickness.Data[as.character(panel$DRV$All.Data$NAPL.Thickness.Data$WellName)==panel$DRV$Well,])>0
   if(is.na( NAPL.Present)){ NAPL.Present<-FALSE }
   
   
-  Stat.Lim<-as.numeric(panel$ContLimEntry[match(panel$Cont.rg,panel$Cont.Names)])
-  if(panel$rgUnits=="mg/l"){Stat.Lim=Stat.Lim/1000}
-  if(panel$rgUnits=="ng/l"){Stat.Lim=Stat.Lim*1000}
-  if(panel$rg1=="Trend"){Stat.Lim=NA}
+  
+  
+  Stat.Lim <- as.numeric(panel$DRV$ContLimEntry[match(panel$Cont.rg,panel$DRV$Cont.Names)])
+  if(panel$rgUnits=="mg/l"){ Stat.Lim = Stat.Lim/1000 }
+  if(panel$rgUnits=="ng/l"){ Stat.Lim = Stat.Lim*1000 }
+  if(panel$rg1=="Trend"){ Stat.Lim = NA }
   
   
   
-  GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% names(attributes(panel$Fitted.Data)) && any(as.character(panel$All.Data$GW.Data$WellName)==panel$Well)
+  GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% names(attributes(panel$DRV$Fitted.Data)) && any(as.character(panel$DRV$All.Data$GW.Data$WellName)==panel$DRV$Well)
   NAPLAxis <- (panel$dlines["Overlay NAPL Thickness"] && NAPL.Present)
   
   tempinc<-0.4
@@ -187,7 +215,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   
   
   
-  if(panel$dlines["Scale to Conc. Data"] & nrow(Well.Data)>0){
+  if(panel$dlines["Scale to Conc. Data"] & nrow(Well.Data) > 0){
     
     my.ylim<-range(Well.Data$Result.Corr.ND,na.rm=T)
     if(!is.finite(my.ylim[2])){my.ylim[2]<-100000}
@@ -197,13 +225,13 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
     
     if(nrow(Well.Data)>0){my.ylim<-c(min(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
     else{my.ylim=c(0.01,100)}
-    my.xlim<-range(c(panel$Cont.Data$SampleDate,panel$All.Data$GW.Data$SampleDate),na.rm=T) #maybe change to AggDate!
+    my.xlim<-range(c(panel$DRV$Cont.Data$SampleDate, panel$DRV$All.Data$GW.Data$SampleDate),na.rm=T) #maybe change to AggDate!
   
     }
   
   
   sm.fit<-NULL
-  sm.h<-panel$Traffic.Lights$h[panel$Well,panel$Cont.rg]
+  sm.h<-panel$DRV$Traffic.Lights$h[panel$DRV$Well,panel$Cont.rg]
   
   
   if(panel$dlines["Conc. Trend Smoother"] & !is.na(sm.h)){
@@ -261,7 +289,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
     
     
     seg.lim<-Well.Data$Result.Corr.ND[ND.Pts]
-    if(length(grep("half",tolower(panel$GWSDAT_Options$NDMethod)))>0){seg.lim=2*seg.lim}	
+    if(length(grep("half",tolower(panel$DRV$GWSDAT_Options$NDMethod)))>0){seg.lim=2*seg.lim}	
     try(if(my.ylim[2]<max(seg.lim)){my.ylim[2]<-max(seg.lim)})
     
   }
@@ -291,9 +319,9 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   #,format="%b %d")
   
   
-  if(nrow(panel$Cont.Data[as.character(panel$Cont.Data$Result)!="NAPL" & !is.na(panel$Cont.Data$Result),])!=0){axis(2)} #if no Conc Data suppress Y-axis
+  if(nrow(panel$DRV$Cont.Data[as.character(panel$DRV$Cont.Data$Result)!="NAPL" & !is.na(panel$DRV$Cont.Data$Result),])!=0){axis(2)} #if no Conc Data suppress Y-axis
   box()	
-  title(main = paste(panel$Cont.rg, if(panel$Cont.rg!=" "){"in"}else{""}, panel$Well,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""}), font.main = 4, cex.main = 1)
+  title(main = paste(panel$Cont.rg, if(panel$Cont.rg!=" "){"in"}else{""}, panel$DRV$Well,if(panel$DRV$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$DRV$All.Data$Aq.sel,sep="")}else{""}), font.main = 4, cex.main = 1)
   
   
   grid(NA,NULL,lwd = 1,lty=1,equilogs = FALSE)
@@ -333,7 +361,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   
   
   
-  if(showvline){abline(v=panel$All.Agg.Dates[panel$jjj],col="grey",lwd=3)}
+  if(showvline){abline(v=panel$DRV$All.Agg.Dates[panel$DRV$jjj],col="grey",lwd=3)}
   points(Result.Corr.ND~SampleDate,Well.Data[Det.Pts,],cex=1.5,pch=19,col="black")
   points(Result.Corr.ND~SampleDate,Well.Data[ND.Pts, ],cex=1.5,pch=19,col="orange")
   if(NAPL.Present){points(Result.Corr.ND~SampleDate,Well.Data[tolower(as.character(Well.Data$Result))=="napl", ],cex=1.5,pch=19,col="red")}
@@ -372,7 +400,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   
   if(panel$dlines["Overlay GW levels"]){
     
-    Well.GW.Data<-panel$All.Data$GW.Data[as.character(panel$All.Data$GW.Data$WellName)==panel$Well,]
+    Well.GW.Data<-panel$DRV$All.Data$GW.Data[as.character(panel$DRV$All.Data$GW.Data$WellName)==panel$DRV$Well,]
     Well.GW.Data<-Well.GW.Data[order(Well.GW.Data$SampleDate),]
     
     if(nrow(Well.GW.Data)>0){
@@ -382,7 +410,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
       if(panel$dlines["Show Legend"]){GW.ylim[2]<-GW.ylim[2]+diff(range(GW.ylim,na.rm=T))*.15}
       plot(Result~SampleDate,Well.GW.Data,yaxt='n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=GW.ylim,type="b",col="black")
       axis(4,axTicks(4),cex.axis=.7,padj=-2.2,tcl=-0.3)
-      mtext(paste("Groundwater Elevation (",panel$All.Data$GW.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
+      mtext(paste("Groundwater Elevation (",panel$DRV$All.Data$GW.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
       GWInc<-TRUE
     }
     
@@ -390,9 +418,9 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
   
   
   
-  if(panel$dlines["Overlay NAPL Thickness"] & !is.null(panel$All.Data$NAPL.Thickness.Data)){
+  if(panel$dlines["Overlay NAPL Thickness"] & !is.null(panel$DRV$All.Data$NAPL.Thickness.Data)){
     
-    Well.NAPL.Thickness.Data<-panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,]
+    Well.NAPL.Thickness.Data<-panel$DRV$All.Data$NAPL.Thickness.Data[as.character(panel$DRV$All.Data$NAPL.Thickness.Data$WellName)==panel$DRV$Well,]
     Well.NAPL.Thickness.Data<-Well.NAPL.Thickness.Data[order(Well.NAPL.Thickness.Data$SampleDate),]
     
     if(nrow(Well.NAPL.Thickness.Data)>0 && GWInc==FALSE){
@@ -403,7 +431,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
       
       plot(Result.Corr.ND~SampleDate,Well.NAPL.Thickness.Data,yaxt='n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=NAPL.ylim,type="b",col="red")
       axis(4,axTicks(4),cex.axis=.7,padj=-2.2,tcl=-0.3)
-      mtext(paste("NAPL Thickness (",panel$All.Data$NAPL.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
+      mtext(paste("NAPL Thickness (",panel$DRV$All.Data$NAPL.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
       
     }
     
@@ -415,7 +443,7 @@ Plot_SmoothTimeSeries <- function(Curr.Site.Data){
       if(panel$dlines["Show Legend"]){NAPL.ylim[2]<-NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
       plot(Result.Corr.ND~SampleDate,Well.NAPL.Thickness.Data,yaxt='n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=NAPL.ylim,type="b",col="red")
       axis(4,axTicks(4),cex.axis=.7,col="red",line=2,padj=-2.2,tcl=-0.3)
-      mtext(paste("NAPL Thickness (",panel$All.Data$NAPL.Units,")",sep=""), side=4,line=2.75,cex=.7,col="black")
+      mtext(paste("NAPL Thickness (",panel$DRV$All.Data$NAPL.Units,")",sep=""), side=4,line=2.75,cex=.7,col="black")
       
     }
     

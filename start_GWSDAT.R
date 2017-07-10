@@ -5,9 +5,10 @@
 
 source("R/GWSDAT_Setup.R")
 
-options(warn=1)
+options(warn=1) #, error=1)
 
 GWSDAT_Options = GWSDAT_Setup()
+
 
 
 
@@ -22,4 +23,4 @@ if(class(ret$status) == "GWSDAT_Warning")
 
 # GWSDAT.Make.Panel(ret$Curr_Site_Data)
 
-Plot_SmoothTimeSeries(ret$Curr_Site_Data)
+Plot_SmoothTimeSeries(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
