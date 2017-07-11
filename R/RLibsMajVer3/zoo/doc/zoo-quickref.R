@@ -14,6 +14,7 @@ Sys.setenv(TZ = "GMT")
 ###################################################
 ### code chunk number 2: read.zoo
 ###################################################
+Sys.setlocale("LC_TIME", "C")
 inrusd <- read.zoo("demo1.txt", sep = "|", format="%d %b %Y")
 
 

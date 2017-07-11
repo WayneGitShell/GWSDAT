@@ -31,7 +31,8 @@ z1 <- zoo(z1.data, z1.index)
 ###################################################
 ### code chunk number 4: zoo-vectors2
 ###################################################
-z2.index <- as.POSIXct(paste(2004, rep(1:2, 5), sample(1:28, 10), sep = "-"))
+z2.index <- as.POSIXct(paste(2004, rep(1:2, 5), sample(1:28, 10),
+  sep = "-"))
 z2.data <- sin(2*1:10/pi)
 z2 <- zoo(z2.data, z2.index)
 
@@ -147,13 +148,15 @@ plot(Z)
 ###################################################
 ### code chunk number 20: plot3
 ###################################################
-plot(Z, type = "b", lty = 1:3, pch = list(Aa = 1:5, Bb = 2, Cc = 4), col = list(Bb = 2, 4))
+plot(Z, type = "b", lty = 1:3, pch = list(Aa = 1:5, Bb = 2, Cc = 4),
+  col = list(Bb = 2, 4))
 
 
 ###################################################
 ### code chunk number 21: plot3-repeat (eval = FALSE)
 ###################################################
-## plot(Z, type = "b", lty = 1:3, pch = list(Aa = 1:5, Bb = 2, Cc = 4), col = list(Bb = 2, 4))
+## plot(Z, type = "b", lty = 1:3, pch = list(Aa = 1:5, Bb = 2, Cc = 4),
+##   col = list(Bb = 2, 4))
 
 
 ###################################################
@@ -191,7 +194,8 @@ aggregate(Z, firstofmonth, head, 1)
 ###################################################
 ### code chunk number 27: disaggregate
 ###################################################
-Nile.na <- merge(as.zoo(Nile), zoo(, seq(start(Nile)[1], end(Nile)[1], 1/4)))
+Nile.na <- merge(as.zoo(Nile),
+  zoo(, seq(start(Nile)[1], end(Nile)[1], 1/4)))
 head(as.zoo(Nile))
 head(na.approx(Nile.na))
 head(na.locf(Nile.na))
@@ -276,6 +280,7 @@ na.omit(z1)
 na.contiguous(z1)
 na.approx(z1)
 na.approx(z1, 1:NROW(z1))
+na.spline(z1)
 na.locf(z1)
 
 

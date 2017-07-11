@@ -81,7 +81,7 @@ emerged which are aimed particularly at finance applications.
 These include the \proglang{S4} classes \code{"timeSeries"}
 in package \pkg{timeSeries} (previously \pkg{fSeries}) from the
 \pkg{Rmetrics} suite \citep{zoo:Rmetrics:2008},
-\code{"its"} in package \pkg{its} \citep{zoo:its:2004}
+\code{"its"} in package \pkg{its} \citep[][archived on CRAN]{zoo:its:2004}
 and the \proglang{S3} class \code{"irts"} in package \pkg{tseries} \citep{zoo:tseries:2007}.
 With these packages available, why would anybody want yet another 
 package providing infrastructure for irregular time series?
@@ -191,7 +191,7 @@ All these methods are available, e.g., for standard numeric and character vector
 vectors of classes \code{"Date"}, \code{"POSIXct"} or \code{"times"}
 from package \pkg{chron} and \code{"timeDate"} in \pkg{timeDate}.
 Because not all required methods used to be available for \code{"timeDate"} in older
-versions of \pkg{fCalendar}, Section~\ref{sec:fCalendar} has a rather outdated example how
+versions of \pkg{fCalendar}, Section~\ref{sec:timeDate} has a rather outdated example how
 to provide such methods so that \code{"zoo"} objects work with \code{"timeDate"} indexes.
 To achieve this  independence of the index class, new generic functions for
 ordering (\code{ORDER()}) and value matching (\code{MATCH()}) are introduced
@@ -220,7 +220,8 @@ z1 <- zoo(z1.data, z1.index)
 @
 and one with a sine wave
 <<zoo-vectors2>>=
-z2.index <- as.POSIXct(paste(2004, rep(1:2, 5), sample(1:28, 10), sep = "-"))
+z2.index <- as.POSIXct(paste(2004, rep(1:2, 5), sample(1:28, 10),
+  sep = "-"))
 z2.data <- sin(2*1:10/pi)
 z2 <- zoo(z2.data, z2.index)
 @
@@ -309,12 +310,12 @@ both strictly and weakly regular series.
 
 To create a \code{"zooreg"} object, either the command \code{zoo()} can be used
 or the command \code{zooreg()}.
-
+%
 \begin{Scode}
 zoo(x, order.by, frequency)
 zooreg(data, start, end, frequency, deltat, ts.eps, order.by)
 \end{Scode} 
-
+%
 If \code{zoo()} is called as in the previous section but with an additional
 \code{frequency} argument, it is checked whether \code{frequency} complies
 with the index \code{order.by}: if it does an object of class \code{"zooreg"}
@@ -326,57 +327,57 @@ In both cases, the index class is more restricted than in the plain \code{"zoo"}
 case. The index must be of a class which can be coerced to \code{"numeric"} 
 (for checking its regularity) and when converted to numeric 
 the index must be expressable as multiples of 1/frequency. 
-Furthermore, adding/substracting
-a numeric to/from an observation of the index class, should return the correct value
-of the index class again, i.e., group generic functions \code{Ops} should be defined.\footnote{An
-application of non-numeric indexes for regular series are the classes \code{"yearmon"}
-and \code{"yearqtr"} which are designed for monthly and quarterly series respectively
-and are discussed in Section~\ref{sec:yearmon}.}
+Furthermore, adding/substracting a numeric to/from an observation of the index class,
+should return the correct value of the index class again, i.e., group generic functions
+\code{Ops} should be defined. For regular series with frequency 4 and 12,
+respectively, the dedicated time classes \code{"yearqtr"} and \code{"yearmon"} are
+used by default (unless the argument \code{calendar = FALSE} is set or 
+\code{options(zoo.calendar = FALSE)} is set generally). These time classes are
+discussed in more detail in Section~\ref{sec:yearmon}.
 
 The following calls yield equivalent series
-
+%
 <<zooreg1>>=
 zr1 <- zooreg(sin(1:9), start = 2000, frequency = 4)
 zr2 <- zoo(sin(1:9), seq(2000, 2002, by = 1/4), 4)
 zr1
 zr2
 @
-
+%
 to which methods to standard generic functions for regular series can be
 applied, such as \code{frequency}, \code{deltat}, \code{cycle}.
 
 As stated above, the advantage of \code{"zooreg"} series is that they remain
 regular even if an internal observation is dropped:
-
+%
 <<zooreg2>>=
 zr1 <- zr1[-c(3, 5)]
 zr1
 class(zr1)
 frequency(zr1)
 @
-
+%
 This facilitates \code{NA} handling significantly compared to \code{"ts"} and makes
 \code{"zooreg"} a much more attractive data type, e.g., for time series regression.
 
-\code{zooreg()} can also deal with non-numeric indexes provided that adding \code{"numeric"}
+\code{zooreg()} can also deal with other non-numeric indexes provided that adding \code{"numeric"}
 observations to the index class preserves the class and does not coerce to \code{"numeric"}.
-
+%
 <<zooreg1b>>=
 zooreg(1:5, start = as.Date("2005-01-01"))
 @
-
-
+%
 To check whether a certain series is (strictly) regular, the new generic function
 \code{is.regular(x, strict = FALSE)} can be used:
-
+%
 <<zooreg3>>=
 is.regular(zr1)
 is.regular(zr1, strict = TRUE)
 @
-
+%
 This function (and also the \code{frequency}, \code{deltat} and \code{cycle}) also 
 work for \code{"zoo"} objects if the regularity can still be inferred from the data:
-
+%
 <<zooreg4>>=
 zr1 <- as.zoo(zr1)
 zr1
@@ -384,20 +385,20 @@ class(zr1)
 is.regular(zr1)
 frequency(zr1)
 @
-
+%
 Of course, inferring the underlying regularity is not always reliable and it is safer
 to store a regular series as a \code{"zooreg"} object if it is intended to be a regular series.
 
 If a weakly regular series is coerced to \code{"ts"} the missing observations are filled
 with \code{NA}s (see also Section~\ref{sec:NA}).
-For strictly regular series with numeric index, the class can be switched
-between \code{"zoo"} and \code{"ts"} without loss of information.
-
+For strictly regular series with numeric or \code{"yearqtr"} or \code{"yearmon"} index,
+the class can be switched between \code{"zoo"} and \code{"ts"} without loss of information.
+%
 <<zooreg5>>=
 as.ts(zr1)
 identical(zr2, as.zoo(as.ts(zr2)))
 @
-
+%
 This enables direct use of functions such as \code{acf}, \code{arima}, \code{stl} etc. on \code{"zooreg"}
 objects as these methods coerce to \code{"ts"} first. 
 The result only has to be coerced back to \code{"zoo"}, if appropriate.
@@ -413,14 +414,17 @@ and \code{lines} methods being available for the index class which can
 plot the index against the observations.
 
 By default the \code{plot} method creates a panel for each series
+%
 <<plot1,eval=FALSE>>=
 plot(Z)
 @
+%
 but can also display all series in a single panel
+%
 <<plot2,eval=FALSE>>=
 plot(Z, plot.type = "single", col = 2:4)
 @
-
+%
 \begin{figure}[b!]
 \begin{center}
 <<plot2-repeat,fig=TRUE,height=4,width=6,echo=FALSE>>=
@@ -429,20 +433,20 @@ plot(Z, plot.type = "single", col = 2:4)
 \caption{\label{fig:plot2} Example of a single panel plot}
 \end{center}
 \end{figure}
-
+%
 \begin{figure}[p]
 \begin{center}
 <<plot1-repeat,fig=TRUE,height=5,width=6,echo=FALSE>>=
 <<plot1>>
 @
 <<plot3,fig=TRUE,height=5,width=6,echo=FALSE>>=
-plot(Z, type = "b", lty = 1:3, pch = list(Aa = 1:5, Bb = 2, Cc = 4), col = list(Bb = 2, 4))
+plot(Z, type = "b", lty = 1:3, pch = list(Aa = 1:5, Bb = 2, Cc = 4),
+  col = list(Bb = 2, 4))
 @
 \caption{\label{fig:plot13} Examples of multiple panel plots}
 \end{center}
 \end{figure}
-
-
+%
 In both cases additional graphical parameters like color \code{col},
 plotting character \code{pch} and line type \code{lty} can be
 expanded to the number of series. But the \code{plot} method for
@@ -461,6 +465,13 @@ is set to display the series \code{"Bb"} in red and all remaining series in blue
 The results of the multiple panel plots are depicted in Figure~\ref{fig:plot13} and the
 single panel plot in Figure~\ref{fig:plot2}.
 
+In addition to the \code{plot} method that uses base graphics for the visualizations,
+there are also methods for \code{xyplot} and \code{autoplot}. The former uses
+the \pkg{lattice} \citep{lattice} package for visualizations while the latter
+employs \pkg{ggplot2} \citep{ggplot2}.
+Both methods try to follow the conventions used by the \code{plot} method described
+above and the style/conventions used in the respective packages. See \code{?xyplot.zoo}
+and \code{?autoplot.zoo} for more examples and details.
 
 \subsection{Merging and binding}
 \label{sec:merge}
@@ -540,10 +551,12 @@ dataset is an annual \code{"ts"} class series.  To disaggregate it into a
 quarterly series, convert it to a \code{"zoo}
 class series, insert intermediate quarterly points containing \code{NA} values
 and then fill the \code{NA} values using \code{na.approx}, \code{na.locf}
-or \code{na.spline}:
+or \code{na.spline}. (More details on \code{NA} handling in general can be found
+in Section~\ref{sec:NA}.)
 
 <<disaggregate>>=
-Nile.na <- merge(as.zoo(Nile), zoo(, seq(start(Nile)[1], end(Nile)[1], 1/4)))
+Nile.na <- merge(as.zoo(Nile),
+  zoo(, seq(start(Nile)[1], end(Nile)[1], 1/4)))
 head(as.zoo(Nile))
 head(na.approx(Nile.na))
 head(na.locf(Nile.na))
@@ -684,16 +697,16 @@ as.data.frame(Z)
 \subsection[NA handling]{\code{NA} handling}
 \label{sec:NA}
 
-Four methods for dealing with \code{NA}s (missing observations) 
-in the observations are applicable to \code{"zoo"} objects:
-\code{na.omit}, \code{na.contiguous}, \code{na.approx} and \code{na.locf}.
+A wide range of methods for dealing with \code{NA}s (missing observations) 
+in the observations are applicable to \code{"zoo"} objects including
+\code{na.omit}, \code{na.contiguous}, \code{na.approx}, \code{na.spline}, and \code{na.locf} among others.
 \code{na.omit}---or its default method to be more precise---returns a \code{"zoo"}
 object with incomplete observations removed. \code{na.contiguous}
 extracts the longest consecutive stretch of non-missing values.
 Furthermore, new generic functions
-\code{na.approx} and \code{na.locf} and corresponding default methods are introduced in \pkg{zoo}.
-The former replaces \code{NA}s by linear interpolation (using the
-function \code{approx}) and the name of the latter
+\code{na.approx}, \code{na.spline}, and \code{na.locf} and corresponding default methods are introduced in \pkg{zoo}.
+The former two replace \code{NA}s by interpolation (using the
+function \code{approx} and \code{spline}, respectively) and the name of the latter
 stands for \underline{l}ast \underline{o}bservation \underline{c}arried
 \underline{f}orward. It replaces missing observations by the most recent
 non-\code{NA} prior to it. Leading \code{NA}s, which cannot be replaced
@@ -706,13 +719,18 @@ na.omit(z1)
 na.contiguous(z1)
 na.approx(z1)
 na.approx(z1, 1:NROW(z1))
+na.spline(z1)
 na.locf(z1)
 @
 
-As the above example illustrates, \code{na.approx} uses by default
+As the above example illustrates, \code{na.approx} (and also \code{na.spline}) use by default
 the underlying time scale for interpolation. This can be changed, e.g.,
 to an equidistant spacing, by setting the second argument of
-\code{na.approx}.
+\code{na.approx}. Furthermore, a different output time index can be supplied as well.
+
+In addition to the methods discussed above, there are also other methods
+for dealing with missing values in \pkg{zoo} such as \code{na.aggregate},
+\code{na.fill}, \code{na.trim}, and \code{na.StructTS}.
 
 \subsection{Rolling functions}
 \label{sec:rolling}
@@ -1029,7 +1047,7 @@ The results in this paper were obtained using \proglang{R}
 \pkg{tseries} \Sexpr{gsub("-", "--", packageDescription("tseries")$Version)} and
 \pkg{DAAG} \Sexpr{gsub("-", "--", packageDescription("DAAG")$Version)}.
 \proglang{R} itself and all packages used are available from
-CRAN at \url{http://CRAN.R-project.org/}.
+CRAN at \url{https://CRAN.R-project.org/}.
 
 
 \bibliography{zoo}
@@ -1087,7 +1105,7 @@ variable is explained by the first differences of a numeric regressor and an
 explanatory factor. Note, that the variables have different indexes. First, a linear
 regression model is fitted, then a quantile regression is carried out for the same
 equation.
-
+%
 \begin{verbatim}
 yz <- zoo(1:20)^2
 xz <- zoo(1:18)^2
@@ -1098,8 +1116,7 @@ lm(I(lag(yz) ~ diff(xz) + fz))
 library("quantreg")
 rq(I(lag(yz) ~ diff(xz) + fz))
 \end{verbatim}
-
-
+%
 See the help page of \code{model.frame.zoo} for more examples
 and additional information. Furthermore, note that this feature is under 
 development and might subject to changes in future versions.

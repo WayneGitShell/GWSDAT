@@ -9,11 +9,11 @@ citEntry(entry="Article",
 	 volume       = "14",
 	 number       = "6",
 	 pages        = "1--27",
-         url          = "http://www.jstatsoft.org/v14/i06/",
+         doi          = "10.18637/jss.v014.i06",
          
          textVersion = 
          paste("Achim Zeileis and Gabor Grothendieck (2005).", 
                "zoo: S3 Infrastructure for Regular and Irregular Time Series.",
                "Journal of Statistical Software, 14(6), 1-27.",
-	       "URL http://www.jstatsoft.org/v14/i06/")
+	       "doi:10.18637/jss.v014.i06")
 )

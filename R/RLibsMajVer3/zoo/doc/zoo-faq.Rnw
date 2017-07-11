@@ -137,10 +137,10 @@ cls <- c("NULL", "NULL", "NULL", "character", "numeric", "numeric")
 nms <- c("", "", "", "time", "value", "volume")
 
 z <- read.zoo(textConnection(Lines), aggregate = tail1,
-       FUN = times, sep = "|", colClasses = cls, col.names = nms)
+  FUN = times, sep = "|", colClasses = cls, col.names = nms)
 
 z2 <- read.zoo(textConnection(Lines), aggregate = sum,
-       FUN = times, sep = "|", colClasses = cls, col.names = nms)
+  FUN = times, sep = "|", colClasses = cls, col.names = nms)
 
 z$volume <- z2$volume
 z
@@ -208,9 +208,16 @@ par(opar)
 
 \mysection[4. I have data frame with both numeric and factor columns.  How do I convert that to a "zoo" object?]{4. I have data frame with both numeric and factor columns.  How do I convert that to a \code{"zoo"} object?}
 
-A \code{"zoo"} object may be (1) a numeric vector, (2) a numeric matrix or 
-(3) a factor but may not contain both a numeric vector and factor.  
-You can do one of the following.
+A \code{"zoo"} object may be (1)~a numeric vector, (2)~a numeric matrix or 
+(3)~a factor but may not contain both a numeric vector and factor.  
+The underlying reason for this constraint is that \code{"zoo"} was
+intended to generalize \proglang{R}'s \code{"ts"} class, which is also based on
+matrices, to irregularly spaced series with an arbitrary index class.
+The main reason to stick to matrices is that operations on matrices in
+\proglang{R} are much faster than on data frames.
+
+If you have a data frame with both numeric and factor variables that you want to
+convert to \code{"zoo"}, you can do one of the following.
 
 Use two \code{"zoo"} variables instead:
 
@@ -274,7 +281,7 @@ Suppose we have a daily series.
 To subtract the mean of Jan 2007 from each day in that month,
 subtract the mean of Feb 2007 from each day in that month, etc.
 try this:
-     
+
 <<subtract-monthly-means>>=
 set.seed(123)
 z <- zoo(rnorm(100), as.Date("2007-01-01") + seq(0, by = 10, length = 100))
@@ -312,13 +319,14 @@ as.yearmon2.Date <- function(x, ...) {
 
 <<yearmon2-inverse>>=
 as.Date.yearmon2 <- function(x, frac = 0, ...) {
-     if (!is.null(names(x))) return(as.Date(names(x)))
-     x <- unclass(x)
-     year <- floor(x + .001)
-     month <- floor(12 * (x - year) + 1 + .5 + .001)
-     dd.start <- as.Date(paste(year, month, 1, sep = "-")) 
-     dd.end <- dd.start + 32 - as.numeric(format(dd.start + 32, "%d"))
-     as.Date((1-frac) * as.numeric(dd.start) + frac * as.numeric(dd.end), origin = "1970-01-01")
+  if (!is.null(names(x))) return(as.Date(names(x)))
+  x <- unclass(x)
+  year <- floor(x + .001)
+  month <- floor(12 * (x - year) + 1 + .5 + .001)
+  dd.start <- as.Date(paste(year, month, 1, sep = "-")) 
+  dd.end <- dd.start + 32 - as.numeric(format(dd.start + 32, "%d"))
+  as.Date((1-frac) * as.numeric(dd.start) + frac * as.numeric(dd.end),
+    origin = "1970-01-01")
 }
 @
 
@@ -367,10 +375,10 @@ m <- unique(as.Date(as.yearmon(tt)))
 jan <- format(m, "%m") == "01"
 mlab <- substr(months(m[!jan]), 1, 1)
 for(i in 1:ncol(z3)) {
-    plot(z3[,i], xaxt = "n", ylab = colnames(z3)[i], ylim = range(z3))
-    axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
-    axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
-    axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
+  plot(z3[,i], xaxt = "n", ylab = colnames(z3)[i], ylim = range(z3))
+  axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
+  axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
+  axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
 }
 par(opar)
 @
@@ -381,18 +389,18 @@ placed in a panel function.
 <<multipanelplot>>=
 plot(z3, screen = 1:3, xaxt = "n", nc = 2, ylim = range(z3),
   panel = function(...) {
-   lines(...)
-   panel.number <- parent.frame()$panel.number
-   nser <- parent.frame()$nser
-   # place axis on bottom panel of each column only
-   if (panel.number %% 2 == 0 || panel.number == nser) { 
-         tt <- list(...)[[1]]
-         m <- unique(as.Date(as.yearmon(tt)))
-         jan <- format(m, "%m") == "01"
-         mlab <- substr(months(m[!jan]), 1, 1)
-         axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
-         axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
-         axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
+    lines(...)
+    panel.number <- parent.frame()$panel.number
+    nser <- parent.frame()$nser
+    # place axis on bottom panel of each column only
+    if (panel.number %% 2 == 0 || panel.number == nser) { 
+      tt <- list(...)[[1]]
+      m <- unique(as.Date(as.yearmon(tt)))
+      jan <- format(m, "%m") == "01"
+      mlab <- substr(months(m[!jan]), 1, 1)
+      axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
+      axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
+      axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
     }
 })
 @

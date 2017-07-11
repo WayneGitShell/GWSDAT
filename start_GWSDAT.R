@@ -21,6 +21,11 @@ if(class(ret$status) == "GWSDAT_Warning")
   stop(ret$status$msg)
 
 
-GWSDAT.Make.Panel(ret$Curr_Site_Data)
 
-#Plot_SmoothTimeSeries(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
+#GWSDAT.Make.Panel(ret$Curr_Site_Data)
+
+pnl = Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
+Plot_ImagePlot(pnl)
+
+
+#Plot_SmoothTimeSeries(pnl)

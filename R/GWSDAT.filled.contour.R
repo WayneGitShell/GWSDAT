@@ -145,7 +145,7 @@ list(x=x0,y=y0,z=matrix(my.df$pred,nrow = length(x0), ncol = length(y0)))
     ...) 
 {
 
-
+  
      if (missing(z)) {
         if (!missing(x)) {
             if (is.list(x)) {

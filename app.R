@@ -8,6 +8,9 @@ GWSDAT_Options = GWSDAT_Setup()
 
 
 ret = GWSDAT_Init(GWSDAT_Options)
+pnl = Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
+
+
 
 ## Get return status and display on page.
 #if(class(ret$status) == "GWSDAT_Error")
@@ -28,82 +31,119 @@ server <- function(input, output) {
     output$status <- renderText({ input$solute_select })
     
     #
-    # Plot main window
+    # Plot time-series window
     #
     output$time_series <- renderPlot({
       
-      
+      #
       # Update control attributes from reactive variables. 
-      #if(!is.null(input$Cont.rg))     ret$Curr_Site_Data$Cont.rg <- input$solute_select
-      ret$Curr_Site_Data$Cont.rg <- input$solute_select
-      #if(!is.null(input$solute_conc)) {
-      ret$Curr_Site_Data$rgUnits <- input$solute_conc
+      #
+      pnl$Cont.rg <- input$solute_select
+      pnl$rgUnits <- input$solute_conc
+      pnl$dlines[1:length(pnl$dlines)] = FALSE
+      pnl$dlines[input$ts_true_options] = TRUE
+      pnl$Well <- input$well_select
       
-      # Set all values to FALSE and then set activated elements to TRUE.
-      ret$Curr_Site_Data$ts_options[1:length(ret$Curr_Site_Data$ts_options)] = FALSE
-      ret$Curr_Site_Data$ts_options[input$ts_true_options] = TRUE
-         
-      ret$Curr_Site_Data$Well <- input$well_select
-      
-     
-      Plot_SmoothTimeSeries(ret$Curr_Site_Data)
+      # Make the plot.
+      Plot_SmoothTimeSeries(pnl)
       
     })
     
-    #observeEvent(input$solute_select, {
-    #  browser()
-    #  ret$Curr_Site_Data$Cont.rg <- input$solute_select
-    #})
-    
-    # NOT USED RIGHT NOW: EXECUTES WHEN THE RUN BUTTON IS CLICKED.
-    #observeEvent(input$run_gwsdat, {
+    #
+    # Plot ImagePlot
+    #
+    output$image_plot <- renderPlot({
       
-      #output$status <- renderText({ "clicked.." })
+      #
+      # Update control attributes from reactive variables. 
+      #
+      pnl$shadow.jjj <-  input$time_steps
+      pnl$ScaleCols[1:length(pnl$ScaleCols)] <-  FALSE
+      pnl$ScaleCols[input$imageplot_options] <-  TRUE
+      pnl$GW.disp <- input$gw_flows
+      pnl$Color.type <- input$imageplot_type
       
-      ##
-      ## Do the plotting 
-      ##
-      #GWSDAT.Make.Panel(ret$Curr_Site_Data)
-      # session$sendCustomMessage(type = 'testmessage', message = 'Thank you for clicking')
+      ## The following two also apply to time-series but they are copies
+      ## I need the same input for both tabs!
+      pnl$Cont.rg <- input$solute_select_contour
+      pnl$rgUnits <- input$solute_conc_contour
+      #browser()
       
-    #})
+      Plot_ImagePlot(pnl)
+      
+    })
     
 }
+
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   titlePanel(h2("Shiny GWDAT")),
-  
-  
-  sidebarLayout(
-    sidebarPanel(
-      
-      selectInput("solute_select", label = "Solute", choices = names(ret$Curr_Site_Data$Fitted.Data),
-                  selected = ret$Curr_Site_Data$Cont.rg),
-      #hr(),
-      radioButtons("solute_conc", label = "Solute Conc. Unit",
-                   choices = list("ng/l","ug/l","mg/l"), 
-                   selected = ret$Curr_Site_Data$rgUnits),
-      
-      checkboxGroupInput("ts_true_options", label = "Time Series Plot Options", 
-                         choices = names(ret$Curr_Site_Data$ts_options),
-                         selected = names(which(ret$Curr_Site_Data$ts_options == TRUE))),
-      # if enabled also include this Option: "Overlay NAPL Thickness"
-      
-      selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(ret$Curr_Site_Data$All.Data$All.Wells)),
-                  selected = ret$Curr_Site_Data$Well),
-      
-      #helpText("Execute the GWSDAT R script with the basic example."),
-      #actionButton("run_gwsdat", "Run"),
-      h4("Status:"),
-      textOutput("status")
+  tabsetPanel(
+    tabPanel("Smooth Time-Series", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$DRV$All.Data$All.Wells)),
+                             selected = pnl$Well, width = "40%"),
+                 
+                 selectInput("solute_select", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
+                             selected = pnl$Cont.rg, width = '40%'),
+                 #hr(),
+                 radioButtons("solute_conc", label = "Solute Conc. Unit",
+                              choices = pnl$rgUnits_choice, 
+                              selected = pnl$rgUnits),
+                 
+                 checkboxGroupInput("ts_true_options", label = "Time Series Plot Options", 
+                                    choices = names(pnl$dlines),
+                                    selected = names(which(pnl$dlines == TRUE))),
+                 
+                 h4("Status:"),
+                 textOutput("status")
+                 
+               ),
+               mainPanel(
+                 column(9, plotOutput("time_series"))
+                 
+               )
+             )
     ),
-    
-    mainPanel(
-      plotOutput("time_series")
+    tabPanel("Contour Plot", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("solute_select_contour", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
+                             selected = pnl$Cont.rg, width = '40%'),
+                 
+                 radioButtons("solute_conc_contour", label = "Solute Conc. Unit",
+                              choices = pnl$rgUnits_choice, 
+                              selected = pnl$rgUnits),
+                 
+                 selectInput("imageplot_type", label = "Plot Type", choices = pnl$Color.type_choice,
+                             selected = pnl$Color.type, width = "40%"),
+                 
+                 sliderInput("time_steps", label = "Time Steps", 
+                             min   = pnl$shadow.jjj.range[1], 
+                             max   = pnl$shadow.jjj.range[2], 
+                             value = pnl$shadow.jjj),
+                 
+                 checkboxGroupInput("imageplot_options", label = "Plot Options", 
+                                    choices = names(pnl$ScaleCols),
+                                    selected = names(which(pnl$ScaleCols == TRUE))),
+                 
+                 radioButtons("gw_flows", label = "Groundwater Flows",
+                              choices = pnl$GW.disp_choice, 
+                              selected = pnl$GW.disp)
+                 
+                 
+               ),
+               mainPanel(
+                 column(9, plotOutput("image_plot"))
+               )
+           )
     )
   )
-)
+) 
+
 
 shinyApp(ui = ui, server = server)
 

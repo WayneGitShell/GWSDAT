@@ -18,7 +18,7 @@ time latitude longitude altitude  distance heartrate
 1277648894 0.304075 -0.793544      263 25.237911       103
 1277648902 0.304064 -0.793387      256 40.042988       115
 "
-z <- read.zoo(textConnection(Lines), header = TRUE)
+z <- read.zoo(text = Lines, header = TRUE)
 z
 
 
@@ -62,7 +62,7 @@ Date;Time;Close
 02/09/2009;16:55;55385
 "
 f <- function(x) times(paste(x, 0, sep = ":"))
-z <- read.zoo(textConnection(Lines), header = TRUE, sep = ";", 
+z <- read.zoo(text = Lines, header = TRUE, sep = ";", 
   split = 1, index = 2, FUN = f)
 colnames(z) <- sub("X(..).(..).(....)", "\\3-\\2-\\1", colnames(z))
 z
@@ -80,8 +80,7 @@ Date Time O H L C
 1/2/2005 17:30 1.3556 1.3564 1.35535 1.3563
 "
 f <- function(d, t) as.chron(paste(as.Date(chron(d)), t))
-z <- read.zoo(textConnection(Lines), header = TRUE,
-  index = 1:2, FUN = f)
+z <- read.zoo(text = Lines, header = TRUE, index = 1:2, FUN = f)
 z
 
 
@@ -109,8 +108,7 @@ Lines <-
 "
 cl <- c("NULL", "numeric", "character")[c(1, 1, 2, 2, 1, 3, 1)]
 cn <- c(NA, NA, "views", "number", NA, NA, NA)
-z <- read.zoo(textConnection(Lines),
-  skip = 1, col.names = cn, colClasses = cl,
+z <- read.zoo(text = Lines, skip = 1, col.names = cn, colClasses = cl,
   index = 3, format = "%m/%d/%Y",
   aggregate = function(x) tail(x, 1))
 z
@@ -156,7 +154,7 @@ Date,Time,Open,High,Low,Close,Up,Down
 ###################################################
 f <- function(d, t) chron(d, paste(t, "00", sep = ":"),
   format = c("m.d.y", "h:m:s"))
-z <- read.zoo(textConnection(Lines), sep = ",", header = TRUE,
+z <- read.zoo(text = Lines, sep = ",", header = TRUE,
   index = 1:2, FUN  = f)
 z
 
@@ -165,7 +163,7 @@ z
 ### code chunk number 14: ex6b
 ###################################################
 f2 <- function(d, t) as.chron(paste(d, t), format = "%d.%m.%Y %H:%M")
-z2 <- read.zoo(textConnection(Lines), sep = ",", header = TRUE, 
+z2 <- read.zoo(text = Lines, sep = ",", header = TRUE, 
   index = 1:2, FUN  = f2)
 z2
 
@@ -173,7 +171,7 @@ z2
 ###################################################
 ### code chunk number 15: ex6c
 ###################################################
-z3 <- read.zoo(textConnection(Lines), sep = ",", header = TRUE, 
+z3 <- read.zoo(text = Lines, sep = ",", header = TRUE, 
   index = 1:2, tz = "", format = "%d.%m.%Y %H:%M")
 z3
 
@@ -190,8 +188,7 @@ Lines <- "Date Time V2   V3   V4   V5
 2010-10-15 13:47:54 73.8 73.8 73.8 73.8
 2010-10-15 13:49:51 73.7 73.7 73.7 73.7
 "
-z <- read.zoo(textConnection(Lines), header = TRUE,
-  index = 1:2, tz = "")
+z <- read.zoo(text = Lines, header = TRUE, index = 1:2, tz = "")
 z
 
 
@@ -209,7 +206,7 @@ Lines <- "
 15/10/2010      B       N.A.
 15/10/2010      C       65
 "
-z <- read.zoo(textConnection(Lines), na.strings = "N.A.",
+z <- read.zoo(text = Lines, na.strings = "N.A.",
   format = "%d/%m/%Y", split = 2)
 z
 
@@ -222,11 +219,11 @@ Lines <- '
 "1",1646,2006-08-18 08:48:59,0
 "2",1646,2006-08-18 09:53:20,100
 '
-z <- read.zoo(textConnection(Lines), header = TRUE, sep = ",",
+z <- read.zoo(text = Lines, header = TRUE, sep = ",",
   colClasses = c("NULL", "NULL", "character", "numeric"),
   FUN = as.chron)
 z
-z2 <- read.zoo(textConnection(Lines), header = TRUE, sep = ",",
+z2 <- read.zoo(text = Lines, header = TRUE, sep = ",",
   colClasses = c("NULL", "NULL", "character", "numeric"),
   tz = "")
 z2
@@ -244,11 +241,10 @@ Lines <-
 5         1 2011-01-01 02:30 5042.64 6587.94 1836.19 4749.05
 6         1 2011-01-01 03:00 4799.89 6388.51 1786.32 4672.92
 "
-z <- read.zoo(textConnection(Lines), skip = 1, index = 3:4,
+z <- read.zoo(text = Lines, skip = 1, index = 3:4,
   FUN = paste, FUN2 = as.chron)
 z
-z2 <- read.zoo(textConnection(Lines), skip = 1, index = 3:4,
-  tz = "")
+z2 <- read.zoo(text = Lines, skip = 1, index = 3:4, tz = "")
 z2
 
 
@@ -286,8 +282,7 @@ Lines <- "
 2010-01-20      0.010712
 2010-01-20      0.022237
 "
-z <- read.zoo(textConnection(Lines),
-  aggregate = function(x) tail(x, 1))
+z <- read.zoo(text = Lines, aggregate = function(x) tail(x, 1))
 z
 
 
@@ -299,11 +294,9 @@ timestamp,time-step-index,value
 2009-11-23 15:58:21,23301,800
 2009-11-23 15:58:29,23309,950
 "
-z <- read.zoo(textConnection(Lines), header = TRUE, sep = ",",
-  tz = "")
+z <- read.zoo(text = Lines, header = TRUE, sep = ",", tz = "")
 z
-z2 <- read.zoo(textConnection(Lines), header = TRUE, sep = ",",
-FUN = as.chron)
+z2 <- read.zoo(text = Lines, header = TRUE, sep = ",", FUN = as.chron)
 z2
 
 
@@ -315,8 +308,7 @@ Date Time Value
 01/23/2000 10:12:15 12.12
 01/24/2000 11:10:00 15.00
 "
-z <- read.zoo(textConnection(Lines), header = TRUE,
-  index = 1:2, FUN = chron)
+z <- read.zoo(text = Lines, header = TRUE, index = 1:2, FUN = chron)
 z
 
 
@@ -329,7 +321,7 @@ Year   Qtr1  Qtr2  Qtr3  Qtr4
 1993    344   212   133   112   
 1994    252   252   199   207
 "
-za <- read.zoo(textConnection(Lines), header = TRUE)
+za <- read.zoo(text = Lines, header = TRUE)
 za
 zq <- zooreg(as.vector(t(za)), start = yearqtr(start(za)), freq = 4)
 zq

@@ -1,3 +1,137 @@
+Changes in Version 1.8-0
+
+  o zoo() and zooreg() gained a calendar = getOption("zoo.calendar", TRUE)
+    argument so that, by default, yearqtr and yearmon are used as the time
+    index for regular zoo series with frequency 4 and 12, respectively. With
+    calendar = FALSE the behavior from previous versions with plain
+    unclassed time indexes can be obtained. Set options(zoo.calendar = FALSE)
+    to always retain the old behavior.
+
+  o na.locf() is made faster by using a diff()-based solution rather than
+    cumsum() (suggested by Ruben Arslan). Also, the workhorse function
+    na.locf0() underlying the default na.locf() method is now exported
+    in the user interface as it is faster (but also supports less options).
+
+  o Better support of vector-valued 'split' arguments in read.zoo().
+
+  o Special-cased rollmax(..., k = 1) to return the input coredata().
+  
+  o as.character() for "yearqtr" objects did not process NA elements correctly.
+
+
+Changes in Version 1.7-14
+
+  o Several convenience interfaces to read.zoo() have been added:
+    read.table.zoo(), read.csv.zoo(), read.csv2.zoo(), read.delim.zoo(),
+    read.delim2.zoo(). All of these first call the corresponding read.*()
+    function to read the data from a text file (with the respective default
+    settings) and subsequently call read.zoo() to turn the data into
+    a zoo series.
+
+  o na.approx.default() did not properly process the "maxgap" argument
+    if y did not contain any NAs but NAs were only created implicitly
+    by xout being different from x (pointed out by Stefan Metzger).
+    A suitable fix has been added that merges x and xout first.
+
+  o aggregate.zoo() and rollapply.zoo() gained the argument coredata=TRUE
+    which can control whether only the coredata is passed to each subset
+    (previous behavior) or the full zoo series.
+
+  o The "its" package has been archived on CRAN and hence removed from
+    the list of zoo's suggested packages. However, various methods for
+    objects of class "its" continue to be available in zoo in case someone
+    still uses the legacy code.
+
+
+Changes in Version 1.7-13
+
+  o The window() method erroneously dropped the dimension in case of
+    1-column zoo series. Fixed now.
+
+  o Bug fix in NA handling of rollmax() pointed out by Cory Fletcher.
+    
+  o A few as.yearmon/as.yearqtr methods were not registered in
+    the NAMESPACE but are now.
+    
+  o If there are less then two non-NAs in na.approx() then approx()
+    cannot be applied. Instead of throwing an error (as up to version
+    1.7-12) simply no NAs are replaced now.
+
+  o Bug fix for lag(z, k = k, na.pad = TRUE) which ignored na.pad = TRUE
+    if 'k' was a vector of lags.
+
+
+Changes in Version 1.7-12
+
+  o read.zoo() with a data.frame argument now defaults to FUN = identity
+    if the index.column is not character or factor.  See ?read.zoo for
+    additional details.
+
+  o read.zoo() heuristic improved so that POSIXct rather than Date is
+    detected in cases like: read.zoo(text = "2010-01-01 12:05:03 88.1",
+    index = 1:2).
+    
+  o Added a dim<- method that checks whether the new dimension value
+    appears to be ok and then calls the default.
+
+  o The index<- and time<- methods now enforce that the new time index
+    is actually correctly ordered (suggested by Joshua Ulrich).
+    
+  o The fortify() method now has a col.names argument that allows to set
+    (some of) the column names of the resulting data.frame.
+
+  o Various small bug fixes and enhancements.
+
+
+Changes in Version 1.7-11
+
+  o Extended the license from "GPL-2" to "GPL-2 | GPL-3".
+
+  o Avoid duplications in Suggests/Imports/Depends in the package's
+    DESCRIPTION. Use only :: instead of ::: to access certain functions
+    from other namespaces.
+
+  o Added as.list() methods for yearmon/yearqtr.
+  
+  o Added workaround in Ops.zoo if first argument is not a zoo series
+    (prompted by Josh Ulrich).
+
+  o The transform() method for zoo series now does what method for
+    data.frame does (instead of just calling it) in order to get
+    non-standard evaluation.
+
+
+Changes in Version 1.7-10
+
+  o All methods that had previously been fully exported (merge.zoo,
+    MATCH.default, ..., and many more) in order to be accessible to
+    _all_ conceivable generics are now additionally registered as
+    S3method()s for the standard generics. Exception: as.Date.* are
+    still only fully exported.
+
+  o Added a new mean() method for "zoo" objects that simply does
+    mean(coredata(obj), ...).
+
+  o Added yearmon_trans, scale_x_yearmon and scale_y_yearmon and
+    yearqtr_trans, scale_x_yearqtr and scale_y_yearqtr to ggplot2 interface.
+
+  o Removed the use of the shape and linetype aesthetic by default
+    in autoplot() method.
+
+  o Bug fix in na.fill for univariate series based on 1-column matrices
+    (provided by Josh Ulrich).
+
+  o Added [[ methods for "yearmon" and "yearqtr".
+
+  o Constructs like time(obj)[ORDER(time(obj))] are now split up into
+    two steps in the package code. If zoo is only imported but not
+    loaded, R can otherwise have problems correctly dispatching to
+    the new generics ORDER and MATCH.
+    
+  o as.Date() now also works for yearqtr/yearmon that are all NA
+    (especially needed for format() and print() method).
+
+
 Changes in Version 1.7-9
 
   o Added ggplot2 interface through autplot() and fortify() methods.  Also

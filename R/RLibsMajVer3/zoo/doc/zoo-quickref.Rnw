@@ -70,10 +70,14 @@ Data in \code{demo1.txt}, where each row looks like
 \end{verbatim}
 can be read in via
 <<read.zoo>>=
+Sys.setlocale("LC_TIME", "C")
 inrusd <- read.zoo("demo1.txt", sep = "|", format="%d %b %Y")
 @
 The \code{format} argument causes the first column to be transformed
-to an index of class \code{"Date"}.
+to an index of class \code{"Date"}. The \code{Sys.setlocale} is set to
+\code{"C"} here to assure that the English month abbreviations are read
+correctly. (It is unnecessary if the system is already set to a locale
+that understands English month abbreviations.)
 
 The data in \code{demo2.txt} look like
 \begin{verbatim}

@@ -238,16 +238,35 @@ GWSDAT_Init <- function(GWSDAT_Options) {
     
   Cont.rg = names(Fitted.Data)[1]    
   rgUnits = "ug/l"
-  ts_options = NULL  # list("Conc. Trend Smoother","Conc. Linear Trend Fit","Show Legend","Scale to Conc. Data","Log Conc. Scale","Overlay GW levels")
+  rgUnits_choice = list("ng/l","ug/l","mg/l")
   
-  ts_options["Conc. Trend Smoother"] <- TRUE
-  ts_options["Conc. Linear Trend Fit"] <- FALSE
-  ts_options["Show Legend"] <- FALSE
-  ts_options["Scale to Conc. Data"] <- FALSE
-  ts_options["Log Conc. Scale"] <- TRUE
-  ts_options["Overlay GW levels"] <- FALSE
-  #ts_options["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
   
+  #
+  # Define Time-Series Plot draw options.
+  #
+  dlines = NULL  
+  dlines["Conc. Trend Smoother"] <- TRUE
+  dlines["Conc. Linear Trend Fit"] <- FALSE
+  dlines["Show Legend"] <- FALSE
+  dlines["Scale to Conc. Data"] <- FALSE
+  dlines["Log Conc. Scale"] <- TRUE
+  dlines["Overlay GW levels"] <- FALSE
+  #dlines["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
+  
+  
+  #
+  # Define ImagePlot draw options.
+  #
+  # Initialization values from Default.Values, do this later.
+  # initval = if(Use.Defaults && !is.null(Default.Values$ScaleCols)){Default.Values$ScaleCols}else{c(TRUE,FALSE,TRUE,FALSE,if(is.null(All.Data$ShapeFiles)){FALSE}else{TRUE},FALSE)
+  ScaleCols <-  NULL
+  ScaleCols["Show Well Labels"] <- TRUE
+  ScaleCols["Scale colours to Data"] <- FALSE
+  ScaleCols["Show Conc. Values"] <- TRUE
+  ScaleCols["Show GW Contour"] <- FALSE
+  ScaleCols["Overlay ShapeFiles"] <- FALSE
+  ScaleCols["Plume Diagnostics"] <- FALSE
+
   
   #rp.listbox(GWSDATpnl,Well,labels=sort(as.character(All.Data$All.Wells)),
   #           vals=sort(as.character(All.Data$All.Wells)),
@@ -257,7 +276,9 @@ GWSDAT_Init <- function(GWSDAT_Options) {
   sorted_Wells = sort(as.character(All.Data$All.Wells))
   Well = sorted_Wells[1]
   
-  
+  # Set the value and range of the 'Time Step' slider control (for the ImagePlot)
+  shadow.jjj = (10 * length(All.Data$All.Agg.Dates))
+  shadow.jjj.range = c(1, (20 * length(All.Data$All.Agg.Dates)))
   
   ############################ Clean Up #################################################################################
   
@@ -267,8 +288,12 @@ GWSDAT_Init <- function(GWSDAT_Options) {
                       GWSDAT_Options=GWSDAT_Options, 
                       Cont.rg = Cont.rg,
                       rgUnits = rgUnits,
-                      ts_options = ts_options,
-                      Well = Well
+                      rgUnits_choice = rgUnits_choice,
+                      dlines = dlines,
+                      ScaleCols = ScaleCols,
+                      Well = Well,
+                      shadow.jjj = shadow.jjj,             # time step value
+                      shadow.jjj.range = shadow.jjj.range  # time step range
                       )
   attr(Curr.Site.Data, 'class') <- 'GWSDAT.Data'
   

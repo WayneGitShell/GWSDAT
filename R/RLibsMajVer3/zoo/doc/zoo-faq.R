@@ -60,10 +60,10 @@ cls <- c("NULL", "NULL", "NULL", "character", "numeric", "numeric")
 nms <- c("", "", "", "time", "value", "volume")
 
 z <- read.zoo(textConnection(Lines), aggregate = tail1,
-       FUN = times, sep = "|", colClasses = cls, col.names = nms)
+  FUN = times, sep = "|", colClasses = cls, col.names = nms)
 
 z2 <- read.zoo(textConnection(Lines), aggregate = sum,
-       FUN = times, sep = "|", colClasses = cls, col.names = nms)
+  FUN = times, sep = "|", colClasses = cls, col.names = nms)
 
 z$volume <- z2$volume
 z
@@ -183,13 +183,14 @@ as.yearmon2.Date <- function(x, ...) {
 ### code chunk number 19: yearmon2-inverse
 ###################################################
 as.Date.yearmon2 <- function(x, frac = 0, ...) {
-     if (!is.null(names(x))) return(as.Date(names(x)))
-     x <- unclass(x)
-     year <- floor(x + .001)
-     month <- floor(12 * (x - year) + 1 + .5 + .001)
-     dd.start <- as.Date(paste(year, month, 1, sep = "-")) 
-     dd.end <- dd.start + 32 - as.numeric(format(dd.start + 32, "%d"))
-     as.Date((1-frac) * as.numeric(dd.start) + frac * as.numeric(dd.end), origin = "1970-01-01")
+  if (!is.null(names(x))) return(as.Date(names(x)))
+  x <- unclass(x)
+  year <- floor(x + .001)
+  month <- floor(12 * (x - year) + 1 + .5 + .001)
+  dd.start <- as.Date(paste(year, month, 1, sep = "-")) 
+  dd.end <- dd.start + 32 - as.numeric(format(dd.start + 32, "%d"))
+  as.Date((1-frac) * as.numeric(dd.start) + frac * as.numeric(dd.end),
+    origin = "1970-01-01")
 }
 
 
@@ -228,10 +229,10 @@ m <- unique(as.Date(as.yearmon(tt)))
 jan <- format(m, "%m") == "01"
 mlab <- substr(months(m[!jan]), 1, 1)
 for(i in 1:ncol(z3)) {
-    plot(z3[,i], xaxt = "n", ylab = colnames(z3)[i], ylim = range(z3))
-    axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
-    axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
-    axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
+  plot(z3[,i], xaxt = "n", ylab = colnames(z3)[i], ylim = range(z3))
+  axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
+  axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
+  axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
 }
 par(opar)
 
@@ -241,18 +242,18 @@ par(opar)
 ###################################################
 plot(z3, screen = 1:3, xaxt = "n", nc = 2, ylim = range(z3),
   panel = function(...) {
-   lines(...)
-   panel.number <- parent.frame()$panel.number
-   nser <- parent.frame()$nser
-   # place axis on bottom panel of each column only
-   if (panel.number %% 2 == 0 || panel.number == nser) { 
-         tt <- list(...)[[1]]
-         m <- unique(as.Date(as.yearmon(tt)))
-         jan <- format(m, "%m") == "01"
-         mlab <- substr(months(m[!jan]), 1, 1)
-         axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
-         axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
-         axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
+    lines(...)
+    panel.number <- parent.frame()$panel.number
+    nser <- parent.frame()$nser
+    # place axis on bottom panel of each column only
+    if (panel.number %% 2 == 0 || panel.number == nser) { 
+      tt <- list(...)[[1]]
+      m <- unique(as.Date(as.yearmon(tt)))
+      jan <- format(m, "%m") == "01"
+      mlab <- substr(months(m[!jan]), 1, 1)
+      axis(side = 1, at = m[!jan], labels = mlab, tcl = -0.3, cex.axis = 0.7)
+      axis(side = 1, at = m[jan], labels = format(m[jan], "%y"), tcl = -0.7)
+      axis(side = 1, at = unique(as.Date(as.yearqtr(tt))), labels = FALSE)
     }
 })
 

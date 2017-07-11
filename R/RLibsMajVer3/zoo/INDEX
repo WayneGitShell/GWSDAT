@@ -20,7 +20,7 @@ na.trim                 Trim Leading/Trailing Missing Observations
 plot.zoo                Plotting zoo Objects
 read.zoo                Reading and Writing zoo Series
 rollapply               Apply Rolling Functions
-rollmean                Rolling Means/Maximums/Medians
+rollmean                Rolling Means/Maximums/Medians/Sums
 window.zoo              Extract/Replacing the Time Windows of Objects
 xblocks                 Plot contiguous blocks along x axis.
 xyplot.zoo              Plot zoo Series with Lattice
