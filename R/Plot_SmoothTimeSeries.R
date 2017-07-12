@@ -25,11 +25,11 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   
   
-  
-  Stat.Lim <- as.numeric(panel$DRV$ContLimEntry[match(panel$Cont.rg,panel$DRV$Cont.Names)])
-  if(panel$rgUnits=="mg/l"){ Stat.Lim = Stat.Lim/1000 }
-  if(panel$rgUnits=="ng/l"){ Stat.Lim = Stat.Lim*1000 }
-  if(panel$rg1=="Trend"){ Stat.Lim = NA }
+  # Adapt threshold value to different units.
+  Local_Stat.Lim <- panel$Stat.Lim
+  if(panel$rgUnits=="mg/l"){ Local_Stat.Lim = Local_Stat.Lim / 1000 }
+  if(panel$rgUnits=="ng/l"){ Local_Stat.Lim = Local_Stat.Lim * 1000 }
+  if(panel$rg1=="Trend"){ Local_Stat.Lim = NA }
   
   
   
@@ -68,7 +68,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
     
   } else {
     
-    if(nrow(Well.Data)>0){my.ylim<-c(min(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
+    if(nrow(Well.Data)>0){my.ylim<-c(min(Well.Data$Result.Corr.ND, Local_Stat.Lim,na.rm=T),max(Well.Data$Result.Corr.ND,Local_Stat.Lim,na.rm=T))}
     else{my.ylim=c(0.01,100)}
     my.xlim<-range(c(panel$DRV$Cont.Data$SampleDate, panel$DRV$All.Data$GW.Data$SampleDate),na.rm=T) #maybe change to AggDate!
   
@@ -172,7 +172,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   grid(NA,NULL,lwd = 1,lty=1,equilogs = FALSE)
   
   abline(v=as.Date(c(paste(1990:2030,c("-01-01"),sep=""),paste(1990:2030,c("-06-30"),sep=""))),lwd=1,lty=1,col = "lightgray")
-  if(length(grep("Threshold",panel$rg1))>0){if(!is.na(Stat.Lim)){abline(h=Stat.Lim,col="red",lty=2,lwd=3)}}
+  if(length(grep("Threshold",panel$rg1))>0){if(!is.na(Local_Stat.Lim)){abline(h=Local_Stat.Lim,col="red",lty=2,lwd=3)}}
   
   if(panel$dlines["Show Legend"]){
     

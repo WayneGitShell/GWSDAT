@@ -239,6 +239,7 @@ gc()
 Col.Option<-panel$ScaleCols["Scale colours to Data?"]
 Show.Values<-panel$ScaleCols["Show Conc. Values?"]
 Show.GW.Contour<-panel$ScaleCols["Show GW Contour?"]
+
 if(is.null(Show.GW.Contour) || length(Show.GW.Contour)==0 || is.na(Show.GW.Contour)){Show.GW.Contour<-FALSE}
 
 Show.Well.Labels<-panel$ScaleCols["Show Well Labels?"]
@@ -412,7 +413,7 @@ if(!inherits(model.tune,"try-error")){
 	Do.Image<-FALSE
 
 }
-browser()
+
 if(Do.Image){
 
 if(panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")){
@@ -663,7 +664,7 @@ GWFlows<-attr(panel$Fitted.Data,"GWFlows")
 			
 			
 
-		}else{
+		  }else{
 		
 			Show.GW.Contour<-FALSE
 			
@@ -785,7 +786,7 @@ if(panel$Color.type=="NAPL-Circles"){
 
 if(!Col.Option || !Do.Image){
 
-  browser()
+  
 	GWSDAT.filled.contour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){panel$All.Data$ShapeFiles}else{NULL},fixedConcScale=if(panel$Color.type=="NAPL-Circles"){FALSE}else{TRUE},
 	xlim=Contour.xlim,
 	ylim=Contour.ylim,
@@ -828,7 +829,7 @@ if(!Col.Option || !Do.Image){
 		}
 
 	)
-	browser()
+	
 	if(panel$ScaleCols["Plume Diagnostics?"]){
 	tempUnitHandle<-PlumeUnitHandlingFunc(GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
 	#tp<-paste("Estimated Plume Mass=",round(TotalPlume$Mass,2),";   Estimated Plume Area=",round(TotalPlume$area,2),sep="")

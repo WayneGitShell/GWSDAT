@@ -96,16 +96,21 @@ GWSDAT_Setup <- function(){
   	source(paste(GWSDATHome, "R/GWSDAT Input Data.R", sep="/"))
   	source(paste(GWSDATHome, "R/GWSDAT Traffic Lights.R", sep="/"))
   	source(paste(GWSDATHome, "R/GWSDAT GWFlow.R", sep="/"))
-  	source(paste(GWSDATHome, "R/GWSDAT MakePanel.R", sep="/"))
-  	source(paste(GWSDATHome, "R/GWSDAT.filled.contour.R", sep="/"))
+  	
+    # replace this one by Plot_* function below
+    source(paste(GWSDATHome, "R/GWSDAT MakePanel.R", sep="/"))
+  	
+    source(paste(GWSDATHome, "R/GWSDAT.filled.contour.R", sep="/"))
   	source(paste(GWSDATHome, "R/GWSDAT SVM.R", sep="/"))
   	source(paste(GWSDATHome, "R/GWSDAT PSpline Utils.R", sep="/"))
   	source(paste(GWSDATHome, "R/GWSDAT Auto Gamma.R", sep="/"))
   	source(paste(GWSDATHome, "R/GWSDAT Shapefile Functions.R", sep="/"))
+    # added 07/2017
     source(paste(GWSDATHome, "R/GWSDAT_Init.R", sep="/"))
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep="/"))
     source(paste(GWSDATHome, "R/Plot_SmoothTimeSeries.R", sep="/"))
     source(paste(GWSDATHome, "R/Plot_ImagePlot.R", sep="/"))
+    source(paste(GWSDATHome, "R/Plot_TrafficTable.R", sep="/"))
     source(paste(GWSDATHome, "R/Create_PanelAttr.R", sep="/"))
     
     

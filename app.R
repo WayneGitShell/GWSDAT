@@ -4,8 +4,13 @@ library(shiny)
 
 source("R/GWSDAT_Setup.R")
 
-GWSDAT_Options = GWSDAT_Setup()
+options(warn=1)
 
+
+#
+# Setup and init data and GWSDAT configuration.
+#
+GWSDAT_Options = GWSDAT_Setup()
 
 ret = GWSDAT_Init(GWSDAT_Options)
 pnl = Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
@@ -26,7 +31,7 @@ pnl = Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
 
 
 # Define server logic 
-server <- function(input, output) {
+server <- function(input, output, session) {
     
     output$status <- renderText({ input$solute_select })
     
@@ -44,6 +49,17 @@ server <- function(input, output) {
       pnl$dlines[input$ts_true_options] = TRUE
       pnl$Well <- input$well_select
       
+      # 'rg1' is also used in the Traffic Lights table (there it has
+      # two threshold option. However, here it is only about selecting
+      # to display the threshold or not. 
+      # ? Might think of separating these two, i.e. creating extra variable
+      #   here instead of rg1.
+      if(input$check_threshold)
+        pnl$rg1 <- "Threshold - Absolute"
+      else 
+        pnl$rg1 <- "Trend"
+      
+      
       # Make the plot.
       Plot_SmoothTimeSeries(pnl)
       
@@ -57,6 +73,7 @@ server <- function(input, output) {
       #
       # Update control attributes from reactive variables. 
       #
+
       pnl$shadow.jjj <-  input$time_steps
       pnl$ScaleCols[1:length(pnl$ScaleCols)] <-  FALSE
       pnl$ScaleCols[input$imageplot_options] <-  TRUE
@@ -67,11 +84,53 @@ server <- function(input, output) {
       ## I need the same input for both tabs!
       pnl$Cont.rg <- input$solute_select_contour
       pnl$rgUnits <- input$solute_conc_contour
-      #browser()
+
       
       Plot_ImagePlot(pnl)
       
     })
+    
+    
+    #
+    # Plot Traffic Lights Table
+    #
+    output$traffic_table <- renderPlot({
+      
+      #
+      # Update control attributes from reactive variables. 
+      #
+      
+      pnl$rg1 <-  input$trend_or_threshold
+      pnl$ColTrafficListbox <- input$traffic_color
+      
+      #browser()
+      
+      Plot_TrafficTable(pnl)
+      
+    })
+    
+    # Mirror the selected solute in different tabs. 
+    observe({ 
+      active_tab <- input$plot_tabs
+      
+      if(active_tab == "Smooth Time-Series")
+        updateSelectInput(session, "solute_select_contour", selected = input$solute_select ) 
+      
+      if(active_tab == "Contour Plot")
+        updateSelectInput(session, "solute_select", selected = input$solute_select_contour )
+    })
+    
+    # Mirror the selected solute concentration in different tabs. 
+    observe({ 
+      active_tab <- input$plot_tabs
+      
+      if(active_tab == "Smooth Time-Series")
+        updateSelectInput(session, "solute_conc_contour", selected = input$solute_conc ) 
+      
+      if(active_tab == "Contour Plot")
+        updateSelectInput(session, "solute_conc", selected = input$solute_conc_contour )
+    })
+
     
 }
 
@@ -79,9 +138,11 @@ server <- function(input, output) {
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-  titlePanel(h2("Shiny GWDAT")),
-  tabsetPanel(
-    tabPanel("Smooth Time-Series", fluid = TRUE,
+  
+  titlePanel(h2("Shiny GWSDAT")),
+  
+  tabsetPanel(id="plot_tabs",
+    tabPanel("Smooth Time-Series", id = "ts_tab", fluid = TRUE,
              sidebarLayout(
                sidebarPanel(
                  selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$DRV$All.Data$All.Wells)),
@@ -89,14 +150,17 @@ ui <- fluidPage(
                  
                  selectInput("solute_select", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
                              selected = pnl$Cont.rg, width = '40%'),
-                 #hr(),
+               
                  radioButtons("solute_conc", label = "Solute Conc. Unit",
                               choices = pnl$rgUnits_choice, 
                               selected = pnl$rgUnits),
                  
+                 checkboxInput("check_threshold", label = "Display threshold", value = FALSE ),
+                 
                  checkboxGroupInput("ts_true_options", label = "Time Series Plot Options", 
                                     choices = names(pnl$dlines),
                                     selected = names(which(pnl$dlines == TRUE))),
+                 
                  
                  h4("Status:"),
                  textOutput("status")
@@ -108,7 +172,7 @@ ui <- fluidPage(
                )
              )
     ),
-    tabPanel("Contour Plot", fluid = TRUE,
+    tabPanel("Contour Plot", id = "contour_tab", fluid = TRUE,
              sidebarLayout(
                sidebarPanel(
                  selectInput("solute_select_contour", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
@@ -121,10 +185,10 @@ ui <- fluidPage(
                  selectInput("imageplot_type", label = "Plot Type", choices = pnl$Color.type_choice,
                              selected = pnl$Color.type, width = "40%"),
                  
-                 sliderInput("time_steps", label = "Time Steps", 
-                             min   = pnl$shadow.jjj.range[1], 
-                             max   = pnl$shadow.jjj.range[2], 
-                             value = pnl$shadow.jjj),
+                 #sliderInput("time_steps", label = "Time Steps", 
+                 #             min   = pnl$shadow.jjj.range[1], 
+                 #            max   = pnl$shadow.jjj.range[2], 
+                 #             value = pnl$shadow.jjj),
                  
                  checkboxGroupInput("imageplot_options", label = "Plot Options", 
                                     choices = names(pnl$ScaleCols),
@@ -137,10 +201,29 @@ ui <- fluidPage(
                  
                ),
                mainPanel(
-                 column(9, plotOutput("image_plot"))
+                 column(10, plotOutput("image_plot"))
                )
            )
-    )
+    ),
+    tabPanel("Traffic Lights", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(
+                 radioButtons("trend_or_threshold", label = "Display Table",
+                              choices = pnl$rg1_choice, 
+                              selected = pnl$rg1),
+                 
+                 selectInput("traffic_color", label = "Show color", choices = pnl$ColTrafficListbox_choice,
+                             selected = pnl$ColTrafficListbox, width = "40%")
+                 
+                 
+                 
+               ),
+               mainPanel(
+                 column(10, plotOutput("traffic_table"))
+               )
+               
+             )
+             )
   )
 ) 
 
