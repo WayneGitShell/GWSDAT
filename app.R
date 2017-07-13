@@ -74,7 +74,7 @@ server <- function(input, output, session) {
       # Update control attributes from reactive variables. 
       #
 
-      pnl$shadow.jjj <-  input$time_steps
+      pnl$timestep <- input$time_steps
       pnl$ScaleCols[1:length(pnl$ScaleCols)] <-  FALSE
       pnl$ScaleCols[input$imageplot_options] <-  TRUE
       pnl$GW.disp <- input$gw_flows
@@ -84,7 +84,33 @@ server <- function(input, output, session) {
       ## I need the same input for both tabs!
       pnl$Cont.rg <- input$solute_select_contour
       pnl$rgUnits <- input$solute_conc_contour
-
+      
+      ## Detect if aggregation of data was changed.
+      if(pnl$DRV$GWSDAT_Options$Aggby != input$aggregate_data) {
+        pnl$DRV$GWSDAT_Options$Aggby <- input$aggregate_data
+        agg_data = GWSDAT_Aggregate_Data(pnl$DRV$GWSDAT_Options, 
+                                         pnl$DRV$All.Data$All.Dates, 
+                                         pnl$DRV$All.Data$GW.Data, 
+                                         pnl$DRV$All.Data$Cont.Data, 
+                                         pnl$DRV$All.Data$Well.Coords, 
+                                         pnl$DRV$All.Data$NAPL.Thickness.Data)
+        
+        # Write back.
+        pnl$DRV$All.Data$All.Agg.Dates = agg_data$All.Agg.Dates
+        pnl$DRV$All.Data$Cont.Data = agg_data$Cont.Data
+        pnl$DRV$All.Data$Agg_GW_Data = agg_data$Agg_GW_Data
+        pnl$DRV$All.Data$NAPL.Thickness.Data = agg_data$NAPL.Thickness.Data
+        
+        # Update time step range.
+        pnl$timestep_range = c(1, length(pnl$DRV$All.Data$All.Agg.Dates))
+        browser()
+        # Trigger update of time step slider.
+        updateSliderInput(session, "time_steps", value = pnl$timestep_range[1],
+                          min = pnl$timestep_range[1], max = pnl$timestep_range[2],
+                          step = 1)
+        
+      }
+         
       
       Plot_ImagePlot(pnl)
       
@@ -102,7 +128,7 @@ server <- function(input, output, session) {
       
       pnl$rg1 <-  input$trend_or_threshold
       pnl$ColTrafficListbox <- input$traffic_color
-      
+      pnl$timestep <- input$time_steps_traffic
       #browser()
       
       Plot_TrafficTable(pnl)
@@ -146,10 +172,10 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(
                  selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$DRV$All.Data$All.Wells)),
-                             selected = pnl$Well, width = "40%"),
+                             selected = pnl$Well, width = "50%"),
                  
                  selectInput("solute_select", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
-                             selected = pnl$Cont.rg, width = '40%'),
+                             selected = pnl$Cont.rg, width = '50%'),
                
                  radioButtons("solute_conc", label = "Solute Conc. Unit",
                               choices = pnl$rgUnits_choice, 
@@ -176,19 +202,15 @@ ui <- fluidPage(
              sidebarLayout(
                sidebarPanel(
                  selectInput("solute_select_contour", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
-                             selected = pnl$Cont.rg, width = '40%'),
+                             selected = pnl$Cont.rg, width = '50%'),
                  
                  radioButtons("solute_conc_contour", label = "Solute Conc. Unit",
                               choices = pnl$rgUnits_choice, 
                               selected = pnl$rgUnits),
                  
                  selectInput("imageplot_type", label = "Plot Type", choices = pnl$Color.type_choice,
-                             selected = pnl$Color.type, width = "40%"),
+                             selected = pnl$Color.type, width = "50%"),
                  
-                 #sliderInput("time_steps", label = "Time Steps", 
-                 #             min   = pnl$shadow.jjj.range[1], 
-                 #            max   = pnl$shadow.jjj.range[2], 
-                 #             value = pnl$shadow.jjj),
                  
                  checkboxGroupInput("imageplot_options", label = "Plot Options", 
                                     choices = names(pnl$ScaleCols),
@@ -201,8 +223,32 @@ ui <- fluidPage(
                  
                ),
                mainPanel(
-                 column(10, plotOutput("image_plot"))
-               )
+                 fluidPage(
+                 column(9, plotOutput("image_plot")),
+                 
+                 #hr(),
+                 
+                 fluidRow(
+                   column(3, 
+                    # Time step slider with animation.
+                    sliderInput("time_steps", "Time Step",
+                                 min = pnl$timestep_range[1], 
+                                 max = pnl$timestep_range[2], 
+                                 value = pnl$timestep, 
+                                 step = 1,
+                                 #pre = "$", sep = ",", 
+                                 animate=TRUE)
+                   ),
+                   
+                   column(3,
+                    selectInput("aggregate_data", label = "Aggregate Data", 
+                                 choices = c("All Dates", "Monthly", "Quarterly"),
+                                 selected = pnl$DRV$GWSDAT_Options$Aggby, 
+                                 width = "100%")
+                   )
+                 )
+                )
+              )
            )
     ),
     tabPanel("Traffic Lights", fluid = TRUE,
@@ -219,7 +265,16 @@ ui <- fluidPage(
                  
                ),
                mainPanel(
-                 column(10, plotOutput("traffic_table"))
+                 
+                 column(10, plotOutput("traffic_table")),
+                 # Time step slider with animation.
+                 sliderInput("time_steps_traffic", "Time Step",
+                             min = pnl$timestep_range[1], 
+                             max = pnl$timestep_range[2], 
+                             value = pnl$timestep, 
+                             step = 1,
+                             #pre = "$", sep = ",", 
+                             animate=TRUE)
                )
                
              )

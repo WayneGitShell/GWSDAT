@@ -276,9 +276,6 @@ GWSDAT_Init <- function(GWSDAT_Options) {
   sorted_Wells = sort(as.character(All.Data$All.Wells))
   Well = sorted_Wells[1]
   
-  # Set the value and range of the 'Time Step' slider control (for the ImagePlot)
-  shadow.jjj = (10 * length(All.Data$All.Agg.Dates))
-  shadow.jjj.range = c(1, (20 * length(All.Data$All.Agg.Dates)))
   
   ############################ Clean Up #################################################################################
   
@@ -291,10 +288,8 @@ GWSDAT_Init <- function(GWSDAT_Options) {
                       rgUnits_choice = rgUnits_choice,
                       dlines = dlines,
                       ScaleCols = ScaleCols,
-                      Well = Well,
-                      shadow.jjj = shadow.jjj,             # time step value
-                      shadow.jjj.range = shadow.jjj.range  # time step range
-                      )
+                      Well = Well
+                     )
   attr(Curr.Site.Data, 'class') <- 'GWSDAT.Data'
   
   #TK stuff:

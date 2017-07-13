@@ -72,9 +72,6 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   #
   #
   DRV <-  list()
-  DRV$jjj =  if(Use.Defaults && !is.null(Default.Values$jjj)) { 
-    Default.Values$jjj } else { length(All.Data$All.Agg.Dates) 
-    }
   DRV$Cont.Data <- All.Data$Cont.Data
   DRV$All.Dates <- All.Data$All.Dates
   DRV$All.Agg.Dates <- All.Data$All.Agg.Dates
@@ -125,9 +122,11 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   panel$dlines <- Curr.Site.Data$dlines
   
   # time steps:
-  panel$shadow.jjj <- Curr.Site.Data$shadow.jjj
-  panel$shadow.jjj.range <- Curr.Site.Data$shadow.jjj.range
-  panel$jjj <- if(Use.Defaults && !is.null(Default.Values$jjj)){Default.Values$jjj } else { length(All.Data$All.Agg.Dates) }
+  # Set the value and range of the 'Time Step' slider control (for the ImagePlot)
+  panel$timestep_range = c(1, length(All.Data$All.Agg.Dates))
+  panel$timestep = 1
+  #panel$aggregate_data = Curr.Site.Data$GWSDAT_Options$Aggby
+  #panel$aggregate_data_choice = Curr.Site.Data$GWSDAT_Options$Aggby_choice
   
   panel$ScaleCols <- Curr.Site.Data$ScaleCols
   panel$GW.disp_choice <-  c("None", "Same Length", "Weighted Length")

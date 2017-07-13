@@ -4,10 +4,7 @@
 Plot_TrafficTable <- function(panel, subset=FALSE){
   
   # Adjust time steps.
-  my.jjj <- panel$shadow.jjj %% length(panel$DRV$All.Data$All.Agg.Dates)
-  if(my.jjj==0){ my.jjj = length(panel$DRV$All.Data$All.Agg.Dates) }
-  panel$jjj = my.jjj
-  jjj=panel$jjj
+  jjj=panel$timestep
 
   date.to.print <- format(as.Date(panel$DRV$Fitted.Data[[1]]$Time.Eval[jjj]),"%d-%b-%Y")
   

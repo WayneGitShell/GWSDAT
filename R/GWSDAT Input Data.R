@@ -44,6 +44,44 @@ GWSDAT_Load_Libs <- function(){
 
 #------------------------------------------------------------------------------------------------------------#
 
+GWSDAT_Aggregate_Data <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, NAPL.Thickness.Data) {
+  
+  if(GWSDAT_Options$Aggby=="All Dates")	{my.seq<-NULL}
+  if(GWSDAT_Options$Aggby=="Monthly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-1 months")))}
+  if(GWSDAT_Options$Aggby=="Quarterly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-3 month")))}
+  
+    #! Cont.Data changes, if I call it again, will it change again?
+  Cont.Data <- GWSDAT.Create.Agg.Date(Cont.Data, GWSDAT_Options$Aggby,my.seq)
+  All.Agg.Dates <- as.Date(sort(unique(Cont.Data$AggDate)))
+
+
+
+  if(nrow(na.omit(GW.Data)) > 0){
+    
+    Agg_GW_Data <- na.omit(GW.Data)
+    Agg_GW_Data <- GWSDAT.Create.Agg.Date(Agg_GW_Data,GWSDAT_Options$Aggby,my.seq=my.seq)
+    Agg_GW_Data <- GWSDAT.Create.Agg.GW(Agg_GW_Data,Well.Coords,tolower(GWSDAT_Options$AggMethod))
+    All.Agg.Dates <- as.Date(sort(unique(c(All.Agg.Dates,unique(Agg_GW_Data$AggDate)))))
+    
+  } else {
+    Agg_GW_Data = NULL
+  }
+
+  
+  if(!is.null(NAPL.Thickness.Data)){ # Just add AggDate column
+    
+       #! Cont.Data changes, if I call it again, will it change again?
+    NAPL.Thickness.Data <- GWSDAT.Create.Agg.Date(NAPL.Thickness.Data,GWSDAT_Options$Aggby,my.seq=my.seq)
+    attr(NAPL.Thickness.Data,"lev.cuts")<-pretty(seq(0,max(NAPL.Thickness.Data$Result.Corr.ND,na.rm=T),l=13),n=12)
+    attr(NAPL.Thickness.Data,"NAPL.Wells")<-sort(unique(as.character(NAPL.Thickness.Data$WellName)))
+    
+  }
+
+  return(list(Cont.Data = Cont.Data, 
+              All.Agg.Dates = All.Agg.Dates,
+              Agg_GW_Data = Agg_GW_Data,
+              NAPL.Thickness.Data = NAPL.Thickness.Data ))
+}
 
 ##############################################################################################################
 
@@ -623,43 +661,26 @@ All.Dates<-sort(unique(c(GW.Data$SampleDate,AG.ALL$SampleDate)))
 
 if(exists("NAPL.Thickness.Data")){All.Dates<-sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))}
 
-if(GWSDAT_Options$Aggby=="All Dates")	{my.seq<-NULL}
-if(GWSDAT_Options$Aggby=="Monthly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-1 months")))}
-if(GWSDAT_Options$Aggby=="Quarterly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-3 month")))}
 
-Cont.Data<-GWSDAT.Create.Agg.Date(Cont.Data,GWSDAT_Options$Aggby,my.seq)
-All.Agg.Dates<-as.Date(sort(unique(Cont.Data$AggDate)))
+agg_data <- GWSDAT_Aggregate_Data(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, 
+                                  NAPL.Thickness.Data = if(exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL} )
 
 
-
-if(nrow(na.omit(GW.Data))>0){
-
-	Agg_GW_Data<-na.omit(GW.Data)
-	Agg_GW_Data<-GWSDAT.Create.Agg.Date(Agg_GW_Data,GWSDAT_Options$Aggby,my.seq=my.seq)
-	Agg_GW_Data<-GWSDAT.Create.Agg.GW(Agg_GW_Data,Well.Coords,tolower(GWSDAT_Options$AggMethod))
-	All.Agg.Dates<-as.Date(sort(unique(c(All.Agg.Dates,unique(Agg_GW_Data$AggDate)))))
-
-}
-
-
-if(exists("NAPL.Thickness.Data")){ # Just add AggDate column
-
-	NAPL.Thickness.Data<-GWSDAT.Create.Agg.Date(NAPL.Thickness.Data,GWSDAT_Options$Aggby,my.seq=my.seq)
-	attr(NAPL.Thickness.Data,"lev.cuts")<-pretty(seq(0,max(NAPL.Thickness.Data$Result.Corr.ND,na.rm=T),l=13),n=12)
-	attr(NAPL.Thickness.Data,"NAPL.Wells")<-sort(unique(as.character(NAPL.Thickness.Data$WellName)))
-
-}
-
-
-#-------------------------------------------------------------------------------------------------------#
-
-
-
-
-All.Data<-list(GW.Data=GW.Data,Agg_GW_Data=if(exists("Agg_GW_Data")){Agg_GW_Data}else{NULL},NAPL.Thickness.Data=if(exists("NAPL.Thickness.Data")){NAPL.Thickness.Data}else{NULL},
-Cont.Data=Cont.Data,All.Conts=All.Conts,
-All.Dates=All.Dates,All.Agg.Dates=All.Agg.Dates,All.Wells=All.Wells,Well.Coords=Well.Coords,All.Well.Area=Well.Area,ShapeFiles=ShapeFiles,Aq.sel=Aq.sel,GW.Units=GW.Units,
-NAPL.Units=if(exists("NAPL.Units")){NAPL.Units}else{NULL},ElecAccepts=ElecAccepts)
+All.Data<-list(GW.Data = GW.Data,
+               Agg_GW_Data = agg_data$Agg_GW_Data,
+               NAPL.Thickness.Data = agg_data$NAPL.Thickness.Data,
+               Cont.Data = agg_data$Cont.Data,
+               All.Conts = All.Conts,
+               All.Dates = All.Dates,
+               All.Agg.Dates = agg_data$All.Agg.Dates,
+               All.Wells = All.Wells,
+               Well.Coords = Well.Coords,
+               All.Well.Area = Well.Area,
+               ShapeFiles = ShapeFiles,
+               Aq.sel = Aq.sel,
+               GW.Units = GW.Units,
+               NAPL.Units = if(exists("NAPL.Units")){NAPL.Units} else {NULL},ElecAccepts=ElecAccepts
+               )
 
 return(All.Data)
 }

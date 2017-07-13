@@ -85,13 +85,6 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   
   
-  # Time-steps  
-  my.jjj <- panel$shadow.jjj %% length(panel$DRV$All.Data$All.Agg.Dates)
-    
-  if(my.jjj == 0) { 
-      my.jjj = length(panel$DRV$All.Data$All.Agg.Dates)
-  }
-
   
   if(panel$ScaleCols["Plume Diagnostics"]){
     op<-par(mar=c(3,4.1,2,2.1))
@@ -113,7 +106,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   if(is.null(Show.ShapeFile) || length(Show.ShapeFile)==0 || is.na(Show.ShapeFile)){Show.ShapeFile<-FALSE}
   
   Well.Coords<-panel$DRV$All.Data$Well.Coords
-  jjj<-panel$jjj
+  jjj<-panel$timestep
   Cont<-panel$Cont.rg
   
   
@@ -677,7 +670,11 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
                             }
                             
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
-                            if(Show.GW.Contour) try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
+                            #browser()
+                            if(Show.GW.Contour) {
+                              #try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
+                              contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8)
+                            }
                             if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
@@ -720,6 +717,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
                           plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
+                            browser()
                             if(Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
                             if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
