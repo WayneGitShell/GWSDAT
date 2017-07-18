@@ -21,7 +21,7 @@ win.metafile(width = 4 * hscale, height = 4 * vscale, restoreConsole =FALSE)
 GWSDAT_Setup <- function(){
 
   GWSDAT_Options<-list()
-  GWSDAT_Options[['Aggby']]<-'Monthly'
+  GWSDAT_Options[['Aggby']]<- 'Monthly'
   GWSDAT_Options[['AggMethod']]<-'Mean'
   GWSDAT_Options[['NDMethod']]<-'Half of ND Value'
   GWSDAT_Options[['ModelMethod']]<-'pspline'
@@ -111,7 +111,10 @@ GWSDAT_Setup <- function(){
     source(paste(GWSDATHome, "R/Plot_SmoothTimeSeries.R", sep="/"))
     source(paste(GWSDATHome, "R/Plot_ImagePlot.R", sep="/"))
     source(paste(GWSDATHome, "R/Plot_TrafficTable.R", sep="/"))
+    source(paste(GWSDATHome, "R/Plot_Legend.R", sep="/"))
     source(paste(GWSDATHome, "R/Create_PanelAttr.R", sep="/"))
+    source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep="/"))
+    
     
     
   	if(!GWSDAT_Load_Libs()){stop("Missing packages")}

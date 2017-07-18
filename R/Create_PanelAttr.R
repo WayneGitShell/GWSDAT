@@ -136,6 +136,8 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   
   panel$ColTrafficListbox = "All"
   panel$ColTrafficListbox_choice = c("All","Reds","Greens","White","Non-Detects","Greys")
+  
+  
   #
   # Should be always set to "Predicted". Corresponding Radiogroup control is not active.
   #
