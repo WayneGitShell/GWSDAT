@@ -34,6 +34,9 @@ GWSDAT_Load_Libs <- function(){
   if(!Require("maptools")){return(FALSE)}
   if(!Require("geometry")){return(FALSE)}
   if(!Require("Matrix")){return(FALSE)}
+  if(!Require("shiny")){return(FALSE)}
+  if(!Require("shinyjs")){return(FALSE)}
+  if(!Require("shinydashboard")){return(FALSE)}
   Require("RDCOMClient")
   
   
