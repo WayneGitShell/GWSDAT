@@ -2,109 +2,24 @@
 
 GWSDAT_Init <- function(GWSDAT_Options) {
 
-  ## Set this to GWSDAT_Error() or GWSDAT_Warning() if something bad happens.
-  ## Note: GWSDAT_Error() should be returned immediately to stop execution.
-  ##       GWSDAT_Warning() can continue running.
+  # Set this to GWSDAT_Error() or GWSDAT_Warning() if something bad happens.
+  # Note: GWSDAT_Error() should be returned immediately to stop execution.
+  #       GWSDAT_Warning() can continue running.
   Run_status = GWSDAT_OK() 
-    
-  ############################# Read Historical Monitoring Data Table ####################################################
-  
-  AGALL <- try(read.csv(GWSDAT_Options$WellDataFilename))
-  
-  if(!"flags" %in% tolower(names(AGALL))){AGALL$Flags<-rep(NA,nrow(AGALL))}
-  AGALL <- try(AGALL[,which(tolower(names(AGALL))=="wellname"):which(tolower(names(AGALL))=="flags")])
-
-  if(inherits(AGALL, 'try-error')){
-    
-    # TK-related:
-    # tkmessageBox(title="Error!",message="Error reading Monitoring data.",icon="error",type="ok")
-    # try(close(pb))
-    
-    return(GWSDAT_Error("Error in inputting and formatting data."))
-    
-    #stop("Error in inputting and formatting data.")
-    
-  }
-  
-  AGALL$SampleDate<-GWSDAT.excelDate2Date(floor(as.numeric(as.character(AGALL$SampleDate)))) ##added floor function 28/6/2012
   
   
-  if(any(is.na(AGALL$SampleDate))){
-    
-    AGALL<-AGALL[!is.na(AGALL$SampleDate),]
-    
-    #TK stuff:
-    #tkmessageBox(title="Warning!",message="Incorrect input date value(s) detected.",icon="error",type="ok")
-    
-    Run_status = GWSDAT_Warning("Incorrect input date value(s) detected.")
-    
-    if(nrow(AGALL)==0 || as.character(tkmessageBox(message="Do you wish to continue?",icon="question",type="yesno",default="yes"))!="yes"){
-      
-      #TK stuff:
-      #try(close(pb))	
-      #stop("Stop due to bad dates")
-      
-      return(GWSDAT_Error("Stop tue to bad dates."))
-      
-      
-    } else {
-      
-      #TK stuff:
-      #tkmessageBox(title="Warning!",message="Incorrect date values data will be omitted.",icon="error",type="ok")
-      
-      Run_status = GWSDAT_Warning("Incorrect date values data will be omitted.")
-      
-      
-    }
-    
-  }
-  #----------------------------------------------------------------------------------------------------------------------#
-
+  #
+  # Read Well data and coordinates from file.
+  #
+  AGALL <- Read_Well_Data(GWSDAT_Options$WellDataFilename)
+  well_coords <- Read_Well_Coords(GWSDAT_Options$WellCoordsFilename)
   
+  WellCoords <- well_coords$WellCoords
+  GWSDAT_Options$WellCoordsLengthUnits <-  well_coords$WellCoordsLengthUnits
   
-  ############################# Read Well Coordinates Data Table #########################################################
+  ############################# Consolidate Data together ##########################################
   
-  WellCoords<-try(read.csv(GWSDAT_Options$WellCoordsFilename))
-  
-  GWSDAT_Options$WellCoordsLengthUnits<-as.character(WellCoords$CoordUnits[1])
-  
-  if(length(GWSDAT_Options$WellCoordsLengthUnits)==0 || is.na(GWSDAT_Options$WellCoordsLengthUnits)){
-    GWSDAT_Options$WellCoordsLengthUnits<-NULL
-  }
-  
-  if(!"aquifer" %in% tolower(names(WellCoords))){
-    WellCoords$Aquifer<-rep(NA,nrow(WellCoords))
-  }
-  
-  WellCoords <- try(WellCoords[,which(tolower(names(WellCoords))=="wellname"):which(tolower(names(WellCoords))=="aquifer")]) #Ensuring correct columns are selected
-  
-  if(inherits(WellCoords, 'try-error')){
-    
-    #TK stuff:
-    #tkmessageBox(title="Error!",message="Error reading Well Coordinates data.",icon="error",type="ok")
-    #try(close(pb))
-
-    #stop("Error in inputting and formatting data.")
-    
-    return(GWSDAT_Error("Error in inputting and formatting data."))
-    
-    
-  }
-  #----------------------------------------------------------------------------------------------------------------------#
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  ############################# Consolidate Data together ################################################################
-  
-  All.Data<-try(GWSDAT.Init.Data(AGALL,WellCoords,GWSDAT_Options))
+  All.Data <- try(GWSDAT.Init.Data(AGALL, WellCoords, GWSDAT_Options))
   
   if(inherits(All.Data, 'try-error')){
     
@@ -125,7 +40,7 @@ GWSDAT_Init <- function(GWSDAT_Options) {
   #TK stuff:
   #PctDone = 1 / (NumConts + 3)
   
-  #----------------------------------------------------------------------------------------------------------------------#
+  #-------------------------------------------------------------------------------------------------#
   
   
   Fitted.Data = GWSDAT_Fit_Data(All.Data, GWSDAT_Options)

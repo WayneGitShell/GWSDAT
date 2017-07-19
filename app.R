@@ -1,12 +1,13 @@
 
 
 library(shiny)
+library(shinyjs)
 library(shinydashboard)
 
 
 source("R/GWSDAT_Setup.R")
 
-options(warn=1)
+options(warn = 1)
 
 
 #
@@ -35,7 +36,13 @@ pnl = Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
 # Define server logic 
 server <- function(input, output, session) {
     
-    #output$status <- renderText({ input$solute_select })
+  
+  #well_data_tmp = NULL
+  well_data_file = NULL
+  
+  #well_coords_tmp = NULL
+  well_coord_file = NULL
+  
     
     #
     # Plot time-series window
@@ -242,17 +249,10 @@ server <- function(input, output, session) {
     # Data related stuff
     #
     #
+ 
     #
-    #observeEvent(input$well_data_file, {
-    #  
-    #  fvalue <- input$well_data_file
-    #})
-    
-    #observeEvent(input$well_coord_file, {
-    #  
-    #  fvalue <- input$well_coord_file
-    #})
-    
+    # Table showing the well data.
+    #
     output$table_well_data <- renderTable({
       
       # input$file1 will be NULL initially. After the user selects
@@ -266,25 +266,39 @@ server <- function(input, output, session) {
       if (is.null(inFile))
         return(NULL)
       
-      read.csv(inFile$datapath, header=input$header, sep=input$sep, 
-               quote=input$quote)
+      well_data_file <<- inFile$datapath
+      
+      # Load the data.
+      well_data_tmp <- read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
+      
+      #
+      # Check if Excel date transform checkbox is active
+      #
+      #browser()
+      if (input$excel_date && ("SampleDate" %in% names(well_data_tmp)) ) 
+        well_data_tmp$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(well_data_tmp$SampleDate))))) 
+        
+     
+      return(well_data_tmp)
     })
     
+    
+    #
+    # Table showing the well coordinates.
+    #
     output$table_well_coord <- renderTable({
-      
-      # input$file1 will be NULL initially. After the user selects
-      # and uploads a file, it will be a data frame with 'name',
-      # 'size', 'type', and 'datapath' columns. The 'datapath'
-      # column will contain the local filenames where the data can
-      # be found.
       
       inFile <- input$well_coord_file
       
       if (is.null(inFile))
         return(NULL)
       
-      read.csv(inFile$datapath, header=input$header, sep=input$sep, 
-               quote=input$quote)
+      # Save this for the Import button.
+      well_coord_file <<- inFile$datapath 
+      
+      well_coord_tmp <- read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
+      
+      return(well_coord_tmp)
     })
 
     
@@ -292,60 +306,156 @@ server <- function(input, output, session) {
     # Supposed to clear everything in the Import Data panel
     #  Thats a little more complicated, not working right now.
     #
-    #observeEvent(input$reset_button,  {
-    #  
-    #  update()
-    #  browser()
-    #  value = input$reset_button
-    #  gg = 9
-    #  
-    #  }
-    #)
+    observeEvent(input$reset_button,  {
+      
+      #browser()
+      #value = input$reset_button
+      #gg = 9
+      
+    })
+    
     
     observeEvent(input$import_button,  {
+     
+      #
+      # Read the well data.
+      #
+      if (is.null(well_coord_file) || is.null(well_data_file))
+        return(NULL)
       
       
-      browser()
-      value = input$import_button
-      gg = 9
+      AGALL <- Read_Well_Data(well_data_file, header = input$header, sep = input$sep, quote = input$quote)
       
+      
+      #
+      # Read the well coordinates.
+      #
+      well_coords <- Read_Well_Coords(well_coord_file, header = input$header, sep = input$sep, quote = input$quote)
+  
+      WellCoords <- well_coords$WellCoords
+      GWSDAT_Options$WellCoordsLengthUnits <-  well_coords$WellCoordsLengthUnits
+ 
+      
+      #
+      # Go back to Data Manager.
+      #
+      shinyjs::show(id = "data_manager", anim = TRUE);
+      shinyjs::hide(id = "data_import", anim = TRUE)
+      
+    })
+    
+    
+    #
+    # Go to Data Import (Button click).
+    #
+    observeEvent(input$add_new_data,  {
+      shinyjs::show(id = "data_import", anim = TRUE)
+      shinyjs::hide(id = "data_manager", anim = TRUE)
+    })
+    
+    
+    #
+    # Go to Data Import (Link).
+    #
+    shinyjs::onclick("toggleDataImport", {
+      shinyjs::show(id = "data_import", anim = TRUE);
+      shinyjs::hide(id = "data_manager", anim = TRUE)
+    })
+    
+    
+    #
+    # Go to Data Manager.
+    #
+    shinyjs::onclick("toggleDataManager", {
+      shinyjs::show(id = "data_manager", anim = TRUE);
+      shinyjs::hide(id = "data_import", anim = TRUE)
     })
         
 }
+
+
+
+
+
+
+########################### UI Section #############################################################
+
+
+
+
+
+
 
 
 ui <- dashboardPage(
   
   dashboardHeader(title = "Shiny GWSDAT"),
   dashboardSidebar(sidebarMenu(
-    menuItem("Input Data", tabName = "input_data", icon = icon("archive")),
-    menuItem("Analysis", tabName = "analysis", icon = icon("bar-chart"))
+    menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
+    menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
   )),
+  
   dashboardBody(
 
     tabItems(
      
       tabItem(tabName = "input_data", 
-              
+          
+          # Init the shiny JS framework
+          useShinyjs(),
+          
+          
+          #
+          # Data Manager panel
+          #
+          div(id = "data_manager",
+            fluidPage(
+               fluidRow(
+                 
+                 h3("Data Manager"),
+                 hr(),
+                 "No data is present.",
+                 a(id = "toggleDataImport", "Add", href = "#"),
+                 " new data set.",
+                 hr(),
+                 #p(HTML("No data is present. <a href='#import_data_page'>Add</a> new data set.")),
+                 #a(id = "toggleDataImport", "Add", href = "#")#,
+                 actionButton("add_new_data", label = " Import Data", icon = icon("plus"), style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+               )
+             )
+          ),
+          
+          
+          #
+          # Data Import panel
+          #
+          shinyjs::hidden(
+          
+            div(id = "data_import",
               fluidPage(
-                
+  
                 column(3,
+                       
+                       a(id = "toggleDataManager", "<- Go back.", href = "#"),
+                       
                        h3("Import New CSV Data"),
                        "Select the well data file including the solute values for each well, and the well coordinates file in .csv file format.",
+                       
                        hr(),
                        fileInput('well_data_file', 'Well Data File (CSV)',
-                                 accept=c('text/csv', 
+                                 accept = c('text/csv', 
                                           'text/comma-separated-values,text/plain', 
                                           '.csv')),
                        
                        fileInput('well_coord_file', 'Well Coordinates File (CSV)',
-                                 accept=c('text/csv', 
+                                 accept = c('text/csv', 
                                           'text/comma-separated-values,text/plain', 
                                           '.csv')),
                        
                        tags$hr(),
                        
                        checkboxInput('header', 'Header', TRUE),
+                       checkboxInput('excel_date', 'Transform Excel Date', FALSE),
                        radioButtons('sep', 'Separator',
                                     c(Comma=',',
                                       Semicolon=';',
@@ -359,14 +469,14 @@ ui <- dashboardPage(
                        hr(),
                        actionButton("reset_button", label = "Reset"),
                        #tags$head(
-                      #   tags$style(HTML('#run{background-color:orange}'))
-                      # ),
-                       actionButton("import_button", label = "Import Data", icon("paper-plane"), 
-                                    style="color: #fff; background-color: #337ab7; border-color: #2e6da4"
-                                    )
+                       #   tags$style(HTML('#run{background-color:orange}'))
+                       # ),
+                       actionButton("import_button", label = "Import Data", icon("arrow-down"), 
+                                    style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+                       )
                        
                        
-                 ), # end column
+                ), # end column
                 
                 column(4,
                        #h4("Well and Solute data"),
@@ -378,13 +488,29 @@ ui <- dashboardPage(
                 )
                 
               ) # end fluidPage
-              
-      ),  # end tabItem 
+                  
+            ) # end div (data_import)
+            
+          ) # end hidden
+          
+        ), # end tabItem
+                 
       
     
+      #
+      #
+      # Analysis Tab
+      #
+      #
+      #
+      
+      
+      
+      
+      
       tabItem(tabName = "analysis",
               
-              tabsetPanel(id="plot_tabs",
+              tabsetPanel(id = "plot_tabs",
                           
                           
                           tabPanel("Smooth Time-Series", id = "ts_tab", fluid = TRUE,
@@ -465,7 +591,7 @@ ui <- dashboardPage(
                                                       value = pnl$timestep, 
                                                       step = 1,
                                                       #pre = "$", sep = ",", 
-                                                      animate=TRUE),
+                                                      animate = TRUE),
                                           selectInput("aggregate_data", label = "Aggregate Data", 
                                                       choices = c("All Dates", "Monthly", "Quarterly"),
                                                       selected = pnl$DRV$GWSDAT_Options$Aggby, 
@@ -505,7 +631,7 @@ ui <- dashboardPage(
                                                       max = pnl$timestep_range[2], 
                                                       value = pnl$timestep, 
                                                       step = 1,
-                                                      animate=TRUE),
+                                                      animate = TRUE),
                                           selectInput("aggregate_data_traffic", label = "Aggregate Data", 
                                                       choices = c("All Dates", "Monthly", "Quarterly"),
                                                       selected = pnl$DRV$GWSDAT_Options$Aggby, 
