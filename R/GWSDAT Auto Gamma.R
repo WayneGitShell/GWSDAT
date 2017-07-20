@@ -1,4 +1,9 @@
-GWSDAT.sigest<-function (x, data = NULL, frac = 0.6, na.action = na.omit,scaled = TRUE){
+
+
+
+
+GWSDAT.sigest <- function(x, data = NULL, frac = 0.6, na.action = na.omit, scaled = TRUE){
+  
         call <- match.call()
         m <- match.call(expand.dots = FALSE)
         if (is.matrix(eval(m$data, parent.frame()))) 
@@ -26,7 +31,7 @@ GWSDAT.sigest<-function (x, data = NULL, frac = 0.6, na.action = na.omit,scaled 
 
 
 
-GWSDAT.sigest.mat<-function (x, frac = 0.25, scaled = TRUE, na.action = na.omit){
+GWSDAT.sigest.mat <- function(x, frac = 0.25, scaled = TRUE, na.action = na.omit){
 	set.seed(1)
         x <- na.action(x)
         if (length(scaled) == 1) 
@@ -58,20 +63,20 @@ GWSDAT.sigest.mat<-function (x, frac = 0.25, scaled = TRUE, na.action = na.omit)
         return(srange)
 }
 
-GWSDAT.Auto.Select.gamma<-function(temp.Cont.Data,gamma){
+GWSDAT.Auto.Select.gamma <- function(temp.Cont.Data,gamma){
 
-if(gamma[1]!=0){return(gamma)}
+if(gamma[1] != 0) { return(gamma) }
 
 
-tempgamma<-matrix(nrow=50,ncol=2)
+tempgamma <- matrix(nrow=50,ncol=2)
 
-	for(i in 1:nrow(tempgamma)){
+	for (i in 1:nrow(tempgamma)) {
 
-	tempgamma[i,]<-GWSDAT.sigest(log(Result.Corr.ND)~AggDate+XCoord+YCoord,temp.Cont.Data)
+	tempgamma[i,] <- GWSDAT.sigest(log(Result.Corr.ND)~AggDate+XCoord+YCoord,temp.Cont.Data)
 
 	}
 
-	if(length(gamma)==1){
+	if (length(gamma) == 1) {
 
 		gamma<-mean(0.5*(tempgamma[,1]+tempgamma[,2]))
 		#gamma<-median(1/apply(tempgamma,1,mean)) #Wayne 26th June 2009

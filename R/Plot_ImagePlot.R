@@ -2,9 +2,9 @@
 
 ####### Plume Unit Handling Function #####################################
 
-PlumeUnitHandlingFunc<-function(LengthUnit,rgUnits,PlumeMass,PlumeArea){
+PlumeUnitHandlingFunc <- function(LengthUnit,rgUnits,PlumeMass,PlumeArea){
   
-  if(is.null(LengthUnit)){
+  if(is.null(LengthUnit)) {
     
     PlumeMass<-1000*PlumeMass
     if(rgUnits=="ng/l"){PlumeMass<-PlumeMass*10^-12}
@@ -105,33 +105,33 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   Show.ShapeFile<-panel$ScaleCols["Overlay ShapeFiles"]
   if(is.null(Show.ShapeFile) || length(Show.ShapeFile)==0 || is.na(Show.ShapeFile)){Show.ShapeFile<-FALSE}
   
-  Well.Coords<-panel$DRV$All.Data$Well.Coords
+  Well.Coords<-panel$All.Data$Well.Coords
   jjj<-panel$timestep
   Cont<-panel$Cont.rg
   
   
-  temp.time.eval<-panel$DRV$Fitted.Data[[Cont]]$Time.Eval[jjj]
-  temp.time.frac<-as.numeric(temp.time.eval-min(panel$DRV$Fitted.Data[[Cont]]$Time.Eval))/as.numeric(diff(range(panel$DRV$Fitted.Data[[Cont]]$Time.Eval)))
+  temp.time.eval<-panel$Fitted.Data[[Cont]]$Time.Eval[jjj]
+  temp.time.frac<-as.numeric(temp.time.eval-min(panel$Fitted.Data[[Cont]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[Cont]]$Time.Eval)))
   
   try(if(temp.time.frac==1){temp.time.frac=.999}) # to avoid plot issue with wmf format!
   try(if(temp.time.frac==0){temp.time.frac=.001})
-  try(if(as.numeric(diff(range(panel$DRV$Fitted.Data[[Cont]]$Time.Eval)))==0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
+  try(if(as.numeric(diff(range(panel$Fitted.Data[[Cont]]$Time.Eval)))==0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
   
   
   
   ############# Date Interval Printing #########################################################
   
-  date.to.print <-  format(as.Date(panel$DRV$Fitted.Data[[1]]$Time.Eval[jjj]),"%d-%b-%Y")
+  date.to.print <-  format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj]),"%d-%b-%Y")
   
-  if(panel$DRV$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")){
+  if(panel$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")){
     
-    if(panel$DRV$GWSDAT_Options$Aggby=="Monthly"){
+    if(panel$GWSDAT_Options$Aggby=="Monthly"){
       
-      date.range.to.print<-seq.Date(as.Date(as.Date(panel$DRV$Fitted.Data[[1]]$Time.Eval[jjj])),by="-1 month",length=2)
+      date.range.to.print<-seq.Date(as.Date(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj])),by="-1 month",length=2)
       
     }else{
       
-      date.range.to.print<-seq.Date(as.Date(as.Date(panel$DRV$Fitted.Data[[1]]$Time.Eval[jjj])),by="-3 month",length=2)
+      date.range.to.print<-seq.Date(as.Date(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj])),by="-3 month",length=2)
       
     }	
     
@@ -145,8 +145,8 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   
   
-  model.tune<-panel$DRV$Fitted.Data[[Cont]][["Model.tune"]]
-  temp.Cont.Data<-panel$DRV$Fitted.Data[[panel$Cont.rg]]$Cont.Data
+  model.tune<-panel$Fitted.Data[[Cont]][["Model.tune"]]
+  temp.Cont.Data<-panel$Fitted.Data[[panel$Cont.rg]]$Cont.Data
   temp.Cont.Data<-temp.Cont.Data[temp.Cont.Data$AggDate==temp.time.eval,]
   temp.Cont.Data$log.Resid<-log(temp.Cont.Data$Result.Corr.ND)-log(temp.Cont.Data$ModelPred)
   
@@ -188,37 +188,37 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   
   
-  if(panel$PredInterval!="% sd"){
+  if (panel$PredInterval != "% sd") {
     
-    lev.cut<-panel$DRV$lev.cut
-    if(panel$rgUnits=="mg/l"){lev.cut<-lev.cut/10}
-    if(panel$rgUnits=="ng/l"){lev.cut<-lev.cut*10}
+    lev.cut <- panel$lev.cut
+    if (panel$rgUnits == "mg/l") {lev.cut <- lev.cut/10}
+    if (panel$rgUnits == "ng/l") {lev.cut <- lev.cut*10}
     
-  }else{
+  } else {
     
-    lev.cut<-panel$DRV$sd.lev.cut
-    
-  }
-  n.col <- length(lev.cut)-1 #should be n.col-1
-  
-  
-  
-  Good.Wells<-as.character(unique(panel$DRV$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$DRV$Fitted.Data[[Cont]]$Cont.Data$AggDate)<=temp.time.eval,]$WellName))
-  Good.Wells<-intersect(Good.Wells,as.character(unique(panel$DRV$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$DRV$Fitted.Data[[Cont]]$Cont.Data$AggDate)>=temp.time.eval,]$WellName)))
-  
-  Do.Image=TRUE
-  
-  if(length(Good.Wells)<3){
-    
-    Do.Image=FALSE;
-    my.area<-as.matrix(Well.Coords[,c("XCoord","YCoord")])
-  }else{
-    
-    my.area<-as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
+    lev.cut <- panel$sd.lev.cut
     
   }
+  n.col <- length(lev.cut) - 1 #should be n.col-1
   
-  if((areapl(my.area[chull(my.area),])/panel$DRV$All.Data$All.Well.Area)<0.01){
+  
+  
+  Good.Wells <- as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+  Good.Wells <- intersect(Good.Wells,as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+  
+  Do.Image <-  TRUE
+  
+  if (length(Good.Wells) < 3) {
+    
+    Do.Image <- FALSE;
+    my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
+  }else{
+    
+    my.area <- as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
+    
+  }
+  
+  if((areapl(my.area[chull(my.area),])/panel$All.Data$All.Well.Area)<0.01){
     Do.Image=FALSE
     my.area<-as.matrix(Well.Coords[,c("XCoord","YCoord")])
   }
@@ -269,29 +269,29 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   }else{
     
     interp.pred<-GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)
-    Do.Image<-FALSE
+    Do.Image <- FALSE
     
   }
   
-  if(Do.Image){
+  if (Do.Image) {
     
-    if(panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")){
+    if (panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")){
       
-      if(panel$PredInterval!="IQR/2"){interp.pred$z<-exp(interp.pred$z)}
+      if (panel$PredInterval != "IQR/2") {interp.pred$z <- exp(interp.pred$z)}
       
-      if(panel$rgUnits=="mg/l"){interp.pred$z<-interp.pred$z/1000}
-      if(panel$rgUnits=="ng/l"){interp.pred$z<-interp.pred$z*1000}
+      if (panel$rgUnits == "mg/l") {interp.pred$z <- interp.pred$z/1000}
+      if (panel$rgUnits == "ng/l") {interp.pred$z <- interp.pred$z*1000}
       
     }
     
-    if(max(interp.pred$z,na.rm=T)>lev.cut[length(lev.cut)] && !Col.Option){
+    if (max(interp.pred$z,na.rm = T) > lev.cut[length(lev.cut)] && !Col.Option) {
       
-      interp.pred$z[which(interp.pred$z>lev.cut[length(lev.cut)],arr.ind=T)]<-lev.cut[length(lev.cut)]
+      interp.pred$z[which(interp.pred$z > lev.cut[length(lev.cut)],arr.ind=T)] <- lev.cut[length(lev.cut)]
     }
     
   }else{
     
-    interp.pred$z[,]<-NA
+    interp.pred$z[,] <- NA
     
     
   }
@@ -393,13 +393,13 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     
     
     
-    PlumeDetails=list()
+    PlumeDetails = list()
     
     
     
-    PLumeCutoff<-as.numeric(panel$DRV$PlumeLimEntry[match(panel$Cont.rg,panel$DRV$Cont.Names)])  #Defined in ug/L
-    if(panel$rgUnits=="mg/l"){PLumeCutoff<-PLumeCutoff/1000}
-    if(panel$rgUnits=="ng/l"){PLumeCutoff<-PLumeCutoff*1000}
+    PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(panel$Cont.rg, names(panel$Fitted.Data))])  #Defined in ug/L
+    if(panel$rgUnits == "mg/l"){PLumeCutoff<-PLumeCutoff/1000}
+    if(panel$rgUnits == "ng/l"){PLumeCutoff<-PLumeCutoff*1000}
     cL<-contourLines(interp.pred,levels=PLumeCutoff)
     
     
@@ -439,7 +439,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
       
       TotalPlume$area<-sum(unlist(lapply(PlumeDetails$cL,function(l){l$area})))
       TotalPlume$volume<-sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
-      TotalPlume$Mass<-TotalPlume$volume*as.numeric(panel$DRV$Porosity)
+      TotalPlume$Mass<-TotalPlume$volume*as.numeric(panel$Porosity)
       
       COMWeights<-unlist(lapply(PlumeDetails$cL,function(l){l$Volume}))/sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
       TotalPlume$PlumeCentreofMass<-rep(NA,2)
@@ -484,7 +484,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   ############################## Plot GW Flows #######################################
   
-  GWFlows<-attr(panel$DRV$Fitted.Data,"GWFlows")
+  GWFlows<-attr(panel$Fitted.Data,"GWFlows")
   if(!inherits(GWFlows, "try-error")){
     
     
@@ -495,7 +495,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
       L<-0.05*sqrt(diff(Contour.xlim)^2+diff(Contour.ylim)^2)
       
       
-      GWFlows<-attr(panel$DRV$Fitted.Data,"GWFlows")
+      GWFlows<-attr(panel$Fitted.Data,"GWFlows")
       
       
       if(!is.null(GWFlows)){
@@ -594,7 +594,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     col.palette <- topo.colors(n.col)
     Do.Image<-FALSE
     interp.pred$z[,]<-NA
-    my.palette<-col.palette[(as.numeric(cut(temp.Cont.Data$Result.Corr.ND,breaks=panel$DRV$lev.cut)))]
+    my.palette<-col.palette[(as.numeric(cut(temp.Cont.Data$Result.Corr.ND,breaks=panel$lev.cut)))]
     #my.cex<-.5*as.numeric(cut(temp.Cont.Data$Result.Corr.ND,breaks=my.lev.cut))
     #my.cex<-if(panel$rgUnits=="mg/l"){.5*log(1000*temp.Cont.Data$Result.Corr.ND)}else{.8*log(temp.Cont.Data$Result.Corr.ND)}
     
@@ -628,7 +628,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     
     Do.Image<-FALSE
     interp.pred$z[,]<-NA
-    NAPL.Thickness.Data<-panel$DRV$All.Data$NAPL.Thickness.Data
+    NAPL.Thickness.Data<-panel$All.Data$NAPL.Thickness.Data
     temp.NAPL.Data<-NAPL.Thickness.Data[NAPL.Thickness.Data$AggDate==temp.time.eval,]
     
     lev.cut<-attributes(NAPL.Thickness.Data)$lev.cuts
@@ -646,11 +646,11 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   if(!Col.Option || !Do.Image){
     
     
-    GWSDAT.filled.contour(interp.pred, asp=1, ShapeFiles=if(Show.ShapeFile){panel$DRV$All.Data$ShapeFiles}else{NULL},fixedConcScale=if(panel$Color.type=="NAPL-Circles"){FALSE}else{TRUE},
+    GWSDAT.filled.contour(interp.pred, asp=1, ShapeFiles=if(Show.ShapeFile){panel$All.Data$ShapeFiles}else{NULL},fixedConcScale=if(panel$Color.type=="NAPL-Circles"){FALSE}else{TRUE},
                           xlim=Contour.xlim,
                           ylim=Contour.ylim,
                           levels=lev.cut,col=col.palette,
-                          plot.title = title(main = paste(Cont,if(panel$Color.type=="NAPL-Circles" & Cont!=" "){paste("(",panel$rgUnits,")",sep="")}else{""},if(Cont!=" "){":"}else{""},date.to.print,if(panel$DRV$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$DRV$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = if(panel$Color.type=="NAPL-Circles"){title(main=paste("NAPL \nThickness \n(",panel$DRV$All.Data$NAPL.Units,")",sep=""),cex.main=0.7)}else{title(main=panel$rgUnits)},
+                          plot.title = title(main = paste(Cont,if(panel$Color.type=="NAPL-Circles" & Cont!=" "){paste("(",panel$rgUnits,")",sep="")}else{""},if(Cont!=" "){":"}else{""},date.to.print,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = if(panel$Color.type=="NAPL-Circles"){title(main=paste("NAPL \nThickness \n(",panel$All.Data$NAPL.Units,")",sep=""),cex.main=0.7)}else{title(main=panel$rgUnits)},
                           
                           plot.axes={ axis(1); axis(2,las=3); axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02); 
                             if(panel$Color.type=="Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
@@ -697,7 +697,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     )
     
     if(panel$ScaleCols["Plume Diagnostics"]){
-      tempUnitHandle<-PlumeUnitHandlingFunc(panel$DRV$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
+      tempUnitHandle<-PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
       #tp<-paste("Estimated Plume Mass=",round(TotalPlume$Mass,2),";   Estimated Plume Area=",round(TotalPlume$area,2),sep="")
       tp<-paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep="")
       mtext(tp,side=1,adj=-0.1,line = 2,cex=0.85)
@@ -708,12 +708,12 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   }else{
     
     
-    GWSDAT.filled.contour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){panel$DRV$All.Data$ShapeFiles}else{NULL},
+    GWSDAT.filled.contour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){panel$All.Data$ShapeFiles}else{NULL},
                           
                           xlim=Contour.xlim,
                           ylim=Contour.ylim,
                           color.palette=col.palette,
-                          plot.title = title(main = paste(Cont,":",date.to.print,if(panel$DRV$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$DRV$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=panel$rgUnits),
+                          plot.title = title(main = paste(Cont,":",date.to.print,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=panel$rgUnits),
                           plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
@@ -741,7 +741,7 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     
     if(panel$ScaleCols["Plume Diagnostics"]){
       
-      tempUnitHandle<-PlumeUnitHandlingFunc(panel$DRV$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
+      tempUnitHandle<-PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
       #tp<-paste("Estimated Plume Mass=",round(TotalPlume$Mass,2),";   Estimated Plume Area=",round(TotalPlume$area,2),sep="")
       tp<-paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep="")
       mtext(tp,side=1,adj=-0.1,line = 2,cex=0.85)

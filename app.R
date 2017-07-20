@@ -95,7 +95,7 @@ server <- function(input, output, session) {
       ##       I don't know yet how to trigger this renderPlot from observeEvents().
       ##
       pnl$timestep <<- input$time_steps
-      pnl$DRV$GWSDAT_Options$Aggby <<- input$aggregate_data
+      pnl$GWSDAT_Options$Aggby <<- input$aggregate_data
       
       
       
@@ -123,7 +123,7 @@ server <- function(input, output, session) {
       ##       I don't know yet how to trigger this renderPlot from observeEvents().
       ##
       pnl$timestep <<- input$time_steps_traffic
-      pnl$DRV$GWSDAT_Options$Aggby <<- input$aggregate_data_traffic
+      pnl$GWSDAT_Options$Aggby <<- input$aggregate_data_traffic
       
       Plot_TrafficTable(pnl)
       
@@ -138,33 +138,33 @@ server <- function(input, output, session) {
     Reaggregate_Data <- function(aggby) {
 
       
-      if(pnl$DRV$GWSDAT_Options$Aggby != aggby) {
-        pnl$DRV$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
+      if(pnl$GWSDAT_Options$Aggby != aggby) {
+        pnl$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
         
-        agg_data <<- GWSDAT_Aggregate_Data(pnl$DRV$GWSDAT_Options, 
-                                           pnl$DRV$All.Data$All.Dates, 
-                                           pnl$DRV$All.Data$GW.Data, 
-                                           pnl$DRV$All.Data$Cont.Data, 
-                                           pnl$DRV$All.Data$Well.Coords, 
-                                           pnl$DRV$All.Data$NAPL.Thickness.Data)
+        agg_data <<- GWSDAT_Aggregate_Data(pnl$GWSDAT_Options, 
+                                           pnl$All.Data$All.Dates, 
+                                           pnl$All.Data$GW.Data, 
+                                           pnl$All.Data$Cont.Data, 
+                                           pnl$All.Data$Well.Coords, 
+                                           pnl$All.Data$NAPL.Thickness.Data)
         
         # Write back.
-        pnl$DRV$All.Data$All.Agg.Dates <<- agg_data$All.Agg.Dates
-        pnl$DRV$All.Data$Cont.Data <<- agg_data$Cont.Data
-        pnl$DRV$All.Data$Agg_GW_Data <<- agg_data$Agg_GW_Data
-        pnl$DRV$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
+        pnl$All.Data$All.Agg.Dates <<- agg_data$All.Agg.Dates
+        pnl$All.Data$Cont.Data <<- agg_data$Cont.Data
+        pnl$All.Data$Agg_GW_Data <<- agg_data$Agg_GW_Data
+        pnl$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
         
         # Fit data. 
-        Fitted.Data = GWSDAT_Fit_Data(pnl$DRV$All.Data, pnl$DRV$GWSDAT_Options)
+        Fitted.Data = GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
         
         if(class(Fitted.Data) != "gwsdat_fit") {
           stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")
         }
         
-        pnl$DRV$Fitted.Data <<- Fitted.Data
+        pnl$Fitted.Data <<- Fitted.Data
         
         # Update time step range.
-        pnl$timestep_range <<- c(1, length(pnl$DRV$All.Data$All.Agg.Dates))
+        pnl$timestep_range <<- c(1, length(pnl$All.Data$All.Agg.Dates))
         
         # Reset to first time step
         pnl$timestep <<- pnl$timestep_range[1]
@@ -202,25 +202,23 @@ server <- function(input, output, session) {
     
     output$download_timeseries_plot <- downloadHandler(
       
-      filename = "shiny_timeseries_plot.png",
+      filename <-  "shiny_timeseries_plot.png",
       
-      content = function(file) {
-        png(file, width=1200, height=800)
+      content <-  function(file) {
+        png(file, width = 1000, height = 600)
         Plot_SmoothTimeSeries(pnl)
         dev.off()
-        
       }
     )
     
     output$download_contour_plot <- downloadHandler(
       
-      filename = "shiny_contour_plot.png",
+      filename <-  "shiny_contour_plot.png",
       
-      content = function(file) {
-        png(file, width=1200, height=1200)
+      content <-  function(file) {
+        png(file, width = 1000, height = 1000)
         Plot_ImagePlot(pnl)
         dev.off()
-        
       }
     )
     
@@ -230,10 +228,9 @@ server <- function(input, output, session) {
       filename = "shiny_trafficlights_plot.png",
       
       content = function(file) {
-        png(file, width=1200, height=1500)
+        png(file, width = 1200, height = 1500)
         Plot_TrafficTable(pnl)
         dev.off()
-        
       }
     )
     
@@ -451,14 +448,14 @@ ui <- dashboardPage(
                        checkboxInput('header', 'Header', TRUE),
                        checkboxInput('excel_date', 'Transform Excel Date', FALSE),
                        radioButtons('sep', 'Separator',
-                                    c(Comma=',',
-                                      Semicolon=';',
-                                      Tab='\t'),
+                                    c(Comma = ',',
+                                      Semicolon = ';',
+                                      Tab = '\t'),
                                     ','),
                        radioButtons('quote', 'Quote',
-                                    c(None='',
-                                      'Double Quote'='"',
-                                      'Single Quote'="'"),
+                                    c(None = '',
+                                      'Double Quote' = '"',
+                                      'Single Quote' = "'"),
                                     '"'),
                        hr(),
                        actionButton("reset_button", label = "Reset"),
@@ -511,10 +508,10 @@ ui <- dashboardPage(
                                    
                                    column(3,
                                           wellPanel(
-                                            selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$DRV$All.Data$All.Wells)),
+                                            selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$All.Data$All.Wells)),
                                                         selected = pnl$Well, width = "80%"),
                                             
-                                            selectInput("solute_select", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
+                                            selectInput("solute_select", label = "Solute", choices = names(pnl$Fitted.Data),
                                                         selected = pnl$Cont.rg, width = '80%'),
                                             
                                             radioButtons("solute_conc", label = "Solute Conc. Unit",
@@ -551,7 +548,7 @@ ui <- dashboardPage(
                                    column(3, 
                                           
                                           wellPanel(
-                                            selectInput("solute_select_contour", label = "Solute", choices = names(pnl$DRV$Fitted.Data),
+                                            selectInput("solute_select_contour", label = "Solute", choices = names(pnl$Fitted.Data),
                                                         selected = pnl$Cont.rg, width = '80%'),
                                             
                                             radioButtons("solute_conc_contour", label = "Solute Conc. Unit",
@@ -588,7 +585,7 @@ ui <- dashboardPage(
                                                       animate = TRUE),
                                           selectInput("aggregate_data", label = "Aggregate Data", 
                                                       choices = c("All Dates", "Monthly", "Quarterly"),
-                                                      selected = pnl$DRV$GWSDAT_Options$Aggby, 
+                                                      selected = pnl$GWSDAT_Options$Aggby, 
                                                       width = "100%"),
                                           
                                           downloadButton("download_contour_plot", label = "Save Plot")
@@ -619,6 +616,7 @@ ui <- dashboardPage(
                                           plotOutput("traffic_table"),
                                           plotOutput("plot_legend_traffic")
                                    ),
+                                   
                                    column(2,
                                           sliderInput("time_steps_traffic", "Time Step",
                                                       min = pnl$timestep_range[1], 
@@ -628,7 +626,7 @@ ui <- dashboardPage(
                                                       animate = TRUE),
                                           selectInput("aggregate_data_traffic", label = "Aggregate Data", 
                                                       choices = c("All Dates", "Monthly", "Quarterly"),
-                                                      selected = pnl$DRV$GWSDAT_Options$Aggby, 
+                                                      selected = pnl$GWSDAT_Options$Aggby, 
                                                       width = "100%"),
                                           downloadButton("download_traffictable", label = "Save Plot")
                                    )

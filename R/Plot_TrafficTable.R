@@ -6,21 +6,21 @@ Plot_TrafficTable <- function(panel, subset=FALSE){
   # Adjust time steps.
   jjj=panel$timestep
 
-  date.to.print <- format(as.Date(panel$DRV$Fitted.Data[[1]]$Time.Eval[jjj]),"%d-%b-%Y")
+  date.to.print <- format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj]),"%d-%b-%Y")
   
   
   if(panel$rg1=="Trend"){
     
-    temp.traffic.Beta.ND.Check<-panel$DRV$Traffic.Lights$Beta.ND.Check[,,jjj,drop=F]
-    temp.traffic.Betas<-panel$DRV$Traffic.Lights$Betas[,,jjj,drop=F]
+    temp.traffic.Beta.ND.Check<-panel$Traffic.Lights$Beta.ND.Check[,,jjj,drop=F]
+    temp.traffic.Betas<-panel$Traffic.Lights$Betas[,,jjj,drop=F]
     Well.Names<-dimnames(temp.traffic.Betas)[[1]]
     Cont.Names<-dimnames(temp.traffic.Betas)[[2]]
   }
   
   if(panel$rg1=="Threshold - Statistical"){
     
-    temp.traffic.Beta.ND.Check<-panel$DRV$Traffic.Lights$Beta.ND.Check[,,jjj,drop=F]
-    temp.traffic.Ulims<-panel$DRV$Traffic.Lights$Smooth.Upper.lims[,,jjj,drop=F]
+    temp.traffic.Beta.ND.Check<-panel$Traffic.Lights$Beta.ND.Check[,,jjj,drop=F]
+    temp.traffic.Ulims<-panel$Traffic.Lights$Smooth.Upper.lims[,,jjj,drop=F]
     Well.Names<-dimnames(temp.traffic.Ulims)[[1]]
     Cont.Names<-dimnames(temp.traffic.Ulims)[[2]]
     
@@ -28,7 +28,7 @@ Plot_TrafficTable <- function(panel, subset=FALSE){
   
   if(panel$rg1=="Threshold - Absolute"){
     
-    temp.traffic.Abs.Thresh.Check<-panel$DRV$Traffic.Lights$Abs.Thresh.Check[,,jjj,drop=F]
+    temp.traffic.Abs.Thresh.Check<-panel$Traffic.Lights$Abs.Thresh.Check[,,jjj,drop=F]
     Well.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
     Cont.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
   }
@@ -46,8 +46,8 @@ Plot_TrafficTable <- function(panel, subset=FALSE){
   
   if(panel$rg1=="Trend"){
     
-    temp.traffic.Beta.ND.Check<-panel$DRV$Traffic.Lights$Beta.ND.Check[Well.Names,Cont.Names,jjj,drop=F]
-    temp.traffic.Betas<-panel$DRV$Traffic.Lights$Betas[Well.Names,Cont.Names,jjj,drop=F]
+    temp.traffic.Beta.ND.Check<-panel$Traffic.Lights$Beta.ND.Check[Well.Names,Cont.Names,jjj,drop=F]
+    temp.traffic.Betas<-panel$Traffic.Lights$Betas[Well.Names,Cont.Names,jjj,drop=F]
     temp.traffic.Betas[!is.finite(temp.traffic.Betas)]<-NA
     temp.traffic.Betas<-zapsmall(temp.traffic.Betas)
     
@@ -70,8 +70,8 @@ Plot_TrafficTable <- function(panel, subset=FALSE){
   
   if(panel$rg1=="Threshold - Statistical"){
     
-    temp.traffic.Beta.ND.Check<-panel$DRV$Traffic.Lights$Beta.ND.Check[Well.Names,Cont.Names,jjj,drop=F]
-    temp.traffic.Ulims<-panel$DRV$Traffic.Lights$Smooth.Upper.lims[Well.Names,Cont.Names,jjj,drop=F]
+    temp.traffic.Beta.ND.Check<-panel$Traffic.Lights$Beta.ND.Check[Well.Names,Cont.Names,jjj,drop=F]
+    temp.traffic.Ulims<-panel$Traffic.Lights$Smooth.Upper.lims[Well.Names,Cont.Names,jjj,drop=F]
     Well.Names<-dimnames(temp.traffic.Ulims)[[1]]
     Cont.Names<-dimnames(temp.traffic.Ulims)[[2]]
     Num.Conts<-length(Cont.Names)
@@ -93,7 +93,7 @@ Plot_TrafficTable <- function(panel, subset=FALSE){
   if(panel$rg1=="Threshold - Absolute"){
     
     
-    temp.traffic.Abs.Thresh.Check<-panel$DRV$Traffic.Lights$Abs.Thresh.Check[Well.Names,Cont.Names,jjj,drop=F]
+    temp.traffic.Abs.Thresh.Check<-panel$Traffic.Lights$Abs.Thresh.Check[Well.Names,Cont.Names,jjj,drop=F]
     Well.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
     Cont.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
     Num.Conts<-length(Cont.Names)
@@ -171,7 +171,7 @@ Plot_TrafficTable <- function(panel, subset=FALSE){
   if(panel$rg1=="Trend")                  {axis(side=1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},       labels=rep("Trend",Num.Conts),     las=1,cex.axis = 1)}
   
   
-  mtext(paste(panel$rg1, ": ", date.to.print,if(panel$DRV$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$DRV$All.Data$Aq.sel,sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
+  mtext(paste(panel$rg1, ": ", date.to.print,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
   
   par(op)
   
