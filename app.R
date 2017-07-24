@@ -174,6 +174,26 @@ server <- function(input, output, session) {
     })
     
     
+    # Re-select the data in respect to the Aquifer group.
+    observeEvent(input$aquifer_contour, {
+      
+      tmpval = input$aquifer_contour
+      
+      browser()
+      # If the selected aquifer group changed, reload the data.
+      if (tmpval != pnl$All.Data$Aq.sel) {
+        
+        # Extract wells that match the aquifer.
+        Well.Coords <- pnl$All.Data$Well.Coords_All[as.character(pnl$All.Data$Well.Coords_All$Aquifer) == tmpval,]
+        
+        # 
+        AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+        
+      }
+      
+      ff = 8
+    })
+      
     
     output$download_timeseries_plot <- downloadHandler(
       
@@ -240,7 +260,6 @@ server <- function(input, output, session) {
       #
       # Check if Excel date transform checkbox is active
       #
-      #browser()
       if (input$excel_date && ("SampleDate" %in% names(well_data_tmp)) ) 
         well_data_tmp$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(well_data_tmp$SampleDate))))) 
         
@@ -335,6 +354,21 @@ server <- function(input, output, session) {
     shinyjs::onclick("toggleDataManager", {
       shinyjs::show(id = "data_manager", anim = TRUE);
       shinyjs::hide(id = "data_import", anim = TRUE)
+    })
+    
+    
+    #
+    # Decide whether to display the Aquifer Group selection when entering an Analyse tab.
+    #
+    observeEvent(input$plot_tabs, {
+      
+      # If there are less than 2 aquifer, hide the selection control.
+      if (length(pnl$All.Data$Aq_list) < 2) {
+        shinyjs::hide(id = "select_aquifer_timeseries")
+        shinyjs::hide(id = "select_aquifer_contour")
+        shinyjs::hide(id = "select_aquifer_traffic")
+        
+      }
     })
         
 }

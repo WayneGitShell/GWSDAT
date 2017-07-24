@@ -9,6 +9,10 @@ shiny_ui_analysepanel <- function() {
                        
                        column(3,
                               wellPanel(
+                                div(id = "select_aquifer_timeseries", 
+                                    selectInput("aquifer_timeseries", label = "Aquifer Group", choices = pnl$All.Data$Aq_list,
+                                                selected = pnl$All.Data$Aq.sel, width = '80%') ),
+                                
                                 selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$All.Data$All.Wells)),
                                             selected = pnl$Well, width = "80%"),
                                 
@@ -49,6 +53,9 @@ shiny_ui_analysepanel <- function() {
                        column(3, 
                               
                               wellPanel(
+                                div(id = "select_aquifer_contour", 
+                                    selectInput("aquifer_contour", label = "Aquifer Group", choices = pnl$All.Data$Aq_list,
+                                                                       selected = pnl$All.Data$Aq.sel, width = '80%') ),
                                 selectInput("solute_select_contour", label = "Solute", choices = names(pnl$Fitted.Data),
                                             selected = pnl$Cont.rg, width = '80%'),
                                 
@@ -102,6 +109,10 @@ shiny_ui_analysepanel <- function() {
                        column(3,
                               
                               wellPanel(
+                                div(id = "select_aquifer_traffic", 
+                                    selectInput("aquifer_traffic", label = "Aquifer Group", choices = pnl$All.Data$Aq_list,
+                                                selected = pnl$All.Data$Aq.sel, width = '80%') ),
+                                
                                 radioButtons("trend_or_threshold", label = "Display Table",
                                              choices = pnl$rg1_choice, 
                                              selected = pnl$rg1),

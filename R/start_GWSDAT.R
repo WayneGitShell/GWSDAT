@@ -27,8 +27,8 @@ start_GWSDAT <- function(GWSDAT_Options = NULL) {
   #
   # Change some Option for testing.
   # 
-  #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-  #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
   
   
   

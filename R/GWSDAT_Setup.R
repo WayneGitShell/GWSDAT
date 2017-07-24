@@ -31,9 +31,6 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
   	source(paste(GWSDATHome, "R/GWSDAT Auto Gamma.R", sep = "/"))
   	source(paste(GWSDATHome, "R/GWSDAT Shapefile Functions.R", sep = "/"))
   
-    # replace this one by Plot_* function below
-    source(paste(GWSDATHome, "R/GWSDAT MakePanel.R", sep = "/"))
-    
     # added 07/2017
     source(paste(GWSDATHome, "R/GWSDAT_Init.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep = "/"))
@@ -47,6 +44,10 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/Utility_fct.R", sep = "/"))
     source(paste(GWSDATHome, "R/shiny_ui_analysepanel.R", sep = "/"))
     source(paste(GWSDATHome, "R/shiny_ui_datamanager.R", sep = "/"))
+    
+    # do I need it?
+    # Called from: GWSDAT_Fit_Data.R, plot_Traffic_Table.R, GWSDAT_Input_Data.R (each one time)
+    source(paste(GWSDATHome, "R/GWSDAT_select_list.R", sep = "/"))
     
     
     
@@ -69,3 +70,50 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
  
 }
 #----------------------------------------------------------------------------------------------------------------------#
+
+
+
+GWSDAT_Load_Libs <- function(){
+  
+  Require <- function(pkg) {
+    
+    if (data.class(result<-try(find.package(pkg,lib.loc=.libPaths()),TRUE))=="try-error")
+    {
+      # tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
+      
+      ## pass error+message somehow back without calling tkmessageBox
+      # return(GWSDAT_Error(paste("Cannot find package \"",pkg,"\"",sep="")))  
+      # .. not doing this here because we need FALSE back.
+      return (FALSE)
+    }
+    else
+    {
+      require(pkg,character.only=TRUE)
+      return (TRUE)
+    }
+  }
+  
+  
+  
+  try(options(editor="notepad"))
+  if(!Require("sm")){return(FALSE)}
+  if(!Require("zoo")){return(FALSE)}
+  if(!Require("tkrplot")){return(FALSE)}
+  if(!Require("splancs")){return(FALSE)}
+  if(!Require("Kendall")){return(FALSE)}
+  if(!Require("animation")){return(FALSE)}
+  if(!Require("rpanel")){return(FALSE)}
+  if(!Require("deldir")){return(FALSE)}
+  if(!Require("maptools")){return(FALSE)}
+  if(!Require("geometry")){return(FALSE)}
+  if(!Require("Matrix")){return(FALSE)}
+  if(!Require("shiny")){return(FALSE)}
+  if(!Require("shinyjs")){return(FALSE)}
+  if(!Require("shinydashboard")){return(FALSE)}
+  Require("RDCOMClient")  
+  
+  
+  return(TRUE)
+}
+
+

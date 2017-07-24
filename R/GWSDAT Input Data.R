@@ -1,57 +1,11 @@
-##############################################################################################################
-
-GWSDAT_Load_Libs <- function(){
-
-  Require <- function(pkg) {
-     
-    if (data.class(result<-try(find.package(pkg,lib.loc=.libPaths()),TRUE))=="try-error")
-    {
-      # tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
-      
-      ## pass error+message somehow back without calling tkmessageBox
-      # return(GWSDAT_Error(paste("Cannot find package \"",pkg,"\"",sep="")))  
-      # .. not doing this here because we need FALSE back.
-      return (FALSE)
-    }
-    else
-    {
-        require(pkg,character.only=TRUE)
-        return (TRUE)
-    }
-  }
-
-
-
-  try(options(editor="notepad"))
-  if(!Require("sm")){return(FALSE)}
-  if(!Require("zoo")){return(FALSE)}
-  if(!Require("tkrplot")){return(FALSE)}
-  if(!Require("splancs")){return(FALSE)}
-  if(!Require("Kendall")){return(FALSE)}
-  if(!Require("animation")){return(FALSE)}
-  if(!Require("rpanel")){return(FALSE)}
-  if(!Require("deldir")){return(FALSE)}
-  if(!Require("maptools")){return(FALSE)}
-  if(!Require("geometry")){return(FALSE)}
-  if(!Require("Matrix")){return(FALSE)}
-  if(!Require("shiny")){return(FALSE)}
-  if(!Require("shinyjs")){return(FALSE)}
-  if(!Require("shinydashboard")){return(FALSE)}
-  Require("RDCOMClient")
-  
-  
-  return(TRUE)
-}
-
-
 
 #------------------------------------------------------------------------------------------------------------#
 
 GWSDAT_Aggregate_Data <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, NAPL.Thickness.Data) {
   
-  if(GWSDAT_Options$Aggby=="All Dates")	{my.seq<-NULL}
-  if(GWSDAT_Options$Aggby=="Monthly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-1 months")))}
-  if(GWSDAT_Options$Aggby=="Quarterly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-3 month")))}
+  if(GWSDAT_Options$Aggby == "All Dates")	{my.seq<-NULL}
+  if(GWSDAT_Options$Aggby == "Monthly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-1 months")))}
+  if(GWSDAT_Options$Aggby == "Quarterly")	{my.seq<-as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-3 month")))}
   
     #! Cont.Data changes, if I call it again, will it change again?
   Cont.Data <- GWSDAT.Create.Agg.Date(Cont.Data, GWSDAT_Options$Aggby,my.seq)
@@ -293,62 +247,79 @@ if(class(AG.ALL$SampleDate)[1] %in% c("POSIXct","POSIXt")){
 
 
 #Pick up Electron Acceptors before deleting non-aquifer wells. 
-ElecAccepts<-unique(as.character(AG.ALL[ tolower(as.character(AG.ALL$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
+ElecAccepts <- unique(as.character(AG.ALL[ tolower(as.character(AG.ALL$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
 
 
 ############ Well Data Sort  #############################
 
-AG.ALL$WellName<-factor(GWSDAT.rm.spaces(as.character(AG.ALL$WellName)))
-Well.Coords$WellName<-factor(GWSDAT.rm.spaces(as.character(Well.Coords$WellName)))
+AG.ALL$WellName <- factor(GWSDAT.rm.spaces(as.character(AG.ALL$WellName)))
+Well.Coords$WellName <- factor(GWSDAT.rm.spaces(as.character(Well.Coords$WellName)))
 
 
 
 #### Aquifer Selection ####################################
 
-if(!all(is.na(Well.Coords$Aquifer)) && !all(as.character(Well.Coords$Aquifer)=="")){
+Aq_sel <-  "All"    # This selects all aquifer.
 
+# This list will hold all aquifer groups.
+Aq_list = list(Aq_sel)
+
+
+if (!all(is.na(Well.Coords$Aquifer)) && !all(as.character(Well.Coords$Aquifer) == "")) {
+
+	# Find aquifer in the well coordinate table.
+	Aq_list <- unique(as.character(Well.Coords$Aquifer))
 	
-	un.Aq.sel<-unique(as.character(Well.Coords$Aquifer))
-	if(any(un.Aq.sel=="")){un.Aq.sel[un.Aq.sel==""]<-"Blank"}
-	if(length(un.Aq.sel)==1){Aq.sel<-as.character(un.Aq.sel)}else{Aq.sel<-GWSDAT.select.list(un.Aq.sel,title="Select an Aquifer to Analyse")}
-	if(Aq.sel==""){stop("User must select an Aquifer")}
-	if(Aq.sel=="Blank"){Aq.sel<-""}
-	Well.Coords<-Well.Coords[as.character(Well.Coords$Aquifer)==Aq.sel,]
-	AG.ALL<-AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+	#
+	# All Aquifer selection is done through a Shiny input control.
+	#
 	
-}else{
-
-Aq.sel<-""
-
+	#if (any(Aq_list == "")) {Aq_list[Aq_list == ""] <- "Blank"}
+	#if (length(Aq_list) == 1) {
+	#  Aq_sel <- as.character(Aq_list)
+	#} else { 
+	#    Aq_sel <- GWSDAT.select.list(un.Aq.sel,title="Select an Aquifer to Analyse")
+	#}
+	
+	#if (Aq_sel == "") { stop("User must select an Aquifer") }
+	# if (Aq_sel == "Blank") { Aq_sel <- "" }
+	#Well.Coords <- Well.Coords[as.character(Well.Coords$Aquifer) == Aq_sel,]
+	#AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+	
 }
+browser()
+Aq_list[Aq_list == ""] <- "All"
 
-Well.Coords<-Well.Coords[,c("WellName","XCoord","YCoord")]
+# Save the full table with Aquifer information
+Well.Coords_All <- Well.Coords
+
+Well.Coords <- Well.Coords[,c("WellName","XCoord","YCoord")]
 
 
 #---------------------------------------------------------#
 
 
 
-All.Wells<-unique(as.character(AG.ALL$WellName))
-Well.Coords$XCoord<-as.numeric(GWSDAT.rm.spaces(as.character(Well.Coords$XCoord)))
-Well.Coords$YCoord<-as.numeric(GWSDAT.rm.spaces(as.character(Well.Coords$YCoord)))
-Well.Coords<-na.omit(Well.Coords)
-Well.Coords<-unique(Well.Coords)
+All.Wells <- unique(as.character(AG.ALL$WellName))
+Well.Coords$XCoord <- as.numeric(GWSDAT.rm.spaces(as.character(Well.Coords$XCoord)))
+Well.Coords$YCoord <- as.numeric(GWSDAT.rm.spaces(as.character(Well.Coords$YCoord)))
+Well.Coords <- na.omit(Well.Coords)
+Well.Coords < -unique(Well.Coords)
 
 
 if(any(table(Well.Coords$WellName)>1)){
-tkmessageBox(title="Error!",message="Non-Unique Well Names in Well Coords Table.",icon="error",type="ok")
+tkmessageBox(title="Error!",message = "Non-Unique Well Names in Well Coords Table.",icon="error",type="ok")
 stop("Non Unique Well Names")
 }
 
-if(nrow(unique(Well.Coords[,c("XCoord","YCoord")]))<nrow(Well.Coords)){
+if(nrow(unique(Well.Coords[,c("XCoord","YCoord")])) < nrow(Well.Coords)){
 tkmessageBox(title="Warning!",message="Non-Unique Well Coordinates in Well Coords Table. \nGroundwater elevations for non-unique well coordinates will be substituted by their mean value.",icon="warning",type="ok")
 if(as.character(tkmessageBox(message="Do you wish to continue?",icon="question",type="yesno",default="yes"))!="yes"){
 stop("Non Unique Well Coordinates")
 }
 }
 
-Well.Coords<-Well.Coords[as.character(Well.Coords$WellName) %in% All.Wells,]
+Well.Coords <- Well.Coords[as.character(Well.Coords$WellName) %in% All.Wells,]
 
 if(length(setdiff(All.Wells,as.character(Well.Coords$WellName)))!=0){
 
@@ -364,7 +335,7 @@ tkmessageBox(title="Warning!",message=paste("Missing Well Coordinates for: ",pas
 
 }
 
-Well.Area<-areapl(as.matrix(Well.Coords[chull(Well.Coords[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
+Well.Area <- areapl(as.matrix(Well.Coords[chull(Well.Coords[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
 #--------------------------------------------------------#
 
 
@@ -375,12 +346,12 @@ Well.Area<-areapl(as.matrix(Well.Coords[chull(Well.Coords[,c("XCoord","YCoord")]
 ################ Flags Handling ##################################
 if(!all(is.na(AG.ALL$Flags))){  
 
-	AG.ALL<-AG.ALL[tolower(as.character(AG.ALL$Flags))!="omit",]
+	AG.ALL <- AG.ALL[tolower(as.character(AG.ALL$Flags))!="omit",]
 
 
 }else{
 
-	AG.ALL$Flags<-rep("",nrow(AG.ALL))
+	AG.ALL$Flags <- rep("",nrow(AG.ALL))
 
 }
 
@@ -395,7 +366,7 @@ if(length(unique(as.character(AG.ALL$Constituent)))!=length(unique(toupper(as.ch
 	tkmessageBox(title="Warning!",message="Constituent types have different letter cases (e.g. 'MTBE v mtbe') 
 	\n GWSDAT will modify all constituent types to upper case.",icon="warning",type="ok")
 
-	AG.ALL$Constituent<-factor(toupper(as.character(AG.ALL$Constituent)))
+	AG.ALL$Constituent <- factor(toupper(as.character(AG.ALL$Constituent)))
 }
 
 
@@ -499,7 +470,7 @@ Cont.Data$Units[Cont.Data$Units=="ng/l"]<-"ug/l"
 }
 
 
-Cont.Data$Units<-factor(as.character(Cont.Data$Units))
+Cont.Data$Units <- factor(as.character(Cont.Data$Units))
 #-------------------------------------------------------------------#
 
 
@@ -684,11 +655,13 @@ All.Data <- list(GW.Data = GW.Data,
                All.Agg.Dates = agg_data$All.Agg.Dates,
                All.Wells = All.Wells,
                Well.Coords = Well.Coords,
+               Well.Coords_All = Well.Coords_All,
                All.Well.Area = Well.Area,
                ShapeFiles = ShapeFiles,
-               Aq.sel = Aq.sel,
+               Aq.sel = Aq_sel,
+               Aq_list = Aq_list,
                GW.Units = GW.Units,
-               NAPL.Units = if(exists("NAPL.Units")){NAPL.Units} else {NULL},ElecAccepts=ElecAccepts
+               NAPL.Units = if (exists("NAPL.Units")){NAPL.Units} else {NULL},ElecAccepts=ElecAccepts
                )
 
 return(All.Data)
