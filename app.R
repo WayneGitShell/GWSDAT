@@ -1,29 +1,4 @@
 
-source("R/GWSDAT_Setup.R")
-
-options(warn = 1)
-
-
-#
-# Setup and init data and GWSDAT configuration.
-#
-GWSDAT_Options = GWSDAT_Setup()
-
-ret = GWSDAT_Init(GWSDAT_Options)
-pnl = Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
-
-
-
-## Get return status and display on page.
-#if(class(ret$status) == "GWSDAT_Error")
-#  output$errors <- renderText({ ret$status$msg })
-#if(class(ret$status) == "GWSDAT_Warning")
-#  output$warnings <- renderText({ ret$status$msg })
-
-#if(class(ret$status) == "GWSDAT_OK") {
-#  output$errors <- renderText({ "No error for GWSDAT_Run_shiny()." })
-#  output$warnings <- renderText({ "No warnings for GWSDAT_Run_shiny()." })
-#}
 
 
 
@@ -391,255 +366,36 @@ ui <- dashboardPage(
     tabItems(
      
       tabItem(tabName = "input_data", 
-          
-          # Init the shiny JS framework
-          useShinyjs(),
-          
-          
-          #
-          # Data Manager panel
-          #
-          div(id = "data_manager",
-            fluidPage(
-               fluidRow(
-                 
-                 h3("Data Manager"),
-                 hr(),
-                 "No data is present.",
-                 a(id = "toggleDataImport", "Add", href = "#"),
-                 " new data set.",
-                 hr(),
-                 #p(HTML("No data is present. <a href='#import_data_page'>Add</a> new data set.")),
-                 #a(id = "toggleDataImport", "Add", href = "#")#,
-                 actionButton("add_new_data", label = " Import Data", icon = icon("plus"), style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-               )
-             )
-          ),
-          
-          
-          #
-          # Data Import panel
-          #
-          shinyjs::hidden(
-          
-            div(id = "data_import",
-              fluidPage(
-  
-                column(3,
-                       
-                       a(id = "toggleDataManager", "<- Go back.", href = "#"),
-                       
-                       h3("Import New CSV Data"),
-                       "Select the well data file including the solute values for each well, and the well coordinates file in .csv file format.",
-                       
-                       hr(),
-                       fileInput('well_data_file', 'Well Data File (CSV)',
-                                 accept = c('text/csv', 
-                                          'text/comma-separated-values,text/plain', 
-                                          '.csv')),
-                       
-                       fileInput('well_coord_file', 'Well Coordinates File (CSV)',
-                                 accept = c('text/csv', 
-                                          'text/comma-separated-values,text/plain', 
-                                          '.csv')),
-                       
-                       tags$hr(),
-                       
-                       checkboxInput('header', 'Header', TRUE),
-                       checkboxInput('excel_date', 'Transform Excel Date', FALSE),
-                       radioButtons('sep', 'Separator',
-                                    c(Comma = ',',
-                                      Semicolon = ';',
-                                      Tab = '\t'),
-                                    ','),
-                       radioButtons('quote', 'Quote',
-                                    c(None = '',
-                                      'Double Quote' = '"',
-                                      'Single Quote' = "'"),
-                                    '"'),
-                       hr(),
-                       actionButton("reset_button", label = "Reset"),
-                       #tags$head(
-                       #   tags$style(HTML('#run{background-color:orange}'))
-                       # ),
-                       actionButton("import_button", label = "Import Data", icon("arrow-down"), 
-                                    style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-                       )
-                       
-                       
-                ), # end column
-                
-                column(4,
-                       #h4("Well and Solute data"),
-                       tableOutput('table_well_data')
-                ), # end column
-                column(4,
-                       #h4("Well and Solute data"),
-                       tableOutput('table_well_coord')
-                )
-                
-              ) # end fluidPage
-                  
-            ) # end div (data_import)
-            
-          ) # end hidden
-          
-        ), # end tabItem
+        # Init the shiny JS framework
+        useShinyjs(), 
+        
+        # Data Manager main panel.
+        div(id = "data_manager", shiny_ui_datamanager()),
+        
+        # Data Import panel
+        shinyjs::hidden(
+          div(id = "data_import", shiny_ui_dataimport())
+        )
+      ),
                  
       
-    
-      #
-      #
       # Analysis Tab
-      #
-      #
-      #
-      
-      
-      
-      
-      
-      tabItem(tabName = "analysis",
-              
-              tabsetPanel(id = "plot_tabs",
-                          
-                          
-                          tabPanel("Smooth Time-Series", id = "ts_tab", fluid = TRUE,
-                                   
-                                   column(3,
-                                          wellPanel(
-                                            selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$All.Data$All.Wells)),
-                                                        selected = pnl$Well, width = "80%"),
-                                            
-                                            selectInput("solute_select", label = "Solute", choices = names(pnl$Fitted.Data),
-                                                        selected = pnl$Cont.rg, width = '80%'),
-                                            
-                                            radioButtons("solute_conc", label = "Solute Conc. Unit",
-                                                         choices = pnl$rgUnits_choice, 
-                                                         selected = pnl$rgUnits),
-                                            
-                                            checkboxInput("check_threshold", label = "Display threshold", value = FALSE ),
-                                            
-                                            checkboxGroupInput("ts_true_options", label = "Time Series Plot Options", 
-                                                               choices = names(pnl$dlines),
-                                                               selected = names(which(pnl$dlines == TRUE)))
-                                            
-                                            
-                                            #h4("Status:"),
-                                            #textOutput("status")
-                                            
-                                          )
-                                   ),
-                                   
-                                   column(7,
-                                          plotOutput("time_series"),
-                                          downloadButton("download_timeseries_plot", label = "Save Plot")
-                                          
-                                   )
-                                   
-                                   
-                          ),
-                          
-                          
-                          
-                          
-                          tabPanel("Contour Plot", id = "contour_tab", fluid = TRUE,
-                                   
-                                   column(3, 
-                                          
-                                          wellPanel(
-                                            selectInput("solute_select_contour", label = "Solute", choices = names(pnl$Fitted.Data),
-                                                        selected = pnl$Cont.rg, width = '80%'),
-                                            
-                                            radioButtons("solute_conc_contour", label = "Solute Conc. Unit",
-                                                         choices = pnl$rgUnits_choice, 
-                                                         selected = pnl$rgUnits),
-                                            
-                                            selectInput("imageplot_type", label = "Plot Type", choices = pnl$Color.type_choice,
-                                                        selected = pnl$Color.type, width = "80%"),
-                                            
-                                            
-                                            checkboxGroupInput("imageplot_options", label = "Plot Options", 
-                                                               choices = names(pnl$ScaleCols),
-                                                               selected = names(which(pnl$ScaleCols == TRUE))),
-                                            
-                                            radioButtons("gw_flows", label = "Groundwater Flows",
-                                                         choices = pnl$GW.disp_choice, 
-                                                         selected = pnl$GW.disp)
-                                            
-                                          )          
-                                          
-                                   ),
-                                   
-                                   column(7, 
-                                          plotOutput("image_plot")
-                                   ),
-                                   
-                                   column(2, 
-                                          sliderInput("time_steps", "Time Step",
-                                                      min = pnl$timestep_range[1], 
-                                                      max = pnl$timestep_range[2], 
-                                                      value = pnl$timestep, 
-                                                      step = 1,
-                                                      #pre = "$", sep = ",", 
-                                                      animate = TRUE),
-                                          selectInput("aggregate_data", label = "Aggregate Data", 
-                                                      choices = c("All Dates", "Monthly", "Quarterly"),
-                                                      selected = pnl$GWSDAT_Options$Aggby, 
-                                                      width = "100%"),
-                                          
-                                          downloadButton("download_contour_plot", label = "Save Plot")
-                                          
-                                          
-                                   )
-                          ),
-                          
-                          
-                          
-                          tabPanel("Traffic Lights", fluid = TRUE,
-                                   
-                                   column(3,
-                                          
-                                          wellPanel(
-                                            radioButtons("trend_or_threshold", label = "Display Table",
-                                                         choices = pnl$rg1_choice, 
-                                                         selected = pnl$rg1),
-                                            
-                                            selectInput("traffic_color", label = "Show color", choices = pnl$ColTrafficListbox_choice,
-                                                        selected = pnl$ColTrafficListbox, width = "80%")
-                                            
-                                          )
-                                          
-                                   ),
-                                   
-                                   column(7,
-                                          plotOutput("traffic_table"),
-                                          plotOutput("plot_legend_traffic")
-                                   ),
-                                   
-                                   column(2,
-                                          sliderInput("time_steps_traffic", "Time Step",
-                                                      min = pnl$timestep_range[1], 
-                                                      max = pnl$timestep_range[2], 
-                                                      value = pnl$timestep, 
-                                                      step = 1,
-                                                      animate = TRUE),
-                                          selectInput("aggregate_data_traffic", label = "Aggregate Data", 
-                                                      choices = c("All Dates", "Monthly", "Quarterly"),
-                                                      selected = pnl$GWSDAT_Options$Aggby, 
-                                                      width = "100%"),
-                                          downloadButton("download_traffictable", label = "Save Plot")
-                                   )
-                                   
-                          )
-                          
-              ) # end TabPanel
-          ) # end tabItem
+      tabItem(tabName = "analysis", shiny_ui_analysepanel()
+      ) # end tabItem
     ) # end tabItems
  ) # end dashboardBody 
 ) # end ui
  
 
+ui_analyse_only <- shinyUI(
+  fluidPage(shiny_ui_analysepanel())
+#  fluidPage(h1("test"))
+)
+  
+  
 
-shinyApp(ui = ui, server = server)
-
+if (!RUN_SINGLE_INSTANCE) {
+  shinyApp(ui = ui, server = server)
+} else {
+  shinyApp(ui = ui_analyse_only, server = server)
+}

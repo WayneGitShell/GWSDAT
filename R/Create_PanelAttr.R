@@ -18,7 +18,7 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   Cont.Names <- names(Fitted.Data)
   Num.Conts <- length(Cont.Names)
  
-  browser()
+  
   #
   # Set 'Use.Defaults'.
   #
@@ -63,23 +63,10 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   
  
   
+  panel = list()
   
-  
-  if (!RUNNING_SHINY) {
-    
-    # Create the TK panel when running Stand-Alone.
-    panel <- rp.control(
-      title = if (All.Data$Aq.sel == "") { 
-        GWSDAT_Options$SiteName 
-      } else { 
-        paste(GWSDAT_Options$SiteName,": Aquifer-",All.Data$Aq.sel,sep = "")
-      }, panelname = "GWSDATpnl" )
-  } else {
-    
-    # Create panel variable for Shiny.
-    panel <- list()
-  }
-  
+
+
   
   
   

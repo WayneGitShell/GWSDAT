@@ -203,16 +203,25 @@ return(x)
 
 GWSDAT.Init.Data <- function(AG.ALL,Well.Coords,GWSDAT_Options){
 
-
+  #
+  # Read Well data and coordinates from file.
+  #
+  AG.ALL <- Read_Well_Data(GWSDAT_Options$WellDataFilename)
+  well_coords <- Read_Well_Coords(GWSDAT_Options$WellCoordsFilename)
+  
+  Well.Coords <- well_coords$WellCoords
+  GWSDAT_Options$WellCoordsLengthUnits <-  well_coords$WellCoordsLengthUnits
+  
+  #AGALL, WellCoords
 #################Input Shapefiles ########################
 
-ShapeFiles<-NULL
+ShapeFiles <- NULL
 
-if(length(GWSDAT_Options$ShapeFileNames)>0){
-ShapeFiles<-list()
-mycount<-0
+if (length(GWSDAT_Options$ShapeFileNames) > 0){
+ShapeFiles <- list()
+mycount <- 0
 
-	for(i in 1:length(GWSDAT_Options$ShapeFileNames)){
+	for(i in 1:length(GWSDAT_Options$ShapeFileNames)) {
 	
 	tempShapeFile<-try(GWSDAT.readShapeFile(GWSDAT_Options$ShapeFileNames[i]))
 	
@@ -542,38 +551,35 @@ if(ContTypeData=="NoConcData" || as.character(tkmessageBox(message="Do you wish 
 	
 
 	############################# NAPL and dissolved conflict resolution ##########################################
-	NAPLWellandDates<-   unique(Cont.Data[tolower(Cont.Data$Constituent)=="napl",c("WellName","SampleDate","Constituent"),drop=FALSE])[,1:2]
-	NonNAPLWellandDates<-unique(Cont.Data[tolower(Cont.Data$Constituent)!="napl" & !is.na(Cont.Data$Result.Corr.ND),c("WellName","SampleDate","Constituent"),drop=FALSE])[,1:2]
-	NAPLConflictDateandWells<-NonNAPLWellandDates[which(apply(NonNAPLWellandDates,1,paste,collapse="") %in% apply(NAPLWellandDates,1,paste,collapse="")),]
-	NAPLConflictDateandWells<-unique(NAPLConflictDateandWells); 
+	NAPLWellandDates <- unique(Cont.Data[tolower(Cont.Data$Constituent)=="napl",c("WellName","SampleDate","Constituent"),drop=FALSE])[,1:2]
+	NonNAPLWellandDates <- unique(Cont.Data[tolower(Cont.Data$Constituent)!="napl" & !is.na(Cont.Data$Result.Corr.ND),c("WellName","SampleDate","Constituent"),drop=FALSE])[,1:2]
+	NAPLConflictDateandWells <- NonNAPLWellandDates[which(apply(NonNAPLWellandDates,1,paste,collapse="") %in% apply(NAPLWellandDates,1,paste,collapse="")),]
+	NAPLConflictDateandWells <- unique(NAPLConflictDateandWells); 
 	
-	if(nrow(NAPLConflictDateandWells)>0){
+	if (nrow(NAPLConflictDateandWells) > 0) {
 
 	
-	if(all(Cont.Data[apply(Cont.Data[,c("WellName","SampleDate")],1,paste,collapse="") %in% apply(NAPLConflictDateandWells,1,paste,collapse="") 
-		& tolower(Cont.Data$Constituent)=="napl",]$Result.Corr.ND==0)){myans<-"yes"}else{
+	if (all(Cont.Data[apply(Cont.Data[,c("WellName","SampleDate")],1,paste,collapse = "") %in% apply(NAPLConflictDateandWells,1,paste,collapse="") 
+		& tolower(Cont.Data$Constituent) == "napl",]$Result.Corr.ND == 0)){myans <- "yes"} else {
 
-		myans<-as.character(tkmessageBox(message="Concentration data reported in presence of NAPL. Do you wish to use concentration data (Yes) or substitue these NAPL values with maximum observed solute concentrations (No)?
-		\nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored.",icon="question",type="yesno",
-		default="yes",title="NAPL Data Conflict"))
+		myans <- as.character(tkmessageBox(message = "Concentration data reported in presence of NAPL. Do you wish to use concentration data (Yes) or substitue these NAPL values with maximum observed solute concentrations (No)?
+		\nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored.", icon = "question", type = "yesno",
+		default = "yes",title="NAPL Data Conflict"))
 	}
 
-	if(myans=="no"){
+	if (myans == "no") {
 
-
-
-
-		for(i in 1:nrow(NAPLConflictDateandWells)){
-			Cont.Data<-Cont.Data[-which(as.character(Cont.Data$WellName)==as.character(NAPLConflictDateandWells$WellName)[i] & 
-			Cont.Data$SampleDate==NAPLConflictDateandWells$SampleDate[i] & tolower(as.character(Cont.Data$Constituent))!="napl"),]
+	  for (i in 1:nrow(NAPLConflictDateandWells)){
+			Cont.Data <- Cont.Data[-which(as.character(Cont.Data$WellName) == as.character(NAPLConflictDateandWells$WellName)[i] & 
+			Cont.Data$SampleDate == NAPLConflictDateandWells$SampleDate[i] & tolower(as.character(Cont.Data$Constituent)) != "napl"),]
 		}
 
 	}else{
 
 
-		for(i in 1:nrow(NAPLConflictDateandWells)){
-			Cont.Data<-Cont.Data[-which(as.character(Cont.Data$WellName)==as.character(NAPLConflictDateandWells$WellName)[i] & 
-			Cont.Data$SampleDate==NAPLConflictDateandWells$SampleDate[i] & tolower(as.character(Cont.Data$Constituent))=="napl"),]
+		for (i in 1:nrow(NAPLConflictDateandWells)){
+			Cont.Data <- Cont.Data[-which(as.character(Cont.Data$WellName) == as.character(NAPLConflictDateandWells$WellName)[i] & 
+			Cont.Data$SampleDate == NAPLConflictDateandWells$SampleDate[i] & tolower(as.character(Cont.Data$Constituent)) == "napl"),]
 		}
 
 
@@ -586,39 +592,38 @@ if(ContTypeData=="NoConcData" || as.character(tkmessageBox(message="Do you wish 
 	
 	#-------------------------------------------------------------------------------------------------------------#
 
-	NAPL.Data<-Cont.Data[tolower(as.character(Cont.Data$Constituent))=="napl",]
-	No.NAPL.Data<-Cont.Data[tolower(as.character(Cont.Data$Constituent))!="napl",]
-	No.NAPL.Data$Constituent<-factor(as.character(No.NAPL.Data$Constituent))
-	No.NAPL.Data<-No.NAPL.Data[,c("WellName","Constituent","SampleDate","Result","Units","ND","Result.Corr.ND")]
+	NAPL.Data <- Cont.Data[tolower(as.character(Cont.Data$Constituent))=="napl",]
+	No.NAPL.Data <- Cont.Data[tolower(as.character(Cont.Data$Constituent))!="napl",]
+	No.NAPL.Data$Constituent <- factor(as.character(No.NAPL.Data$Constituent))
+	No.NAPL.Data <- No.NAPL.Data[,c("WellName","Constituent","SampleDate","Result","Units","ND","Result.Corr.ND")]
 
 
 
-	New.NAPL.Data<-data.frame(
-	WellName=rep(NAPL.Data$WellName,length(All.Conts.No.NAPL)),
-	Constituent=rep(All.Conts.No.NAPL,each=nrow(NAPL.Data)),
-	SampleDate=rep(NAPL.Data$SampleDate,length(All.Conts.No.NAPL))
+	New.NAPL.Data <- data.frame(
+	WellName = rep(NAPL.Data$WellName,length(All.Conts.No.NAPL)),
+	Constituent = rep(All.Conts.No.NAPL,each=nrow(NAPL.Data)),
+	SampleDate = rep(NAPL.Data$SampleDate,length(All.Conts.No.NAPL))
 	)
 	
 	New.NAPL.Data$Result=rep("NAPL",nrow(New.NAPL.Data))
 	New.NAPL.Data$Units=rep(NAPL.Units,nrow(New.NAPL.Data)); 
-	New.NAPL.Data$ND=rep(FALSE,nrow(New.NAPL.Data))
-	New.NAPL.Data$Result.Corr.ND<-
-	tapply(No.NAPL.Data$Result.Corr.ND,No.NAPL.Data$Constituent,max,na.rm=T)[as.character(New.NAPL.Data$Const)]
+	New.NAPL.Data$ND = rep(FALSE,nrow(New.NAPL.Data))
+	New.NAPL.Data$Result.Corr.ND <- tapply(No.NAPL.Data$Result.Corr.ND,No.NAPL.Data$Constituent,max,na.rm=T)[as.character(New.NAPL.Data$Const)]
 	
 	
-	Cont.Data<-rbind(No.NAPL.Data,New.NAPL.Data)
-	All.Conts<-unique(as.character(Cont.Data$Constituent))
+	Cont.Data <- rbind(No.NAPL.Data,New.NAPL.Data)
+	All.Conts <- unique(as.character(Cont.Data$Constituent))
 	
 
 }else{
 
-	All.Conts.No.NAPL<-All.Conts[tolower(All.Conts)!="napl"]
-	NAPL.Data<-Cont.Data[tolower(as.character(Cont.Data$Constituent))=="napl",]
-	No.NAPL.Data<-Cont.Data[tolower(as.character(Cont.Data$Constituent))!="napl",]
-	No.NAPL.Data$Constituent<-factor(as.character(No.NAPL.Data$Constituent))
+	All.Conts.No.NAPL <- All.Conts[tolower(All.Conts) != "napl"]
+	NAPL.Data <- Cont.Data[tolower(as.character(Cont.Data$Constituent)) == "napl",]
+	No.NAPL.Data <- Cont.Data[tolower(as.character(Cont.Data$Constituent)) != "napl",]
+	No.NAPL.Data$Constituent <- factor(as.character(No.NAPL.Data$Constituent))
 
-	Cont.Data<-No.NAPL.Data
-	All.Conts<-unique(as.character(Cont.Data$Constituent))
+	Cont.Data <- No.NAPL.Data
+	All.Conts <- unique(as.character(Cont.Data$Constituent))
 	
 }
 
@@ -637,39 +642,40 @@ Cont.Data[,c("XCoord","YCoord")]<-Well.Coords[match(as.character(Cont.Data$WellN
 
 ####################### Groundwater Data ###############################################################
 
-GW.Data<-AG.ALL[tolower(as.character(AG.ALL$Constituent))=="gw",]
-GW.Units<-unique(tolower(as.character(GW.Data$Units)))
+GW.Data <- AG.ALL[tolower(as.character(AG.ALL$Constituent))=="gw",]
+GW.Units <- unique(tolower(as.character(GW.Data$Units)))
 
-if(length(GW.Units)>1){
-tkmessageBox(title="Units Error",message="Multiple units detected for GroundWater elevation in input dataset. \nPlease ensure same elevation units are used throughout.",icon="error",type="ok")
+if(length(GW.Units) > 1) {
+tkmessageBox(title = "Units Error",message="Multiple units detected for GroundWater elevation in input dataset. \nPlease ensure same elevation units are used throughout.",icon="error",type="ok")
 stop("Multiple GW Units")
 }
 
-if(length(GW.Units)>0){
-if(!GW.Units %in% c("level","mm","cm","metres","inches","feet")){
-tkmessageBox(title="Units Error",message="GroundWater elevation units must be one of 'level', 'mm', 'cm', 'metres', 'inches' or 'feet'.\n\nPlease correct and re-run GWSDAT analysis.",icon="error",type="ok")
-stop("Incorrect GW Units")
-}
+
+if (length(GW.Units) > 0) {
+  if (!GW.Units %in% c("level","mm","cm","metres","inches","feet")) {
+    tkmessageBox(title = "Units Error",message = "GroundWater elevation units must be one of 'level', 'mm', 'cm', 'metres', 'inches' or 'feet'.\n\nPlease correct and re-run GWSDAT analysis.",icon="error",type="ok")
+    stop("Incorrect GW Units")
+  }
 }
 
-GW.Data$Result<-as.numeric(as.character(GW.Data$Result))
-GW.Data<-GW.Data[!is.na(GW.Data$Result),]
-GW.Data[,c("XCoord","YCoord")]<-Well.Coords[match(as.character(GW.Data$WellName),as.character(Well.Coords$WellName)),c("XCoord","YCoord")]
+GW.Data$Result <- as.numeric(as.character(GW.Data$Result))
+GW.Data <- GW.Data[!is.na(GW.Data$Result),]
+GW.Data[,c("XCoord","YCoord")] <- Well.Coords[match(as.character(GW.Data$WellName),as.character(Well.Coords$WellName)),c("XCoord","YCoord")]
 #-------------------------------------------------------------------------------------------------------#
 
 
 
 ####################### Aggregate Cont, GW and NAPL Data ######################################################
-All.Dates<-sort(unique(c(GW.Data$SampleDate,AG.ALL$SampleDate)))
+All.Dates <- sort(unique(c(GW.Data$SampleDate,AG.ALL$SampleDate)))
 
-if(exists("NAPL.Thickness.Data")){All.Dates<-sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))}
+if (exists("NAPL.Thickness.Data")){All.Dates<-sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))}
 
 
 agg_data <- GWSDAT_Aggregate_Data(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, 
                                   NAPL.Thickness.Data = if(exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL} )
 
 
-All.Data<-list(GW.Data = GW.Data,
+All.Data <- list(GW.Data = GW.Data,
                Agg_GW_Data = agg_data$Agg_GW_Data,
                NAPL.Thickness.Data = agg_data$NAPL.Thickness.Data,
                Cont.Data = agg_data$Cont.Data,
