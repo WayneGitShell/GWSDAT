@@ -138,3 +138,62 @@ else{
 
 
 }
+
+
+
+#################Input Shapefiles ########################
+
+init_shapefiles <- function(GWSDAT_Options) {
+
+  ShapeFiles <- NULL
+  
+  if (length(GWSDAT_Options$ShapeFileNames) > 0) {
+    ShapeFiles <- list()
+    mycount <- 0
+    
+    for (i in 1:length(GWSDAT_Options$ShapeFileNames)) {
+      
+      tempShapeFile <- try(GWSDAT.readShapeFile(GWSDAT_Options$ShapeFileNames[i]))
+      
+      
+      
+      if (inherits(tempShapeFile, "try-error")) {
+        
+        tkmessageBox(title="Warning!",message=paste("Error Inputting '",GWSDAT_Options$ShapeFileNames[i],"' shapefile",sep=""),
+                     icon = "warning",type="ok")
+        
+        if (length( grep(".shp",tolower(GWSDAT_Options$ShapeFileNames[i])))==0){
+          
+          tkmessageBox(title="Warning!",message=paste("Shape Files usually have a .shp file extension"),
+                       icon = "warning",type="ok")
+          
+        }
+        
+        
+        if (file.exists(GWSDAT_Options$ShapeFileNames[i]) != TRUE) {
+          
+          tkmessageBox(title = "Warning!",message = paste("File: '",GWSDAT_Options$ShapeFileNames[i],"' does not exist.",sep = ""),
+                       icon = "warning",type = "ok")
+          
+        }
+        
+        if (as.character(tkmessageBox(message = "Do you wish to continue?",icon="question",type="yesno",default="yes"))!="yes"){
+          stop("Error Inputting ShapeFile")
+        }
+        
+        
+      } else {
+        
+        mycount <- mycount + 1
+        ShapeFiles[[mycount]] <- tempShapeFile
+        
+        
+      }
+      
+    }
+    
+    if (length(ShapeFiles) == 0) { ShapeFiles <- NULL }
+  }
+  
+  return(ShapeFiles)
+}

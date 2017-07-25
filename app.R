@@ -4,15 +4,48 @@
 
 # Define server logic 
 server <- function(input, output, session) {
-    
+   
   
-  #well_data_tmp = NULL
-  well_data_file = NULL
+  #
+  # Execute once per user:
+  #
   
-  #well_coords_tmp = NULL
+  #
+  # Read GWSDAT instances.
+  # E.g. GWSDAT_inst_lst = load_GWSDAT_inst(user_id)  # return array of GWSDAT_instance
+  #      GWSDAT_inst_lst[[1]]     # access first GWSDAT_instance, holds data, fit, etc.
+  #
+  #GWSDAT_inst_lst = list(pnl)
+  #GWSDAT_inst <- GWSDAT_inst_lst[[1]] # How to access this in ui space?
+  
+  
+  # This goes into a GWSDAT_instance
+  well_data_file = NULL   
   well_coord_file = NULL
   
+  
+  
+ 
+  
+  # 
+  # Some usefull session objects:
+  #
+  # session$userData  - store user data here
+  # onSessionEnded(callback), onEnded(callback)  - executes when user exits browser
+  # isClosed()  - function that return TRUE if client has disconnected  
+  #
+  
+  
+  #
+  # Clean-up user session.
+  #
+  session$onSessionEnded(function() {
+    # browser()
+    #q()
     
+  })
+  
+  
     #
     # Plot time-series window
     #
@@ -71,7 +104,7 @@ server <- function(input, output, session) {
       ##
       pnl$timestep <<- input$time_steps
       pnl$GWSDAT_Options$Aggby <<- input$aggregate_data
-      
+      pnl$All.Data$Aq.sel <<- input$aquifer_contour
       
       
       Plot_ImagePlot(pnl)
@@ -114,9 +147,10 @@ server <- function(input, output, session) {
 
       
       if(pnl$GWSDAT_Options$Aggby != aggby) {
+       
         pnl$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
         
-        agg_data <<- GWSDAT_Aggregate_Data(pnl$GWSDAT_Options, 
+        agg_data <- GWSDAT_Aggregate_Data(pnl$GWSDAT_Options, 
                                            pnl$All.Data$All.Dates, 
                                            pnl$All.Data$GW.Data, 
                                            pnl$All.Data$Cont.Data, 
@@ -179,19 +213,39 @@ server <- function(input, output, session) {
       
       tmpval = input$aquifer_contour
       
-      browser()
       # If the selected aquifer group changed, reload the data.
       if (tmpval != pnl$All.Data$Aq.sel) {
         
-        # Extract wells that match the aquifer.
-        Well.Coords <- pnl$All.Data$Well.Coords_All[as.character(pnl$All.Data$Well.Coords_All$Aquifer) == tmpval,]
+        # Prepare the input data with the selected Aquifer.
+        pnl$All.Data <<- try(prepare_data(pnl$All.Data$solute_data, 
+                                     pnl$All.Data$well_data, 
+                                     pnl$GWSDAT_Options, 
+                                     Aq_sel = tmpval))
         
-        # 
-        AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+        if (inherits(pnl$All.Data, 'try-error')) {
+          stop("Error in inputting and formatting data.")
+        }
         
+        
+        # Fit the data.
+        pnl$Fitted.Data <<- GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
+        
+        if (class(pnl$Fitted.Data) != "gwsdat_fit") {
+          stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 
+               class(Fitted.Data), "\n")
+        }
+        
+        tmp_Cont <- pnl$Cont.rg
+        tmp_rgUnits <- pnl$rgUnits
+      
+        # Create a complete GWSDAT instance with data, model, and options. 
+        pnl <<- Create_PanelAttr(pnl)
+        
+        pnl$Cont.rg <<- tmp_Cont 
+        pnl$rgUnits <<- tmp_rgUnits
       }
       
-      ff = 8
+
     })
       
     
@@ -381,15 +435,29 @@ server <- function(input, output, session) {
 ########################### UI Section #############################################################
 
 
-
-
+#
+# Define the Shiny dashboard header
+#
+dbHeader <- dashboardHeader(title = "GWSDAT",
+#                            tags$li(a(href = 'http://shinyapps.company.com',
+#                                      icon("power-off"),
+#                                      title = "Back to Apps Home"),
+#                                    class = "dropdown"))#,
+                            tags$li(class = "dropdown", 
+                                    tags$a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
+                                      target = '_blank',
+                                      tags$img(src = 'Final_GWSDAT_Logo.png',
+                                          title = "GWSDAT Homepage", height = "40px"),
+                                      style = "padding-top:5px; padding-bottom:5px;")
+                                    ))
 
 
 
 
 ui <- dashboardPage(
   
-  dashboardHeader(title = "Shiny GWSDAT"),
+  dbHeader, 
+#  dashboardHeader(title = "Shiny GWSDAT"),
   dashboardSidebar(sidebarMenu(
     menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
     menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))

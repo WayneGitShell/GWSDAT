@@ -22,7 +22,6 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
   
   if (!UseGWSDATLib) {
     
-    source(paste(GWSDATHome, "R/GWSDAT Input Data.R", sep = "/"))
   	source(paste(GWSDATHome, "R/GWSDAT Traffic Lights.R", sep = "/"))
   	source(paste(GWSDATHome, "R/GWSDAT GWFlow.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT.filled.contour.R", sep = "/"))
@@ -33,6 +32,7 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
   
     # added 07/2017
     source(paste(GWSDATHome, "R/GWSDAT_Init.R", sep = "/"))
+    source(paste(GWSDATHome, "R/prepare_data.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_SmoothTimeSeries.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_ImagePlot.R", sep = "/"))
@@ -40,10 +40,12 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/Plot_Legend.R", sep = "/"))
     source(paste(GWSDATHome, "R/Create_PanelAttr.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Read_Data.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Utility_fct.R", sep = "/"))
+    source(paste(GWSDATHome, "R/read_data.R", sep = "/"))
+    source(paste(GWSDATHome, "R/utility_fcts.R", sep = "/"))
     source(paste(GWSDATHome, "R/shiny_ui_analysepanel.R", sep = "/"))
     source(paste(GWSDATHome, "R/shiny_ui_datamanager.R", sep = "/"))
+    source(paste(GWSDATHome, "R/aggregate_data.R", sep = "/"))
+    
     
     # do I need it?
     # Called from: GWSDAT_Fit_Data.R, plot_Traffic_Table.R, GWSDAT_Input_Data.R (each one time)

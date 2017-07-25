@@ -10,7 +10,7 @@
 #
 
 
-Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
+Create_PanelAttr <- function(Curr.Site.Data) {
   
   All.Data <- Curr.Site.Data$All.Data
   GWSDAT_Options <- Curr.Site.Data$GWSDAT_Options
@@ -55,7 +55,7 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   #
   # Set 'Porosity'
   #
-  if (Use.Defaults && !is.null(Default.Values$Porosity)){
+  if (Use.Defaults && !is.null(Default.Values$Porosity)) {
     Porosity <- Default.Values$Porosity
   } else {
     Porosity <- as.character(GWSDAT_Options$DefPorosity)
@@ -64,10 +64,6 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
  
   
   panel = list()
-  
-
-
-  
   
   
   #
@@ -89,10 +85,6 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   panel$PlumeLimEntry <- PlumeLimEntry
   panel$Porosity <- Porosity
   
-  
-  panel$lev.cut <-  c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
-  panel$sd.lev.cut <- 100*c(seq(0,3,by = 0.25),10000000)
-  
   panel$rgUnits <- "ug/l"
   panel$rgUnits_choice <-  list("ng/l","ug/l","mg/l")
   panel$Cont.rg <- names(Fitted.Data)[1]
@@ -100,6 +92,17 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   sorted_Wells <-  sort(as.character(All.Data$All.Wells))
   panel$Well <- if (Use.Defaults && !is.null(Default.Values$Well)) {Default.Values$Well} else {sorted_Wells[1]}
   
+  panel$timestep_range = c(1, length(All.Data$All.Agg.Dates))
+  panel$timestep = 1
+  
+  
+  #
+  # Does not depend on data.
+  #
+  
+  
+  panel$lev.cut <-  c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
+  panel$sd.lev.cut <- 100*c(seq(0,3,by = 0.25),10000000)
   panel$ContLimEntry <- ContLimEntry #fix for R-3.0.0 tkrplot bug
   panel$rg1 <- if (Use.Defaults && !is.null(Default.Values$rg1)) {Default.Values$rg1}else{"Trend"}
   panel$rg1_choice <- c("Trend","Threshold - Absolute","Threshold - Statistical")
@@ -114,11 +117,8 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   dlines["Log Conc. Scale"] <- TRUE
   dlines["Overlay GW levels"] <- FALSE
   #dlines["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
-  
   panel$dlines <- dlines
   
-  panel$timestep_range = c(1, length(All.Data$All.Agg.Dates))
-  panel$timestep = 1
   
   ScaleCols <-  NULL
   ScaleCols["Show Well Labels"] <- TRUE
@@ -130,7 +130,9 @@ Create_PanelAttr <- function(Curr.Site.Data, RUNNING_SHINY = FALSE) {
   
   panel$ScaleCols <- ScaleCols
   panel$GW.disp_choice <-  c("None", "Same Length", "Weighted Length")
-  panel$GW.disp <- if (Use.Defaults && !is.null(Default.Values$GW.disp)) {Default.Values$GW.disp}else{"Weighted Length"}
+  panel$GW.disp <- if (Use.Defaults && !is.null(Default.Values$GW.disp)) {
+    Default.Values$GW.disp}else{"Weighted Length"
+      }
   panel$Color.type_choice <- c("Conc-Terrain", "Conc-Topo","Conc-GreyScale","Conc-Terrain-Circles","Conc-Topo-Circles","Conc-GreyScale-Circles", if (!is.null(All.Data$NAPL.Thickness.Data)) {"NAPL-Circles"})  
   panel$Color.type <- if (Use.Defaults && !is.null(Default.Values$Color.type)) {Default.Values$Color.type}else{"Conc-Terrain"}
   panel$ColTrafficListbox = "All"

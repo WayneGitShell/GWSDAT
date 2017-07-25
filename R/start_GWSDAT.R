@@ -48,7 +48,7 @@ start_GWSDAT <- function(GWSDAT_Options = NULL) {
 
   
   # Create a complete GWSDAT instance with data, model, and options. 
-  pnl <-  Create_PanelAttr(ret$Curr_Site_Data, RUNNING_SHINY = TRUE)
+  pnl <- Create_PanelAttr(ret$Curr_Site_Data)
   
   
   # Put into global environment, so the shiny server can see it. 

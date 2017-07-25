@@ -10,7 +10,6 @@ GWSDAT.Make.Panel<-function(Curr.Site.Data) {
 
 
   #### Data Initialisation
-  
   All.Data<-Curr.Site.Data$All.Data
   Fitted.Data<-Curr.Site.Data$Fitted.Data
   Cont.Names<-names(Fitted.Data)

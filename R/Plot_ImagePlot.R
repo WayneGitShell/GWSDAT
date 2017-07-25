@@ -6,29 +6,29 @@ PlumeUnitHandlingFunc <- function(LengthUnit,rgUnits,PlumeMass,PlumeArea){
   
   if(is.null(LengthUnit)) {
     
-    PlumeMass<-1000*PlumeMass
-    if(rgUnits=="ng/l"){PlumeMass<-PlumeMass*10^-12}
-    if(rgUnits=="ug/l"){PlumeMass<-PlumeMass*10^-9}
-    if(rgUnits=="mg/l"){PlumeMass<-PlumeMass*10^-6}
-    PlumeMassUnits<-paste(" (Mass/Unit Depth)",sep="")
-    PlumeAreaUnits<-paste(" (Unit Area)",sep="")
+    PlumeMass <- 1000*PlumeMass
+    if (rgUnits == "ng/l") {PlumeMass <- PlumeMass*10^-12}
+    if (rgUnits == "ug/l") {PlumeMass <- PlumeMass*10^-9}
+    if (rgUnits == "mg/l") {PlumeMass <- PlumeMass*10^-6}
+    PlumeMassUnits <- paste(" (Mass/Unit Depth)",sep = "")
+    PlumeAreaUnits <- paste(" (Unit Area)",sep = "")
     #PlumeAverageUnits<-paste(" (Mass/Unit Volume)",sep="")
-    PlumeAverageUnits<-paste("(",rgUnits,")",sep="")
+    PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
     
     
-  }else{
+  } else {
     
-    if(LengthUnit=="metres"){
+    if (LengthUnit == "metres") {
       
       
-      PlumeMass<-1000*PlumeMass
-      if(rgUnits=="ng/l"){PlumeMass<-PlumeMass*10^-12}
-      if(rgUnits=="ug/l"){PlumeMass<-PlumeMass*10^-9}
-      if(rgUnits=="mg/l"){PlumeMass<-PlumeMass*10^-6}
-      PlumeMassUnits<-paste(" (kg/m)",sep="")
-      PlumeAreaUnits<-paste(" (m^2)",sep="")
+      PlumeMass <- 1000*PlumeMass
+      if (rgUnits == "ng/l") {PlumeMass <- PlumeMass*10^-12}
+      if (rgUnits == "ug/l") {PlumeMass <- PlumeMass*10^-9}
+      if (rgUnits == "mg/l") {PlumeMass <- PlumeMass*10^-6}
+      PlumeMassUnits <- paste(" (kg/m)",sep = "")
+      PlumeAreaUnits <- paste(" (m^2)",sep = "")
       #PlumeAverageUnits<-paste(" (kg/m^3)",sep="")
-      PlumeAverageUnits<-paste("(",rgUnits,")",sep="")
+      PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
       
     }
     
@@ -181,10 +181,10 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   diffrangeX<-0.06*(range(Well.Coords$XCoord)[2]-range(Well.Coords$XCoord)[1])
   diffrangeY<-0.06*(range(Well.Coords$YCoord)[2]-range(Well.Coords$YCoord)[1])
   
-  if((diffrangeX/diffrangeY)>1.4){diffrangeY=0}
-  if((diffrangeY/diffrangeX)>1.4){diffrangeX=0}
-  Contour.xlim=c(range(Well.Coords$XCoord)[1]-diffrangeX,range(Well.Coords$XCoord)[2]+diffrangeX)
-  Contour.ylim=c(range(Well.Coords$YCoord)[1]-diffrangeY,range(Well.Coords$YCoord)[2]+diffrangeY)
+  if ((diffrangeX/diffrangeY) > 1.4) {diffrangeY = 0}
+  if ((diffrangeY/diffrangeX) > 1.4) {diffrangeX = 0}
+  Contour.xlim = c(range(Well.Coords$XCoord)[1] - diffrangeX,range(Well.Coords$XCoord)[2] + diffrangeX)
+  Contour.ylim = c(range(Well.Coords$YCoord)[1] - diffrangeY,range(Well.Coords$YCoord)[2] + diffrangeY)
   
   
   
@@ -202,9 +202,21 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   n.col <- length(lev.cut) - 1 #should be n.col-1
   
   
+  browser()
+  cat("temp.time.eval : ", temp.time.eval, "\n")
   
-  Good.Wells <- as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
-  Good.Wells <- intersect(Good.Wells,as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+  tmp_cont <- panel$Fitted.Data[[Cont]]$Cont.Data
+  
+  tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= temp.time.eval,]$WellName)
+  tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= temp.time.eval,]$WellName)
+  
+  Good.Wells <- intersect(as.character(tmp_wells_earlier), as.character(tmp_wells_later))
+  
+  #Good.Wells <- as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+  
+  #Good.Wells <- intersect(Good.Wells, as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+  
+  print(Good.Wells)
   
   Do.Image <-  TRUE
   
@@ -218,26 +230,26 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     
   }
   
-  if((areapl(my.area[chull(my.area),])/panel$All.Data$All.Well.Area)<0.01){
-    Do.Image=FALSE
-    my.area<-as.matrix(Well.Coords[,c("XCoord","YCoord")])
+  if ((areapl(my.area[chull(my.area),]) / panel$All.Data$All.Well.Area) < 0.01) {
+    Do.Image = FALSE
+    my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
   }
   
   
   
-  if(!Do.Image){ # If total number of wells is less than 3
+  if (!Do.Image) { # If total number of wells is less than 3
     
-    my.area<-cbind(
+    my.area <- cbind(
       c(Contour.xlim[1],Contour.xlim[1],Contour.xlim[2],Contour.xlim[2]),
       c(Contour.ylim[1],Contour.ylim[2],Contour.ylim[1],Contour.ylim[2])
     )
     
-    colnames(my.area)<-c("XCoord","YCoord")
+    colnames(my.area) <- c("XCoord","YCoord")
     
   }
   
   #############################################
-  expandpoly<-function (mypol, fact) {
+  expandpoly <- function(mypol, fact) {
     
     m1 <- mean(mypol[, 1])
     m2 <- mean(mypol[, 2])
