@@ -37,11 +37,14 @@ GWSDAT_Init <- function(GWSDAT_Options) {
                       Fitted.Data = Fitted.Data,
                       GWSDAT_Options = GWSDAT_Options
                      )
-  attr(Curr.Site.Data, 'class') <- 'GWSDAT.Data'
   
- 
-  try(rm(Fitted.Data,All.Data,GWSDAT_Options))
+  class(Curr.Site.Data) <- 'GWSDAT.Data'
+  
+  
+  try(rm(Fitted.Data, All.Data, GWSDAT_Options))
 
-  return(list(status = Run_status, Curr_Site_Data = Curr.Site.Data))
+  
+  #return(list(status = Run_status, Curr_Site_Data = Curr.Site.Data))
+  return(Curr.Site.Data)
 
 }

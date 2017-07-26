@@ -18,24 +18,26 @@ GWSDAT_Options = create_GWSDAT_Instance()
 #
 # Change some Option for testing.
 # 
+GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
 GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
 GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
 
 
-ret = GWSDAT_Init(GWSDAT_Options)
+pnl = GWSDAT_Init(GWSDAT_Options)
 
 ## Get return status and display on page.
-if (class(ret$status) == "GWSDAT_Error")
-  stop(ret$status$msg)
-if (class(ret$status) == "GWSDAT_Warning")
-  stop(ret$status$msg)
+if (class(pnl) == "GWSDAT_Error")
+  stop(pnl$msg)
+if (class(pnl) == "GWSDAT_Warning")
+  stop(pnl$msg)
 
 
 
-#GWSDAT.Make.Panel(ret$Curr_Site_Data)
+GWSDAT.Make.Panel(pnl)
 
-pnl = Create_PanelAttr(ret$Curr_Site_Data)
-Plot_ImagePlot(pnl)
+#pnl = Create_PanelAttr(ret$Curr_Site_Data)
+#Plot_ImagePlot(pnl)
 
 
 #Plot_SmoothTimeSeries(pnl)
@@ -46,19 +48,18 @@ Plot_ImagePlot(pnl)
 #
 # Prepare the input data with the selected Aquifer.
 #
-pnl$All.Data <- prepare_data(pnl$All.Data$solute_data, 
-                                  pnl$All.Data$well_data, 
-                                  pnl$GWSDAT_Options, 
-                                  Aq_sel = "A")
+#pnl$All.Data <- prepare_data(pnl$All.Data$solute_data, 
+#                                  pnl$All.Data$well_data, 
+#                                  pnl$GWSDAT_Options, 
+#                                  Aq_sel = "A")
 
 
 # Fit the data.
-pnl$Fitted.Data <- GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
+#pnl$Fitted.Data <- GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
 
-browser()
 # Create a complete GWSDAT instance with data, model, and options. 
-new_pnl <- Create_PanelAttr(pnl)
-Plot_ImagePlot(new_pnl)
+#new_pnl <- Create_PanelAttr(pnl)
+#Plot_ImagePlot(new_pnl)
 
 
 

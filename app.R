@@ -54,10 +54,12 @@ server <- function(input, output, session) {
       #
       # Update control attributes from reactive variables. 
       #
-      pnl$Cont.rg <<- input$solute_select
+      
       pnl$rgUnits <<- input$solute_conc
       pnl$dlines[1:length(pnl$dlines)] <<- FALSE
       pnl$dlines[input$ts_true_options] <<- TRUE
+      
+      pnl$Cont.rg <<- input$solute_select
       pnl$Well <<- input$well_select
       
       # 'rg1' is also used in the Traffic Lights table (there it has
@@ -104,7 +106,9 @@ server <- function(input, output, session) {
       ##
       pnl$timestep <<- input$time_steps
       pnl$GWSDAT_Options$Aggby <<- input$aggregate_data
-      pnl$All.Data$Aq.sel <<- input$aquifer_contour
+      
+      # Input control in UI is commented out, thus input$aquifer_contour will be NULL
+      #pnl$All.Data$Aq.sel <<- input$aquifer_contour
       
       
       Plot_ImagePlot(pnl)
@@ -182,10 +186,50 @@ server <- function(input, output, session) {
     }
     
     
+    update_napl <- function() {
+      
+      tmp_napl <- napl_exists(pnl$All.Data, pnl$Well, pnl$Cont.rg) 
+      
+      # Update checkbox control if NAPL changed.
+      if (tmp_napl != pnl$NAPL.Present) {
+        
+        
+        if (tmp_napl) 
+          pnl$dlines["Overlay NAPL Thickness"] <<- FALSE  # set to some value
+        else 
+          pnl$dlines <<- pnl$dlines[-which(names(pnl$dlines) == "Overlay NAPL Thickness")]
+          
+        updateCheckboxGroupInput(session, "ts_true_options", label = "Time Series Plot Options", 
+                           choices = names(pnl$dlines),
+                           selected = names(which(pnl$dlines == TRUE)))
+        
+        pnl$NAPL.Present <<- tmp_napl
+      }
+    }
+    
+    
+    observeEvent(input$well_select, {
+      
+      pnl$Well <<- input$well_select
+      
+      update_napl()
+      
+    })
+    
+    
     # Mirror solute selection in different tabs.
-    observeEvent(input$solute_select, updateSelectInput(session, "solute_select_contour", selected = input$solute_select ) )
-    observeEvent(input$solute_select_contour, updateSelectInput(session, "solute_select", selected = input$solute_select_contour )  )
-
+    observeEvent(input$solute_select, {
+      
+      pnl$Cont.rg <<- input$solute_select
+      
+      update_napl()  
+    
+      updateSelectInput(session, "solute_select_contour", selected = input$solute_select ) 
+    })
+    
+    observeEvent(input$solute_select_contour, {
+      updateSelectInput(session, "solute_select", selected = input$solute_select_contour )  
+    })
     
     # Mirror time step selection in different tabs.
     observeEvent(input$time_steps_traffic, updateSliderInput(session, "time_steps", value = input$time_steps_traffic) )
@@ -207,51 +251,57 @@ server <- function(input, output, session) {
       updateSliderInput(session, "time_steps", value = pnl$timestep, min = pnl$timestep_range[1], max = pnl$timestep_range[2], step = 1)
     })
     
-    
-    # Re-select the data in respect to the Aquifer group.
-    observeEvent(input$aquifer_contour, {
-      
-      tmpval = input$aquifer_contour
-      
-      # If the selected aquifer group changed, reload the data.
-      if (tmpval != pnl$All.Data$Aq.sel) {
-        
-        # Prepare the input data with the selected Aquifer.
-        pnl$All.Data <<- try(prepare_data(pnl$All.Data$solute_data, 
-                                     pnl$All.Data$well_data, 
-                                     pnl$GWSDAT_Options, 
-                                     Aq_sel = tmpval))
-        
-        if (inherits(pnl$All.Data, 'try-error')) {
-          stop("Error in inputting and formatting data.")
-        }
-        
-        
-        # Fit the data.
-        pnl$Fitted.Data <<- GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
-        
-        if (class(pnl$Fitted.Data) != "gwsdat_fit") {
-          stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 
-               class(Fitted.Data), "\n")
-        }
-        
-        tmp_Cont <- pnl$Cont.rg
-        tmp_rgUnits <- pnl$rgUnits
-      
-        # Create a complete GWSDAT instance with data, model, and options. 
-        pnl <<- Create_PanelAttr(pnl)
-        
-        pnl$Cont.rg <<- tmp_Cont 
-        pnl$rgUnits <<- tmp_rgUnits
-      }
-      
-
-    })
+    #
+    # Triggers when the 'Aquifer Group' input selection is changed.
+    #  Not in use right now: need to decide where to put the Aquifer decision:
+    #   1. Into Analyse Tab - needs a recalculation per re-selection, and whole UI needs
+    #       to be redrawn.
+    #   2. Data Manager - extra data entry per Aquifer. This would make it cleaner.
+    #
+    # # Re-select the data in respect to the Aquifer group.
+    # observeEvent(input$aquifer_contour, {
+    #   
+    #   tmpval = input$aquifer_contour
+    #   
+    #   # If the selected aquifer group changed, reload the data.
+    #   if (tmpval != pnl$All.Data$Aq.sel) {
+    #     
+    #     # Prepare the input data with the selected Aquifer.
+    #     pnl$All.Data <<- try(prepare_data(pnl$All.Data$solute_data, 
+    #                                  pnl$All.Data$well_data, 
+    #                                  pnl$GWSDAT_Options, 
+    #                                  Aq_sel = tmpval))
+    #     
+    #     if (inherits(pnl$All.Data, 'try-error')) {
+    #       stop("Error in inputting and formatting data.")
+    #     }
+    #     
+    #     
+    #     # Fit the data.
+    #     pnl$Fitted.Data <<- GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
+    #     
+    #     if (class(pnl$Fitted.Data) != "gwsdat_fit") {
+    #       stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 
+    #            class(Fitted.Data), "\n")
+    #     }
+    #     
+    #     tmp_Cont <- pnl$Cont.rg
+    #     tmp_rgUnits <- pnl$rgUnits
+    #   
+    #     # Create a complete GWSDAT instance with data, model, and options. 
+    #     pnl <<- Create_PanelAttr(pnl)
+    #     
+    #     pnl$Cont.rg <<- tmp_Cont 
+    #     pnl$rgUnits <<- tmp_rgUnits
+    #   }
+    #   
+    # 
+    # })
       
     
     output$download_timeseries_plot <- downloadHandler(
       
-      filename <-  "shiny_timeseries_plot.png",
+      filename <-  "gwsdat_timeseries_plot.png",
       
       content <-  function(file) {
         png(file, width = 1000, height = 600)
@@ -262,15 +312,30 @@ server <- function(input, output, session) {
     
     output$download_contour_plot <- downloadHandler(
       
-      filename <-  "shiny_contour_plot.png",
+      filename <-  "gwsdat_spatial_plot.png",
       
       content <-  function(file) {
+        
         png(file, width = 1000, height = 1000)
         Plot_ImagePlot(pnl)
         dev.off()
       }
     )
     
+    
+    output$download_contour_anim_ppt <- downloadHandler(
+      
+      filename <- "gwsdat_spatial_anim.ppt",
+      
+      content <-  function(file) {
+        
+        #png(file, width = 1000, height = 1000)
+        make_animation(pnl, TRUE)
+        #Plot_ImagePlot(pnl)
+        #dev.off()
+      }
+      
+    )
     
     output$download_traffictable <- downloadHandler(
       
@@ -414,16 +479,16 @@ server <- function(input, output, session) {
     #
     # Decide whether to display the Aquifer Group selection when entering an Analyse tab.
     #
-    observeEvent(input$plot_tabs, {
+    #observeEvent(input$plot_tabs, {
       
       # If there are less than 2 aquifer, hide the selection control.
-      if (length(pnl$All.Data$Aq_list) < 2) {
-        shinyjs::hide(id = "select_aquifer_timeseries")
-        shinyjs::hide(id = "select_aquifer_contour")
-        shinyjs::hide(id = "select_aquifer_traffic")
-        
-      }
-    })
+    #  if (length(pnl$All.Data$Aq_list) < 2) {
+    #    shinyjs::hide(id = "select_aquifer_timeseries")
+    #    shinyjs::hide(id = "select_aquifer_contour")
+    #    shinyjs::hide(id = "select_aquifer_traffic")
+    #    
+    #  }
+    #})
         
 }
 
@@ -457,7 +522,6 @@ dbHeader <- dashboardHeader(title = "GWSDAT",
 ui <- dashboardPage(
   
   dbHeader, 
-#  dashboardHeader(title = "Shiny GWSDAT"),
   dashboardSidebar(sidebarMenu(
     menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
     menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
@@ -491,12 +555,11 @@ ui <- dashboardPage(
 
 ui_analyse_only <- shinyUI(
   fluidPage(shiny_ui_analysepanel())
-#  fluidPage(h1("test"))
 )
   
   
 
-if (!RUN_SINGLE_INSTANCE) {
+if (!pnl$GWSDAT_Options$Excel_Mode) {
   shinyApp(ui = ui, server = server)
 } else {
   shinyApp(ui = ui_analyse_only, server = server)

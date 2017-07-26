@@ -159,13 +159,13 @@ init_shapefiles <- function(GWSDAT_Options) {
       
       if (inherits(tempShapeFile, "try-error")) {
         
-        tkmessageBox(title="Warning!",message=paste("Error Inputting '",GWSDAT_Options$ShapeFileNames[i],"' shapefile",sep=""),
-                     icon = "warning",type="ok")
+        tkmessageBox(title = "Warning!",message = paste("Error Inputting '",GWSDAT_Options$ShapeFileNames[i],"' shapefile",sep=""),
+                     icon = "warning", type = "ok")
         
-        if (length( grep(".shp",tolower(GWSDAT_Options$ShapeFileNames[i])))==0){
+        if (length( grep(".shp",tolower(GWSDAT_Options$ShapeFileNames[i]))) == 0) {
           
-          tkmessageBox(title="Warning!",message=paste("Shape Files usually have a .shp file extension"),
-                       icon = "warning",type="ok")
+          tkmessageBox(title = "Warning!",message = paste("Shape Files usually have a .shp file extension"),
+                       icon = "warning",type = "ok")
           
         }
         

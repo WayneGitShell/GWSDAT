@@ -95,7 +95,30 @@ Create_PanelAttr <- function(Curr.Site.Data) {
   panel$timestep_range = c(1, length(All.Data$All.Agg.Dates))
   panel$timestep = 1
   
+  #panel$NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) ||   nrow(panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,])>0
+  #if (NAPLThickPresent) { panel$NAPL.Present <- FALSE }
   
+  # time-series plot attributes
+  dlines = NULL  
+  dlines["Conc. Trend Smoother"] <- TRUE
+  dlines["Conc. Linear Trend Fit"] <- FALSE
+  dlines["Show Legend"] <- FALSE
+  dlines["Scale to Conc. Data"] <- FALSE
+  dlines["Log Conc. Scale"] <- TRUE
+  dlines["Overlay GW levels"] <- FALSE
+  
+  # Checks if any NAPL thickness is present.
+  NAPLThickPresent <- !is.null(All.Data$NAPL.Thickness.Data)
+  if (NAPLThickPresent) dlines["Overlay NAPL Thickness"] <- FALSE  
+  
+  panel$dlines <- dlines
+  
+  # Checks if NAPL thickness is present for current well and solute 
+  #  This is to activate/inactivate the 'Overlay NAPL Thickness' control.
+  panel$NAPL.Present <- napl_exists(panel$All.Data, panel$Well, panel$Cont.rg) 
+ 
+  
+  #browser()
   #
   # Does not depend on data.
   #
@@ -108,16 +131,7 @@ Create_PanelAttr <- function(Curr.Site.Data) {
   panel$rg1_choice <- c("Trend","Threshold - Absolute","Threshold - Statistical")
   panel$Stat.Lim <- as.numeric(panel$ContLimEntry[match(panel$Cont.rg, Cont.Names)])
   
-  # time-series plot attributes
-  dlines = NULL  
-  dlines["Conc. Trend Smoother"] <- TRUE
-  dlines["Conc. Linear Trend Fit"] <- FALSE
-  dlines["Show Legend"] <- FALSE
-  dlines["Scale to Conc. Data"] <- FALSE
-  dlines["Log Conc. Scale"] <- TRUE
-  dlines["Overlay GW levels"] <- FALSE
-  #dlines["Overlay NAPL Thickness"] <- FALSE  ## depends on 'NAPL.Present' below
-  panel$dlines <- dlines
+  
   
   
   ScaleCols <-  NULL

@@ -32,7 +32,7 @@ create_GWSDAT_Instance <- function() {
   GWSDAT_Options[['smThreshSe']] <- 1.1512
   GWSDAT_Options[['smThreshSe']] <- as.numeric(GWSDAT_Options[['smThreshSe']])
   GWSDAT_Options[['smMethod']] <- 'aicc'
-  GWSDAT_Options[['SiteName']] <- 'GWSDAT Basic Example'
+  GWSDAT_Options[['SiteName']] <- 'Basic Example'
   GWSDAT_Options[['Version']] <- '2.11'
   GWSDAT_Options[['Version']] <- as.numeric(GWSDAT_Options[['Version']])
   
@@ -51,7 +51,6 @@ create_GWSDAT_Instance <- function() {
   if (exists('YtempScreenExp')) {rm(YtempScreenExp)}
   if (exists('XtempScreenExp')) {rm(XtempScreenExp)}
   
-  #GWSDAT_Options[['RScriptFilename']] <- '.' # C:/Users/Andruscha/Desktop/DropboxDrive/Dropbox/1_GWSDAT/3_Shiny_Dev/Shiny_GWSDAT/R_entry_point.R'
   GWSDAT_Options[['GWSDATHome']] <- '.'
   GWSDAT_Options[['WellDataFilename']] <- 'data/BasicExample_WellData.csv'
   GWSDAT_Options[['WellCoordsFilename']] <- 'data/BasicExample_WellCoords.csv'
@@ -59,7 +58,7 @@ create_GWSDAT_Instance <- function() {
   GWSDAT_Options[['ShapeFileNames']] <- NULL
   GWSDAT_Options[['UseGWSDATLib']] <- FALSE
   
- 
+  GWSDAT_Options[['Excel_Mode']] <- FALSE
   
   return(GWSDAT_Options)
 }

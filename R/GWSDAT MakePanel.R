@@ -1206,11 +1206,13 @@ if(panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts)>1 & !inherits(lm.fit, "
 try(lines(lm.eval.points$SampleDate,lm.eval.points$fit,lwd=2,col="green"))
 try(lines(lm.eval.points$SampleDate,lm.eval.points$lwr,lwd=2,col="green",lty=2))
 try(lines(lm.eval.points$SampleDate,lm.eval.points$upr,lwd=2,col="green",lty=2))
+ 
 temp.tex1<-paste("Mann-Kendall P.Value=",format.pval(Mann.test$sl,digits=3,eps=0.01))
 try(half.life<- -round(log(2)/as.numeric(lm.fit$coeff[2])))
 try(temp.tex2<-paste("Half-Life=",as.character(half.life),"days"))
 try(if(abs(half.life)>0.5*3650)   {temp.tex2<-paste("Half-Life> 5 Years") })
 try(if(half.life<(-0.5*3650)){temp.tex2<-paste("Half-Life> -5 Years")})
+browser()
 try(mtext(paste(temp.tex1,temp.tex2,sep="; "),side=3,line=0.4,cex=0.75,col=if(Mann.test$sl<0.05){"darkgreen"}else{"red"}))
 }
 

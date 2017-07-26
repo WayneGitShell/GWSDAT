@@ -81,37 +81,37 @@ GWSDAT.GW.Contour <- function(temp.GW.Flows){
 
 
 
-Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
+Plot_ImagePlot <- function(panel) { 
   
   
   
   
-  if(panel$ScaleCols["Plume Diagnostics"]){
-    op<-par(mar=c(3,4.1,2,2.1))
+  if (panel$ScaleCols["Plume Diagnostics"]) {
+    op <- par(mar = c(3,4.1,2,2.1))
   }else{
-    op<-par(mar=c(2,4.1,2,2.1))
+    op <- par(mar = c(2,4.1,2,2.1))
   }
 
   
       
-  gc()
+  
   Col.Option <- panel$ScaleCols["Scale colours to Data"]
   Show.Values <- panel$ScaleCols["Show Conc. Values"]
   Show.GW.Contour <- panel$ScaleCols["Show GW Contour"]
   
-  if(is.null(Show.GW.Contour) || length(Show.GW.Contour)==0 || is.na(Show.GW.Contour)){Show.GW.Contour<-FALSE}
+  if (is.null(Show.GW.Contour) || length(Show.GW.Contour) == 0 || is.na(Show.GW.Contour)) {Show.GW.Contour<-FALSE}
   
-  Show.Well.Labels<-panel$ScaleCols["Show Well Labels"]
-  Show.ShapeFile<-panel$ScaleCols["Overlay ShapeFiles"]
-  if(is.null(Show.ShapeFile) || length(Show.ShapeFile)==0 || is.na(Show.ShapeFile)){Show.ShapeFile<-FALSE}
+  Show.Well.Labels <- panel$ScaleCols["Show Well Labels"]
+  Show.ShapeFile <- panel$ScaleCols["Overlay ShapeFiles"]
+  if (is.null(Show.ShapeFile) || length(Show.ShapeFile) == 0 || is.na(Show.ShapeFile)) {Show.ShapeFile <- FALSE}
   
-  Well.Coords<-panel$All.Data$Well.Coords
-  jjj<-panel$timestep
-  Cont<-panel$Cont.rg
+  Well.Coords <- panel$All.Data$Well.Coords
+  jjj <- panel$timestep
+  Cont <- panel$Cont.rg
   
   
-  temp.time.eval<-panel$Fitted.Data[[Cont]]$Time.Eval[jjj]
-  temp.time.frac<-as.numeric(temp.time.eval-min(panel$Fitted.Data[[Cont]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[Cont]]$Time.Eval)))
+  temp.time.eval <- panel$Fitted.Data[[Cont]]$Time.Eval[jjj]
+  temp.time.frac <- as.numeric(temp.time.eval - min(panel$Fitted.Data[[Cont]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[Cont]]$Time.Eval)))
   
   try(if(temp.time.frac==1){temp.time.frac=.999}) # to avoid plot issue with wmf format!
   try(if(temp.time.frac==0){temp.time.frac=.001})
@@ -202,9 +202,6 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   n.col <- length(lev.cut) - 1 #should be n.col-1
   
   
-  browser()
-  cat("temp.time.eval : ", temp.time.eval, "\n")
-  
   tmp_cont <- panel$Fitted.Data[[Cont]]$Cont.Data
   
   tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= temp.time.eval,]$WellName)
@@ -213,21 +210,16 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   Good.Wells <- intersect(as.character(tmp_wells_earlier), as.character(tmp_wells_later))
   
   #Good.Wells <- as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
-  
   #Good.Wells <- intersect(Good.Wells, as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
   
-  print(Good.Wells)
   
   Do.Image <-  TRUE
   
   if (length(Good.Wells) < 3) {
-    
     Do.Image <- FALSE;
     my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
-  }else{
-    
+  } else {
     my.area <- as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
-    
   }
   
   if ((areapl(my.area[chull(my.area),]) / panel$All.Data$All.Well.Area) < 0.01) {
@@ -261,26 +253,25 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   #############################################
   
   
-  my.area<-my.area[chull(my.area),,drop=F]
-  my.exp.area<-expandpoly(my.area,fac=1.05)
-  eval.df<-gridpts(my.exp.area,350)
-  eval.df<-rbind(eval.df,my.exp.area)
-  colnames(eval.df)[1:2]<-c("XCoord","YCoord")
-  try(rownames(eval.df)<-NULL)
-  eval.df<-as.data.frame(eval.df)
-  eval.df$AggDate=rep(temp.time.eval,nrow(eval.df))
+  my.area <- my.area[chull(my.area),,drop=F]
+  my.exp.area <- expandpoly(my.area,fac=1.05)
+  eval.df <- gridpts(my.exp.area,350)
+  eval.df <- rbind(eval.df,my.exp.area)
+  colnames(eval.df)[1:2] <- c("XCoord","YCoord")
+  try(rownames(eval.df) <- NULL)
+  eval.df <- as.data.frame(eval.df)
+  eval.df$AggDate = rep(temp.time.eval,nrow(eval.df))
   
   
-  if(!inherits(model.tune,"try-error")){
+  if (!inherits(model.tune,"try-error")) {
     
     #interp.pred<-GWSDAT.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],eval.df,type=if(is.null(panel$PredInterval)){"predict"}else{as.character(panel$PredInterval)})
-    interp.pred<-try(GWSDAT.Bary.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],my.area=my.area,type=as.character(panel$PredInterval)))
-    if(inherits(interp.pred,"try-error")){interp.pred<-GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)}
+    interp.pred <- try(GWSDAT.Bary.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],my.area=my.area,type=as.character(panel$PredInterval)))
+    if (inherits(interp.pred,"try-error")){interp.pred<-GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)}
     
+  } else {
     
-  }else{
-    
-    interp.pred<-GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)
+    interp.pred <- GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)
     Do.Image <- FALSE
     
   }
@@ -318,31 +309,31 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   ####################### Plume Quantification #################################
   
-  if(panel$ScaleCols["Plume Diagnostics"]){
+  if (panel$ScaleCols["Plume Diagnostics"]) {
     
     
-    checkPlumeClosure<-function(cl){
+    checkPlumeClosure <- function(cl){
       
-      cl$x[1]==cl$x[length(cl$x)] & cl$y[1]==cl$y[length(cl$y)]
+      cl$x[1] == cl$x[length(cl$x)] & cl$y[1]==cl$y[length(cl$y)]
       
     }
     
-    VolIndTri<-function(l){
+    VolIndTri <- function(l){
       
-      x<-l$x
-      y<-l$y
-      z<-l$z
+      x <- l$x
+      y <- l$y
+      z <- l$z
       
       0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
     }
     
-    xVolIndTri<-function(l){
+    xVolIndTri <- function(l){
       
-      x<-l$x
-      y<-l$y
-      z<-l$z
+      x <- l$x
+      y <- l$y
+      z <- l$z
       
-      z=z*x
+      z = z*x
       
       0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
     }
@@ -358,14 +349,6 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
       
       0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
     }
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -408,12 +391,10 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
     PlumeDetails = list()
     
     
-    
     PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(panel$Cont.rg, names(panel$Fitted.Data))])  #Defined in ug/L
     if(panel$rgUnits == "mg/l"){PLumeCutoff<-PLumeCutoff/1000}
     if(panel$rgUnits == "ng/l"){PLumeCutoff<-PLumeCutoff*1000}
     cL<-contourLines(interp.pred,levels=PLumeCutoff)
-    
     
     
     if(length(cL)>0){
@@ -480,34 +461,20 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   ############################## Plot GW Flows #######################################
   
-  GWFlows<-attr(panel$Fitted.Data,"GWFlows")
-  if(!inherits(GWFlows, "try-error")){
+  GWFlows <- attr(panel$Fitted.Data,"GWFlows")
+  if (!inherits(GWFlows, "try-error")) {
     
     
-    temp.GW.Flows<-GWFlows[as.numeric(GWFlows$AggDate)==temp.time.eval,]
+    temp.GW.Flows <- GWFlows[as.numeric(GWFlows$AggDate) == temp.time.eval,]
     
-    if(!is.null(panel$GW.disp) && panel$GW.disp!="None"){
+    if (!is.null(panel$GW.disp) && panel$GW.disp != "None") {
       
-      L<-0.05*sqrt(diff(Contour.xlim)^2+diff(Contour.ylim)^2)
+      L <- 0.05 * sqrt(diff(Contour.xlim)^2 + diff(Contour.ylim)^2)
       
       
-      GWFlows<-attr(panel$Fitted.Data,"GWFlows")
+      GWFlows <- attr(panel$Fitted.Data,"GWFlows")
       
       
       if(!is.null(GWFlows)){
@@ -550,19 +517,19 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   
   
   
-  GWSDAT.GrayScale<-function(n){
+  GWSDAT.GrayScale <- function(n){
     
-    rev(grey(seq(0,1,length=n+3)))[c(-1,-2,-(n+3))]
+    rev(grey(seq(0,1,length = n + 3)))[c(-1,-2,-(n+3))]
     
   }
   
-  GWSDAT.Terrain<-function(n){
+  GWSDAT.Terrain <- function(n){
     
-    terrain.colors(n+1)[1:n] # to avoid white in extreme conc.
+    terrain.colors(n + 1)[1:n] # to avoid white in extreme conc.
   }
   
   
-  if(panel$Color.type=="Conc-Terrain" & Col.Option){
+  if(panel$Color.type == "Conc-Terrain" & Col.Option){
     col.palette <- terrain.colors
   }
   if(panel$Color.type=="Conc-Terrain" & !Col.Option){
@@ -655,29 +622,42 @@ Plot_ImagePlot <- function(panel) { # ,fromDoubleButton=T){
   }
   
   
-  if(!Col.Option || !Do.Image){
+  if (!Col.Option || !Do.Image) {
+    
+    tmp_main <- paste(Cont,
+                    if (panel$Color.type == "NAPL-Circles" & Cont != " ") {paste("(",panel$rgUnits,")", sep = "")} else {""},
+                    if (Cont != " ") {":"} else {""},
+                    date.to.print,
+                    if (panel$All.Data$Aq.sel != "") {paste(": Aquifer-",panel$All.Data$Aq.sel,sep = "")} else {""}
+              )
     
     
-    GWSDAT.filled.contour(interp.pred, asp=1, ShapeFiles=if(Show.ShapeFile){panel$All.Data$ShapeFiles}else{NULL},fixedConcScale=if(panel$Color.type=="NAPL-Circles"){FALSE}else{TRUE},
-                          xlim=Contour.xlim,
-                          ylim=Contour.ylim,
-                          levels=lev.cut,col=col.palette,
-                          plot.title = title(main = paste(Cont,if(panel$Color.type=="NAPL-Circles" & Cont!=" "){paste("(",panel$rgUnits,")",sep="")}else{""},if(Cont!=" "){":"}else{""},date.to.print,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = if(panel$Color.type=="NAPL-Circles"){title(main=paste("NAPL \nThickness \n(",panel$All.Data$NAPL.Units,")",sep=""),cex.main=0.7)}else{title(main=panel$rgUnits)},
+    
+    GWSDAT.filled.contour(interp.pred, asp = 1, 
+                          ShapeFiles = if (Show.ShapeFile) {panel$All.Data$ShapeFiles} else {NULL},
+                          fixedConcScale = if (panel$Color.type == "NAPL-Circles") {FALSE} else {TRUE},
+                          xlim   = Contour.xlim,
+                          ylim   = Contour.ylim,
+                          levels = lev.cut,
+                          col    = col.palette,
+                          plot.title = title(main = tmp_main, xlab = "", ylab = "", cex.main = .95),
+                          key.title  = if (panel$Color.type == "NAPL-Circles") {title(main = paste("NAPL \nThickness \n(", panel$All.Data$NAPL.Units, ")", sep = ""), 
+                                                                                      cex.main = 0.7)} else {title(main = panel$rgUnits)},
                           
-                          plot.axes={ axis(1); axis(2,las=3); axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02); 
-                            if(panel$Color.type=="Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
-                            if(panel$Color.type=="Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1,cex=my.cex[order(my.cex,decreasing=T)])}
+                          plot.axes  = {axis(1); axis(2, las = 3); axis(3, at = par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02); 
+                            if (panel$Color.type == "Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
+                            if (panel$Color.type == "Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1,cex=my.cex[order(my.cex,decreasing=T)])}
                             
                             ###### NAPL Circles Plot ############### 
-                            if(panel$Color.type=="NAPL-Circles"){points(temp.NAPL.Data$XCoord[order(my.cex,decreasing=T)],temp.NAPL.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
-                            if(panel$Color.type=="NAPL-Circles"){points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)}
+                            if (panel$Color.type == "NAPL-Circles") {points(temp.NAPL.Data$XCoord[order(my.cex,decreasing=T)],temp.NAPL.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
+                            if (panel$Color.type == "NAPL-Circles") {points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)}
                             
                             #--------------------------------------#
                             
                             
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=.7);
                             
-                            if(panel$Color.type=="NAPL-Circles"){
+                            if(panel$Color.type == "NAPL-Circles") {
                               points(Well.Coords[as.character(Well.Coords$WellName) %in% attributes(NAPL.Thickness.Data)$NAPL.Wells,c("XCoord","YCoord")],col="red",pch=19,cex=0.7)
                             }
                             

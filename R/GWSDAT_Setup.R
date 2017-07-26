@@ -1,4 +1,7 @@
 
+#
+# Former Call: GWSDAT_Setup(GWSDAT_Options$GWSDATHome, GWSDAT_Options$UseGWSDATLib)
+#
 
 GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
 
@@ -45,6 +48,10 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/shiny_ui_analysepanel.R", sep = "/"))
     source(paste(GWSDATHome, "R/shiny_ui_datamanager.R", sep = "/"))
     source(paste(GWSDATHome, "R/aggregate_data.R", sep = "/"))
+    source(paste(GWSDATHome, "R/create_GWSDAT_Instance.R", sep = "/"))
+    source(paste(GWSDATHome, "R/make_animation.R", sep = "/"))
+    
+    
     
     
     # do I need it?
