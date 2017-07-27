@@ -8,6 +8,10 @@ options(warn = 1)
 
 start_GWSDAT <- function(GWSDAT_Options = NULL) {
 
+  require(tcltk)
+  progressBar <- tkProgressBar('GWSDAT Progress', 'Loading R packages...',0, 1, 0)
+  
+  
   # Load the sources and libraries.
   GWSDAT_Setup()
 
@@ -18,16 +22,17 @@ start_GWSDAT <- function(GWSDAT_Options = NULL) {
   
     
     # Change some Option for testing.
-    GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-    GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-    GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-    GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+    #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+    #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+    #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+    #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+    
     
   } else {
 
-    # This will cause a the data analyse window to appear.       
-    if (!GWSDAT_Options$Excel_Mode)
-      GWSDAT_Options[['Excel_Mode']] <- TRUE
+    # This will only show the data analyse panel.       
+    if (!GWSDAT_Options$ExcelMode)
+      GWSDAT_Options[['ExcelMode']] <- TRUE
       
   }
   
@@ -36,7 +41,7 @@ start_GWSDAT <- function(GWSDAT_Options = NULL) {
    
   
   # Initialize the data and do the fitting.
-  curr_site = GWSDAT_Init(GWSDAT_Options)
+  curr_site = GWSDAT_Init(GWSDAT_Options, progressBar)
   
   
   # Get return status and display.
@@ -47,18 +52,23 @@ start_GWSDAT <- function(GWSDAT_Options = NULL) {
 
   
   # Create a complete GWSDAT instance with data, model, and options. 
-  pnl <- Create_PanelAttr(curr_site)
+  pnl <- createPanelAttr(curr_site)
   
   
   # Put into global environment, so the shiny server can see it. 
   .GlobalEnv$pnl <- pnl
   
-  
-  # on.exit(rm(pnl, envir = .GlobalEnv))
-  
-  runApp()
-  
+
+  try(close(progressBar))
+  #setTkProgressBar( progressBar, 1, NULL, "Starting Shiny ...")
+
+    
+  #runApp(launch.browser = (Sys.getenv("COMPUTERNAME") != "LAPTOP-QU06V978") )
+  runApp(launch.browser = TRUE )
   
 }
 
-start_GWSDAT()
+
+# directly start it on Andrej's Computer
+#if (Sys.getenv("COMPUTERNAME") != "LAPTOP-QU06V978")
+#  start_GWSDAT()

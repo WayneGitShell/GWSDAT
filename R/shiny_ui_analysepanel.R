@@ -1,18 +1,10 @@
 
 
-#navbarPage(
-#  title = 'DataTable Options',
-#  tabPanel('Display length',     DT::dataTableOutput('ex1')),
-#  tabPanel('Length menu',        DT::dataTableOutput('ex2')),
-#  tabPanel('No pagination',      DT::dataTableOutput('ex3')),
-#  tabPanel('No filtering',       DT::dataTableOutput('ex4')),
-#  tabPanel('Function callback',  DT::dataTableOutput('ex5'))
-#)
 
 shiny_ui_analysepanel <- function() {
 
   #tabsetPanel(id = "plot_tabs",
-  navbarPage(title = pnl$GWSDAT_Options$SiteName,               
+  navbarPage(title = pnl$GWSDAT_Options$SiteName, id = "analyse_panel",              
               
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
                        
@@ -113,11 +105,15 @@ shiny_ui_analysepanel <- function() {
                               
                               downloadButton("download_contour_plot", label = "Save Plot"),
                               
-                              downloadButton("download_contour_anim_ppt", label = "Save PPT Animation")
+                              hidden( p(id = "generate_ppt_anim", 
+                                    actionButton("generate_spatial_anim_ppt", 
+                                                 label = "Generate PPT Animation", icon = icon("file-powerpoint-o"))    
+                                      )
+                              )
                               
-                              
-                       )
-              ),
+                       ) # end column
+                       
+              ), # end tabPanel
               
               
               

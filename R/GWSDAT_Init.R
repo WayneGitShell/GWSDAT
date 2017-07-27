@@ -1,6 +1,6 @@
 
 
-GWSDAT_Init <- function(GWSDAT_Options) {
+GWSDAT_Init <- function(GWSDAT_Options, progressBar) {
   
   Run_status = GWSDAT_OK() 
   
@@ -24,7 +24,7 @@ GWSDAT_Init <- function(GWSDAT_Options) {
 
   
   # Fit the input data.
-  Fitted.Data = GWSDAT_Fit_Data(All.Data, GWSDAT_Options)
+  Fitted.Data = GWSDAT_Fit_Data(All.Data, GWSDAT_Options, progressBar)
   
   if (class(Fitted.Data) != "gwsdat_fit") {
     stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 

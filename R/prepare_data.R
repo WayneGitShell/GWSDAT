@@ -55,19 +55,20 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   Well.Coords$Aquifer <- as.character(Well.Coords$Aquifer)  
   
   
-  # Replace empty "" aquifer with "Blank" keyword. This will also be 
-  # used in the selection input control.
+  # Replace empty "" or <NA> elements with "Blank" keyword. 
   Well.Coords$Aquifer[Well.Coords$Aquifer == ""] <- "Blank"
+  Well.Coords$Aquifer[is.na(Well.Coords$Aquifer)] <- "Blank"
 
   
   # Extract unique Aquifer group names.
   Aq_list <- unique(Well.Coords$Aquifer)
   
+  if (length(Aq_list) > 1)
+    Aq_sel <- GWSDAT.select.list(Aq_list, title = "Select an Aquifer to Analyse")    
   
   # Define the first Aquifer to be the one we display as default.	
   if (is.null(Aq_sel))
     Aq_sel <- Aq_list[[1]]
-  
   
   # Extract the Wells flagged with the Aquifer 'Aq_sel'. 	
   Well.Coords <- Well.Coords[Well.Coords$Aquifer == Aq_sel,]
@@ -80,6 +81,26 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   # Keep only the following columns in the Well.Coords table.
   Well.Coords <- Well.Coords[,c("WellName","XCoord","YCoord")]
   
+  #
+  # This is the previous Aquifer Selection code:
+  #
+  #
+  # if(!all(is.na(Well.Coords$Aquifer)) && !all(as.character(Well.Coords$Aquifer)=="")){
+  #   
+  #   
+  #   un.Aq.sel<-unique(as.character(Well.Coords$Aquifer))
+  #   if(any(un.Aq.sel=="")){un.Aq.sel[un.Aq.sel==""]<-"Blank"}
+  #   if(length(un.Aq.sel)==1){Aq.sel<-as.character(un.Aq.sel)}else{Aq.sel<-GWSDAT.select.list(un.Aq.sel,title="Select an Aquifer to Analyse")}
+  #   if(Aq.sel==""){stop("User must select an Aquifer")}
+  #   if(Aq.sel=="Blank"){Aq.sel<-""}
+  #   Well.Coords<-Well.Coords[as.character(Well.Coords$Aquifer)==Aq.sel,]
+  #   AG.ALL<-AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+  #   
+  # }else{
+  #   
+  #   Aq.sel<-""
+  #   
+  # }
   
   #---------------------------------------------------------#
   
@@ -218,13 +239,13 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   
   
   
-  temp.hold<-sub(".*<", "", as.character(Cont.Data$Result[Cont.Data$ND]))
+  temp.hold <- sub(".*<", "", as.character(Cont.Data$Result[Cont.Data$ND]))
   
-  if(any(grep("nd",temp.hold,ignore.case =T))){
-  
-  tkmessageBox(title="Warning!",message="'<ND' detected. Non-Detect limits must be specified. Omitting unspecified Non Detect Data.",icon="warning",type="ok")
+  if (any(grep("nd",temp.hold,ignore.case = T))) {
+    tkmessageBox(title = "Warning!",message = "'<ND' detected. Non-Detect limits must be specified. Omitting unspecified Non Detect Data.",icon="warning",type="ok") 
   }
-  Cont.Data$Result.Corr.ND[Cont.Data$ND]<-as.numeric(temp.hold)
+  
+  Cont.Data$Result.Corr.ND[Cont.Data$ND] <- as.numeric(temp.hold)
   
   
   

@@ -102,9 +102,11 @@ Plot_ImagePlot <- function(panel) {
   if (is.null(Show.GW.Contour) || length(Show.GW.Contour) == 0 || is.na(Show.GW.Contour)) {Show.GW.Contour<-FALSE}
   
   Show.Well.Labels <- panel$ScaleCols["Show Well Labels"]
-  Show.ShapeFile <- panel$ScaleCols["Overlay ShapeFiles"]
-  if (is.null(Show.ShapeFile) || length(Show.ShapeFile) == 0 || is.na(Show.ShapeFile)) {Show.ShapeFile <- FALSE}
   
+  Show.ShapeFile <- FALSE
+  if ("Overlay ShapeFiles" %in% names(panel$ScaleCols))
+    Show.ShapeFile <- panel$ScaleCols["Overlay ShapeFiles"]
+ 
   Well.Coords <- panel$All.Data$Well.Coords
   jjj <- panel$timestep
   Cont <- panel$Cont.rg

@@ -41,7 +41,7 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/Plot_ImagePlot.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_TrafficTable.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_Legend.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Create_PanelAttr.R", sep = "/"))
+    source(paste(GWSDATHome, "R/createPanelAttr.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep = "/"))
     source(paste(GWSDATHome, "R/read_data.R", sep = "/"))
     source(paste(GWSDATHome, "R/utility_fcts.R", sep = "/"))

@@ -10,7 +10,7 @@
 #
 
 
-Create_PanelAttr <- function(Curr.Site.Data) {
+createPanelAttr <- function(Curr.Site.Data) {
   
   All.Data <- Curr.Site.Data$All.Data
   GWSDAT_Options <- Curr.Site.Data$GWSDAT_Options
@@ -118,10 +118,6 @@ Create_PanelAttr <- function(Curr.Site.Data) {
   panel$NAPL.Present <- napl_exists(panel$All.Data, panel$Well, panel$Cont.rg) 
  
   
-  #browser()
-  #
-  # Does not depend on data.
-  #
   
   
   panel$lev.cut <-  c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
@@ -132,17 +128,16 @@ Create_PanelAttr <- function(Curr.Site.Data) {
   panel$Stat.Lim <- as.numeric(panel$ContLimEntry[match(panel$Cont.rg, Cont.Names)])
   
   
-  
-  
+  # Options for the spatial plot.
   ScaleCols <-  NULL
   ScaleCols["Show Well Labels"] <- TRUE
   ScaleCols["Scale colours to Data"] <- FALSE
   ScaleCols["Show Conc. Values"] <- TRUE
   ScaleCols["Show GW Contour"] <- FALSE
-  ScaleCols["Overlay ShapeFiles"] <- FALSE
+  if (!is.null(GWSDAT_Options$ShapeFileNames)) ScaleCols["Overlay ShapeFiles"] <- FALSE
   ScaleCols["Plume Diagnostics"] <- FALSE
-  
   panel$ScaleCols <- ScaleCols
+ 
   panel$GW.disp_choice <-  c("None", "Same Length", "Weighted Length")
   panel$GW.disp <- if (Use.Defaults && !is.null(Default.Values$GW.disp)) {
     Default.Values$GW.disp}else{"Weighted Length"

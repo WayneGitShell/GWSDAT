@@ -4,7 +4,7 @@
 make_animation <- function(panel, addtoPPt = FALSE){
   
   keep_timestep <- panel$timestep
-  browser()
+  # browser()
   graphics.off()
   
   .SavedPlots <<- NULL
@@ -26,7 +26,7 @@ make_animation <- function(panel, addtoPPt = FALSE){
   }
   
   # Might not be necessary, because panel is only changed with <<-
-  panel$jjj <- keep_timestep
+  panel$timestep <- keep_timestep
   
   #return(panel)
   
@@ -70,28 +70,28 @@ AddPlotPPV2 <- function(panel,asp=FALSE){
   mySlide<-myPres[["Slides"]]$add(as.integer(max(1,myPres[["Slides"]]$Count()+1)),as.integer(12))
   myShapes<-mySlide$Shapes()
   
-  if(asp){### Maintain aspect ratio in PowerPoint Plots!
-    my.din<-par()$din
+  if (asp) {### Maintain aspect ratio in PowerPoint Plots!
+    my.din <- par()$din
     
-    if((my.din[1]/my.din[2])>=1.4){
+    if ((my.din[1]/my.din[2]) >= 1.4) {
       
-      my.size<-c(10,(540-700*my.din[2]/my.din[1])/2,700,700*my.din[2]/my.din[1])
+      my.size <- c(10,(540 - 700*my.din[2]/my.din[1])/2,700,700*my.din[2]/my.din[1])
       
     }else{
       
-      my.size<-c((720-500*my.din[1]/my.din[2])/2,20,500*my.din[1]/my.din[2],500)
+      my.size <- c((720 - 500*my.din[1]/my.din[2])/2,20,500*my.din[1]/my.din[2],500)
       
     }
   }else{
     
-    my.size<-c(10,10,700,500)
+    my.size <- c(10,10,700,500)
     
   }
   
   
   myShapes$AddPicture(mytemp,0,-1,my.size[1],my.size[2],my.size[3],my.size[4]) 
   mySlide$Select()
-  browser()
+  #browser()
   
   try(file.remove(mytemp))
   try(rm(mytemp))

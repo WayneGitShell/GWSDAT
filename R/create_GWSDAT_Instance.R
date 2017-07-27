@@ -3,8 +3,8 @@
 
 #' Create a GWSDAT instance.
 #'
-#' @return GWSDAT_Options An object of type GWSDAT_Options. 
-#' @export
+#' @return GWSDAT_Options List with essential GWSDAT options. 
+#' @export 
 #'
 #' @examples
 create_GWSDAT_Instance <- function() {
@@ -58,7 +58,7 @@ create_GWSDAT_Instance <- function() {
   GWSDAT_Options[['ShapeFileNames']] <- NULL
   GWSDAT_Options[['UseGWSDATLib']] <- FALSE
   
-  GWSDAT_Options[['Excel_Mode']] <- FALSE
+  GWSDAT_Options[['ExcelMode']] <- FALSE
   
   return(GWSDAT_Options)
 }

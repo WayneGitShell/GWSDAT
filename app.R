@@ -40,9 +40,17 @@ server <- function(input, output, session) {
   # Clean-up user session.
   #
   session$onSessionEnded(function() {
-    # browser()
-    #q()
     
+    # Shuts down the server, O.K. for single user mode. 
+    # ! Change this when running on server.
+    stopApp()
+    
+    #
+    # If I call q() from RStudio, it will crash RStudio.
+    #   So I only ran it with ExcelMode.  
+    #    if(pnl$GWSDAT_Options$ExcelMode)
+    #      q()
+    #
   })
   
   
@@ -310,6 +318,7 @@ server <- function(input, output, session) {
       }
     )
     
+    
     output$download_contour_plot <- downloadHandler(
       
       filename <-  "gwsdat_spatial_plot.png",
@@ -323,20 +332,6 @@ server <- function(input, output, session) {
     )
     
     
-    output$download_contour_anim_ppt <- downloadHandler(
-      
-      filename <- "gwsdat_spatial_anim.ppt",
-      
-      content <-  function(file) {
-        
-        #png(file, width = 1000, height = 1000)
-        make_animation(pnl, TRUE)
-        #Plot_ImagePlot(pnl)
-        #dev.off()
-      }
-      
-    )
-    
     output$download_traffictable <- downloadHandler(
       
       filename = "shiny_trafficlights_plot.png",
@@ -347,6 +342,15 @@ server <- function(input, output, session) {
         dev.off()
       }
     )
+    
+    
+    #
+    # Generate PPT with spatial animation.
+    #
+    observeEvent(input$generate_spatial_anim_ppt, {
+      #browser()
+      make_animation(pnl, TRUE)
+    })
     
     
     #
@@ -419,6 +423,8 @@ server <- function(input, output, session) {
     })
     
     
+    
+    
     observeEvent(input$import_button,  {
      
       #
@@ -473,6 +479,15 @@ server <- function(input, output, session) {
     shinyjs::onclick("toggleDataManager", {
       shinyjs::show(id = "data_manager", anim = TRUE);
       shinyjs::hide(id = "data_import", anim = TRUE)
+    })
+    
+    
+    #
+    # Display the "Generate PPT Animation" Button only when in ExcelMode.
+    #
+    observeEvent(input$analyse_panel, {
+      if (input$analyse_panel == "Spatial Plot" && pnl$GWSDAT_Options$ExcelMode) 
+        shinyjs::show(id = "generate_ppt_anim")
     })
     
     
@@ -559,7 +574,7 @@ ui_analyse_only <- shinyUI(
   
   
 
-if (!pnl$GWSDAT_Options$Excel_Mode) {
+if (!pnl$GWSDAT_Options$ExcelMode) {
   shinyApp(ui = ui, server = server)
 } else {
   shinyApp(ui = ui_analyse_only, server = server)
