@@ -40,7 +40,7 @@ shiny_ui_analysepanel <- function() {
                               )
                        ),
                        
-                       column(7,
+                       box(width = 7,
                               plotOutput("time_series"),
                               downloadButton("download_timeseries_plot", label = "Save Plot")
                               
@@ -86,7 +86,8 @@ shiny_ui_analysepanel <- function() {
                               
                        ),
                        
-                       column(7, 
+                       
+                       box(width = 7,
                               plotOutput("image_plot")
                        ),
                        
@@ -140,7 +141,7 @@ shiny_ui_analysepanel <- function() {
                               
                        ),
                        
-                       column(7,
+                       box(width = 7,
                               plotOutput("traffic_table"),
                               plotOutput("plot_legend_traffic")
                        ),
@@ -162,13 +163,13 @@ shiny_ui_analysepanel <- function() {
               ),
               #, # end tabPanel
              
-              navbarMenu("Options",
-                  "test 1",
-                  "test 2",
+              navbarMenu("More",
+                  tabPanel("Well Report", fluid = TRUE, 
+                           ui_pnl_createWellReport() ),
                   "----",
-                  tabPanel("Solutes & Thresholds", fluid = TRUE,
+                  tabPanel("Settings", fluid = TRUE,
                            h3("Page for some settings."),
-                           "Here we could define sub sets of solutes, edit thresholds, etc.."
+                           "Maybe for threshold values, drawing options, etc.."
                   )
               ) # end navbarMenu
               

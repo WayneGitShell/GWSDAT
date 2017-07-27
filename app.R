@@ -504,7 +504,59 @@ server <- function(input, output, session) {
     #    
     #  }
     #})
-        
+    #observeEvent(input$solute_chooser, {
+    #  
+    #  browser()
+    #  val = input$mychooser
+    #}) 
+    
+    #
+    # Plot time-series window
+    #
+    output$well_report_plot <- renderPlot({
+      
+      
+      #browser()
+      selected_solutes <- input$solute_chooser$left
+      selected_wells   <- input$well_chooser$left
+      use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
+      
+      createWellReport(pnl, selected_solutes, selected_wells, use_log_scale)
+    
+      })
+      
+      
+      
+     # Note: If the well_report_box is hidden, the output$well_report_plot will not trigger.
+     #       Thus, on the push of the "Generate Report" button, first the "well_report_box"
+    #        is shown, afterwards renderPlot() for the contained 'well_report_plot' is triggered.
+    #observeEvent(input$actionBtn_wellreport, {
+    #  
+    #   shinyjs::show(id = "well_report_box", anim = TRUE)
+    # 
+    #  })
+     
+    #   
+    #   selected_solutes <- input$solute_chooser$left
+    #   selected_wells   <- input$well_chooser$left
+    #   use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
+    #   
+    #   if (length(selected_solutes == 0) && length(selected_wells) == 0) {
+    #     # toogle warning
+    #     # ...
+    #   } else {
+    #     
+    #     ret <- createWellReport(pnl, selected_solutes, selected_wells, use_log_scale)
+    #       
+    #     if (class(ret) == "GWSDAT_Warning") {
+    #       # toogle warning
+    #       shinyjs::toggle("")
+    #       #..
+    #       stop("Fixme: Include warning message, e.g. toogle red text.")
+    #     }
+    #   }
+    #   
+    # })
 }
 
 

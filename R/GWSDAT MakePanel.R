@@ -2094,7 +2094,7 @@ my.key <- list(
 ) 
 
 
-
+browser()
 myplot<-xyplot(Result.Corr.ND~SampleDate|WellName,groups=Constituent,data=Cont.Data,
 
 scales=list(y=list(log=UseLogScale)),layout=if(length(unique(Cont.Data$WellName))>30){c(4,4)}else{NULL},type=c("b"),

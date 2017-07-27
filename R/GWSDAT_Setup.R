@@ -24,6 +24,8 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
   
   
   if (!UseGWSDATLib) {
+
+    if (!GWSDAT_Load_Libs()) { stop("Missing packages") }
     
   	source(paste(GWSDATHome, "R/GWSDAT Traffic Lights.R", sep = "/"))
   	source(paste(GWSDATHome, "R/GWSDAT GWFlow.R", sep = "/"))
@@ -45,25 +47,22 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep = "/"))
     source(paste(GWSDATHome, "R/read_data.R", sep = "/"))
     source(paste(GWSDATHome, "R/utility_fcts.R", sep = "/"))
-    source(paste(GWSDATHome, "R/shiny_ui_analysepanel.R", sep = "/"))
-    source(paste(GWSDATHome, "R/shiny_ui_datamanager.R", sep = "/"))
     source(paste(GWSDATHome, "R/aggregate_data.R", sep = "/"))
     source(paste(GWSDATHome, "R/create_GWSDAT_Instance.R", sep = "/"))
     source(paste(GWSDATHome, "R/make_animation.R", sep = "/"))
+    source(paste(GWSDATHome, "R/createWellReport.R", sep = "/"))
+
+    source(paste(GWSDATHome, "R/shiny_ui_analysepanel.R", sep = "/"))
+    source(paste(GWSDATHome, "R/shiny_ui_datamanager.R", sep = "/"))
+    source(paste(GWSDATHome, "R/ui_pnl_createWellReport.R", sep = "/"))
     
+    source(paste(GWSDATHome, "R/chooserInput.R", sep = "/"))
     
-    
-    
-    # do I need it?
-    # Called from: GWSDAT_Fit_Data.R, plot_Traffic_Table.R, GWSDAT_Input_Data.R (each one time)
+
+    # Need this as long as I'm not fully dependent on shiny.
     source(paste(GWSDATHome, "R/GWSDAT_select_list.R", sep = "/"))
     
-    
-    
-    
-    
-    
-  	if (!GWSDAT_Load_Libs()) { stop("Missing packages") }
+
   
   } else {
   

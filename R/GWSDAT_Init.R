@@ -5,6 +5,10 @@ GWSDAT_Init <- function(GWSDAT_Options, progressBar) {
   Run_status = GWSDAT_OK() 
   
   
+  require(tcltk)
+  progressBar <- tkProgressBar('GWSDAT Progress', 'Loading R packages...',0, 1, 0)
+  
+  
   # Read Well data and coordinates from file.
   solute_data <- Read_Well_Data(GWSDAT_Options$WellDataFilename)
   well_data <- Read_Well_Coords(GWSDAT_Options$WellCoordsFilename)
@@ -43,6 +47,9 @@ GWSDAT_Init <- function(GWSDAT_Options, progressBar) {
   
   try(rm(Fitted.Data, All.Data, GWSDAT_Options))
 
+  try(close(progressBar))
+  #setTkProgressBar( progressBar, 1, NULL, "Starting Shiny ...")
+  
   
   #return(list(status = Run_status, Curr_Site_Data = Curr.Site.Data))
   return(Curr.Site.Data)

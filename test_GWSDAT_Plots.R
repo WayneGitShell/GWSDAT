@@ -9,6 +9,8 @@ source("R/GWSDAT MakePanel.R")
 source("R/GWSDAT_Setup.R")
 
 
+COMPREHENSIVE_EXAMPLE = FALSE
+
 GWSDAT_Setup()
 
 options(warn = 1) #, error=1)
@@ -17,12 +19,13 @@ GWSDAT_Options = create_GWSDAT_Instance()
 
 #
 # Change some Option for testing.
-# 
-GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
-
+#
+if (COMPREHENSIVE_EXAMPLE) {
+  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+}
 
 pnl = GWSDAT_Init(GWSDAT_Options)
 
