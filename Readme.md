@@ -11,17 +11,18 @@ The Multi-Data mode includes an extended user interface with a data manager. The
 * Execute R in this directory. 
 * Start Multi-Data Mode: 
 
-```
-> source("R/start_GWSDAT.R")
-> start_GWSDAT()
+```R
+source("R/start_GWSDAT.R")
+start_GWSDAT()
 ```
 
-* Start in Single-Data Mode by specifying input data:
+* Start in Single-Data Mode by specifying ExcelMode <- TRUE. More Options are listed inside create_GWSDAT_Instance.R.
 
-```
-> source("R/start_GWSDAT.R")
-> GWSDAT_Options <- create_GWSDAT_Instance()                  # Create a GWSDAT_Options list. 
-> GWSDAT_Options$WellDataFilename <- 'WellData_file.csv'      # Change any options. 
-> GWSDAT_Options$WellCoordsFilename <- 'WellCoord_file.csv'
-> start_GWSDAT(GWSDAT_Options)                                # Pass the options list: single-data mode is invoked.
+```R
+source("R/start_GWSDAT.R")
+GWSDAT_Options <- create_GWSDAT_Instance()                   
+GWSDAT_Options$ExcelMode <- TRUE
+GWSDAT_Options$WellDataFilename <- 'WellData_file.csv'      # Change well data file. 
+GWSDAT_Options$WellCoordsFilename <- 'WellCoord_file.csv'   # Change coordinates file.
+start_GWSDAT(GWSDAT_Options)                                
 ```
