@@ -26,16 +26,16 @@ start_GWSDAT <- function(GWSDAT_Options = NULL) {
     GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
     
     
-  } else {
-
-    # This will only show the data analyse panel.       
-    if (!GWSDAT_Options$ExcelMode)
-      GWSDAT_Options[['ExcelMode']] <- TRUE
+  } 
+  
+  # If ExcelMode was not defined, turn it off.
+  if (is.null(GWSDAT_Options$ExcelMode))
+    GWSDAT_Options[['ExcelMode']] <- FALSE
       
-  }
   
   
   
+  browser()
    
   
   # Initialize the data and do the fitting.
