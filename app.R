@@ -1,33 +1,38 @@
 
-#library(shiny)
-
-#library(shinydashboard)
-
-#library(shinyjs)
 
 source("R/GWSDAT_Setup.R")
 
 
+# Print warnings when they happen.
+options(warn = 1)
 
+HeadlessMode <- FALSE
 
-HeadlessMode <- TRUE
-
+# The progress bar starts here because of lengthy package loading. 
+# All the rest is done inside initSite(). 
 progressBar = NULL
 if (!HeadlessMode) {
     require(tcltk)
     progressBar <- tkProgressBar('GWSDAT Progress', 'Loading R packages...',0, 1, 0)
 }
 
+# Loads packages and R sources.
 GWSDAT_Setup()
 
-GWSDAT_Options = create_GWSDAT_Instance(HeadlessMode)
-GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+
+if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
+  
+  GWSDAT_Options <-  createOptions(HeadlessMode)
+  
+  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+
+}
 
 
-curr_site = GWSDAT_Init(GWSDAT_Options, progressBar)
+curr_site = initSite(GWSDAT_Options, progressBar)
 
 
 # Create a complete GWSDAT instance with data, model, and options. 

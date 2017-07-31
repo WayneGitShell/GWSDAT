@@ -9,7 +9,9 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
   # Use the method below to load packages if not on a Linux system.
   if (.Platform$OS.type != "unix") { 
 
-    if (!GWSDAT_Load_Libs()) { stop("Missing packages") }
+    if (!GWSDAT_Load_Libs(GWSDATHome)) { 
+      stop("Missing packages") 
+    }
 
   } else {
 
@@ -41,19 +43,21 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/GWSDAT Shapefile Functions.R", sep = "/"))
   
     # added 07/2017
-    source(paste(GWSDATHome, "R/GWSDAT_Init.R", sep = "/"))
+    
     source(paste(GWSDATHome, "R/prepare_data.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep = "/"))
+    source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_SmoothTimeSeries.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_ImagePlot.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_TrafficTable.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_Legend.R", sep = "/"))
-    source(paste(GWSDATHome, "R/createPanelAttr.R", sep = "/"))
-    source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep = "/"))
     source(paste(GWSDATHome, "R/read_data.R", sep = "/"))
+  
+    source(paste(GWSDATHome, "R/createPanelAttr.R", sep = "/"))
+    source(paste(GWSDATHome, "R/initSite.R", sep = "/"))
     source(paste(GWSDATHome, "R/utility_fcts.R", sep = "/"))
     source(paste(GWSDATHome, "R/aggregate_data.R", sep = "/"))
-    source(paste(GWSDATHome, "R/create_GWSDAT_Instance.R", sep = "/"))
+    source(paste(GWSDATHome, "R/createOptions.R", sep = "/"))
     source(paste(GWSDATHome, "R/make_animation.R", sep = "/"))
     source(paste(GWSDATHome, "R/createWellReport.R", sep = "/"))
 
@@ -66,18 +70,6 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     
     # Need this as long as I'm not fully dependent on shiny.
     source(paste(GWSDATHome, "R/GWSDAT_select_list.R", sep = "/"))
-    
-
-  
-#  } #else {
-#  
-#    if (!require(GWSDAT)) {
-#  	  	  
-#      stop("Error: Cannot find package GWSDAT.")
-#    }
-#  
-#  }
-  
 
 }
 
@@ -86,47 +78,44 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
 
 
 
-GWSDAT_Load_Libs <- function(){
+GWSDAT_Load_Libs <- function(GWSDATHome){
 
 
-  ##
-  ## Setup the libPaths to the additional packages required by GWSDAT.
-  ##
-  if ( as.numeric(R.Version()$major) == 2) {
-  
-  	try(.libPaths(c(paste(GWSDATHome,'R',paste('RLibsMajVer2',sep = ''),sep = '/'),.libPaths())))
-  
-  } else{
-  
-  	try(.libPaths(c(paste(GWSDATHome,'R',paste('RLibsMajVer3',sep = ''),sep = '/'),.libPaths())))
-  
-  }
-  
-  try(assign('.lib.loc', shortPathName(get('.lib.loc', envir = environment(.libPaths))),envir = environment(.libPaths)))
-
-    
-    
+ 
   Require <- function(pkg) {
     
-    if (data.class(result <- try(find.package(pkg,lib.loc=.libPaths()),TRUE)) == "try-error")
-    {
+    if (data.class(result <- try(find.package(pkg, lib.loc = .libPaths()), TRUE)) == "try-error") {
+      browser()
       # tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
       
       ## pass error+message somehow back without calling tkmessageBox
       # return(GWSDAT_Error(paste("Cannot find package \"",pkg,"\"",sep="")))  
       # .. not doing this here because we need FALSE back.
-      return (FALSE)
+      return(FALSE)
     }
     else
     {
-      require(pkg,character.only=TRUE)
-      return (TRUE)
+      require(pkg, character.only = TRUE)
+      return(TRUE)
     }
   }
   
   
   
-  try(options(editor="notepad"))
+  ##
+  ## Setup the libPaths to the additional packages required by GWSDAT.
+  ##
+  local_libPath = paste(GWSDATHome, '/R/RLibsMajVer', as.numeric(R.Version()$major), 
+                        "/", .Platform$OS.type, sep = "")
+  
+  
+  try(.libPaths(c(local_libPath, .libPaths() )))
+  
+  try(assign('.lib.loc', shortPathName(get('.lib.loc', envir = environment(.libPaths))),envir = environment(.libPaths)))
+  
+ 
+  
+  try(options(editor = "notepad"))
   if(!Require("sm")){return(FALSE)}
   if(!Require("zoo")){return(FALSE)}
   if(!Require("tkrplot")){return(FALSE)}

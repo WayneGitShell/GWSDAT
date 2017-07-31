@@ -1,5 +1,0 @@
-abind                   Combine multi-dimensional arrays
-adrop                   Drop dimensions of an array object
-afill                   Fill an array with subarrays
-asub                    Arbitrary subsetting of array-like objects at
-                        specified indices

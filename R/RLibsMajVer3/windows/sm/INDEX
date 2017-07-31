@@ -1,0 +1,92 @@
+aircraft                These data record six characteristics of
+                        aircraft designs which appeared during the
+                        twentieth century
+airpc                   These data list the first two principal
+                        component scores from the aircraft data, which
+                        record six characteristics of aircraft designs
+                        throughout the twentieth century
+binning                 Construct frequency table from raw data
+birth                   Low birthweight in babies
+bissell                 Flaws in cloth
+bonions                 Yield-density relationship for Brown Imperial
+                        Spanish onions
+britpts                 Coastline of the UK and Ireland
+citrate                 The relationship between plasma citrate and
+                        carbohydrate metabolites
+coalash                 Coal ash in mining samples
+dogs                    Coronary sinus potassium in dogs
+follicle                Ovarian follicle counts
+geys3d                  Duration and the time between eruptions for the
+                        Old Faithful Geyser
+geyser                  Old Faithful Geyser Data
+h.select                Selection of the smoothing parameter
+hcv                     Cross-validatory choice of smoothing parameter
+hnorm                   Normal optimal choice of smoothing parameter in
+                        density estimation
+hsj                     Sheather-Jones choice of smoothing parameter
+                        for density estimation
+lcancer                 Spatial positions of cases of laryngeal cancer
+mackerel                The abundance of mackerel eggs
+magrem                  Magnetic remanence
+mildew                  Mildew control
+mosses                  Heavy metals in mosses in Galicia.
+muscle                  Rat skeletal muscles
+nile                    Water level of the River Nile
+nise                    Integrated squared error between a density
+                        estimate and a Normal density
+nmise                   mean integrated squared error for density
+                        estimation with normal data
+nnbr                    nearest neighbour distances from data in one or
+                        two dimensions
+pause                   Pause before continuing execution
+poles                   Positions of the south pole
+provide.data            Making data available as data.frame
+radioc                  Radiocarbon in Irish oak
+sig.trace               A significance trace for a hypothesis test
+sm                      The sm package: summary information
+sm.ancova               Nonparametric analysis of covariance
+sm.autoregression       Nonparametric estimation of the autoregression
+                        function
+sm.binomial             Nonparametric logistic regression
+sm.binomial.bootstrap   Bootstrap goodness-of-fit test for a logistic
+                        regression model.
+sm.density              Nonparametric density estimation in one, two or
+                        three dimensions.
+sm.density.compare      Comparison of univariate density estimates
+sm.discontinuity        The detection of discontinuities in a
+                        regression curve or surface.
+sm.monotonicity         A test of monotonicity in a regression curve.
+sm.options              Set or return options of sm library
+sm.pca                  Smooth principal components analysis
+sm.poisson              Nonparametric Poisson regression
+sm.poisson.bootstrap    Bootstrap goodness-of-fit test for a Poisson
+                        regression model
+sm.regression           Nonparametric regression with one or two
+                        covariates.
+sm.regression.autocor   Nonparametric regression with autocorrelated
+                        errors
+sm.rm                   Nonparametric analysis of repeated measurements
+                        data
+sm.script               Running a script associated to the sm library
+sm.sigma                Estimation of the error standard deviation in
+                        nonparametric regression.
+sm.sigma2.compare       Comparison across two groups of the error
+                        standard deviation in nonparametric regression
+                        with two covariates.
+sm.sphere               Nonparametric density estimation for spherical
+                        data.
+sm.surface3d            Adding a regression surface to an rgl plot.
+sm.survival             Nonparametric regression with survival data.
+sm.ts.pdf               Nonparametric density estimation of stationary
+                        time series data
+sm.variogram            Confidence intervals and tests based on
+                        smoothing an empirical variogram.
+smacker                 Mackerel data from a Spanish survey
+stanford                Survival times from the Stanford Heart
+                        Transplant Study
+tephra                  Tephra layer
+trawl                   Trawl data from the Great Barrier Reef
+trout                   Potassium cyanate and trout eggs
+wonions                 Yield-density relationship for White Imperial
+                        Spanish onion plants
+worm                    Human parasitic worm infections

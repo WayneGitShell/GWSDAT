@@ -1,0 +1,11 @@
+History of the `rpanel' library
+by Adrian W. Bowman & Ewan Crawford
+-----------------------------------
+
+June      2006: version 1.0-1 released.
+August    2006: version 1.0-3 released.
+September 2006: version 1.0-4 released.
+December  2008: version 1.0-5 released.
+February  2013: version 1.1-1 released.
+April     2013: version 1.1-2 released.
+February  2014: version 1.1-3 released.

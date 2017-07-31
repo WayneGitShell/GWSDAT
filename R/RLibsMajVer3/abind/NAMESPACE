@@ -1,4 +1,0 @@
-export(abind, asub, "afill<-", adrop)
-S3method(asub, default)
-S3method(adrop, default)
-S3method("afill<-", default)

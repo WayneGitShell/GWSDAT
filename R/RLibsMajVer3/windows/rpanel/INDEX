@@ -1,0 +1,81 @@
+Clyde                   Water quality in the River Clyde
+CofE                    Giving in the Church of England
+SO2                     Sulphur dioxide measurements over Europe
+aircond                 Intervals between the failure of
+                        air-conditioning equipment in aircraft
+gullweight              The weights of herring gulls captured at
+                        different times of year
+luthor                  Repeated measurements on leutinizing hormone in
+                        cows
+poisons                 Survival times of animals subjected to
+                        different poisons and treatment
+river                   Temperature and DO threshold in the River Clyde
+rodent                  The mass and speed of quadrupedal rodents
+rp.ancova               Interactive analysis of covariance
+rp.anova                Interactive analysis of variance
+rp.block                Blocks use of the R console until a panel is
+                        closed
+rp.bubbleplot           Animated scatterplot
+rp.button               Button control for rpanel
+rp.cartoons             Access to a collection of rpanel illustrations
+rp.checkbox             A checkbox control for rpanel
+rp.ci                   Simulations of normal-based confidence
+                        intervals
+rp.clearlines           Remove lines from an rpanel image
+rp.colour.key           Creates a colour key.
+rp.combo                A 'combo' for a panel
+rp.control              Create or dispose of an rpanel
+rp.control.put          Updates the panel environment with the current
+                        value of the panel list object.
+rp.deleteline           Removes a line from an rpanel image
+rp.do                   Runs a user-written action function
+rp.doublebutton         Double-button widget for rpanel
+rp.firth                Geostatistical sampling and analysis simulation
+                        tool
+rp.geosim               Interactive visualisation of spatially
+                        correlated random fields
+rp.grid                 Define a subsidiary grid within an rpanel
+rp.gulls                STEPS module: the Birds and the Bees
+rp.image                Placement of an image within a rpanel
+rp.likelihood           Interactive inspection of one- or two-parameter
+                        likelihood surfaces
+rp.line                 Draws a line on an rpanel image
+rp.listbox              Listbox for a panel
+rp.logistic             Interactive display of logistic regression with
+                        a single covariate
+rp.menu                 Top level menu for a panel
+rp.messagebox           Displays a message
+rp.mururoa              Sampling in Mururoa Atoll
+rp.normal               Interactive fitting of a normal distribution
+rp.notebook             Define a notebook within an rpanel
+rp.panel                Returns a panel
+rp.plot3d               Interactive display of a plot of three
+                        variables
+rp.plot4d               Animated scatterplot
+rp.pos                  Positioning controls in an rpanel
+rp.power                Interactive power calculations for a two-sample
+                        t-test
+rp.radiogroup           Radiobuttons for a panel
+rp.regression           Interactive display of regression with one or
+                        two covariates
+rp.rmplot               Interactive plotting of repeated measurement
+                        data
+rp.screenresolution     Screen resolution
+rp.slider               Slider for an rpanel
+rp.surface              Interactive visualisation of a surface and its
+                        uncertainty
+rp.tables               Interactive statistical tables
+rp.text                 Text boxes for a panel
+rp.textentry            Text entry boxes for a panel
+rp.timer                Creates a series of timed actions
+rp.tkrplot              rpanel calls for tkrplot and tkrreplot
+rp.var.get              Retrieves an object from the rpanel
+                        envrionment, usually from a panel.
+rp.var.put              Places an object in the rpanel envrionment,
+                        usually within a panel.
+rp.widget.dispose       Removes a widget
+rpanel-package          Simple interactive controls for R functions
+                        using the tcltk package
+worldbank               Data on CO2 emissions, GDP, life.expectancy and
+                        population for the countries of the world
+                        between 1960 and 2007

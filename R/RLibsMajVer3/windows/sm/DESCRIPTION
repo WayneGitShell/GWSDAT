@@ -1,0 +1,25 @@
+Package: sm
+Type: Package
+Title: Smoothing methods for nonparametric regression and density
+        estimation
+Version: 2.2-5.4
+Date: 2013-12-21
+Author: Adrian Bowman and Adelchi Azzalini. 
+         Ported to R by B. D. Ripley <ripley@stats.ox.ac.uk> up to version 2.0,
+	     version 2.1 by Adrian Bowman and Adelchi Azzalini,
+	     version 2.2 by Adrian Bowman.	 	 
+Maintainer: Adrian Bowman <adrian.bowman@glasgow.ac.uk>
+Depends: R (>= 2.14.0)
+Suggests: rpanel, tkrplot, rgl, misc3d, akima, gam
+Description: This is software linked to the book
+  'Applied Smoothing Techniques for Data Analysis -
+  The Kernel Approach with S-Plus Illustrations' Oxford University Press.
+License: GPL (>= 2)
+LazyData: TRUE
+URL: http://www.stats.gla.ac.uk/~adrian/sm
+Packaged: 2014-01-16 18:01:36 UTC; adrian
+NeedsCompilation: yes
+Repository: CRAN
+Date/Publication: 2014-01-16 20:20:26
+Built: R 3.3.3; x86_64-w64-mingw32; 2017-07-29 22:58:02 UTC; windows
+Archs: i386, x64

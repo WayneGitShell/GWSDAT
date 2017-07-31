@@ -66,7 +66,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   Aq_list <- unique(Well.Coords$Aquifer)
 
   # Only show the tk selection choice for Aquifer if not in headless mode.
-  if ((length(Aq_list) > 1) && !GWSDAT_Options$Headless)
+  if ((length(Aq_list) > 1) && !GWSDAT_Options$HeadlessMode)
     Aq_sel <- GWSDAT.select.list(Aq_list, title = "Select an Aquifer to Analyse")    
   
   # Define the first Aquifer to be the one we display as default.	

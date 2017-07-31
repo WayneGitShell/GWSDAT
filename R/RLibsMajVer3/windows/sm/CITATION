@@ -1,0 +1,19 @@
+citHeader("To cite the sm package in publications use:")
+
+citEntry(entry="manual",
+         title = paste("{R} package \\texttt{sm}:",
+                  "nonparametric smoothing methods (version 2.2-5.4)",  
+                  sep=" "),
+         author = personList(as.person("A. W. Bowman"), as.person("A. Azzalini")),
+         address  = "University of Glasgow, UK and Universit\\`a di Padova, Italia",
+         year     = "2014",
+         url      = paste("URL http://www.stats.gla.ac.uk/~adrian/sm, ",
+                        "http://azzalini.stat.unipd.it/Book_sm", sep=""),
+         textVersion =  paste(
+                   "Bowman, A. W. and Azzalini, A. (2014). ",
+                   "R package 'sm': nonparametric smoothing methods",
+	               " (version 2.2-5.4)", 
+                   " URL http://www.stats.gla.ac.uk/~adrian/sm, ",
+                      "http://azzalini.stat.unipd.it/Book_sm",
+                    sep="")
+)

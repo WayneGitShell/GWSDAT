@@ -1,0 +1,13 @@
+			Follicle data
+			
+These data record the number of ovarian follicles, on a log scale, counted from sectioned ovaries of women of various ages.
+
+The variables are:
+	Age:    age of the woman
+	Count:  follicle count
+	Source: an indicator of the source of the data
+	
+Source: The data were reported by Block (1952; 1953), 
+	Richardson et al (1987), and A Gougeon.  They are analysed by
+	Faddy & Gosden (1996) and Faddy & Jones (1997).
+	

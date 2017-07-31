@@ -1,0 +1,21 @@
+useDynLib(sm)
+
+export(binning, britmap, hcv, hnorm, hsj, nise, nmise, nnbr,
+       pause, provide.data, sig.trace, sm.ancova,
+       sm.autoregression, sm.binomial, sm.binomial.bootstrap,
+       sm.density, sm.density.compare, sm.options, sm.poisson,
+       sm.poisson.bootstrap, sm.regression, sm.regression.autocor,
+       sm.rm, sm.script, sm.sphere, sm.survival, sm.ts.pdf, sm.weight,
+       sm.weight2, sm.surface3d, h.select, sm.sigma, sm.sigma2.compare,
+       sm.variogram, sm.discontinuity, sm.monotonicity, sm.pca)
+
+# addplot, attach.frame, box1., box2., change, circle, coord2., hidplot, incphi
+# inctheta, isInteger, isMatrix, normdens.band, np.contour.plot.3d., p.quad.moment
+# plot.regression, plot2, plot2d, print.graph, replace.na, sm.glm, sm.imageplot
+# sm.persplot, sm.sigweight, sm.sliceplot, smplot.density, type, wmean, wvar
+# latlines, latlines.e, longlines, longlines.e, sphdraw, sphimage
+# sm.density.1d, sm.density.2d, sm.density.3d, sm.density.eval.1d, sm.density.eval.2d
+# sm.density.positive.1d, sm.density.positive.2d, sm.density.positive.grid,
+# sm.regression.1d, sm.regression.2d, sm.regression.eval.1d, sm.regression.eval.2d
+# sm.regression.test
+# df.crit.reg, cv.crit.reg, aicc.crit.reg, cv.crit.dens

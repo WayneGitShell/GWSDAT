@@ -1,0 +1,72 @@
+export(
+# non widget functions
+# rp.env,
+# rp,
+  rp.messagebox,
+  rp.do, 
+  rp.block, 
+# rp.setup,
+# rp.settings,
+  rp.screenresolution,
+  rp.control, rp.control.dispose,
+# rp.assign,  
+  rp.menu,
+  rp.notebook, rp.notebook.raise,
+  rp.grid,
+  rp.button,
+  rp.checkbox, # rp.checkbox.change,
+  rp.text, rp.text.change,
+  rp.doublebutton,
+  rp.slider, rp.slider.change,
+  rp.listbox,
+  rp.combo,
+  rp.radiogroup,
+  rp.textentry, 
+  rp.image, rp.line, rp.deleteline, rp.clearlines,
+  rp.tkrplot, rp.tkrreplot, 
+  rp.widget.dispose,
+  rp.timer,
+  rp.pos,
+
+# Options for the future
+# rp.table, rp.table.value.get, rp.table.value.set, rp.table.location, rp.table.get,
+# rp.hide, rp.disable, rp.enable,
+# rp. scrollbars on window?
+# rp. dialogs - but these are windows only?
+# rp. Check list of widgets for further widgets
+
+  rp.var.get,
+  rp.var.put,
+  # rp.control.get,
+  rp.control.put,
+  rp.panel, # hangover from old version, just a wrapper for rp.control.get
+
+#  cartoon functions
+
+  rp.colour.key,
+  rp.ancova,
+
+  rp.anova,
+
+  rp.bubbleplot,
+  rp.cartoons,
+  rp.ci, 
+  rp.firth,
+  rp.geosim, 
+  rp.gulls, 
+  rp.likelihood, 
+  rp.logistic,
+  # rp.multilevel,
+  rp.mururoa, 
+  rp.normal, 
+  rp.plot3d, 
+  rp.plot4d,
+  rp.spacetime,
+  rp.surface,
+  rp.power,
+  rp.regression, 
+  rp.regression2, 
+  rp.rmplot, 
+  rp.tables
+
+)
