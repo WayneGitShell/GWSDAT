@@ -7,7 +7,7 @@
 #' @export 
 #'
 #' @examples
-create_GWSDAT_Instance <- function() {
+create_GWSDAT_Instance <- function(HeadlessMode) {
   
   GWSDAT_Options <- list()
   GWSDAT_Options[['Aggby']] <- 'Monthly'
@@ -59,6 +59,7 @@ create_GWSDAT_Instance <- function() {
   GWSDAT_Options[['UseGWSDATLib']] <- FALSE
   
   GWSDAT_Options[['ExcelMode']] <- FALSE
-  
+  GWSDAT_Options[['HeadlessMode']] <- HeadlessMode
+    
   return(GWSDAT_Options)
 }

@@ -1,4 +1,49 @@
 
+#library(shiny)
+
+#library(shinydashboard)
+
+#library(shinyjs)
+
+source("R/GWSDAT_Setup.R")
+
+
+
+
+HeadlessMode <- TRUE
+
+progressBar = NULL
+if (!HeadlessMode) {
+    require(tcltk)
+    progressBar <- tkProgressBar('GWSDAT Progress', 'Loading R packages...',0, 1, 0)
+}
+
+GWSDAT_Setup()
+
+GWSDAT_Options = create_GWSDAT_Instance(HeadlessMode)
+GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+
+
+curr_site = GWSDAT_Init(GWSDAT_Options, progressBar)
+
+
+# Create a complete GWSDAT instance with data, model, and options. 
+pnl <- createPanelAttr(curr_site)
+
+if (!GWSDAT_Options$HeadlessMode) {
+    try(close(progressBar))
+    ##setTkProgressBar( progressBar, 1, NULL, "Starting Shiny ...")
+}
+ 
+
+  
+# Put into global environment, so the shiny server can see it. 
+.GlobalEnv$pnl <- pnl
+
+
 
 
 
@@ -82,6 +127,10 @@ server <- function(input, output, session) {
       
       
       # Make the plot.
+      #if(!exists("pnl")) {
+      #    cat("pnl does no exists")
+      #    stopApp()
+      #}
       Plot_SmoothTimeSeries(pnl)
       
     })
@@ -623,11 +672,16 @@ ui <- dashboardPage(
 ui_analyse_only <- shinyUI(
   fluidPage(shiny_ui_analysepanel())
 )
-  
-  
+
+
+
+
+
+
+
 
 if (!pnl$GWSDAT_Options$ExcelMode) {
-  shinyApp(ui = ui, server = server)
+    shinyApp(ui = ui, server = server)
 } else {
-  shinyApp(ui = ui_analyse_only, server = server)
+    shinyApp(ui = ui_analyse_only, server = server)
 }

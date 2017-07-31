@@ -1,26 +1,26 @@
 ### R code from vignette source 'over.Rnw'
 
 ###################################################
-### code chunk number 1: over.Rnw:104-106 (eval = FALSE)
+### code chunk number 1: over.Rnw:105-107 (eval = FALSE)
 ###################################################
 ## A %over% B
 ## over(A, B)
 
 
 ###################################################
-### code chunk number 2: over.Rnw:116-117 (eval = FALSE)
+### code chunk number 2: over.Rnw:117-118 (eval = FALSE)
 ###################################################
 ## A[B,]
 
 
 ###################################################
-### code chunk number 3: over.Rnw:120-121 (eval = FALSE)
+### code chunk number 3: over.Rnw:121-122 (eval = FALSE)
 ###################################################
 ## A[!is.na(over(A,B)),]
 
 
 ###################################################
-### code chunk number 4: over.Rnw:124-140
+### code chunk number 4: over.Rnw:125-141
 ###################################################
 library(sp)
 x = c(0.5, 0.5, 1.0, 1.5)
@@ -41,7 +41,7 @@ pol = SpatialPolygons(list(
 
 
 ###################################################
-### code chunk number 5: over.Rnw:145-153
+### code chunk number 5: over.Rnw:146-154
 ###################################################
 library(RColorBrewer)
 pal = brewer.pal(5, "Set2")
@@ -54,25 +54,25 @@ text(coordinates(pts), pos=1, row.names(pts))
 
 
 ###################################################
-### code chunk number 6: over.Rnw:160-161
+### code chunk number 6: over.Rnw:161-162
 ###################################################
 over(pts, pol)
 
 
 ###################################################
-### code chunk number 7: over.Rnw:165-166
+### code chunk number 7: over.Rnw:169-170
 ###################################################
 over(pts, pol, returnList = TRUE)
 
 
 ###################################################
-### code chunk number 8: over.Rnw:169-170
+### code chunk number 8: over.Rnw:176-177
 ###################################################
 pts[pol]
 
 
 ###################################################
-### code chunk number 9: over.Rnw:175-178
+### code chunk number 9: over.Rnw:182-185
 ###################################################
 over(pol, pts)
 over(pol, pts, returnList = TRUE)
@@ -80,13 +80,13 @@ row.names(pol[pts])
 
 
 ###################################################
-### code chunk number 10: over.Rnw:183-184
+### code chunk number 10: over.Rnw:190-191
 ###################################################
 over(pol, pol, returnList = TRUE)
 
 
 ###################################################
-### code chunk number 11: over.Rnw:203-212
+### code chunk number 11: over.Rnw:210-219
 ###################################################
 zdf = data.frame(z1 = 1:4, z2=4:1, f = c("a", "a", "b", "b"),
 	row.names = c("a", "b", "c", "d"))
@@ -100,32 +100,32 @@ poldf = SpatialPolygonsDataFrame(pol, zpl)
 
 
 ###################################################
-### code chunk number 12: over.Rnw:216-217
+### code chunk number 12: over.Rnw:223-224
 ###################################################
 over(pts, poldf)
 
 
 ###################################################
-### code chunk number 13: over.Rnw:225-226
+### code chunk number 13: over.Rnw:232-233
 ###################################################
 over(pts, poldf[1:2], fn = mean)
 
 
 ###################################################
-### code chunk number 14: over.Rnw:231-232
+### code chunk number 14: over.Rnw:238-239
 ###################################################
 over(pts, poldf, returnList = TRUE)
 
 
 ###################################################
-### code chunk number 15: over.Rnw:236-238
+### code chunk number 15: over.Rnw:243-245
 ###################################################
 over(pol, ptsdf)
 over(pol, ptsdf[1:2], fn = mean)
 
 
 ###################################################
-### code chunk number 16: over.Rnw:256-259
+### code chunk number 16: over.Rnw:263-266
 ###################################################
 l1 = Lines(Line(coordinates(pts)), "L1")
 l2 = Lines(Line(rbind(c(1,1.5), c(1.5,1.5))), "L2")
@@ -133,7 +133,7 @@ L = SpatialLines(list(l1,l2))
 
 
 ###################################################
-### code chunk number 17: over.Rnw:283-287
+### code chunk number 17: over.Rnw:290-294
 ###################################################
 plot(pol, xlim = c(-1.1, 2.1), ylim = c(-1.1, 1.6), border=2:6, axes=TRUE)
 text(c(-1,0.1,0.1,1.1,0.45), c(0,0,-1.05,0,0.1), c("x1", "x2", "x3", "x4", "x5"))
@@ -142,7 +142,7 @@ text(c(0.52, 1.52), c(1.5, 1.5), c("L1", "L2"))
 
 
 ###################################################
-### code chunk number 18: over.Rnw:295-304
+### code chunk number 18: over.Rnw:302-311
 ###################################################
 library(rgeos)
 over(pol, pol)
@@ -156,7 +156,7 @@ over(L, pts)
 
 
 ###################################################
-### code chunk number 19: over.Rnw:309-317
+### code chunk number 19: over.Rnw:316-324
 ###################################################
 data(meuse.grid)
 gridded(meuse.grid) = ~x+y
@@ -169,7 +169,7 @@ lines(sl)
 
 
 ###################################################
-### code chunk number 20: over.Rnw:328-333
+### code chunk number 20: over.Rnw:335-340
 ###################################################
 g = SpatialGrid(GridTopology(c(0,0), c(1,1), c(3,3)))
 p = as(g, "SpatialPolygons")
@@ -179,7 +179,7 @@ text(coordinates(g), labels = 1:9)
 
 
 ###################################################
-### code chunk number 21: over.Rnw:337-341
+### code chunk number 21: over.Rnw:344-348
 ###################################################
 over(g,g)
 over(p,p)
@@ -188,27 +188,27 @@ over(g,p)
 
 
 ###################################################
-### code chunk number 22: over.Rnw:346-348
+### code chunk number 22: over.Rnw:353-355
 ###################################################
 over(px[5], g, returnList = TRUE)
 over(p[c(1,5)], p, returnList = TRUE)
 
 
 ###################################################
-### code chunk number 23: over.Rnw:364-366
+### code chunk number 23: over.Rnw:371-373
 ###################################################
 over(px[5], g, returnList = TRUE, minDimension = 0)
 over(p[c(1,5)], p, returnList = TRUE, minDimension = 0)
 
 
 ###################################################
-### code chunk number 24: over.Rnw:386-387
+### code chunk number 24: over.Rnw:393-394
 ###################################################
 over(p, p, minDimension = 0)
 
 
 ###################################################
-### code chunk number 25: over.Rnw:391-402
+### code chunk number 25: over.Rnw:398-409
 ###################################################
 x2 = x1 = cbind(c(0,1,1,0,0), c(0,0,1,1,0))
 x1[,1] = x1[,1]+0.5
@@ -224,7 +224,7 @@ plot(pt, add=TRUE, col='red', pch=16)
 
 
 ###################################################
-### code chunk number 26: over.Rnw:408-414
+### code chunk number 26: over.Rnw:415-421
 ###################################################
 over(pt,sp)
 over(pt,sp,minDimension=0)
@@ -235,7 +235,7 @@ rgeos::overGeomGeom(pt,sp,returnList=TRUE,minDimension=0)
 
 
 ###################################################
-### code chunk number 27: over.Rnw:430-436
+### code chunk number 27: over.Rnw:437-443
 ###################################################
 over(p[5], p, returnList=TRUE, minDimension=0)
 over(p[5], p, returnList=TRUE, minDimension=1)
@@ -246,7 +246,7 @@ rgeos::overGeomGeom(pt, pt, minDimension=0)
 
 
 ###################################################
-### code chunk number 28: over.Rnw:442-448
+### code chunk number 28: over.Rnw:449-455
 ###################################################
 data(meuse.grid)
 gridded(meuse.grid) = ~x+y
@@ -257,14 +257,14 @@ agg = aggregate(meuse.grid[3], SG, mean)
 
 
 ###################################################
-### code chunk number 29: over.Rnw:458-460
+### code chunk number 29: over.Rnw:465-467
 ###################################################
 image(agg)
 points(meuse.grid, pch = 3, cex=.2, col = "#80808080")
 
 
 ###################################################
-### code chunk number 30: over.Rnw:469-472
+### code chunk number 30: over.Rnw:476-479
 ###################################################
 sl.agg = aggregate(meuse.grid[,1:3], sl, mean)
 class(sl.agg)
@@ -272,7 +272,7 @@ as.data.frame(sl.agg)
 
 
 ###################################################
-### code chunk number 31: over.Rnw:485-494
+### code chunk number 31: over.Rnw:492-501
 ###################################################
 g = SpatialGrid(GridTopology(c(5,5), c(10,10), c(3,3)))
 p = as(g, "SpatialPolygons")
@@ -286,7 +286,7 @@ p$ag4 = aggregate(p, p, areaWeighted=TRUE)[[1]]
 
 
 ###################################################
-### code chunk number 32: over.Rnw:498-514
+### code chunk number 32: over.Rnw:505-521
 ###################################################
 pts = cbind(c(9,21,21,9,9),c(9,9,21,21,9))
 sq = SpatialPolygons(list(Polygons(list(Polygon(pts)), "ID")))
@@ -307,7 +307,7 @@ spplot(p, names.attr = c("source", "default aggregate", "minDimension=0",
 
 
 ###################################################
-### code chunk number 33: over.Rnw:531-537
+### code chunk number 33: over.Rnw:538-544
 ###################################################
 round(c(
   aggDefault = aggregate(p, sq, mean)[[1]],

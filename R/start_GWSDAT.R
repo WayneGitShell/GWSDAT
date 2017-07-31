@@ -1,6 +1,5 @@
 
 source("R/GWSDAT_Setup.R")
-#library(shiny)
 
 # Print warnings when they happen.
 options(warn = 1)
