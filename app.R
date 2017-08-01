@@ -6,7 +6,10 @@ source("R/GWSDAT_Setup.R")
 # Print warnings when they happen.
 options(warn = 1)
 
+ 
 HeadlessMode <- FALSE
+if (.Platform$OS.type == "unix")
+    HeadlessMode <- TRUE
 
 # The progress bar starts here because of lengthy package loading. 
 # All the rest is done inside initSite(). 
