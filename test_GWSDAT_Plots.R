@@ -3,8 +3,6 @@
 #
 
 
-#source("R/GWSDAT_Setup.R")
-source("R/create_GWSDAT_Instance.R")
 source("R/GWSDAT MakePanel.R")
 source("R/GWSDAT_Setup.R")
 
@@ -15,7 +13,7 @@ GWSDAT_Setup()
 
 options(warn = 1) #, error=1)
 
-GWSDAT_Options = create_GWSDAT_Instance()
+GWSDAT_Options = createOptions()
 
 #
 # Change some Option for testing.
