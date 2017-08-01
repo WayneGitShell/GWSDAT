@@ -24,11 +24,10 @@ initSite <- function(GWSDAT_Options, progressBar) {
 
   
   # Fit the input data.
-  Fitted.Data = GWSDAT_Fit_Data(All.Data, GWSDAT_Options, progressBar)
+  Fitted.Data = fitData(All.Data, GWSDAT_Options, progressBar)
   
   if (class(Fitted.Data) != "gwsdat_fit") {
-    stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 
-         class(Fitted.Data), "\n")
+    stop("No fitted data returned, return class is: ", class(Fitted.Data), "\n")
   }
   
   

@@ -134,7 +134,7 @@ createPanelAttr <- function(Curr.Site.Data) {
   ScaleCols["Scale colours to Data"] <- FALSE
   ScaleCols["Show Conc. Values"] <- TRUE
   ScaleCols["Show GW Contour"] <- FALSE
-  if (!is.null(GWSDAT_Options$ShapeFileNames)) ScaleCols["Overlay ShapeFiles"] <- FALSE
+  if (!is.null(GWSDAT_Options$ShapeFileNames)) ScaleCols["Overlay ShapeFiles"] <- TRUE
   ScaleCols["Plume Diagnostics"] <- FALSE
   panel$ScaleCols <- ScaleCols
  

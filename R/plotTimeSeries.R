@@ -4,12 +4,16 @@
 
 
 
-Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE){
+plotTimeSeries <- function(panel, 
+                           substance = NULL, 
+                           location = NULL,
+                           showvline = FALSE
+                           ){
   
   
   Use.LogScale = panel$dlines["Log Conc. Scale"]
   
-  Well.Data <- panel$All.Data$Cont.Data[as.character(panel$All.Data$Cont.Data$WellName) == panel$Well & panel$All.Data$Cont.Data$Constituent == panel$Cont.rg,]
+  Well.Data <- panel$All.Data$Cont.Data[as.character(panel$All.Data$Cont.Data$WellName) == location & panel$All.Data$Cont.Data$Constituent == substance,]
   
   
   if (panel$rgUnits == "mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
@@ -27,10 +31,10 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   #
   # This is done now with napl_exists(). This function is also used by the server.
   #NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) || 
-  #  nrow(panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName) == panel$Well,]) > 0
+  #  nrow(panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName) == location,]) > 0
   #if (is.na( NAPL.Present)) { NAPL.Present <- FALSE }
   
-  NAPL.Present <- napl_exists(panel$All.Data, panel$Well, panel$Cont.rg)
+  NAPL.Present <- napl_exists(panel$All.Data, location, substance)
   
   
   # Adapt threshold value to different units.
@@ -43,7 +47,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% 
     names(attributes(panel$Fitted.Data)) && 
-    any(as.character(panel$All.Data$GW.Data$WellName) == panel$Well)
+    any(as.character(panel$All.Data$GW.Data$WellName) == location)
   NAPLAxis <- (show_napl_thickness && NAPL.Present)
   
   tempinc <- 0.4
@@ -86,7 +90,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   
   sm.fit <- NULL
-  sm.h <- panel$Traffic.Lights$h[panel$Well,panel$Cont.rg]
+  sm.h <- panel$Traffic.Lights$h[location, substance]
   
   
   if (panel$dlines["Conc. Trend Smoother"] & !is.na(sm.h)) {
@@ -119,7 +123,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   }
   
   
-  if (panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts) > 0 & panel$Cont.rg != " ") {
+  if (panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts) > 0 & substance != " ") {
     
     
     lm.fit <- try(lm(log(Result.Corr.ND)~SampleDate,Well.Data))
@@ -153,18 +157,36 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   if (Use.LogScale) {
     
-    if(panel$dlines["Show Legend"]){my.ylim[2]<-10^(log(my.ylim[1],base=10)+1.15*log(my.ylim[2]/my.ylim[1],base=10))}# make space for Key!
-    plot(Result.Corr.ND~SampleDate,Well.Data,xlab="Date",
-         ylab=if(panel$Cont.rg!=" "){paste(panel$Cont.rg," (",panel$rgUnits,")",sep="")}else{""},
-         ylim=my.ylim,xlim=my.xlim,log="y",cex.lab=1,cex.main=1,axes=FALSE)
+    if (panel$dlines["Show Legend"]) { 
+      my.ylim[2] <- 10^(log(my.ylim[1], base = 10) + 1.15 * log(my.ylim[2]/my.ylim[1],base = 10))
+    }# make space for Key!
+    
+    plot(Result.Corr.ND ~ SampleDate, Well.Data, 
+         xlab = "Date",
+         ylab = if (substance != " ") {paste(substance, " (", panel$rgUnits, ")", sep = "")} else {""},
+         ylim = my.ylim, 
+         xlim = my.xlim, 
+         log  = "y", 
+         cex.lab  = 1, 
+         cex.main = 1, 
+         axes     = FALSE)
     rect(par("usr")[1], 10^par("usr")[3], par("usr")[2], 10^par("usr")[4], col = "white") 
     
   }else{
     
-    if(panel$dlines["Show Legend"]){my.ylim[2]<-my.ylim[2]+diff(range(my.ylim))*.15}# make space for Key!
-    plot(Result.Corr.ND~SampleDate,Well.Data,xlab="Date",
-         ylab=if(panel$Cont.rg!=" "){paste(panel$Cont.rg," (",panel$rgUnits,")",sep="")}else{""},
-         ylim=my.ylim,xlim=my.xlim,cex.lab=1,cex.main=1,axes=FALSE)
+    if (panel$dlines["Show Legend"]) {
+      my.ylim[2] <- my.ylim[2] + diff(range(my.ylim)) * .15
+    }# make space for Key!
+    
+    plot(Result.Corr.ND ~ SampleDate, Well.Data,
+         xlab = "Date",
+         ylab = if (substance != " ") {paste(substance," (", panel$rgUnits, ")", sep="")} else {""},
+         ylim = my.ylim,
+         xlim = my.xlim,
+         cex.lab  = 1,
+         cex.main = 1,
+         axes     = FALSE)
+    
     rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "white") 
   }
   
@@ -176,7 +198,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   if(nrow(panel$All.Data$Cont.Data[as.character(panel$All.Data$Cont.Data$Result) != "NAPL" & !is.na(panel$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   box()	
-  title(main = paste(panel$Cont.rg, if (panel$Cont.rg != " ") {"in"}else{""}, panel$Well,if (panel$All.Data$Aq.sel != "") {paste(": Aquifer-",panel$All.Data$Aq.sel,sep = "")} else {""}), font.main = 4, cex.main = 1)
+  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (panel$All.Data$Aq.sel != "") {paste(": Aquifer-",panel$All.Data$Aq.sel,sep = "")} else {""}), font.main = 4, cex.main = 1)
   
   
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
@@ -240,7 +262,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   }
   
   
-  if (panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts) > 1 & !inherits(lm.fit, "try-error") & panel$Cont.rg != " ") {
+  if (panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts) > 1 & !inherits(lm.fit, "try-error") & substance != " ") {
     
     
     try(lines(lm.eval.points$SampleDate, lm.eval.points$fit, lwd = 2, col = "green"))
@@ -279,7 +301,7 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   if (panel$dlines["Overlay GW levels"]) {
     
-    Well.GW.Data<-panel$All.Data$GW.Data[as.character(panel$All.Data$GW.Data$WellName)==panel$Well,]
+    Well.GW.Data<-panel$All.Data$GW.Data[as.character(panel$All.Data$GW.Data$WellName)==location,]
     Well.GW.Data<-Well.GW.Data[order(Well.GW.Data$SampleDate),]
     
     if(nrow(Well.GW.Data)>0){
@@ -299,18 +321,18 @@ Plot_SmoothTimeSeries <- function(panel, showvline = FALSE, RUNNING_SHINY = TRUE
   
   if (show_napl_thickness & !is.null(panel$All.Data$NAPL.Thickness.Data)) {
     
-    Well.NAPL.Thickness.Data <- panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName)==panel$Well,]
+    Well.NAPL.Thickness.Data <- panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName) == location,]
     Well.NAPL.Thickness.Data <- Well.NAPL.Thickness.Data[order(Well.NAPL.Thickness.Data$SampleDate),]
     
-    if (nrow(Well.NAPL.Thickness.Data)>0 && GWInc == FALSE) {
+    if (nrow(Well.NAPL.Thickness.Data) > 0 && GWInc == FALSE) {
       
       par(new = T)
       NAPL.ylim = range(Well.NAPL.Thickness.Data$Result.Corr.ND,na.rm = T)
-      if(panel$dlines["Show Legend"]){NAPL.ylim[2] <- NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
+      if (panel$dlines["Show Legend"]) {NAPL.ylim[2] <- NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
       
-      plot(Result.Corr.ND~SampleDate,Well.NAPL.Thickness.Data,yaxt='n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=NAPL.ylim,type="b",col="red")
-      axis(4,axTicks(4),cex.axis=.7,padj=-2.2,tcl=-0.3)
-      mtext(paste("NAPL Thickness (",panel$All.Data$NAPL.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
+      plot(Result.Corr.ND~SampleDate,Well.NAPL.Thickness.Data,yaxt = 'n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=NAPL.ylim,type="b",col="red")
+      axis(4,axTicks(4),cex.axis = .7,padj = -2.2,tcl=-0.3)
+      mtext(paste("NAPL Thickness (",panel$All.Data$NAPL.Units,")",sep = ""), side=4,line=0.75,cex=.7,col="black")
       
     }
     

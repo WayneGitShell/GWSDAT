@@ -81,7 +81,7 @@ GWSDAT.GW.Contour <- function(temp.GW.Flows){
 
 
 
-Plot_ImagePlot <- function(panel) { 
+plotSpatialImage <- function(panel, substance = " ", timestep = 1) { 
   
   
   
@@ -108,38 +108,36 @@ Plot_ImagePlot <- function(panel) {
     Show.ShapeFile <- panel$ScaleCols["Overlay ShapeFiles"]
  
   Well.Coords <- panel$All.Data$Well.Coords
-  jjj <- panel$timestep
-  Cont <- panel$Cont.rg
   
   
-  temp.time.eval <- panel$Fitted.Data[[Cont]]$Time.Eval[jjj]
-  temp.time.frac <- as.numeric(temp.time.eval - min(panel$Fitted.Data[[Cont]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[Cont]]$Time.Eval)))
+  temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
+  temp.time.frac <- as.numeric(temp.time.eval - min(panel$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval)))
   
   try(if(temp.time.frac==1){temp.time.frac=.999}) # to avoid plot issue with wmf format!
   try(if(temp.time.frac==0){temp.time.frac=.001})
-  try(if(as.numeric(diff(range(panel$Fitted.Data[[Cont]]$Time.Eval)))==0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
+  try(if(as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
   
   
   
   ############# Date Interval Printing #########################################################
   
-  date.to.print <-  format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj]),"%d-%b-%Y")
+  date.to.print <-  format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
   
-  if(panel$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")){
+  if (panel$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")) {
     
-    if(panel$GWSDAT_Options$Aggby=="Monthly"){
+    if (panel$GWSDAT_Options$Aggby == "Monthly") {
       
-      date.range.to.print<-seq.Date(as.Date(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj])),by="-1 month",length=2)
+      date.range.to.print <- seq.Date(as.Date(as.Date(panel$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-1 month", length=2)
       
-    }else{
+    } else {
       
-      date.range.to.print<-seq.Date(as.Date(as.Date(panel$Fitted.Data[[1]]$Time.Eval[jjj])),by="-3 month",length=2)
+      date.range.to.print <- seq.Date(as.Date(as.Date(panel$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-3 month", length=2)
       
     }	
     
-    date.range.to.print[2]<- date.range.to.print[2]+1
-    date.range.to.print<-format(date.range.to.print,"%d-%b-%Y")[c(2,1)]
-    date.to.print<-paste(date.range.to.print,collapse=" to ")
+    date.range.to.print[2] <- date.range.to.print[2] + 1
+    date.range.to.print <- format(date.range.to.print,"%d-%b-%Y")[c(2,1)]
+    date.to.print <- paste(date.range.to.print,collapse = " to ")
     
   }
   #---------------------------------------------------------------------------------------------#
@@ -147,8 +145,8 @@ Plot_ImagePlot <- function(panel) {
   
   
   
-  model.tune<-panel$Fitted.Data[[Cont]][["Model.tune"]]
-  temp.Cont.Data<-panel$Fitted.Data[[panel$Cont.rg]]$Cont.Data
+  model.tune<-panel$Fitted.Data[[substance]][["Model.tune"]]
+  temp.Cont.Data<-panel$Fitted.Data[[substance]]$Cont.Data
   temp.Cont.Data<-temp.Cont.Data[temp.Cont.Data$AggDate==temp.time.eval,]
   temp.Cont.Data$log.Resid<-log(temp.Cont.Data$Result.Corr.ND)-log(temp.Cont.Data$ModelPred)
   
@@ -204,15 +202,15 @@ Plot_ImagePlot <- function(panel) {
   n.col <- length(lev.cut) - 1 #should be n.col-1
   
   
-  tmp_cont <- panel$Fitted.Data[[Cont]]$Cont.Data
+  tmp_cont <- panel$Fitted.Data[[substance]]$Cont.Data
   
   tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= temp.time.eval,]$WellName)
   tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= temp.time.eval,]$WellName)
   
   Good.Wells <- intersect(as.character(tmp_wells_earlier), as.character(tmp_wells_later))
   
-  #Good.Wells <- as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
-  #Good.Wells <- intersect(Good.Wells, as.character(unique(panel$Fitted.Data[[Cont]]$Cont.Data[as.numeric(panel$Fitted.Data[[Cont]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+  #Good.Wells <- as.character(unique(panel$Fitted.Data[[substance]]$Cont.Data[as.numeric(panel$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+  #Good.Wells <- intersect(Good.Wells, as.character(unique(panel$Fitted.Data[[substance]]$Cont.Data[as.numeric(panel$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
   
   
   Do.Image <-  TRUE
@@ -393,7 +391,7 @@ Plot_ImagePlot <- function(panel) {
     PlumeDetails = list()
     
     
-    PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(panel$Cont.rg, names(panel$Fitted.Data))])  #Defined in ug/L
+    PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(substance, names(panel$Fitted.Data))])  #Defined in ug/L
     if(panel$rgUnits == "mg/l"){PLumeCutoff<-PLumeCutoff/1000}
     if(panel$rgUnits == "ng/l"){PLumeCutoff<-PLumeCutoff*1000}
     cL<-contourLines(interp.pred,levels=PLumeCutoff)
@@ -626,9 +624,9 @@ Plot_ImagePlot <- function(panel) {
   
   if (!Col.Option || !Do.Image) {
     
-    tmp_main <- paste(Cont,
-                    if (panel$Color.type == "NAPL-Circles" & Cont != " ") {paste("(",panel$rgUnits,")", sep = "")} else {""},
-                    if (Cont != " ") {":"} else {""},
+    tmp_main <- paste(substance,
+                    if (panel$Color.type == "NAPL-Circles" & substance != " ") {paste("(",panel$rgUnits,")", sep = "")} else {""},
+                    if (substance != " ") {":"} else {""},
                     date.to.print,
                     if (panel$All.Data$Aq.sel != "") {paste(": Aquifer-",panel$All.Data$Aq.sel,sep = "")} else {""}
               )
@@ -707,7 +705,7 @@ Plot_ImagePlot <- function(panel) {
                           xlim=Contour.xlim,
                           ylim=Contour.ylim,
                           color.palette=col.palette,
-                          plot.title = title(main = paste(Cont,":",date.to.print,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=panel$rgUnits),
+                          plot.title = title(main = paste(substance,":",date.to.print,if(panel$All.Data$Aq.sel!=""){paste(": Aquifer-",panel$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=panel$rgUnits),
                           plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)

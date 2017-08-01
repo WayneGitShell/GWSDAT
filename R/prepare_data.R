@@ -508,7 +508,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   if (exists("NAPL.Thickness.Data")) { All.Dates <- sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))}
   
   
-  agg_data <- GWSDAT_Aggregate_Data(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, 
+  agg_data <- aggregateData(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, 
                                     NAPL.Thickness.Data = if (exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL} )
   
   

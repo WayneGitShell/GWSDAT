@@ -1,23 +1,21 @@
 
 
 
-make_animation <- function(panel, addtoPPt = FALSE){
+make_animation <- function(panel, substance, addtoPPt = FALSE){
   
-  keep_timestep <- panel$timestep
-  # browser()
   graphics.off()
   
   .SavedPlots <<- NULL
   
-  windows(record = T,width = 11, height = 8)
+  windows(record = T, width = 11, height = 8)
   
-  try(bringToTop())
+  # try(bringToTop())
+  
+  if (addtoPPt) { setupPPV2() }
   
   for (i in panel$timestep_range[1]:panel$timestep_range[2]) {
   
-      panel$timestep <- i
-      
-      try(Plot_ImagePlot(panel))
+      plotSpatialImage(panel, substance, timestep = i)
       
       if (addtoPPt) { 
         AddPlotPPV2(panel, asp = TRUE) 
@@ -25,50 +23,46 @@ make_animation <- function(panel, addtoPPt = FALSE){
     
   }
   
-  # Might not be necessary, because panel is only changed with <<-
-  panel$timestep <- keep_timestep
-  
-  #return(panel)
-  
 }
 
 
-AddPlotPPV2 <- function(panel,asp=FALSE){
+AddPlotPPV2 <- function(panel, asp = FALSE){
   
   require(RDCOMClient)
   
   
   calledsetupPP <- FALSE
   CheckforNoPlot <- is.na(match(dev.cur(), dev.list(), NA))
-  if(CheckforNoPlot){rp.messagebox("No active plot to export.", title = "Error"); return(panel)}
-  CheckPPT<-exists('ppt',envir=globalenv())
+  if (CheckforNoPlot) { 
+    rp.messagebox("No active plot to export.", title = "Error"); return(panel) 
+    }
+
   
-  if(CheckPPT == FALSE){setupPPV2(); calledsetupPP = TRUE; CheckPPT = TRUE}
-  
-  
-  CheckPPT2 <- try(as.logical(ppt[['Visible']]),silent=TRUE)
-  if(inherits(CheckPPT2, "try-error")){CheckPPT2<-FALSE}
-  
-  
-  CheckPPT3 <- try(!is.null(myPres[['Name']]),silent=TRUE)
-  if(inherits(CheckPPT3, "try-error")){CheckPPT3<-FALSE}
+  CheckPPT2 <- try(as.logical(ppt[['Visible']]), silent = TRUE)
+  if (inherits(CheckPPT2, "try-error")) {CheckPPT2 <- FALSE}
   
   
-  if((CheckPPT & CheckPPT2 & CheckPPT3) == FALSE){setupPPV2(); calledsetupPP = TRUE}
+  CheckPPT3 <- try(!is.null(myPres[['Name']]), silent = TRUE)
+  if (inherits(CheckPPT3, "try-error")) {CheckPPT3 <- FALSE}
+  
+  
+  #if ((CheckPPT & CheckPPT2 & CheckPPT3) == FALSE){ setupPPV2(); calledsetupPP = TRUE}
   
   
   OutputGraphics <- panel$GWSDAT_Options$OutputGraphics
-  if(is.null(OutputGraphics)){OutputGraphics="wmf"}
+  if (is.null(OutputGraphics)) {OutputGraphics = "wmf"}
   
-  mytemp<-tempfile()
-  mytemp<-paste(mytemp,OutputGraphics ,sep='.')
-  mytemp<- gsub("/", "\\\\", as.character(mytemp))
+  mytemp <- tempfile()
+  mytemp <- paste(mytemp, OutputGraphics, sep = '.')
+  mytemp <- gsub("/", "\\\\", as.character(mytemp))
   
-  savePlot(mytemp,type=OutputGraphics,restoreConsole = FALSE)
-  if(file.exists(paste(mytemp,OutputGraphics,sep="."))){file.rename(paste(mytemp,OutputGraphics,sep="."),mytemp)}
+  savePlot(mytemp, type = OutputGraphics, restoreConsole = FALSE)
+  if (file.exists(paste(mytemp,OutputGraphics, sep = "."))) {
+    file.rename(paste(mytemp,OutputGraphics,sep = "."),mytemp)
+  }
   
-  mySlide<-myPres[["Slides"]]$add(as.integer(max(1,myPres[["Slides"]]$Count()+1)),as.integer(12))
-  myShapes<-mySlide$Shapes()
+  mySlide <- myPres[["Slides"]]$add(as.integer(max(1, myPres[["Slides"]]$Count() + 1)), as.integer(12))
+  myShapes <- mySlide$Shapes()
   
   if (asp) {### Maintain aspect ratio in PowerPoint Plots!
     my.din <- par()$din
@@ -91,15 +85,14 @@ AddPlotPPV2 <- function(panel,asp=FALSE){
   
   myShapes$AddPicture(mytemp,0,-1,my.size[1],my.size[2],my.size[3],my.size[4]) 
   mySlide$Select()
-  #browser()
   
   try(file.remove(mytemp))
   try(rm(mytemp))
-  #return(panel)
+ 
 }
 
 
-setupPPV2<-function(){
+setupPPV2 <- function(){
   
   require(RDCOMClient)
   

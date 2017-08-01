@@ -46,21 +46,27 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     
     source(paste(GWSDATHome, "R/prepare_data.R", sep = "/"))
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep = "/"))
-    source(paste(GWSDATHome, "R/GWSDAT_Fit_Data.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Plot_SmoothTimeSeries.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Plot_ImagePlot.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Plot_TrafficTable.R", sep = "/"))
+    
+    
     source(paste(GWSDATHome, "R/Plot_Legend.R", sep = "/"))
     source(paste(GWSDATHome, "R/read_data.R", sep = "/"))
+    source(paste(GWSDATHome, "R/make_animation.R", sep = "/"))
   
+  
+    source(paste(GWSDATHome, "R/fitData.R", sep = "/"))
     source(paste(GWSDATHome, "R/createPanelAttr.R", sep = "/"))
     source(paste(GWSDATHome, "R/initSite.R", sep = "/"))
     source(paste(GWSDATHome, "R/utility_fcts.R", sep = "/"))
-    source(paste(GWSDATHome, "R/aggregate_data.R", sep = "/"))
+    source(paste(GWSDATHome, "R/aggregateData.R", sep = "/"))
     source(paste(GWSDATHome, "R/createOptions.R", sep = "/"))
-    source(paste(GWSDATHome, "R/make_animation.R", sep = "/"))
     source(paste(GWSDATHome, "R/createWellReport.R", sep = "/"))
-
+   
+    source(paste(GWSDATHome, "R/plotTimeSeries.R", sep = "/"))
+    source(paste(GWSDATHome, "R/plotSpatialImage.R", sep = "/"))
+    source(paste(GWSDATHome, "R/plotTrendTable.R", sep = "/"))
+    source(paste(GWSDATHome, "R/plumeDiagnostics.R", sep = "/"))
+  
+  
     source(paste(GWSDATHome, "R/shiny_ui_analysepanel.R", sep = "/"))
     source(paste(GWSDATHome, "R/shiny_ui_datamanager.R", sep = "/"))
     source(paste(GWSDATHome, "R/ui_pnl_createWellReport.R", sep = "/"))

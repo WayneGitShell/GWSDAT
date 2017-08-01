@@ -33,10 +33,7 @@ shiny_ui_analysepanel <- function() {
                                                    choices = names(pnl$dlines),
                                                    selected = names(which(pnl$dlines == TRUE)))
                                 
-                                
-                                #h4("Status:"),
-                                #textOutput("status")
-                                
+                               
                               )
                        ),
                        
@@ -88,29 +85,30 @@ shiny_ui_analysepanel <- function() {
                        
                        
                        box(width = 7,
-                              plotOutput("image_plot")
+                            plotOutput("image_plot"),
+                           hr(),
+                           selectInput("export_file_format", label = "File format", 
+                                       choices = list("png", "pdf", "ppt" = 3), 
+                                       selected = "png"),
+                            downloadButton("save_spatial_plot", label = "Save Plot"),
+                            hidden( p(id = "save_spatial_ppt_anim", 
+                                     actionButton("generate_spatial_anim_ppt", 
+                                                  label = "Generate PPT Animation", icon = icon("file-powerpoint-o"))
+                                      )
+                            )
                        ),
                        
                        column(2, 
                               sliderInput("time_steps", "Time Step",
                                           min = pnl$timestep_range[1], 
                                           max = pnl$timestep_range[2], 
-                                          value = pnl$timestep, 
+                                          value = pnl$timestep_range[1], 
                                           step = 1,
-                                          #pre = "$", sep = ",", 
-                                          animate = TRUE),
+                                          animate = animationOptions(loop = TRUE)),
                               selectInput("aggregate_data", label = "Aggregate Data", 
                                           choices = c("All Dates", "Monthly", "Quarterly"),
                                           selected = pnl$GWSDAT_Options$Aggby, 
-                                          width = "100%"),
-                              
-                              downloadButton("download_contour_plot", label = "Save Plot"),
-                              
-                              hidden( p(id = "generate_ppt_anim", 
-                                    actionButton("generate_spatial_anim_ppt", 
-                                                 label = "Generate PPT Animation", icon = icon("file-powerpoint-o"))    
-                                      )
-                              )
+                                          width = "100%")
                               
                        ) # end column
                        
@@ -150,9 +148,9 @@ shiny_ui_analysepanel <- function() {
                               sliderInput("time_steps_traffic", "Time Step",
                                           min = pnl$timestep_range[1], 
                                           max = pnl$timestep_range[2], 
-                                          value = pnl$timestep, 
+                                          value = pnl$timestep_range[1], 
                                           step = 1,
-                                          animate = TRUE),
+                                          animate = animationOptions(loop = TRUE)),
                               selectInput("aggregate_data_traffic", label = "Aggregate Data", 
                                           choices = c("All Dates", "Monthly", "Quarterly"),
                                           selected = pnl$GWSDAT_Options$Aggby, 

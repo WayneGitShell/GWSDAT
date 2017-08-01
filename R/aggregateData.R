@@ -2,7 +2,7 @@
 
 #------------------------------------------------------------------------------------------------------------#
 
-GWSDAT_Aggregate_Data <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, NAPL.Thickness.Data) {
+aggregateData <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, NAPL.Thickness.Data) {
   
   if (GWSDAT_Options$Aggby == "All Dates")	{my.seq <- NULL}
   if (GWSDAT_Options$Aggby == "Monthly")	{my.seq <- as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-1 months")))}
@@ -45,25 +45,34 @@ GWSDAT_Aggregate_Data <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data,
 
 ##############################################################################################################
 
-GWSDAT.Create.Agg.Date <- function(x,type=c("All Dates","Monthly","Quarterly"),my.seq=NULL){
+GWSDAT.Create.Agg.Date <- function(x,type = c("All Dates","Monthly","Quarterly"), 
+                                   my.seq = NULL){
   
-  require(zoo)
+
   type <- match.arg(type)
   
-  if(type=="All Dates"){x$AggDate<-as.Date(x$SampleDate)}
+  if (type == "All Dates") { x$AggDate <- as.Date(x$SampleDate) }
   
-  if(type=="Monthly"){
+  if (type == "Monthly") {
     
-    if(is.null(my.seq)){my.seq<-as.Date(sort(seq.Date(max(x$SampleDate),min(x$SampleDate)-500,by="-1 month")))}
-    x$AggDate<-cut.Date(x$SampleDate,breaks=my.seq,include.lowest=T,right=T,labels=as.character(my.seq[-1]))
-    x$AggDate<-as.Date(as.character(x$AggDate))
+    if (is.null(my.seq)) {
+      my.seq <- as.Date(sort(seq.Date(max(x$SampleDate), min(x$SampleDate) - 500,
+                                      by = "-1 month")))
+    }
+    x$AggDate <- cut.Date(x$SampleDate,breaks = my.seq, include.lowest = T, 
+                          right = T, labels = as.character(my.seq[-1]))
+    x$AggDate <- as.Date(as.character(x$AggDate))
   }
   
-  if(type=="Quarterly"){
+  if (type == "Quarterly") {
     
-    if(is.null(my.seq)){my.seq<-as.Date(sort(seq.Date(max(x$SampleDate),min(x$SampleDate)-500,by="-3 months")))}
-    x$AggDate<-cut.Date(x$SampleDate,breaks=my.seq,include.lowest=T,right=T,labels=as.character(my.seq[-1]))
-    x$AggDate<-as.Date(as.character(x$AggDate))
+    if (is.null(my.seq)) {
+      my.seq <- as.Date(sort(seq.Date(max(x$SampleDate), min(x$SampleDate) - 500, 
+                                      by = "-3 months")))
+    }
+    x$AggDate <- cut.Date(x$SampleDate, breaks = my.seq, include.lowest = T, 
+                          right = T, labels = as.character(my.seq[-1]))
+    x$AggDate <- as.Date(as.character(x$AggDate))
   }
   
   
