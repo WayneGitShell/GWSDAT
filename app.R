@@ -27,14 +27,18 @@ if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
   
   GWSDAT_Options <-  createOptions(HeadlessMode)
   
-  GWSDAT_Options[['DevMode']] <- TRUE   # This will cause things to show that would not:)
-  
   #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
   #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
   #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
   #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
 
 }
+
+
+# Set DevMode true on Andrej's computer.
+GWSDAT_Options[['DevMode']] <- FALSE
+if (Sys.info()["nodename"] == "LAPTOP-QU06V978")
+  GWSDAT_Options[['DevMode']] <- TRUE
 
 
 curr_site = initSite(GWSDAT_Options, progressBar = progressBar)
@@ -45,9 +49,9 @@ pnl <- createPanelAttr(curr_site)
 
 if (!GWSDAT_Options$HeadlessMode) {
     try(close(progressBar))
-    ##setTkProgressBar( progressBar, 1, NULL, "Starting Shiny ...")
 }
- 
+
+
 
   
 # Put into global environment, so the shiny server can see it. 
@@ -55,7 +59,7 @@ if (!GWSDAT_Options$HeadlessMode) {
 
 
 
-
+########################### Server Section ######################################
 
 # Define server logic 
 server <- function(input, output, session) {
@@ -77,7 +81,6 @@ server <- function(input, output, session) {
   # This goes into a GWSDAT_instance
   well_data_file = NULL   
   well_coord_file = NULL
-  
   
   
  
@@ -132,12 +135,22 @@ server <- function(input, output, session) {
     
   })
   
+  # Reactive element that will trigger inside an observer when Options are saved.
+  optionsSaved <- reactive({ 
+    input$save_analyse_options 
+  })
   
   #
   # Plot ImagePlot
   #
   output$image_plot <- renderPlot({
     
+    # renderPlot() is called when the content of this function is modified.
+    # This is to detect changes in the Options panel.
+    val <- optionsSaved() 
+  
+    #val <- plumeThreshChange()
+    #browser()
     #
     # Update control attributes from reactive variables. 
     #
@@ -206,7 +219,7 @@ server <- function(input, output, session) {
     
     use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
     
-    createWellReport(pnl, input$solute_chooser$left, 
+    plotWellReport(pnl, input$solute_chooser$left, 
                      input$well_chooser$left, use_log_scale)
     
   })
@@ -266,7 +279,7 @@ server <- function(input, output, session) {
   
   updateNAPL <- function(location, substance) {
     
-    tmp_napl <- napl_exists(pnl$All.Data, location, substance) 
+    tmp_napl <- existsNAPL(pnl$All.Data, location, substance) 
     
     # Update checkbox control if NAPL changed.
     if (tmp_napl != pnl$NAPL.Present) {
@@ -406,14 +419,33 @@ server <- function(input, output, session) {
   # })
     
   
-  output$download_timeseries_plot <- downloadHandler(
+  output$save_timeseries_plot <- downloadHandler(
     
-    filename <-  "gwsdat_timeseries_plot.png",
-    
+    filename <- function() { 
+      paste("timeseries_plot.", input$export_format_ts, sep = "")
+    },
+
     content <-  function(file) {
-      png(file, width = 800, height = 600)
-      plotTimeSeries(pnl, input$solute_select, input$well_select) 
-      dev.off()
+      
+      if (input$export_format_ts == "ppt") {
+        
+        makeTimeSeriesPPT(pnl, input$solute_select, input$well_select)
+        
+      } else {
+        
+        if (input$export_format_ts == "png") png(file, width = 800, height = 650)
+        
+        if (input$export_format_ts == "pdf") pdf(file) 
+        
+        if (input$export_format_ts == "ps") postscript(file) 
+        
+        if (input$export_format_ts == "jpg") jpeg(file, width = 800, height = 650, quality = 90) 
+        
+        if (input$export_format_ts == "wmf") win.metafile(file) 
+        
+        plotTimeSeries(pnl, input$solute_select, input$well_select)
+        dev.off()
+      }
     }
   )
   
@@ -421,49 +453,116 @@ server <- function(input, output, session) {
   output$save_spatial_plot <- downloadHandler(
     
     filename <- function() { 
-      paste("spatial_plot.", input$export_file_format, sep = "")
+      paste("spatial_plot.", input$export_format_sp, sep = "")
     },
      
     content <-  function(file) {
-      #browser()
-      if (input$export_file_format == "png")
-        png(file, width = 800, height = 800)
-      if (input$export_file_format == "pdf")
-        pdf(file) 
-      if (input$export_file_format == "ppt")
-        AddPlotPPV2(panel, asp = TRUE) 
+     
+      if (input$export_format_sp == "ppt") {
+        
+        makeSpatialPPT(pnl, input$solute_select_contour, input$time_steps)
       
-      plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
+        } else {
+        
+        if (input$export_format_sp == "png") png(file, width = 800, height = 800)
+     
+        if (input$export_format_sp == "pdf") pdf(file) 
+        
+        if (input$export_format_sp == "ps") postscript(file) 
+        
+        if (input$export_format_sp == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
       
-      dev.off()
+        if (input$export_format_sp == "wmf") win.metafile(file) 
+        
+        plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
+        dev.off()
+      }
+      
     }
   )
   
   
-  output$download_traffictable <- downloadHandler(
+  output$save_trend_table <- downloadHandler(
     
-    filename = "shiny_trafficlights_plot.png",
+    filename <- function() { 
+      paste("trend_table.", input$export_format_tt, sep = "")
+    },
     
-    content = function(file) {
-      png(file, width = 1200, height = 1500)
-      plotTrendTable(pnl, input$time_steps_traffic)
-      dev.off()
+    content <-  function(file) {
+      
+      if (input$export_format_tt == "ppt") {
+        
+        makeTrendTablePPT(pnl, input$time_steps_traffic)
+        
+      } else {
+        
+        if (input$export_format_tt == "png") png(file, width = 800, height = 800)
+        
+        if (input$export_format_tt == "pdf") pdf(file) 
+        
+        if (input$export_format_tt == "ps") postscript(file) 
+        
+        if (input$export_format_tt == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
+        
+        if (input$export_format_tt == "wmf") win.metafile(file) 
+        
+        plotTrendTable(pnl, input$time_steps_traffic)
+        dev.off()
+      }
+      
     }
   )
   
-  #
+  output$save_wellreport_plot <- downloadHandler(
+    
+    filename <- function() { 
+      paste("wellreport.", input$export_format_wr, sep = "")
+    },
+    
+    content <-  function(file) {
+      
+      use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
+      
+      if (input$export_format_wr == "ppt") {
+        
+        makeWellReportPPT(pnl, input$solute_chooser$left, 
+                          input$well_chooser$left, use_log_scale)
+        
+      } else {
+        
+        if (input$export_format_wr == "png") png(file, width = 800, height = 800)
+        
+        if (input$export_format_wr == "pdf") pdf(file) 
+        
+        if (input$export_format_wr == "ps") postscript(file) 
+        
+        if (input$export_format_wr == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
+        
+        if (input$export_format_wr == "wmf") win.metafile(file) 
+        
+        
+        plotWellReport(pnl, input$solute_chooser$left, 
+                         input$well_chooser$left, use_log_scale)
+        
+        
+        dev.off()
+      }
+      
+    }
+  )
+  
+  
   # Generate PPT with spatial animation.
-  #
-  observeEvent(input$save_spatial_ppt_anim, {
-    make_animation(pnl, input$solute_select_contour, TRUE)
+  observeEvent(input$generate_spatial_anim_ppt, {
+    makeSpatialAnimation(pnl, input$solute_select_contour)
   })
   
   
-  #
-  #
-  # Data related stuff
-  #
-  #
+  # Generate PPT with trend table animation.
+  observeEvent(input$generate_trendtable_anim_ppt, {
+    makeTrendTableAnimation(pnl)
+  })
+  
 
   #
   # Table showing the well data.
@@ -592,11 +691,50 @@ server <- function(input, output, session) {
   # Display the "Generate PPT Animation" Button only when in ExcelMode.
   #
   observeEvent(input$analyse_panel, {
-    if (input$analyse_panel == "Spatial Plot") {
-      if (pnl$GWSDAT_Options$DevMode || pnl$GWSDAT_Options$ExcelMode) 
-        shinyjs::show(id = "generate_ppt_anim")
+    if (input$analyse_panel == "Spatial Plot" || input$analyse_panel == "Trends & Thresholds") {
+      if (pnl$GWSDAT_Options$DevMode || pnl$GWSDAT_Options$ExcelMode) {
+        shinyjs::show(id = "save_spatial_ppt_anim")
+        shinyjs::show(id = "save_trendtable_ppt_anim")
+      }
     }
   })
+  
+  # These inputs will are meant to modify PlumeLimEntry.
+  output$thres_plume_select <- renderUI({
+   
+    num_subst <- length(pnl$PlumeLimEntry)
+    
+    lapply(1:num_subst, function(i) {
+      div(style = "display: inline-block;", 
+          
+          #
+          # Note, I use a number for the input id instead of the substance name,
+          #  which could have unusual characters or whitespaces. I will need to 
+          #  extract and match back the number to what is in PlumeLimEntry.
+          #
+          numericInput(paste("plume_thresh_", i, sep = ""), 
+                       label = names(pnl$PlumeLimEntry)[i], 
+                       value = pnl$PlumeLimEntry[i], 
+                       width = "100px")
+      )
+    })
+  })
+  
+  observeEvent(input$save_analyse_options, {
+    
+    num_subst <- length(pnl$PlumeLimEntry)
+    
+    for (i in 1:num_subst) {
+      
+      # Create input variable name and evaluate the string as variable. 
+      input_var <- paste("input$plume_thresh_", i, sep = "")
+      pnl$PlumeLimEntry[i] <<- eval(parse(text = input_var))
+    }
+    
+    
+  })
+  
+  
   
   
   #
@@ -640,7 +778,7 @@ server <- function(input, output, session) {
   #     # ...
   #   } else {
   #     
-  #     ret <- createWellReport(pnl, selected_solutes, selected_wells, use_log_scale)
+  #     ret <- plotWellReport(pnl, selected_solutes, selected_wells, use_log_scale)
   #       
   #     if (class(ret) == "GWSDAT_Warning") {
   #       # toogle warning
@@ -697,17 +835,17 @@ ui <- dashboardPage(
         useShinyjs(), 
         
         # Data Manager main panel.
-        div(id = "data_manager", shiny_ui_datamanager()),
+        div(id = "data_manager", uiDataManager()),
         
         # Data Import panel
         shinyjs::hidden(
-          div(id = "data_import", shiny_ui_dataimport())
+          div(id = "data_import", uiDataImport())
         )
       ),
                  
       
       # Analysis Tab
-      tabItem(tabName = "analysis", shiny_ui_analysepanel()
+      tabItem(tabName = "analysis", uiAnalyse()
       ) # end tabItem
     ) # end tabItems
  ) # end dashboardBody 
@@ -715,7 +853,7 @@ ui <- dashboardPage(
  
 
 ui_analyse_only <- shinyUI(
-  fluidPage(shiny_ui_analysepanel())
+  fluidPage(uiAnalyse())
 )
 
 

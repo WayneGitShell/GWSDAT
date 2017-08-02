@@ -1,7 +1,7 @@
 
 
 
-shiny_ui_analysepanel <- function() {
+uiAnalyse <- function() {
 
   #tabsetPanel(id = "plot_tabs",
   navbarPage(title = pnl$GWSDAT_Options$SiteName, id = "analyse_panel",              
@@ -38,8 +38,19 @@ shiny_ui_analysepanel <- function() {
                        ),
                        
                        box(width = 7,
-                              plotOutput("time_series"),
-                              downloadButton("download_timeseries_plot", label = "Save Plot")
+                           plotOutput("time_series"),
+                           
+                           div(style = "display: inline-block;",
+                               selectInput("export_format_ts", label = "Image format", 
+                                           choices = pnl$image_formats, 
+                                           selected = pnl$image_formats[[1]]
+                               )
+                           ),
+                           
+                           div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
+                               downloadButton("save_timeseries_plot", label = "Save Plot")
+                           )
+                            
                               
                        )
                        
@@ -86,16 +97,28 @@ shiny_ui_analysepanel <- function() {
                        
                        box(width = 7,
                             plotOutput("image_plot"),
-                           hr(),
-                           selectInput("export_file_format", label = "File format", 
-                                       choices = list("png", "pdf", "ppt" = 3), 
-                                       selected = "png"),
-                            downloadButton("save_spatial_plot", label = "Save Plot"),
-                            hidden( p(id = "save_spatial_ppt_anim", 
+                           
+                            div(style = "display: inline-block;", 
+                                selectInput("export_format_sp", label = "Image format", 
+                                            choices = pnl$image_formats, 
+                                            selected = pnl$image_formats[[1]]
+                                )
+                            ),
+                           
+                            div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
+                                downloadButton("save_spatial_plot", label = "Save Plot")
+                            ),
+                           
+                           
+                            hidden( 
+                              div(id = "save_spatial_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
+                                  
                                      actionButton("generate_spatial_anim_ppt", 
-                                                  label = "Generate PPT Animation", icon = icon("file-powerpoint-o"))
-                                      )
+                                                  label = "Generate PPT Animation", icon = icon("file-movie-o"))
+                              )
+                              
                             )
+                            
                        ),
                        
                        column(2, 
@@ -139,9 +162,38 @@ shiny_ui_analysepanel <- function() {
                               
                        ),
                        
-                       box(width = 7,
-                              plotOutput("traffic_table"),
-                              plotOutput("plot_legend_traffic")
+                       
+                       tabBox("Trend Table", width = 7,
+                              
+                        tabPanel(title = "Trends", 
+                                 
+                                plotOutput("traffic_table"),
+
+                                div(style = "display: inline-block;",
+                                  selectInput("export_format_tt", label = "Image format",
+                                              choices = pnl$image_formats,
+                                              selected = pnl$image_formats[[1]]#,
+                                              #width = "95%"   # <- this won't work
+                                              )
+                                ),
+
+                                div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px",
+                                  downloadButton("save_trend_table", label = "Save Plot")
+                                ),
+
+                                hidden(
+                                  div(id = "save_trendtable_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
+                                    actionButton("generate_trendtable_anim_ppt",
+                                                 label = "Generate PPT Animation", icon = icon("file-movie-o"))
+                                  )
+                                )
+                        ),
+                        
+                        tabPanel(title = "Legend", 
+                                 
+                                 plotOutput("plot_legend_traffic") 
+                                 
+                                 )
                        ),
                        
                        column(2,
@@ -154,24 +206,39 @@ shiny_ui_analysepanel <- function() {
                               selectInput("aggregate_data_traffic", label = "Aggregate Data", 
                                           choices = c("All Dates", "Monthly", "Quarterly"),
                                           selected = pnl$GWSDAT_Options$Aggby, 
-                                          width = "100%"),
-                              downloadButton("download_traffictable", label = "Save Plot")
-                       )
+                                          width = "100%")
+                       ) 
                        
               ),
               #, # end tabPanel
              
               navbarMenu("More",
                   tabPanel("Well Report", fluid = TRUE, 
-                           ui_pnl_createWellReport() ),
+                           uiWellReport() ),
                   "----",
-                  tabPanel("Settings", fluid = TRUE,
-                           h3("Page for some settings."),
-                           "Maybe for threshold values, drawing options, etc.."
+                  tabPanel("Options", fluid = TRUE,
+                           uiAnalyseOptions()
                   )
               ) # end navbarMenu
               
   ) # end TabPanel
 }
 
+uiAnalyseOptions <- function() {
+  
+  box(title = "Options", width = 8, #solidHeader = TRUE,
+    #hr(),  
+    "The following options will affect the currently selected data and model. For 
+    global settings visit the _Settings_ page.",
+    
+    
+    h4("Plume Thresholds"),
+    uiOutput("thres_plume_select"),
+    actionButton("save_analyse_options",
+                 label = "Save", icon = icon("save"), 
+                 style = "color: #fff; background-color: Coral; border-color: Chocolate; float: right")
+
+  )
+  
+}
 

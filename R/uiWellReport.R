@@ -1,7 +1,7 @@
 
 
 
-ui_pnl_createWellReport <- function() {
+uiWellReport <- function() {
   
   fluidRow(
     box(width = 3, title = "Setting", 
@@ -35,13 +35,19 @@ ui_pnl_createWellReport <- function() {
     
     ), # end box
 
-    #shinyjs::hidden(
-    #  div(id = "well_report_box",
-        box(width = 8, title = "Well Report", # height = 600 
-            plotOutput("well_report_plot")  # , width = "120%") 
-            )
-      )
-    #) # end shinyjs hidden box
-
-  #) # end fluidRow
+    box(width = 8, title = "Well Report", # height = 600 
+          plotOutput("well_report_plot"),  # , width = "120%")
+          
+          div(style = "display: inline-block;",
+              selectInput("export_format_wr", label = "Image format", 
+                          choices = pnl$image_formats, 
+                          selected = pnl$image_formats[[1]]
+              )
+          ),
+          
+          div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
+              downloadButton("save_wellreport_plot", label = "Save Plot")
+          )
+    )
+  )
 }

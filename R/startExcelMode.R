@@ -18,7 +18,7 @@ startExcelMode <- function(GWSDAT_Options = NULL) {
   GWSDAT_Options[['ExcelMode']] <- TRUE
   
    
-  # Turn server mode off causes tcltk messages and dialogs to be supressed.
+  # Turning server mode (headless) off causes tcltk messages and dialogs to be supressed.
   if (is.null(GWSDAT_Options$HeadlessMode)) 
     GWSDAT_Options[['HeadlessMode']] <- FALSE
   

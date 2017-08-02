@@ -27,14 +27,8 @@ plotTimeSeries <- function(panel,
   # Use extra variable because "Overlay NAPL Thickness" might not be defined in dlines
   show_napl_thickness <- FALSE
   if ("Overlay NAPL Thickness" %in% names(panel$dlines)) { show_napl_thickness <- panel$dlines["Overlay NAPL Thickness"] } 
-  
-  #
-  # This is done now with napl_exists(). This function is also used by the server.
-  #NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) || 
-  #  nrow(panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName) == location,]) > 0
-  #if (is.na( NAPL.Present)) { NAPL.Present <- FALSE }
-  
-  NAPL.Present <- napl_exists(panel$All.Data, location, substance)
+ 
+  NAPL.Present <- existsNAPL(panel$All.Data, location, substance)
   
   
   # Adapt threshold value to different units.
@@ -357,4 +351,19 @@ plotTimeSeries <- function(panel,
 }
 
 
-############################################### End Time Series Plot ###########################################################
+makeTimeSeriesPPT <- function(panel, substance, location){
+  
+  # Create temporary wmf file. 
+  mytemp <- tempfile(fileext = ".wmf")
+  
+  win.metafile(mytemp) 
+  plotTimeSeries(panel, substance, location)
+  dev.off()
+  
+  # Put into powerpoint slide.
+  AddPlotPPV2(mytemp, asp = TRUE) 
+  
+  try(file.remove(mytemp))
+  
+}
+

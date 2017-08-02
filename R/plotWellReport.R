@@ -1,6 +1,6 @@
 
 
-createWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,  
+plotWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,  
                              UseLogScale = FALSE, toPPT = FALSE){
   
   on.exit(palette("default"))
@@ -37,33 +37,12 @@ createWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,
     myplot <- GWSDAT.xyplotAllContbyWells(panel, Cont.Data, SiteName = SiteName, UseLogScale = UseLogScale)
     
   }
-  if (!toPPT) {
   
-    # Make the plot. If called inside renderPlot this will send it into the 
-    # corresponding panel. 
-    print(myplot)
+  # Make the plot. If called inside renderPlot this will send it into the 
+  # corresponding panel. 
+  print(myplot)
     
-  } else {
-    
-    # Save plots.
-    try(file.remove(list.files(dirname(tempfile()),pattern="Wellgraph",full.names=T)))
-    
-    OutputGraphics <- panel$GWSDAT_Options$OutputGraphics
-    
-    if(is.null(OutputGraphics)){OutputGraphics="wmf"}
-    if(OutputGraphics == "jpeg"){jpeg(file=paste(dirname(tempfile()),"/","Wellgraph%03d.jpeg",sep=""), width=960, height=960, quality=100)}
-    if(OutputGraphics == "png") {png(file=paste(dirname(tempfile()),"/","Wellgraph%03d.png",sep=""), width=960, height=960)}
-    if(OutputGraphics == "wmf") {win.metafile(file=paste(dirname(tempfile()),"/","Wellgraph%03d.emf",sep=""),width = 9, height =7) }
-    
-    print(myplot)
-    
-    dev.off()
-    
-    AddPlotPPfromFilesV2(sort(list.files(dirname(tempfile()),pattern="Wellgraph",full.names=T)))
-    
-    try(file.remove(list.files(dirname(tempfile()),pattern="Wellgraph",full.names=T)))
-    
-  }
+  
   
 }
 
@@ -245,3 +224,22 @@ GWSDAT.xyplotAllContbyWells <- function(panel, Cont.Data, SiteName="", UseLogSca
   
 }
 
+
+
+
+
+makeWellReportPPT <- function(panel, substances, locations, use_log_scale){
+  
+  # Create temporary wmf file. 
+  mytemp <- tempfile(fileext = ".wmf")
+  
+  win.metafile(mytemp) 
+  plotWellReport(panel, substances, locations, use_log_scale)
+  dev.off()
+  
+  # Put into powerpoint slide.
+  AddPlotPPV2(mytemp, asp = TRUE) 
+  
+  try(file.remove(mytemp))
+  
+}

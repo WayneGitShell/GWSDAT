@@ -1,6 +1,6 @@
 
 
-shiny_ui_datamanager <- function() {
+uiDataManager <- function() {
 
   fluidPage(
     fluidRow(
@@ -19,7 +19,7 @@ shiny_ui_datamanager <- function() {
 
 }
 
-shiny_ui_dataimport <- function() {
+uiDataImport <- function() {
 
 
   fluidPage(

@@ -1,38 +1,38 @@
 
 
 
-plotTrendTable <- function(panel, timestep = 1, subset=FALSE){
+plotTrendTable <- function(panel, timestep = 1, subset = FALSE){
   
  
   date.to.print <- format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
   
   
-  if(panel$rg1=="Trend"){
+  if (panel$rg1 == "Trend") {
     
-    temp.traffic.Beta.ND.Check<-panel$Traffic.Lights$Beta.ND.Check[,,timestep,drop=F]
-    temp.traffic.Betas<-panel$Traffic.Lights$Betas[,,timestep,drop=F]
-    Well.Names<-dimnames(temp.traffic.Betas)[[1]]
-    Cont.Names<-dimnames(temp.traffic.Betas)[[2]]
+    temp.traffic.Beta.ND.Check <- panel$Traffic.Lights$Beta.ND.Check[,,timestep,drop = F]
+    temp.traffic.Betas <- panel$Traffic.Lights$Betas[,,timestep,drop = F]
+    Well.Names <- dimnames(temp.traffic.Betas)[[1]]
+    Cont.Names <- dimnames(temp.traffic.Betas)[[2]]
   }
   
-  if(panel$rg1=="Threshold - Statistical"){
+  if (panel$rg1 == "Threshold - Statistical") {
     
-    temp.traffic.Beta.ND.Check<-panel$Traffic.Lights$Beta.ND.Check[,,timestep,drop=F]
-    temp.traffic.Ulims<-panel$Traffic.Lights$Smooth.Upper.lims[,,timestep,drop=F]
-    Well.Names<-dimnames(temp.traffic.Ulims)[[1]]
-    Cont.Names<-dimnames(temp.traffic.Ulims)[[2]]
+    temp.traffic.Beta.ND.Check <- panel$Traffic.Lights$Beta.ND.Check[,,timestep, drop = F]
+    temp.traffic.Ulims <- panel$Traffic.Lights$Smooth.Upper.lims[,,timestep,drop=F]
+    Well.Names <- dimnames(temp.traffic.Ulims)[[1]]
+    Cont.Names <- dimnames(temp.traffic.Ulims)[[2]]
     
   }
   
-  if(panel$rg1=="Threshold - Absolute"){
+  if (panel$rg1 == "Threshold - Absolute") {
     
-    temp.traffic.Abs.Thresh.Check<-panel$Traffic.Lights$Abs.Thresh.Check[,,timestep,drop=F]
-    Well.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
-    Cont.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
+    temp.traffic.Abs.Thresh.Check <- panel$Traffic.Lights$Abs.Thresh.Check[,,timestep,drop=F]
+    Well.Names <- dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
+    Cont.Names <- dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
   }
   
   
-  if(subset==TRUE){
+  if (subset == TRUE) {
     
     if(length(Cont.Names)==1){Cont.Names<-Cont.Names[1]}else{Cont.Names<-GWSDAT.select.list(Cont.Names,multiple =T,title = "Select Solutes to Plot",preselect=Cont.Names)}
     if(length(Cont.Names)==0){stop("No Solutes selected!")}
@@ -177,5 +177,37 @@ plotTrendTable <- function(panel, timestep = 1, subset=FALSE){
 }
 
 
+makeTrendTablePPT <- function(panel, timestep, subset = FALSE){
+  
+  # Create temporary wmf file. 
+  mytemp <- tempfile(fileext = ".wmf")
+  
+  win.metafile(mytemp) 
+  plotTrendTable(panel, timestep)
+  dev.off()
+  
+  # Put into powerpoint slide.
+  AddPlotPPV2(mytemp, asp = TRUE) 
+  
+  try(file.remove(mytemp))
+  
+  
+}
 
-#--------------------------------------------------- End Traffic Lights ---------------------------------------------------------#
+makeTrendTableAnimation <- function(panel){
+  
+  
+  for (i in panel$timestep_range[1]:panel$timestep_range[2]) {
+    
+    # Create temporary wmf file. 
+    mytemp <- tempfile(fileext = ".wmf")
+    
+    win.metafile(mytemp) 
+    plotTrendTable(panel, timestep = i)
+    dev.off()
+    
+    AddPlotPPV2(mytemp, asp = TRUE) 
+    
+  }
+  
+}

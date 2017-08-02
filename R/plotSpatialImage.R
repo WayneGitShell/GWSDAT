@@ -1,89 +1,9 @@
 
 
-####### Plume Unit Handling Function #####################################
-
-PlumeUnitHandlingFunc <- function(LengthUnit,rgUnits,PlumeMass,PlumeArea){
-  
-  if(is.null(LengthUnit)) {
-    
-    PlumeMass <- 1000*PlumeMass
-    if (rgUnits == "ng/l") {PlumeMass <- PlumeMass*10^-12}
-    if (rgUnits == "ug/l") {PlumeMass <- PlumeMass*10^-9}
-    if (rgUnits == "mg/l") {PlumeMass <- PlumeMass*10^-6}
-    PlumeMassUnits <- paste(" (Mass/Unit Depth)",sep = "")
-    PlumeAreaUnits <- paste(" (Unit Area)",sep = "")
-    #PlumeAverageUnits<-paste(" (Mass/Unit Volume)",sep="")
-    PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
-    
-    
-  } else {
-    
-    if (LengthUnit == "metres") {
-      
-      
-      PlumeMass <- 1000*PlumeMass
-      if (rgUnits == "ng/l") {PlumeMass <- PlumeMass*10^-12}
-      if (rgUnits == "ug/l") {PlumeMass <- PlumeMass*10^-9}
-      if (rgUnits == "mg/l") {PlumeMass <- PlumeMass*10^-6}
-      PlumeMassUnits <- paste(" (kg/m)",sep = "")
-      PlumeAreaUnits <- paste(" (m^2)",sep = "")
-      #PlumeAverageUnits<-paste(" (kg/m^3)",sep="")
-      PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
-      
-    }
-    
-    
-    if(LengthUnit=="feet"){
-      
-      PlumeMass<-1000*PlumeMass/35.315 #per cubic ft
-      if(rgUnits=="ng/l"){PlumeMass<-PlumeMass*10^-12}
-      if(rgUnits=="ug/l"){PlumeMass<-PlumeMass*10^-9}
-      if(rgUnits=="mg/l"){PlumeMass<-PlumeMass*10^-6}
-      PlumeMassUnits<-paste(" (kg/ft)",sep="")
-      PlumeAreaUnits<-paste(" (ft^2)",sep="")
-      #PlumeAverageUnits<-paste(" (kg/ft^3)",sep="")
-      PlumeAverageUnits<-paste("(",rgUnits,")",sep="")
-      
-    }
-    
-  }
-  
-  return(list(PlumeMass=PlumeMass,PlumeArea=PlumeArea,PlumeMassUnits=PlumeMassUnits,PlumeAreaUnits=PlumeAreaUnits,PlumeAverageUnits=PlumeAverageUnits))
-  
-}
-
-#------------------------------------------------------------------------#
-
-
-
-
-##### GW ContourInterpolation Function ###################################
-
-GWSDAT.GW.Contour <- function(temp.GW.Flows){
-  
-  options(warn=-1)
-  my.lo<-try(loess(Result~XCoord+YCoord,temp.GW.Flows,span=1,degree=if(nrow(temp.GW.Flows)<20){1}else{2},control = loess.control(surface = c("interpolate", "direct")[1])),silent=T)
-  if(inherits(my.lo, "try-error")){options(warn=0); stop("Unable to fit loess")}
-  options(warn=0)
-  xo=seq(min(temp.GW.Flows$XCoord),max(temp.GW.Flows$XCoord),l=40)
-  yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
-  my.df<-expand.grid(XCoord=xo,YCoord=yo)
-  
-  lo.pred<-predict(my.lo,my.df)
-  my.hull<-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
-  temp.pip<-point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
-  lo.pred[matrix(temp.pip,nrow=length(xo))]<-NA
-  return(list(x=xo,y=yo,z=lo.pred))
-  
-}
-#------------------------------------------------------------------------#
-
 
 
 
 plotSpatialImage <- function(panel, substance = " ", timestep = 1) { 
-  
-  
   
   
   if (panel$ScaleCols["Plume Diagnostics"]) {
@@ -119,7 +39,6 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   
   
-  ############# Date Interval Printing #########################################################
   
   date.to.print <-  format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
   
@@ -140,8 +59,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     date.to.print <- paste(date.range.to.print,collapse = " to ")
     
   }
-  #---------------------------------------------------------------------------------------------#
-  
+
   
   
   
@@ -160,7 +78,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     temp.Cont.Data$Result<-temp.res
     rm(temp.res)
   }
-  if(panel$rgUnits=="ng/l"){
+  if(panel$rgUnits == "ng/l"){
     
     temp.Cont.Data$Result.Corr.ND<-temp.Cont.Data$Result.Corr.ND*1000
     temp.res<-as.character(temp.Cont.Data$Result)
@@ -173,13 +91,13 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   
   
-  Bad.Wells<-as.character(temp.Cont.Data$WellName[which(temp.Cont.Data$log.Resid>1.75)])
-  Bad.Wells<- Well.Coords[Well.Coords$WellName %in% Bad.Wells,]
-  if(nrow(Bad.Wells)>0){Bad.Wells$WellName<-paste("<",Bad.Wells$WellName,">",sep="")}
+  Bad.Wells <- as.character(temp.Cont.Data$WellName[which(temp.Cont.Data$log.Resid>1.75)])
+  Bad.Wells <- Well.Coords[Well.Coords$WellName %in% Bad.Wells,]
+  if(nrow(Bad.Wells) > 0){Bad.Wells$WellName<-paste("<",Bad.Wells$WellName,">",sep="")}
   
   
-  diffrangeX<-0.06*(range(Well.Coords$XCoord)[2]-range(Well.Coords$XCoord)[1])
-  diffrangeY<-0.06*(range(Well.Coords$YCoord)[2]-range(Well.Coords$YCoord)[1])
+  diffrangeX <- 0.06*(range(Well.Coords$XCoord)[2]-range(Well.Coords$XCoord)[1])
+  diffrangeY <- 0.06*(range(Well.Coords$YCoord)[2]-range(Well.Coords$YCoord)[1])
   
   if ((diffrangeX/diffrangeY) > 1.4) {diffrangeY = 0}
   if ((diffrangeY/diffrangeX) > 1.4) {diffrangeX = 0}
@@ -240,17 +158,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
   }
   
-  #############################################
-  expandpoly <- function(mypol, fact) {
-    
-    m1 <- mean(mypol[, 1])
-    m2 <- mean(mypol[, 2])
-    cbind((mypol[, 1] - m1) * fact + m1, (mypol[, 2] - m2) * fact + m2)
-    
-  }
-  #-------------------------------------------#
-  
-  #############################################
+ 
   
   
   my.area <- my.area[chull(my.area),,drop=F]
@@ -298,16 +206,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
     
   }
-  #----------------------------------------------------------------------------#
   
-  
-  
-  
-  
-  
-  
-  
-  ####################### Plume Quantification #################################
   
   if (panel$ScaleCols["Plume Diagnostics"]) {
     
@@ -352,7 +251,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
     
     
-    CalcPlumeStats<-function(model,AggDate,cL,PLumeCutoff,type,units){
+    CalcPlumeStats <- function(model,AggDate,cL,PLumeCutoff,type,units){
       
       temppts<-cbind(cL$x,cL$y)
       temppts<-gridpts(temppts,100)
@@ -423,8 +322,8 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     }
     
     
-    PlumeDetails$PLumeCutoff=PLumeCutoff
-    if(length(cL)>0){PlumeDetails$cL=cL}else{PlumeDetails$cL=NULL}
+    PlumeDetails$PLumeCutoff = PLumeCutoff
+    if(length(cL) > 0){ PlumeDetails$cL=cL}else{PlumeDetails$cL=NULL}
     
     TotalPlume <- list()
     
@@ -453,15 +352,6 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
     
   }
-  
-  #----------------------------------------------------------------------------#
-  
-  
-  
-  
-  
-  
-  ############################## Plot GW Flows #######################################
   
   GWFlows <- attr(panel$Fitted.Data,"GWFlows")
   if (!inherits(GWFlows, "try-error")) {
@@ -513,15 +403,9 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     }
     
   }#if not try error!
-  #----------------------------------------------------------------------------#
   
   
-  
-  GWSDAT.GrayScale <- function(n){
-    
-    rev(grey(seq(0,1,length = n + 3)))[c(-1,-2,-(n+3))]
-    
-  }
+ 
   
   GWSDAT.Terrain <- function(n){
     
@@ -648,11 +532,11 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                             if (panel$Color.type == "Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
                             if (panel$Color.type == "Conc-Terrain-Circles" || panel$Color.type=="Conc-Topo-Circles" || panel$Color.type=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1,cex=my.cex[order(my.cex,decreasing=T)])}
                             
-                            ###### NAPL Circles Plot ############### 
+                            
                             if (panel$Color.type == "NAPL-Circles") {points(temp.NAPL.Data$XCoord[order(my.cex,decreasing=T)],temp.NAPL.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
                             if (panel$Color.type == "NAPL-Circles") {points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)}
                             
-                            #--------------------------------------#
+                            
                             
                             
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=.7);
@@ -662,23 +546,21 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                             }
                             
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
-                            #browser()
+                            
                             if(Show.GW.Contour) {
-                              #try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
                               contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8)
                             }
                             if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
-                            ###### Plume Details Plot ############### 		
+                            
                             if(exists("PlumeDetails") & panel$ScaleCols["Plume Diagnostics"]){
                               
                               try(contour(interp.pred,levels=PlumeDetails$PLumeCutoff,add=T,col="red",lwd=2,labcex =.8))
                               
-                              #for(i in 1:length(PlumeDetails$cL)){try(points(PlumeDetails$cL[[i]]$PlumeCentreofMass[1],PlumeDetails$cL[[i]]$PlumeCentreofMass[2],cex=1.3,pch=3,lwd=2,col="red"))}	
                               try(points(TotalPlume$PlumeCentreofMass[1],TotalPlume$PlumeCentreofMass[2],cex=1.3,pch=3,lwd=2,col="red"))
                             }
-                            #--------------------------------------#
+                        
                             
                             
                             if(nrow(Bad.Wells)>0 & Show.Well.Labels & Do.Image){text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
@@ -688,16 +570,17 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                           
     )
     
-    if(panel$ScaleCols["Plume Diagnostics"]){
-      tempUnitHandle<-PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
-      #tp<-paste("Estimated Plume Mass=",round(TotalPlume$Mass,2),";   Estimated Plume Area=",round(TotalPlume$area,2),sep="")
-      tp<-paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep="")
-      mtext(tp,side=1,adj=-0.1,line = 2,cex=0.85)
+    if (panel$ScaleCols["Plume Diagnostics"]) {
+
+      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
+      
+      tp <- paste("Plume Mass=", signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
+      mtext(tp,side = 1,adj = -0.1, line = 2,cex = 0.85)
       
     }
     
     
-  }else{
+  } else {
     
     
     GWSDAT.filled.contour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){panel$All.Data$ShapeFiles}else{NULL},
@@ -749,6 +632,70 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   
 }
-#-------------------------------------- End GWSDAT Spatial Plot Function------------------------------------------------------#
 
+
+makeSpatialPPT <- function(panel, substance, timestep){
+ 
+  # Create temporary wmf file. 
+  mytemp <- tempfile(fileext = ".wmf")
+  
+  win.metafile(mytemp) 
+  plotSpatialImage(panel, substance, timestep = timestep)
+  dev.off()
+   
+  # Put into powerpoint slide.
+  AddPlotPPV2(mytemp, asp = TRUE) 
+  
+  try(file.remove(mytemp))
+  
+    
+}
+
+
+makeSpatialAnimation <- function(panel, substance){
+  
+  
+  for (i in panel$timestep_range[1]:panel$timestep_range[2]) {
+ 
+    # Create temporary wmf file. 
+    mytemp <- tempfile(fileext = ".wmf")
+    
+    win.metafile(mytemp) 
+    plotSpatialImage(panel, substance, timestep = i)
+    dev.off()
+    
+    AddPlotPPV2(mytemp, asp = TRUE) 
+    
+  }
+  
+}
+
+
+
+
+
+
+GWSDAT.GW.Contour <- function(temp.GW.Flows){
+  
+  options(warn=-1)
+  my.lo<-try(loess(Result~XCoord+YCoord,temp.GW.Flows,span=1,degree=if(nrow(temp.GW.Flows)<20){1}else{2},control = loess.control(surface = c("interpolate", "direct")[1])),silent=T)
+  if(inherits(my.lo, "try-error")){options(warn=0); stop("Unable to fit loess")}
+  options(warn=0)
+  xo=seq(min(temp.GW.Flows$XCoord),max(temp.GW.Flows$XCoord),l=40)
+  yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
+  my.df<-expand.grid(XCoord=xo,YCoord=yo)
+  
+  lo.pred<-predict(my.lo,my.df)
+  my.hull<-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
+  temp.pip<-point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
+  lo.pred[matrix(temp.pip,nrow=length(xo))]<-NA
+  return(list(x=xo,y=yo,z=lo.pred))
+  
+}
+
+GWSDAT.GrayScale <- function(n){
+  
+  rev(grey(seq(0,1,length = n + 3)))[c(-1,-2,-(n+3))]
+  
+}
 

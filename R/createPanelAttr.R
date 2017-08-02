@@ -115,7 +115,7 @@ createPanelAttr <- function(Curr.Site.Data) {
   
   # Checks if NAPL thickness is present for current well and solute 
   #  This is to activate/inactivate the 'Overlay NAPL Thickness' control.
-  panel$NAPL.Present <- napl_exists(panel$All.Data, panel$Well, panel$Cont.rg) 
+  panel$NAPL.Present <- existsNAPL(panel$All.Data, panel$Well, panel$Cont.rg) 
  
   
   
@@ -155,6 +155,15 @@ createPanelAttr <- function(Curr.Site.Data) {
     panel$PredInterval = "Predicted"
   }
   
+  
+  # Define the image formats that can be saved.
+  panel$image_formats <- list("png", "jpg", "pdf", "ps")
+  if (.Platform$OS.type == "windows") {
+    panel$image_formats[[length(panel$image_formats) + 1]] <- "wmf"
+    panel$image_formats[[length(panel$image_formats) + 1]] <- "ppt"
+  }
+  
+    
   
   return(panel)
   
