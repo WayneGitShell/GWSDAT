@@ -692,7 +692,7 @@ server <- function(input, output, session) {
   #
   observeEvent(input$analyse_panel, {
     if (input$analyse_panel == "Spatial Plot" || input$analyse_panel == "Trends & Thresholds") {
-      if (pnl$GWSDAT_Options$DevMode || pnl$GWSDAT_Options$ExcelMode) {
+      if ( (.Platform$OS.type == "windows") || pnl$GWSDAT_Options$ExcelMode) {
         shinyjs::show(id = "save_spatial_ppt_anim")
         shinyjs::show(id = "save_trendtable_ppt_anim")
       }
