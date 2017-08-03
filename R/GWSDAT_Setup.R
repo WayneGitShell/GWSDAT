@@ -86,6 +86,7 @@ GWSDAT_Load_Libs <- function(GWSDATHome){
     
     if (data.class(result <- try(find.package(pkg, lib.loc = .libPaths()), TRUE)) == "try-error") {
       browser()
+      stop(paste("Cannot find package \"",pkg,"\"",sep = ""))
       # tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
       
       ## pass error+message somehow back without calling tkmessageBox
@@ -105,8 +106,9 @@ GWSDAT_Load_Libs <- function(GWSDATHome){
   ##
   ## Setup the libPaths to the additional packages required by GWSDAT.
   ##
-  local_libPath = paste(GWSDATHome, '/R/RLibsMajVer', as.numeric(R.Version()$major), 
-                        "/", .Platform$OS.type, sep = "")
+  #local_libPath = paste(GWSDATHome, '/R/RLibsMajVer', as.numeric(R.Version()$major), 
+  #                      "/", .Platform$OS.type, sep = "")
+  local_libPath = paste(GWSDATHome, '/R/RLibsMajVer', as.character(R.Version()$major), sep = '')
   
   
   try(.libPaths(c(local_libPath, .libPaths() )))

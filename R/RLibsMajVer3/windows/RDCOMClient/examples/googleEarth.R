@@ -1,5 +1,0 @@
-library(RDCOMClient)
-ge = COMCreate("GoogleEarth.ApplicationGE")
-lib = LoadTypeLib(ge)
-names(lib)
-sapply(lib, class)
