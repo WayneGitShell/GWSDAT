@@ -13,13 +13,13 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   }
 
   
-      
-  
   Col.Option <- panel$ScaleCols["Scale colours to Data"]
   Show.Values <- panel$ScaleCols["Show Conc. Values"]
   Show.GW.Contour <- panel$ScaleCols["Show GW Contour"]
   
-  if (is.null(Show.GW.Contour) || length(Show.GW.Contour) == 0 || is.na(Show.GW.Contour)) {Show.GW.Contour<-FALSE}
+  if (is.null(Show.GW.Contour) || length(Show.GW.Contour) == 0 || is.na(Show.GW.Contour)) {
+    Show.GW.Contour <- FALSE
+  }
   
   Show.Well.Labels <- panel$ScaleCols["Show Well Labels"]
   
@@ -33,9 +33,9 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
   temp.time.frac <- as.numeric(temp.time.eval - min(panel$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval)))
   
-  try(if(temp.time.frac==1){temp.time.frac=.999}) # to avoid plot issue with wmf format!
-  try(if(temp.time.frac==0){temp.time.frac=.001})
-  try(if(as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
+  try(if (temp.time.frac == 1) {temp.time.frac=.999}) # to avoid plot issue with wmf format!
+  try(if (temp.time.frac == 0) {temp.time.frac=.001})
+  try(if (as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
   
   
   
@@ -63,10 +63,10 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   
   
-  model.tune<-panel$Fitted.Data[[substance]][["Model.tune"]]
+  model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
   temp.Cont.Data<-panel$Fitted.Data[[substance]]$Cont.Data
-  temp.Cont.Data<-temp.Cont.Data[temp.Cont.Data$AggDate==temp.time.eval,]
-  temp.Cont.Data$log.Resid<-log(temp.Cont.Data$Result.Corr.ND)-log(temp.Cont.Data$ModelPred)
+  temp.Cont.Data<-temp.Cont.Data[temp.Cont.Data$AggDate == temp.time.eval,]
+  temp.Cont.Data$log.Resid<-log(temp.Cont.Data$Result.Corr.ND) - log(temp.Cont.Data$ModelPred)
   
   if(panel$rgUnits=="mg/l"){
     
@@ -161,7 +161,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
  
   
   
-  my.area <- my.area[chull(my.area),,drop=F]
+  my.area <- my.area[chull(my.area),, drop = F]
   my.exp.area <- expandpoly(my.area,fac=1.05)
   eval.df <- gridpts(my.exp.area,350)
   eval.df <- rbind(eval.df,my.exp.area)
@@ -186,7 +186,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   if (Do.Image) {
     
-    if (panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")){
+    if (panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")) {
       
       if (panel$PredInterval != "IQR/2") {interp.pred$z <- exp(interp.pred$z)}
       
@@ -197,7 +197,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
     if (max(interp.pred$z,na.rm = T) > lev.cut[length(lev.cut)] && !Col.Option) {
       
-      interp.pred$z[which(interp.pred$z > lev.cut[length(lev.cut)],arr.ind=T)] <- lev.cut[length(lev.cut)]
+      interp.pred$z[which(interp.pred$z > lev.cut[length(lev.cut)],arr.ind = T)] <- lev.cut[length(lev.cut)]
     }
     
   }else{
@@ -207,151 +207,16 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
   }
   
-  
+  # This calculates the area, mass, volume and center of the plume.
+  # It will be used to include a status text at the bottom of the plot, and
+  # to plot the plume contour. 
   if (panel$ScaleCols["Plume Diagnostics"]) {
     
-    
-    checkPlumeClosure <- function(cl){
-      
-      cl$x[1] == cl$x[length(cl$x)] & cl$y[1]==cl$y[length(cl$y)]
-      
-    }
-    
-    VolIndTri <- function(l){
-      
-      x <- l$x
-      y <- l$y
-      z <- l$z
-      
-      0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
-    }
-    
-    xVolIndTri <- function(l){
-      
-      x <- l$x
-      y <- l$y
-      z <- l$z
-      
-      z = z*x
-      
-      0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
-    }
-    
-    
-    yVolIndTri<-function(l){
-      
-      x<-l$x
-      y<-l$y
-      z<-l$z
-      
-      z=z*y
-      
-      0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
-    }
-    
-    
-    
-    CalcPlumeStats <- function(model,AggDate,cL,PLumeCutoff,type,units){
-      
-      temppts<-cbind(cL$x,cL$y)
-      temppts<-gridpts(temppts,100)
-      Plume.Tri.Points<-data.frame(XCoord=temppts[,1],YCoord=temppts[,2])
-      Plume.Tri.Points$AggDate=as.numeric(AggDate)
-      
-      
-      temppred<-predict(model,newdata=Plume.Tri.Points,se=type!="Predicted")
-      if(type=="Lower 95% CI"){temppred$predicted<-temppred$predicted-temppred$predicted.sd*1.96}
-      if(type=="Upper 95% CI"){temppred$predicted<-temppred$predicted+temppred$predicted.sd*1.96}
-      Plume.Tri.Points$z<-exp(temppred$predicted)
-      
-      
-      if(units=="mg/l"){Plume.Tri.Points$z<-Plume.Tri.Points$z/1000}
-      if(units=="ng/l"){Plume.Tri.Points$z<-Plume.Tri.Points$z*1000}
-      
-      
-      
-      cL.Tri.Points<-data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(PLumeCutoff,length(cL$x)))
-      Vol.Tri.Points<-unique(rbind(Plume.Tri.Points[,c("XCoord","YCoord","z")],cL.Tri.Points))
-      
-      mydeldir<-deldir(x=Vol.Tri.Points$XCoord,y=Vol.Tri.Points$YCoord,z=Vol.Tri.Points$z)
-      mytriangs<-triang.list(mydeldir)
-      PlumeVol<-sum(unlist(lapply(mytriangs,VolIndTri)))
-      xPlumeVol<-sum(unlist(lapply(mytriangs,xVolIndTri)))
-      yPlumeVol<-sum(unlist(lapply(mytriangs,yVolIndTri)))
-      PlumeCentreofMass<-c(xPlumeVol,yPlumeVol)/PlumeVol
-      
-      
-      return(list(PlumeVol=PlumeVol,PlumeCentreofMass=PlumeCentreofMass))
-      
-    }
-    
-    
-    
-    PlumeDetails = list()
-    
-    
-    PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(substance, names(panel$Fitted.Data))])  #Defined in ug/L
-    if(panel$rgUnits == "mg/l"){PLumeCutoff<-PLumeCutoff/1000}
-    if(panel$rgUnits == "ng/l"){PLumeCutoff<-PLumeCutoff*1000}
-    cL<-contourLines(interp.pred,levels=PLumeCutoff)
-    
-    
-    if(length(cL)>0){
-      
-      for(i in 1:length(cL)){
-        
-        cL[[i]]$Closed<-checkPlumeClosure(cL[[i]])
-        
-        if(cL[[i]]$Closed){
-          
-          cL[[i]]$area<-areapl(cbind(cL[[i]]$x,cL[[i]]$y))
-          tempPlumeQuant<-CalcPlumeStats(model.tune$best.mod,AggDate=temp.time.eval,cL[[i]],PLumeCutoff=PLumeCutoff,type=as.character(panel$PredInterval),units=panel$rgUnits)
-          cL[[i]]$Volume<-tempPlumeQuant$PlumeVol
-          cL[[i]]$PlumeCentreofMass<-tempPlumeQuant$PlumeCentreofMass
-          
-        }else{
-          
-          cL[[i]]$area<-NA
-          cL[[i]]$Volume<-NA
-          cL[[i]]$PlumeCentreofMass<-NA
-          
-        }
-        
-      }
-      
-    }
-    
-    
-    PlumeDetails$PLumeCutoff = PLumeCutoff
-    if(length(cL) > 0){ PlumeDetails$cL=cL}else{PlumeDetails$cL=NULL}
-    
-    TotalPlume <- list()
-    
-    if(length(PlumeDetails$cL)>0){
-      
-      TotalPlume$area<-sum(unlist(lapply(PlumeDetails$cL,function(l){l$area})))
-      TotalPlume$volume<-sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
-      TotalPlume$Mass<-TotalPlume$volume*as.numeric(panel$Porosity)
-      
-      COMWeights<-unlist(lapply(PlumeDetails$cL,function(l){l$Volume}))/sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
-      TotalPlume$PlumeCentreofMass<-rep(NA,2)
-      TotalPlume$PlumeCentreofMass[1]<-sum(COMWeights*unlist(lapply(PlumeDetails$cL,function(l){l$PlumeCentreofMass[1]})))
-      TotalPlume$PlumeCentreofMass[2]<-sum(COMWeights*unlist(lapply(PlumeDetails$cL,function(l){l$PlumeCentreofMass[2]})))
-      
-      
-    } else {
-      
-      TotalPlume$area<-NA
-      TotalPlume$volume<-NA
-      TotalPlume$Mass<-NA
-      TotalPlume$PlumeCentreofMass<-c(NA,NA)
-      
-    }
-    
-    panel$tempTotalPlumeDetails <- TotalPlume
-    
+    TotalPlume <- getPlumeDiagnostics(panel, substance, timestep, interp.pred)
     
   }
+    
+    
   
   GWFlows <- attr(panel$Fitted.Data,"GWFlows")
   if (!inherits(GWFlows, "try-error")) {
@@ -435,7 +300,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   
   
-  if(panel$Color.type=="Conc-Terrain-Circles"){
+  if(panel$Color.type == "Conc-Terrain-Circles"){
     
     col.palette <- GWSDAT.Terrain(n.col)
     Do.Image<-FALSE
@@ -553,12 +418,12 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                             if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
-                            
-                            if(exists("PlumeDetails") & panel$ScaleCols["Plume Diagnostics"]){
+
+                            if(exists("TotalPlume") & panel$ScaleCols["Plume Diagnostics"]){
                               
-                              try(contour(interp.pred,levels=PlumeDetails$PLumeCutoff,add=T,col="red",lwd=2,labcex =.8))
+                              try(contour(interp.pred, levels = TotalPlume$PLumeCutoff, add = T, col = "red", lwd = 2, labcex = .8))
                               
-                              try(points(TotalPlume$PlumeCentreofMass[1],TotalPlume$PlumeCentreofMass[2],cex=1.3,pch=3,lwd=2,col="red"))
+                              try(points(TotalPlume$PlumeCentreofMass[1], TotalPlume$PlumeCentreofMass[2], cex = 1.3, pch = 3, lwd = 2, col = "red"))
                             }
                         
                             
@@ -597,12 +462,14 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                             if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
-                            ###### Plume Details Plot ############### 		
-                            if(exists("PlumeDetails") & panel$ScaleCols["Plume Diagnostics"]){
+                            
+                            if (exists("TotalPlume") & panel$ScaleCols["Plume Diagnostics"]) {
                               
-                              contour(interp.pred,levels=PlumeDetails$PLumeCutoff,add=T,col="red",lwd=2,labcex =.8)
-                              try(contour(interp.pred,levels=PlumeDetails$PLumeCutoff,add=T,col="red",lwd=2,labcex =.8))
-                              #for(i in 1:length(PlumeDetails$cL)){try(points(PlumeDetails$cL[[i]]$PlumeCentreofMass[1],PlumeDetails$cL[[i]]$PlumeCentreofMass[2],cex=1.3,pch=3,lwd=2,col="red"))}	
+                              contour(interp.pred, levels = TotalPlume$PLumeCutoff, add = T, col = "red", lwd = 2, labcex = .8)
+                              # Fixme: why plot twice?
+                              try(contour(interp.pred, levels = TotalPlume$PLumeCutoff, add = T, col = "red", lwd = 2, labcex = .8))
+                            
+                                  
                               try(points(TotalPlume$PlumeCentreofMass[1],TotalPlume$PlumeCentreofMass[2],cex=1.3,pch=3,lwd=2,col="red"))
                             }
                             #--------------------------------------#
@@ -614,12 +481,14 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                           
     )
     
-    if(panel$ScaleCols["Plume Diagnostics"]){
+    if (panel$ScaleCols["Plume Diagnostics"]) {
       
-      tempUnitHandle<-PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
+      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
+      
       #tp<-paste("Estimated Plume Mass=",round(TotalPlume$Mass,2),";   Estimated Plume Area=",round(TotalPlume$area,2),sep="")
-      tp<-paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep="")
-      mtext(tp,side=1,adj=-0.1,line = 2,cex=0.85)
+      
+      tp <- paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
+      mtext(tp,side = 1,adj = -0.1,line = 2, cex = 0.85)
       
     }
     

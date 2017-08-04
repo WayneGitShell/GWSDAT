@@ -71,8 +71,8 @@ uiAnalyse <- function() {
                                 #div(id = "select_aquifer_contour", 
                                 #    selectInput("aquifer_contour", label = "Aquifer Group", choices = pnl$All.Data$Aq_list,
                                 #                                       selected = pnl$All.Data$Aq.sel, width = '80%') ),
-                                selectInput("solute_select_contour", label = "Solute", choices = names(pnl$Fitted.Data),
-                                            selected = pnl$Cont.rg, width = '80%'),
+                                selectInput("solute_select_contour", label = "Substance", choices = names(pnl$Fitted.Data),
+                                            selected = names(pnl$Fitted.Data)[1], width = '80%'),
                                 
                                 radioButtons("solute_conc_contour", label = "Solute Conc. Unit",
                                              choices = pnl$rgUnits_choice, 
@@ -215,6 +215,8 @@ uiAnalyse <- function() {
               navbarMenu("More",
                   tabPanel("Well Report", fluid = TRUE, 
                            uiWellReport() ),
+                  tabPanel("Plume Time Series", fluid = TRUE, 
+                           uiPlumeDiagnostics() ),
                   "----",
                   tabPanel("Options", fluid = TRUE,
                            uiAnalyseOptions()
@@ -233,11 +235,19 @@ uiAnalyseOptions <- function() {
     
     
     h4("Plume Thresholds"),
+    "Unit values are in ..",
     uiOutput("thres_plume_select"),
+    
+    numericInput("ground_porosity_input", 
+                 label = "Ground Porosity (%)", 
+                 value = pnl$Porosity, 
+                 width = "100px"),
+    
     actionButton("save_analyse_options",
                  label = "Save", icon = icon("save"), 
                  style = "color: #fff; background-color: Coral; border-color: Chocolate; float: right")
-
+    
+    
   )
   
 }

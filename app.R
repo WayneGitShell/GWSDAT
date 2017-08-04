@@ -105,7 +105,16 @@ server <- function(input, output, session) {
    
   })
   
-  
+  output$plume_diagn_plot <- renderPlot({
+    
+    # Fixme: take solute from input in sidebar of plume diagnostic
+    if (is.null(plotPlumeTimeSeries(pnl, input$solute_select_plume))) {
+      
+      # make text message that it failed .. how to do this?
+    }
+        
+    
+  })
   #
   # Plot time-series window
   #
@@ -139,6 +148,7 @@ server <- function(input, output, session) {
   optionsSaved <- reactive({ 
     input$save_analyse_options 
   })
+
   
   #
   # Plot ImagePlot
@@ -731,6 +741,8 @@ server <- function(input, output, session) {
       pnl$PlumeLimEntry[i] <<- eval(parse(text = input_var))
     }
     
+    
+    pnl$Porosity <- input$ground_porosity_input
     
   })
   

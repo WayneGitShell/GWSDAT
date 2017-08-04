@@ -60,10 +60,15 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/plotTimeSeries.R", sep = "/"))
     source(paste(GWSDATHome, "R/plotSpatialImage.R", sep = "/"))
     source(paste(GWSDATHome, "R/plotTrendTable.R", sep = "/"))
+    source(paste(GWSDATHome, "R/plotPlumeTimeSeries.R", sep = "/"))
     source(paste(GWSDATHome, "R/plumeDiagnostics.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiAnalyse.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiDataManager.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiWellReport.R", sep = "/"))
+    source(paste(GWSDATHome, "R/uiPlumeDiagnostics.R", sep = "/"))
+  
+    # Maybe move this to the other interpolation methods. Where are they? 
+    source(paste(GWSDATHome, "R/interpData.R", sep = "/"))
 
     # For the well report, might change.  
     source(paste(GWSDATHome, "R/chooserInput.R", sep = "/"))
