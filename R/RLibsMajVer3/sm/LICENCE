@@ -1,0 +1,34 @@
+Licence agreement
+-----------------
+
+This software is associated with the book
+  
+    "Applied Smoothing Techniques for Data Analysis:
+    the kernel approach with S-Plus illustrations"
+    by Adrian W. Bowman & Adelchi Azzalini,
+    published by Oxford University Press, 1997.
+
+It consists of two parts: the `sm library', and the `scripts'.
+The sm library is a suite of S-Plus routines. The scripts form 
+a layer of software above the sm library, and provide examples 
+of its applications.  
+
+The `sm` library is copyright of A.W.Bowman & A.Azzalini (1997, 
+2000) except for the exceptions below.
+
+The function sm.density calls the function contour3d from the
+misc3d R package by Feng & Tierney to produce contour plots 
+of three-dimensional density estimates.
+
+The function sm.sphere was written jointly by Adrian Bowman
+and Adrian Hines and copyright is held jointly.
+
+The scripts are copyright of Oxford University Press (1997).
+
+Irrespective of the individual copyrights, this software is usable 
+under the `GNU GENERAL PUBLIC LICENSE', a copy of which is distributed 
+together with this software.  This essentially means that this software 
+can be freely used and re-distributed, but no warranty of any sort is 
+provided for it.
+
+

@@ -1,0 +1,13 @@
+			Poles data
+			
+These data refer to positions of the south pole determined from the
+palaeomagnetic study of New Caledonian laterites.
+
+The variables are:
+	Latitude 
+	Longitude
+	
+Source: The data were collected by Falvey and Musgrave.	
+	They are listed in Fisher, Lewis & Embleton (1987),
+	Statistical Analysis of Spherical Data, Cambridge University
+	Press, Cambridge, dataset B1.

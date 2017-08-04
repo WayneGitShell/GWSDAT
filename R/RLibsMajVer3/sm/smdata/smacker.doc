@@ -1,0 +1,19 @@
+		Mackerel data from the Spanish survey
+		
+These data were recorded by a Spanish survey, as part of a multi-country 
+survey of the abundance of mackerel eggs off the coast of north-western 
+Europe, in 1992.  
+
+The variables are:
+	Density:     egg density
+	smack.lat:   latitude of sampling position
+	smack.long:  longitude of sampling position
+	smack.depth: bottom depth
+	Temperature: surface temperature
+	D200:        distance from the 200m depth contour line
+
+Source: Background to the survey and the data are provided by
+	Watson et al. (1992), Priede and Watson (1993) and
+	Priede et al (1995).  Borchers et al (1997) describe an analysis
+	of the data.
+	

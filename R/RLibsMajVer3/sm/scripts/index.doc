@@ -1,0 +1,91 @@
+		     Index of scripts for the sm library
+		     -----------------------------------
+
+To run a script called "sname", give the command
+	sm.script(sname)
+
+Script     Illus.  Fig.    Description
+------     ------  ----    -----------
+
+sp_hist	    1.1    1.1     Density estimate from the aircraft span data
+sp_build           1.2     Construction of a density estimate
+sp_alter    1.2    1.3     Changing the bandwidth in a density estimate
+sp_comp     1.3    1.4     Comparing density estimates from the span data
+air_scat           1.5     Scatterplots of the airpc data
+air_dens    1.4    1.6     Density estimates from the airpc data
+air_imag    1.5    1.7     Imageplot and sliceplot from the airpc data
+air_cont    1.6    1.8     Sliceplots for the three groups of airpc data
+geys3d      1.7    1.9     Three-dimensional contour from the geyser data
+mag_scat    1.8    1.10    Spherical plot of the magnetic remanence data
+mag_dens    1.9    1.11    Density estimate from the magnetic remanence data
+speed       1.10   1.12    Density estimate from the aircraft speed data
+speedvar    1.11   1.13    Modified estimates from the aircraft speed data
+edfgrad            1.14    The gradient of an empirical distribution function
+
+te_var      2.1    2.1     Variable bandwidths with the tephra data
+air_band    2.2    2.2     A variability band from the aircraft span data
+te_hcvsj    2.3    2.3     Bandwidth choices for the tephra data
+air_hcv     2.4    2.4     Bandwidth choices for the aircraft data
+te_norm     2.5    2.5     Assessing normality for the tephra data
+te_band     2.6    2.6     Reference bands for normality with the tephra data
+air_ind     2.7    2.7     Exploring independence in the aircraft data
+air_inds                   Testing independence in the aircraft data
+air_boot    2.8    2.8     Bootstrapping density estimates
+
+rc_plot     3.1    3.1     Nonparametric regression with the radiocarbon data
+rc_alter           3.2     Changing the bandwidth in a nonparametric regression
+trwlplot    3.2    3.3     Nonparametric regressions with the reef data
+birth1      3.3    3.4     Standard smoothing with the birthweight data
+birth2      3.4    3.5     Local logistic regression with the birthweight data
+muscle      3.5    3.6     Nonparametric regression with the rat muscle data
+stanplot    3.6    3.7     Percentile curves for the Stanford data
+follicle    3.7    3.8     Variable bandwidths with the follicle data
+stananim                   Animation of percentile curves (Exercise 3.5)
+
+sin_prop           4.1     Mean and s.d. of a nonparametric regression
+rc_vband    4.1    4.2     A variability band with the radiocarbon data
+sin_cv      4.2    4.3     Cross-validation for bandwidth choice
+trwlboot    4.3    4.4     A reference band for no effect in the reef data
+noeff                      A bootstrap test of no effect in the reef data
+rc_boot     4.4    4.5     A bootstrap band from the radiocarbon data
+
+trw_nesg    5.1    5.1     A significance trace for no effect in the reef data
+trw_nebd    5.2    5.2     A reference band for no effect in the reef data
+trw_lf             5.3     A linear model for the reef data
+trw_lfsg    5.3    5.4     Assessing a linear model for the reef data
+mildew      5.4    5.5     Assessing spatial trend in the mildew data
+trees       5.5    5.6     Assessing linearity in the cherry trees data
+trout1             5.7     Local logistic regression with the trout data
+trout2      5.6    5.8     Assessing a logistic model for the trout data
+bissell1           5.9     A parametric prediction band from Bissell's data
+bissell2    5.7    5.10    A nonparametric prediction band from Bissell's data
+bissell3           5.11    A reference band for linearity with Bissell's data
+                           (execute bissell3 immediately after bissell2)
+
+sp_comp2    6.1    6.1     Comparing density estimates for the span data
+sp_test1           6.2     Assessing equality of densities for the span data
+sp_test2    6.2    6.3     Assessing equality for the standardised span data
+lc_dens     6.3    6.4     Density estimates from the laryngeal cancer data
+lc_rr              6.5     Comparing case and control cancer groups
+lc_comp                    A bootstrap test of equality for bivariate densities
+trwlcomp    6.4    6.6     Nonparametric regression curves for the reef data
+trwlband    6.5    6.7     A reference band for equality with the reef data
+trwlcmp2           6.8     Comparing regression surfaces from the reef data
+wormcomp    6.6    6.9     A reference band for equality with the worm data
+onionplt    6.7    6.10    Nonparametric regression curves for the onions data
+onionbnd    6.8    6.11    A reference band for parallelism
+
+geys_ts     7.1    7.1-3   Density estimates from the geyser data
+lynx        7.2    7.4     Analysis of the Canadian lynx data
+citrate     7.3    7.5-7   Analysis of plasma citrate concentration data
+dogs        7.4    7.8-9   Analysis of coronary sinus potassium data
+nyc         7.5    7.10-13 Analysis of New York city air temperature data
+
+trwlgam1    8.1    8.1     An additive model for the reef data
+trwlgam2    8.2            Model comparison for the reef data
+mackmap     8.3    8.2     Sampling points for the mackerel data
+mackplot    8.4    8.3     Plots of the mackerel data
+mackgam     8.5    8.4     Additive models for the mackerel data
+trwlgam3    8.6    8.5     Semiparametric and varying coefficient models
+smackplt    8.7    8.6     Plots for the Spanish survey data
+smackgam    8.8    8.7     An additive model for the Spanish survey data

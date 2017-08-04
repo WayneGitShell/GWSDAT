@@ -1,0 +1,14 @@
+			Worm data
+			
+These data record the occurence of a human parasitic worm infection 
+in residents of a rural community in China. 
+
+The variables are:
+	Age:       age of the resident
+	Infection: presence (1) or absence (0) of infection
+	Sex:       male (1) or female (2)
+	
+Source: The background to the data, and an analysis, are described
+	by Weidong et al. (1996), Ascaris, people and pigs in a rural
+	community of Jiangxi province, China, Parasitology 113, 545-57.
+	

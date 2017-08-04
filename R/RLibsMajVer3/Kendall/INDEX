@@ -1,0 +1,11 @@
+GuelphP                 Phosphorous Concentrations in Speed River,
+                        Monthly
+Kendall                 Kendall rank correlation
+Kendall-package         Kendall correlation and trend tests.
+MannKendall             Mann-Kendall trend test
+PrecipGL                Annual precipitation, inches, Great Lakes,
+                        1900-1986
+SeasonalMannKendall     Mann-Kendall trend test for monthly
+                        environmental time series
+print.Kendall           print Method for Class 'Kendall'
+summary.Kendall         summary Method for Class 'Kendall'

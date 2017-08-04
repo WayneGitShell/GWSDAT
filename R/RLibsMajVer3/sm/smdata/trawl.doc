@@ -1,0 +1,21 @@
+			Trawl data
+			
+These data refer to a survey of the fauna on the sea bed lying
+between the coast of northern Queensland and the Great Barrier Reef.
+The sampling region covered a zone which was closed to commercial
+fishing, as well as neighbouring zones where fishing was permitted.
+
+The variables are:
+	Zone:      an indicator for the closed (1) and open (0) zones
+	Year:      an indicator of 1992 (0) or 1993 (1)
+	Latitude:  latitude of the sampling position
+	Longitude: longitude of the sampling position
+	Depth:     bottom depth
+	Score1:    catch score 1
+	Score2:    catch score 2
+	
+Source: The details of the survey and an analysis of the data are provided
+	by Poiner et al. (1997), The effects of prawn trawling in the
+	far northern section of the Great Barrier Reef, CSIRO Division
+	of Marine Research, Queensland Dept. of Primary Industries.
+	

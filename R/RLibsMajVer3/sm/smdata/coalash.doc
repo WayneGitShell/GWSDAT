@@ -1,0 +1,18 @@
+                     	Coalash data
+                               
+These data record the percentage of coal ash found in mining samples 
+originally reported by Gomez and Hazen (1970) and subsequently used
+by Cressie (1993).
+
+The variables are:
+	East:    a code for east-west direction
+	North:   a code for north-south direction
+	Percent: the percentage of coalash
+
+References:
+    Cressie, N. (1993). Statistics for Spatial Data, revised edition. 
+       New York: Wiley.
+    Gomez, M. and Hazen, K. (1970). Evaluating sulfur and ash 
+       distribution in coal seams by statistical response surface 
+       regression analysis. Report RI 7377, U.S. Bureau of  Mines, 
+       Washington, D. C.
