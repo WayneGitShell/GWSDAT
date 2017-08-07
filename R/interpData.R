@@ -135,6 +135,6 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   }
   
   
-  return(interp.pred)
+  return(list(data = interp.pred, Do.Image = Do.Image))
   
 }

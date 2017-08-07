@@ -35,7 +35,7 @@ uiWellReport <- function() {
     
     ), # end box
 
-    box(width = 8, title = "Well Report", # height = 600 
+    box(width = 9, title = "Well Report", # height = 600 
           plotOutput("well_report_plot"),  # , width = "120%")
           
           div(style = "display: inline-block;",

@@ -6,6 +6,7 @@
 plotSpatialImage <- function(panel, substance = " ", timestep = 1) { 
   
   
+  
   if (panel$ScaleCols["Plume Diagnostics"]) {
     op <- par(mar = c(3,4.1,2,2.1))
   }else{
@@ -33,12 +34,11 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
   temp.time.frac <- as.numeric(temp.time.eval - min(panel$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval)))
   
-  try(if (temp.time.frac == 1) {temp.time.frac=.999}) # to avoid plot issue with wmf format!
-  try(if (temp.time.frac == 0) {temp.time.frac=.001})
-  try(if (as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)){temp.time.frac=.999}) # Handle case when only one time point.
+  try(if (temp.time.frac == 1) {temp.time.frac = .999}) # to avoid plot issue with wmf format!
+  try(if (temp.time.frac == 0) {temp.time.frac = .001})
+  try(if (as.numeric(diff(range(panel$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999}) # Handle case when only one time point.
   
-  
-  
+
   
   date.to.print <-  format(as.Date(panel$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
   
@@ -64,40 +64,43 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   
   
   model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
-  temp.Cont.Data<-panel$Fitted.Data[[substance]]$Cont.Data
-  temp.Cont.Data<-temp.Cont.Data[temp.Cont.Data$AggDate == temp.time.eval,]
-  temp.Cont.Data$log.Resid<-log(temp.Cont.Data$Result.Corr.ND) - log(temp.Cont.Data$ModelPred)
+  temp.Cont.Data <- panel$Fitted.Data[[substance]]$Cont.Data
+  temp.Cont.Data <- temp.Cont.Data[temp.Cont.Data$AggDate == temp.time.eval,]
+  temp.Cont.Data$log.Resid <- log(temp.Cont.Data$Result.Corr.ND) - log(temp.Cont.Data$ModelPred)
   
-  if(panel$rgUnits=="mg/l"){
+  if (panel$rgUnits == "mg/l") {
     
-    temp.Cont.Data$Result.Corr.ND<-temp.Cont.Data$Result.Corr.ND/1000
-    temp.res<-as.character(temp.Cont.Data$Result)
-    temp.res<-gsub("ND<","",temp.res)
-    temp.res[tolower(temp.res)!="napl"]<-as.character(as.numeric(temp.res[tolower(temp.res)!="napl"])/1000)
-    temp.res[temp.Cont.Data$ND]<-paste("ND<",temp.res[temp.Cont.Data$ND],sep="")
-    temp.Cont.Data$Result<-temp.res
-    rm(temp.res)
-  }
-  if(panel$rgUnits == "ng/l"){
-    
-    temp.Cont.Data$Result.Corr.ND<-temp.Cont.Data$Result.Corr.ND*1000
-    temp.res<-as.character(temp.Cont.Data$Result)
-    temp.res<-gsub("ND<","",temp.res)
-    temp.res[tolower(temp.res)!="napl"]<-as.character(as.numeric(temp.res[tolower(temp.res)!="napl"])*1000)
-    temp.res[temp.Cont.Data$ND]<-paste("ND<",temp.res[temp.Cont.Data$ND],sep="")
-    temp.Cont.Data$Result<-temp.res
+    temp.Cont.Data$Result.Corr.ND <- temp.Cont.Data$Result.Corr.ND/1000
+    temp.res <- as.character(temp.Cont.Data$Result)
+    temp.res <- gsub("ND<","",temp.res)
+    temp.res[tolower(temp.res) != "napl"] <- as.character(as.numeric(temp.res[tolower(temp.res) != "napl"])/1000)
+    temp.res[temp.Cont.Data$ND] <- paste("ND<",temp.res[temp.Cont.Data$ND],sep = "")
+    temp.Cont.Data$Result <- temp.res
     rm(temp.res)
   }
   
+  if (panel$rgUnits == "ng/l") {
+    
+    temp.Cont.Data$Result.Corr.ND <- temp.Cont.Data$Result.Corr.ND*1000
+    temp.res <- as.character(temp.Cont.Data$Result)
+    temp.res <- gsub("ND<","",temp.res)
+    temp.res[tolower(temp.res) != "napl"] <- as.character(as.numeric(temp.res[tolower(temp.res) != "napl"])*1000)
+    temp.res[temp.Cont.Data$ND] <- paste("ND<",temp.res[temp.Cont.Data$ND],sep = "")
+    temp.Cont.Data$Result <- temp.res
+    rm(temp.res)
+  }
   
   
-  Bad.Wells <- as.character(temp.Cont.Data$WellName[which(temp.Cont.Data$log.Resid>1.75)])
+  #
+  # Identify "Bad" Wells. 
+  #
+  Bad.Wells <- as.character(temp.Cont.Data$WellName[which(temp.Cont.Data$log.Resid > 1.75)])
   Bad.Wells <- Well.Coords[Well.Coords$WellName %in% Bad.Wells,]
-  if(nrow(Bad.Wells) > 0){Bad.Wells$WellName<-paste("<",Bad.Wells$WellName,">",sep="")}
+  if (nrow(Bad.Wells) > 0){Bad.Wells$WellName <- paste("<",Bad.Wells$WellName,">",sep = "")}
   
   
-  diffrangeX <- 0.06*(range(Well.Coords$XCoord)[2]-range(Well.Coords$XCoord)[1])
-  diffrangeY <- 0.06*(range(Well.Coords$YCoord)[2]-range(Well.Coords$YCoord)[1])
+  diffrangeX <- 0.06*(range(Well.Coords$XCoord)[2] - range(Well.Coords$XCoord)[1])
+  diffrangeY <- 0.06*(range(Well.Coords$YCoord)[2] - range(Well.Coords$YCoord)[1])
   
   if ((diffrangeX/diffrangeY) > 1.4) {diffrangeY = 0}
   if ((diffrangeY/diffrangeX) > 1.4) {diffrangeX = 0}
@@ -105,114 +108,30 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
   Contour.ylim = c(range(Well.Coords$YCoord)[1] - diffrangeY,range(Well.Coords$YCoord)[2] + diffrangeY)
   
   
+  lev.cut <- panel$lev.cut
+  if (panel$PredInterval == "% sd") {
+    lev.cut <- panel$sd.lev.cut
+  } else {
   
-  if (panel$PredInterval != "% sd") {
-    
-    lev.cut <- panel$lev.cut
     if (panel$rgUnits == "mg/l") {lev.cut <- lev.cut/10}
     if (panel$rgUnits == "ng/l") {lev.cut <- lev.cut*10}
     
-  } else {
-    
-    lev.cut <- panel$sd.lev.cut
-    
-  }
+  } 
+  
   n.col <- length(lev.cut) - 1 #should be n.col-1
   
+  # Interpolate the concentration values.
+  interp_tmp <- interpData(panel, substance, timestep, panel$ScaleCols["Scale colours to Data"])
   
-  tmp_cont <- panel$Fitted.Data[[substance]]$Cont.Data
-  
-  tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= temp.time.eval,]$WellName)
-  tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= temp.time.eval,]$WellName)
-  
-  Good.Wells <- intersect(as.character(tmp_wells_earlier), as.character(tmp_wells_later))
-  
-  #Good.Wells <- as.character(unique(panel$Fitted.Data[[substance]]$Cont.Data[as.numeric(panel$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
-  #Good.Wells <- intersect(Good.Wells, as.character(unique(panel$Fitted.Data[[substance]]$Cont.Data[as.numeric(panel$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
-  
-  
-  Do.Image <-  TRUE
-  
-  if (length(Good.Wells) < 3) {
-    Do.Image <- FALSE;
-    my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
-  } else {
-    my.area <- as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
-  }
-  
-  if ((areapl(my.area[chull(my.area),]) / panel$All.Data$All.Well.Area) < 0.01) {
-    Do.Image = FALSE
-    my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
-  }
-  
-  
-  
-  if (!Do.Image) { # If total number of wells is less than 3
-    
-    my.area <- cbind(
-      c(Contour.xlim[1],Contour.xlim[1],Contour.xlim[2],Contour.xlim[2]),
-      c(Contour.ylim[1],Contour.ylim[2],Contour.ylim[1],Contour.ylim[2])
-    )
-    
-    colnames(my.area) <- c("XCoord","YCoord")
-    
-  }
-  
- 
-  
-  
-  my.area <- my.area[chull(my.area),, drop = F]
-  my.exp.area <- expandpoly(my.area,fac=1.05)
-  eval.df <- gridpts(my.exp.area,350)
-  eval.df <- rbind(eval.df,my.exp.area)
-  colnames(eval.df)[1:2] <- c("XCoord","YCoord")
-  try(rownames(eval.df) <- NULL)
-  eval.df <- as.data.frame(eval.df)
-  eval.df$AggDate = rep(temp.time.eval,nrow(eval.df))
-  
-  
-  if (!inherits(model.tune,"try-error")) {
-    
-    #interp.pred<-GWSDAT.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],eval.df,type=if(is.null(panel$PredInterval)){"predict"}else{as.character(panel$PredInterval)})
-    interp.pred <- try(GWSDAT.Bary.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],my.area=my.area,type=as.character(panel$PredInterval)))
-    if (inherits(interp.pred,"try-error")){interp.pred<-GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)}
-    
-  } else {
-    
-    interp.pred <- GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)
-    Do.Image <- FALSE
-    
-  }
-  
-  if (Do.Image) {
-    
-    if (panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")) {
-      
-      if (panel$PredInterval != "IQR/2") {interp.pred$z <- exp(interp.pred$z)}
-      
-      if (panel$rgUnits == "mg/l") {interp.pred$z <- interp.pred$z/1000}
-      if (panel$rgUnits == "ng/l") {interp.pred$z <- interp.pred$z*1000}
-      
-    }
-    
-    if (max(interp.pred$z,na.rm = T) > lev.cut[length(lev.cut)] && !Col.Option) {
-      
-      interp.pred$z[which(interp.pred$z > lev.cut[length(lev.cut)],arr.ind = T)] <- lev.cut[length(lev.cut)]
-    }
-    
-  }else{
-    
-    interp.pred$z[,] <- NA
-    
-    
-  }
+  Do.Image <- interp_tmp$Do.Image
+  interp.pred <- interp_tmp$data
   
   # This calculates the area, mass, volume and center of the plume.
   # It will be used to include a status text at the bottom of the plot, and
   # to plot the plume contour. 
   if (panel$ScaleCols["Plume Diagnostics"]) {
     
-    TotalPlume <- getPlumeDiagnostics(panel, substance, timestep, interp.pred)
+    TotalPlume <- getPlumeStats(panel, substance, timestep, interp.pred)
     
   }
     
@@ -352,21 +271,21 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     
   }
   
-  if(panel$Color.type=="NAPL-Circles"){
+  if (panel$Color.type == "NAPL-Circles") {
     
-    Do.Image<-FALSE
-    interp.pred$z[,]<-NA
-    NAPL.Thickness.Data<-panel$All.Data$NAPL.Thickness.Data
-    temp.NAPL.Data<-NAPL.Thickness.Data[NAPL.Thickness.Data$AggDate==temp.time.eval,]
+    Do.Image <- FALSE
+    interp.pred$z[,] <- NA
+    NAPL.Thickness.Data <- panel$All.Data$NAPL.Thickness.Data
+    temp.NAPL.Data <- NAPL.Thickness.Data[NAPL.Thickness.Data$AggDate == temp.time.eval,]
     
-    lev.cut<-attributes(NAPL.Thickness.Data)$lev.cuts
-    NAPL.Wells<-attributes(NAPL.Thickness.Data)$NAPL.Wells
-    col.palette <- heat.colors(length(lev.cut)-1)
+    lev.cut <- attributes(NAPL.Thickness.Data)$lev.cuts
+    NAPL.Wells <- attributes(NAPL.Thickness.Data)$NAPL.Wells
+    col.palette <- heat.colors(length(lev.cut) - 1)
     
     
-    my.palette<-col.palette[(as.numeric(cut(temp.NAPL.Data$Result.Corr.ND,breaks=attributes(NAPL.Thickness.Data)$lev.cuts)))]
-    my.palette<-col.palette[(as.numeric(cut(temp.NAPL.Data$Result.Corr.ND,breaks=attributes(NAPL.Thickness.Data)$lev.cuts)))]
-    my.cex<-1.5+(as.numeric(cut(temp.NAPL.Data$Result.Corr.ND,breaks=attributes(NAPL.Thickness.Data)$lev.cuts)))/2
+    my.palette <- col.palette[(as.numeric(cut(temp.NAPL.Data$Result.Corr.ND,breaks=attributes(NAPL.Thickness.Data)$lev.cuts)))]
+    my.palette <- col.palette[(as.numeric(cut(temp.NAPL.Data$Result.Corr.ND,breaks=attributes(NAPL.Thickness.Data)$lev.cuts)))]
+    my.cex <- 1.5 + (as.numeric(cut(temp.NAPL.Data$Result.Corr.ND,breaks=attributes(NAPL.Thickness.Data)$lev.cuts)))/2
     
   }
   
@@ -406,7 +325,7 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                             
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=.7);
                             
-                            if(panel$Color.type == "NAPL-Circles") {
+                            if (panel$Color.type == "NAPL-Circles") {
                               points(Well.Coords[as.character(Well.Coords$WellName) %in% attributes(NAPL.Thickness.Data)$NAPL.Wells,c("XCoord","YCoord")],col="red",pch=19,cex=0.7)
                             }
                             
@@ -415,11 +334,11 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
                             if(Show.GW.Contour) {
                               contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8)
                             }
-                            if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
+                            if (Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
 
-                            if(exists("TotalPlume") & panel$ScaleCols["Plume Diagnostics"]){
+                            if (exists("TotalPlume") & panel$ScaleCols["Plume Diagnostics"]){
                               
                               try(contour(interp.pred, levels = TotalPlume$PLumeCutoff, add = T, col = "red", lwd = 2, labcex = .8))
                               
@@ -436,8 +355,8 @@ plotSpatialImage <- function(panel, substance = " ", timestep = 1) {
     )
     
     if (panel$ScaleCols["Plume Diagnostics"]) {
-
-      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
+      browser()
+      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits, panel$rgUnits,TotalPlume$Mass[1],TotalPlume$area[1])
       
       tp <- paste("Plume Mass=", signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
       mtext(tp,side = 1,adj = -0.1, line = 2,cex = 0.85)

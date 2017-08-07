@@ -79,11 +79,9 @@ server <- function(input, output, session) {
   
   
   # This goes into a GWSDAT_instance
-  well_data_file = NULL   
-  well_coord_file = NULL
+  well_data_file <- NULL   
+  well_coord_file <- NULL
   
-  
- 
   
   # 
   # Some usefull session objects:
@@ -105,19 +103,55 @@ server <- function(input, output, session) {
    
   })
   
-  output$plume_diagn_plot <- renderPlot({
+  
+  checkPlumeStats <- reactive({
     
-    # Fixme: take solute from input in sidebar of plume diagnostic
-    if (is.null(plotPlumeTimeSeries(pnl, input$solute_select_plume))) {
-      
-      # make text message that it failed .. how to do this?
+    val <- getFullPlumeStats(pnl, input$solute_select_plume)
+
+    # If there is any plume mass, show the plot and hide the message text, and 
+    #  vice versa. 
+    if (all(is.na(val$PlumeMass))) {
+      shinyjs::hide("plume_diagn_plot_div")
+      shinyjs::show("plume_diagn_msg_div")
+    } else {
+      shinyjs::show("plume_diagn_plot_div")
+      shinyjs::hide("plume_diagn_msg_div")
     }
-        
+    
+    return(val)
+  })
+  
+  
+  output$plume_diagn_msg <- renderText({
+    
+    # Detect changes in the Options.
+    optionsSaved()
+    
+    # Detect if plume can not be displayed (hides this text box).
+    checkPlumeStats()
+    
+    paste("Unable to calculate plume statistics for threshold value = ", 
+          as.numeric(pnl$PlumeLimEntry[input$solute_select_plume]), " ug/l.", sep = "")
+          #"\nUse the 'Estimate Plume Boundary' function for assistance in selecting a suitable plume threshold concentration value.")
     
   })
-  #
+  
+  
+  output$plume_diagn_plot <- renderPlot({
+    
+    # Detect changes in the Options.
+    optionsSaved()
+
+    # Re-evaluate plume statistics if any reactive expression changes. 
+    # The return value is the full plume statistics (for all timesteps). 
+    plume_stats <- checkPlumeStats()
+
+    plotPlumeTimeSeries(pnl, input$solute_select_plume, plume_stats)
+    
+  })
+  
+  
   # Plot time-series window
-  #
   output$time_series <- renderPlot({
     
     #
@@ -143,6 +177,7 @@ server <- function(input, output, session) {
     plotTimeSeries(pnl, input$solute_select, input$well_select)
     
   })
+  
   
   # Reactive element that will trigger inside an observer when Options are saved.
   optionsSaved <- reactive({ 
@@ -186,8 +221,19 @@ server <- function(input, output, session) {
     # Input control in UI is commented out, thus input$aquifer_contour will be NULL
     #pnl$All.Data$Aq.sel <<- input$aquifer_contour
     
+    # PROFILING EXECUTION TIMES:
+    #require(profr)
+    #require(ggplot2)
+    #tprof <- profr(..)
     
+    #Rprof("Rprof_plotSpatialImage.out")
+    #replicate(n = 30, plotSpatialImage(pnl, input$solute_select_contour, input$time_steps))
     plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
+    #Rprof(NULL)
+    
+    #png("tprofile.png")
+    #ggplot(tprof)
+    #dev.off()
     
   })
     
@@ -330,6 +376,44 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select", selected = input$solute_select_contour )  
   })
   
+  prev_img_width_px <- 800
+  prev_img_height_px <- 600
+  
+  observeEvent(input$img_width_px, {
+    cat("in observeEvent - img_width_px\n")
+    browser()
+    
+    keep_asp = input$img_asp_px
+    
+    if (keep_asp && (prev_img_height_px != input$img_height_px)) {
+      
+      new_height <- floor(input$img_height_px * (input$img_width_px / prev_img_width_px))
+      
+      # Update the numericInput
+      updateNumericInput(session, "img_height_px", value = new_height )
+    }
+    
+    prev_img_width_px <<- input$img_width_px
+    
+  })
+  
+  observeEvent(input$img_height_px, {
+    cat("in observeEvent - img_height_px\n")
+    browser()
+    
+    keep_asp = input$img_asp_px
+    
+    if (keep_asp && (prev_img_width_px != input$img_width_px)) {
+      
+      new_width <- floor(input$img_width_px * (input$img_height_px / prev_img_height_px))
+      
+      # Update the numericInput
+      updateNumericInput(session, "img_width_px", value = new_width )
+    }
+    
+    prev_img_height_px <<- input$img_height_px
+    
+  })
   
   #
   # These two observers are likely to be the cause for github issue #48.
@@ -443,15 +527,15 @@ server <- function(input, output, session) {
         
       } else {
         
-        if (input$export_format_ts == "png") png(file, width = 800, height = 650)
+        if (input$export_format_ts == "png") png(file, width = input$img_width_px, height = input$img_height_px)
         
-        if (input$export_format_ts == "pdf") pdf(file) 
+        if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
         
-        if (input$export_format_ts == "ps") postscript(file) 
+        if (input$export_format_ts == "ps") postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
         
-        if (input$export_format_ts == "jpg") jpeg(file, width = 800, height = 650, quality = 90) 
+        if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
         
-        if (input$export_format_ts == "wmf") win.metafile(file) 
+        if (input$export_format_ts == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
         
         plotTimeSeries(pnl, input$solute_select, input$well_select)
         dev.off()
@@ -561,6 +645,59 @@ server <- function(input, output, session) {
     }
   )
   
+  
+  output$save_plumestats_plot <- downloadHandler(
+    
+    filename <- function() { 
+      paste("plumestats.", input$export_format_pd, sep = "")
+    },
+    
+    content <-  function(file) {
+
+      plume_stats <- checkPlumeStats()
+
+      if (input$export_format_pd == "ppt") {
+        
+        makePlumeTimeSeriesPPT(pnl, input$solute_select_plume, plume_stats)
+        
+      } else {
+        
+        if (input$export_format_pd == "png") png(file, width = 800, height = 800)
+        
+        if (input$export_format_pd == "pdf") pdf(file) 
+        
+        if (input$export_format_pd == "ps") postscript(file) 
+        
+        if (input$export_format_pd == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
+        
+        if (input$export_format_pd == "wmf") win.metafile(file) 
+        
+        
+        plotPlumeTimeSeries(pnl, input$solute_select_plume, plume_stats)
+
+        dev.off()
+      }
+      
+    }
+  )
+  
+  output$save_plumestats_csv <- downloadHandler(
+    
+    filename <- function() {
+      paste("plumestats.csv")
+    },
+    
+    content <- function(file) {
+      plume_stats <- checkPlumeStats()
+      
+      tmp_out <- printPlumeStatsCSV(plume_stats, input$solute_select_plume, 
+                                    pnl$GWSDAT_Options$WellCoordsLengthUnits, 
+                                    pnl$rgUnits,
+                                    pnl$PlumeLimEntry[input$solute_select_plume])
+      
+      write.csv(tmp_out, file) 
+    }
+  )
   
   # Generate PPT with spatial animation.
   observeEvent(input$generate_spatial_anim_ppt, {

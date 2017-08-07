@@ -1,16 +1,44 @@
 
-#' Calculate the Plume Diagnostics.
+getFullPlumeStats <- function(panel, substance) {
+
+  PlumeStats.df <- data.frame(Agg.Date = panel$All.Data$All.Agg.Dates)
+  PlumeStats.df$PlumeMass <- PlumeStats.df$PlumeArea <- PlumeStats.df$COMx <- PlumeStats.df$COMy <- PlumeStats.df$PlumeAverageConc <- rep(NA,nrow(PlumeStats.df))
+
+
+  for (i in 1:length(panel$All.Data$All.Agg.Dates)) {
+    
+    # Fixme: Last argument for interpData (Col.Option) and lev.cut inside interpData()
+    #  both change interp.pred, how important is this? Can I get rid of it? 
+    #  I would need a "Scale colours to Data".  
+    
+    interp.pred <- interpData(panel, substance, i, panel$ScaleCols["Scale colours to Data"])
+    
+    TotalPlume <- getPlumeStats(panel, substance, timestep = i, interp.pred$data)
+    
+    PlumeStats.df$PlumeArea[i] <- TotalPlume$area
+    PlumeStats.df$PlumeMass[i] <- TotalPlume$Mass
+    PlumeStats.df$COMx[i] <- TotalPlume$PlumeCentreofMass[1]
+    PlumeStats.df$COMy[i] <- TotalPlume$PlumeCentreofMass[2]
+    PlumeStats.df$PlumeAverageConc[i] <- TotalPlume$volume / TotalPlume$area
+    
+  }
+
+  
+  return(PlumeStats.df)
+}
+
+#' Calculate the plume statistics including mass, area, center, and average concentration.
 #'
-#' @param panel 
-#' @param cL 
-#' @param PLumeCutoff 
-#' @param temp.time.eval 
+#' @param panel
+#' @param substance  
+#' @param timestep
+#' @param predicted_val
 #'
 #' @return
 #' @export
 #'
 #' @examples
-getPlumeDiagnostics <- function(panel, substance, timestep, predicted_val ) {
+getPlumeStats <- function(panel, substance, timestep, predicted_val ) {
   
   PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(substance, names(panel$Fitted.Data))])  #Defined in ug/L
   if (panel$rgUnits == "mg/l") {PLumeCutoff <- PLumeCutoff/1000}
@@ -92,8 +120,6 @@ getPlumeDiagnostics <- function(panel, substance, timestep, predicted_val ) {
   
   return(TotalPlume)
   
-  
-  
 }
 
 PlumeUnitHandlingFunc <- function(LengthUnit,rgUnits,PlumeMass,PlumeArea){
@@ -101,48 +127,53 @@ PlumeUnitHandlingFunc <- function(LengthUnit,rgUnits,PlumeMass,PlumeArea){
   if (is.null(LengthUnit)) {
     
     PlumeMass <- 1000*PlumeMass
+    
     if (rgUnits == "ng/l") {PlumeMass <- PlumeMass*10^-12}
     if (rgUnits == "ug/l") {PlumeMass <- PlumeMass*10^-9}
     if (rgUnits == "mg/l") {PlumeMass <- PlumeMass*10^-6}
-    PlumeMassUnits <- paste(" (Mass/Unit Depth)",sep = "")
-    PlumeAreaUnits <- paste(" (Unit Area)",sep = "")
-    #PlumeAverageUnits<-paste(" (Mass/Unit Volume)",sep="")
+    
+    PlumeMassUnits <- paste("(Mass/Unit Depth)",sep = "")
+    PlumeAreaUnits <- paste("(Unit Area)",sep = "")
     PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
     
     
   } else {
     
     if (LengthUnit == "metres") {
-      
-      
+
       PlumeMass <- 1000*PlumeMass
-      if (rgUnits == "ng/l") {PlumeMass <- PlumeMass*10^-12}
-      if (rgUnits == "ug/l") {PlumeMass <- PlumeMass*10^-9}
-      if (rgUnits == "mg/l") {PlumeMass <- PlumeMass*10^-6}
-      PlumeMassUnits <- paste(" (kg/m)",sep = "")
-      PlumeAreaUnits <- paste(" (m^2)",sep = "")
-      #PlumeAverageUnits<-paste(" (kg/m^3)",sep="")
+
+      if (rgUnits == "ng/l") {PlumeMass <- PlumeMass * 10^-12}
+      if (rgUnits == "ug/l") {PlumeMass <- PlumeMass * 10^-9}
+      if (rgUnits == "mg/l") {PlumeMass <- PlumeMass * 10^-6}
+      
+      PlumeMassUnits <- paste("(kg/m)",sep = "")
+      PlumeAreaUnits <- paste("(m^2)",sep = "")
       PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
       
     }
     
     
-    if(LengthUnit=="feet"){
+    if (LengthUnit == "feet") {
       
-      PlumeMass<-1000*PlumeMass/35.315 #per cubic ft
-      if(rgUnits=="ng/l"){PlumeMass<-PlumeMass*10^-12}
-      if(rgUnits=="ug/l"){PlumeMass<-PlumeMass*10^-9}
-      if(rgUnits=="mg/l"){PlumeMass<-PlumeMass*10^-6}
-      PlumeMassUnits<-paste(" (kg/ft)",sep="")
-      PlumeAreaUnits<-paste(" (ft^2)",sep="")
-      #PlumeAverageUnits<-paste(" (kg/ft^3)",sep="")
-      PlumeAverageUnits<-paste("(",rgUnits,")",sep="")
+      PlumeMass <- 1000*PlumeMass/35.315 #per cubic ft
+      
+      if (rgUnits == "ng/l") {PlumeMass <- PlumeMass * 10^-12}
+      if (rgUnits == "ug/l") {PlumeMass <- PlumeMass * 10^-9}
+      if (rgUnits == "mg/l") {PlumeMass <- PlumeMass * 10^-6}
+      
+      PlumeMassUnits <- paste("(kg/ft)",sep = "")
+      PlumeAreaUnits <- paste("(ft^2)",sep = "")
+      PlumeAverageUnits <- paste("(",rgUnits,")",sep = "")
       
     }
     
   }
   
-  return(list(PlumeMass=PlumeMass,PlumeArea=PlumeArea,PlumeMassUnits=PlumeMassUnits,PlumeAreaUnits=PlumeAreaUnits,PlumeAverageUnits=PlumeAverageUnits))
+  return(list(PlumeMass = PlumeMass, PlumeArea = PlumeArea, 
+              PlumeMassUnits = PlumeMassUnits, 
+              PlumeAreaUnits = PlumeAreaUnits,
+              PlumeAverageUnits = PlumeAverageUnits))
   
 }
 
@@ -228,5 +259,23 @@ VolIndTri <- function(l){
   y <- l$y
   z <- l$z
   
-  0.5*(x[1]*(y[2] - y[3]) + x[2]*(y[3]- y[1]) + x[3]*(y[1]- y[2]))*(z[1] + z[2] + z[3]) / 3
+  0.5*(x[1]*(y[2] - y[3]) + x[2] * (y[3] - y[1]) + x[3] * (y[1] - y[2]))*(z[1] + z[2] + z[3]) / 3
+}
+
+
+printPlumeStatsCSV <- function(PlumeStats.df, substance, length_unit, conc_unit, plume_thresh) {
+  
+  # Retrieve proper unit strings.
+  tempUnitHandle <- PlumeUnitHandlingFunc(length_unit, conc_unit, NaN, NaN)
+  
+  # Add units to column names.
+  names(PlumeStats.df)[names(PlumeStats.df) == "PlumeAverageConc"] <- paste("PlumeAverageConc", tempUnitHandle$PlumeAverageUnits, sep = "")
+  names(PlumeStats.df)[names(PlumeStats.df) == "PlumeArea"] <- paste("PlumeArea", tempUnitHandle$PlumeAreaUnits, sep = "")
+  names(PlumeStats.df)[names(PlumeStats.df) == "PlumeMass"] <- paste("PlumeMass", tempUnitHandle$PlumeMassUnits, sep = "")
+ 
+  # Add a column with the plume threshold value.
+  PlumeStats.df[,"Plume Threshold Conc(ug/l)"] <- as.numeric(plume_thresh)
+  
+  return(PlumeStats.df)
+ 
 }
