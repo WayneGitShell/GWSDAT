@@ -5,16 +5,26 @@ uiPlumeDiagnostics <- function() {
   
   fluidRow(
     column(2,
-           wellPanel(
-    #box(width = 3, title = "Setting", 
-        solidHeader = T,
-        selectInput("solute_select_plume", label = "Substance", 
-                    choices = names(pnl$Fitted.Data),
-                    selected = names(pnl$Fitted.Data)[1], width = '100%'),
+           wellPanel(solidHeader = T,
+            selectInput("solute_select_plume_pd", label = "Substance", 
+                        choices  = names(pnl$Fitted.Data),
+                        selected = names(pnl$Fitted.Data)[1], width = '100%'),
 
-                "Pick a unit: (include Input)"
-
-    )), # end box
+            numericInput("plume_threshold_pd", label = "Plume Threshold", value = pnl$GWSDAT_Options$DefPlumeThresh),
+            
+            sliderInput("ground_porosity_pd", "Ground Porosity (%)",
+                        min = 0, 
+                        max = 1, 
+                        value = pnl$Porosity,
+                        width = '150px'
+            ),
+            
+            actionButton("update_plume_ts",
+                         label = "Update", icon = icon("cogs") 
+                         )
+            
+           )
+      ), # end column
     
     box(width = 10, title = "Plume Diagnostic", 
         div(id = "plume_diagn_plot_div",

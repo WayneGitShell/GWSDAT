@@ -66,6 +66,8 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/uiDataManager.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiWellReport.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiPlumeDiagnostics.R", sep = "/"))
+    source(paste(GWSDATHome, "R/uiAnalyseOptions.R", sep = "/"))
+  
   
     # Maybe move this to the other interpolation methods. Where are they? 
     source(paste(GWSDATHome, "R/interpData.R", sep = "/"))
@@ -90,7 +92,7 @@ GWSDAT_Load_Libs <- function(GWSDATHome){
   Require <- function(pkg) {
     
     if (data.class(result <- try(find.package(pkg, lib.loc = .libPaths()), TRUE)) == "try-error") {
-      browser()
+      # browser()
       stop(paste("Cannot find package \"",pkg,"\"",sep = ""))
       # tkmessageBox(title="An error has occured!",message=paste("Cannot find package \"",pkg,"\"",sep=""),icon="error",type="ok")
       

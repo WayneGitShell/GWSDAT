@@ -22,6 +22,8 @@ createPanelAttr <- function(Curr.Site.Data) {
   #
   # Set 'Use.Defaults'.
   #
+  # No Defaults are currently used. Add later?
+  #
   if (!is.null(attributes(Curr.Site.Data)$Default.panel.Values)) {
     Use.Defaults <- TRUE
     Default.Values <- attributes(Curr.Site.Data)$Default.panel.Values
@@ -47,7 +49,7 @@ createPanelAttr <- function(Curr.Site.Data) {
   if (Use.Defaults && !is.null(Default.Values$PlumeLimEntry)) { 
     PlumeLimEntry <- Default.Values$PlumeLimEntry
   } else {
-    PlumeLimEntry <- as.character(rep(GWSDAT_Options$DefPlumeThresh,Num.Conts)); 
+    PlumeLimEntry <- rep(GWSDAT_Options$DefPlumeThresh, Num.Conts)
     names(PlumeLimEntry) <- Cont.Names
   }
   
@@ -58,7 +60,7 @@ createPanelAttr <- function(Curr.Site.Data) {
   if (Use.Defaults && !is.null(Default.Values$Porosity)) {
     Porosity <- Default.Values$Porosity
   } else {
-    Porosity <- as.character(GWSDAT_Options$DefPorosity)
+    Porosity <- GWSDAT_Options$DefPorosity
   }
   
  

@@ -6,6 +6,7 @@ source("R/GWSDAT_Setup.R")
 # Print warnings when they happen.
 options(warn = 1)
 
+
  
 HeadlessMode <- FALSE
 if (.Platform$OS.type == "unix")
@@ -106,7 +107,11 @@ server <- function(input, output, session) {
   
   checkPlumeStats <- reactive({
     
-    val <- getFullPlumeStats(pnl, input$solute_select_plume)
+    val <- getFullPlumeStats(pnl, 
+                             input$solute_select_plume_pd, 
+                             input$plume_threshold_pd,
+                             input$ground_porosity_pd
+                             )
 
     # If there is any plume mass, show the plot and hide the message text, and 
     #  vice versa. 
@@ -121,17 +126,32 @@ server <- function(input, output, session) {
     return(val)
   })
   
+  # return
+  updatePlumeTS <- reactive({
+    
+    # update plume threshold
+    
+    input$update_plume_ts
+    
+    })
   
   output$plume_diagn_msg <- renderText({
+    
+    # Detect press of update button
+    updatePlumeTS()
     
     # Detect changes in the Options.
     optionsSaved()
     
-    # Detect if plume can not be displayed (hides this text box).
-    checkPlumeStats()
+    # Detect if stats can not be displayed (hides this text box).
+    # Isolate reactive inputs. 
+    isolate(checkPlumeStats())
     
-    paste("Unable to calculate plume statistics for threshold value = ", 
-          as.numeric(pnl$PlumeLimEntry[input$solute_select_plume]), " ug/l.", sep = "")
+    # Isolate the inputs (so a change in the sidebar does not trigger this fct.)
+    isolate(
+    paste(input$solute_select_plume_pd, ": Unable to calculate plume statistics for threshold value = ", 
+          input$plume_threshold_pd, " ug/l.", sep = "")
+    )
           #"\nUse the 'Estimate Plume Boundary' function for assistance in selecting a suitable plume threshold concentration value.")
     
   })
@@ -139,14 +159,22 @@ server <- function(input, output, session) {
   
   output$plume_diagn_plot <- renderPlot({
     
+    # Detect press of update button
+    updatePlumeTS()
+    
     # Detect changes in the Options.
     optionsSaved()
 
     # Re-evaluate plume statistics if any reactive expression changes. 
     # The return value is the full plume statistics (for all timesteps). 
-    plume_stats <- checkPlumeStats()
+    isolate(plume_stats <- checkPlumeStats())
 
-    plotPlumeTimeSeries(pnl, input$solute_select_plume, plume_stats)
+    # Isolate the inputs
+    isolate(plotPlumeTimeSeries(pnl, 
+                                input$solute_select_plume_pd, 
+                                input$plume_threshold_pd, 
+                                plume_stats)
+            )
     
   })
   
@@ -376,44 +404,75 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select", selected = input$solute_select_contour )  
   })
   
-  prev_img_width_px <- 800
-  prev_img_height_px <- 600
   
-  observeEvent(input$img_width_px, {
-    cat("in observeEvent - img_width_px\n")
-    browser()
-    
-    keep_asp = input$img_asp_px
-    
-    if (keep_asp && (prev_img_height_px != input$img_height_px)) {
-      
-      new_height <- floor(input$img_height_px * (input$img_width_px / prev_img_width_px))
-      
-      # Update the numericInput
-      updateNumericInput(session, "img_height_px", value = new_height )
-    }
-    
-    prev_img_width_px <<- input$img_width_px
-    
-  })
+  #
+  # The following commented lines of code are meant to change the x or y resolution
+  # of the image setting (see Analyse panel) if the aspect ratio should be kept. 
+  # The problem is that shiny reacts to each individual key input, and the calculation
+  # breaks because too many events occur. 
+  # 
+  # There are three alternatives: 
+  #   1. use a timer such that observeEvent is only triggered late
+  #   2. implement an numericInput that triggers only when the input is left or a Return key is pressed.
+  #   3. Find another numericInput that does this. 
+  # 
+  # Point 1. is not very reliable and depends on the user. Point 2. has to be implemented, it was done
+  # before, see https://groups.google.com/forum/#!topic/shiny-discuss/BFUgjICEQlc . Better would be 
+  # Point 3... maybe another search will do.
+  # 
+  #
+  # prev_img_width_px <- 800
+  # prev_img_height_px <- 600
+  # asp_action <- FALSE
+  # 
+  # observeEvent(input$img_width_px, {
+  #   cat("in observeEvent - img_width_px\n")
+  #   browser()
+  #   
+  #   keep_asp = input$img_asp_px
+  #   
+  #   if (keep_asp && !asp_action) {
+  #     
+  #     new_height <- floor(input$img_height_px * (input$img_width_px / prev_img_width_px))
+  #     
+  #     # Update the numericInput
+  #     updateNumericInput(session, "img_height_px", value = new_height )
+  #     
+  #     asp_action <<- TRUE
+  #   } else {
+  #     asp_action <<- FALSE 
+  #   }
+  #   
+  #   prev_img_width_px <<- input$img_width_px
+  #   
+  # })
+  # 
+  # observeEvent(input$img_height_px, {
+  #   cat("in observeEvent - img_height_px\n")
+  #   browser()
+  #   
+  #   keep_asp = input$img_asp_px
+  #   
+  #   if (keep_asp && !asp_action) {
+  #     
+  #     new_width <- floor(input$img_width_px * (input$img_height_px / prev_img_height_px))
+  #     
+  #     # Update the numericInput
+  #     updateNumericInput(session, "img_width_px", value = new_width )
+  #     
+  #     asp_action <<- TRUE
+  #     
+  #   } else {
+  #     asp_action <<- FALSE 
+  #   }
+  #   
+  #   prev_img_height_px <<- input$img_height_px
+  # })
+  # 
+  #
+  # END OF IMAGE RESIZE CODE
+  #
   
-  observeEvent(input$img_height_px, {
-    cat("in observeEvent - img_height_px\n")
-    browser()
-    
-    keep_asp = input$img_asp_px
-    
-    if (keep_asp && (prev_img_width_px != input$img_width_px)) {
-      
-      new_width <- floor(input$img_width_px * (input$img_height_px / prev_img_height_px))
-      
-      # Update the numericInput
-      updateNumericInput(session, "img_width_px", value = new_width )
-    }
-    
-    prev_img_height_px <<- input$img_height_px
-    
-  })
   
   #
   # These two observers are likely to be the cause for github issue #48.
@@ -655,10 +714,12 @@ server <- function(input, output, session) {
     content <-  function(file) {
 
       plume_stats <- checkPlumeStats()
-
+      
+      plume_thresh <- pnl$PlumeLimEntry[input$solute_select_plume_pd]
+      
       if (input$export_format_pd == "ppt") {
         
-        makePlumeTimeSeriesPPT(pnl, input$solute_select_plume, plume_stats)
+        plotPlumeTimeSeriesPPT(pnl, input$solute_select_plume_pd, plume_thresh, plume_stats)
         
       } else {
         
@@ -670,10 +731,10 @@ server <- function(input, output, session) {
         
         if (input$export_format_pd == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
         
-        if (input$export_format_pd == "wmf") win.metafile(file) 
+        if (input$export_format_pd == "wmf") win.metafile(file, file, width = input$img_width_inch, height = input$img_height_inch) 
         
-        
-        plotPlumeTimeSeries(pnl, input$solute_select_plume, plume_stats)
+       
+        plotPlumeTimeSeries(pnl, input$solute_select_plume_pd, plume_thresh, plume_stats)
 
         dev.off()
       }
@@ -690,10 +751,10 @@ server <- function(input, output, session) {
     content <- function(file) {
       plume_stats <- checkPlumeStats()
       
-      tmp_out <- printPlumeStatsCSV(plume_stats, input$solute_select_plume, 
+      tmp_out <- printPlumeStatsCSV(plume_stats, input$solute_select_plume_pd, 
                                     pnl$GWSDAT_Options$WellCoordsLengthUnits, 
                                     pnl$rgUnits,
-                                    pnl$PlumeLimEntry[input$solute_select_plume])
+                                    pnl$PlumeLimEntry[input$solute_select_plume_pd])
       
       write.csv(tmp_out, file) 
     }
@@ -765,6 +826,7 @@ server <- function(input, output, session) {
   #
   # Supposed to clear everything in the Import Data panel
   #  Thats a little more complicated, not working right now.
+  # hint: user renderUI() that waits for the reset input
   #
   #observeEvent(input$reset_button,  {
     
@@ -846,7 +908,8 @@ server <- function(input, output, session) {
     }
   })
   
-  # These inputs will are meant to modify PlumeLimEntry.
+  # These inputs will modify the plume threshold for each substance, 
+  #  saved in pnl$PlumeLimEntry.
   output$thres_plume_select <- renderUI({
    
     num_subst <- length(pnl$PlumeLimEntry)
@@ -866,6 +929,7 @@ server <- function(input, output, session) {
       )
     })
   })
+  
   
   observeEvent(input$save_analyse_options, {
     

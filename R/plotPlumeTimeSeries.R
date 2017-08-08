@@ -1,6 +1,6 @@
 
 
-plotPlumeTimeSeries <- function(panel, substance, PlumeStats.df) {
+plotPlumeTimeSeries <- function(panel, substance, plume_thresh, PlumeStats.df) {
   
   # This calculation takes place before. 
   # PlumeStats.df <- getFullPlumeStats(panel, substance)
@@ -27,17 +27,17 @@ plotPlumeTimeSeries <- function(panel, substance, PlumeStats.df) {
   # Calculate plume mass
   my.ylim <- range(PlumeStats.df$PlumeMass, na.rm = T)
   
-  lmPlumeMass <- try(lm(PlumeMass~Agg.Date, PlumeStats.df, na.action=na.omit))
+  lmPlumeMass <- try(lm(PlumeMass~Agg.Date, PlumeStats.df, na.action = na.omit))
   
-  if (!inherits(lmPlumeMass,"try-error")){
+  if (!inherits(lmPlumeMass,"try-error")) {
     
-    lm.eval.points<-na.omit(PlumeStats.df[,c("Agg.Date","PlumeMass")])
-    lm.eval.points<-data.frame(Agg.Date=as.Date(seq(range(lm.eval.points$Agg.Date)[1],range(lm.eval.points$Agg.Date)[2],length=100)))
-    lm.pred<-predict(lmPlumeMass,newdata=lm.eval.points,interval="confidence")
+    lm.eval.points <- na.omit(PlumeStats.df[,c("Agg.Date","PlumeMass")])
+    lm.eval.points <- data.frame(Agg.Date=as.Date(seq(range(lm.eval.points$Agg.Date)[1],range(lm.eval.points$Agg.Date)[2],length=100)))
+    lm.pred <- predict(lmPlumeMass,newdata=lm.eval.points,interval="confidence")
     
-    lm.eval.points$fit<-lm.pred[,"fit"]
-    lm.eval.points$lwr<-lm.pred[,"lwr"]
-    lm.eval.points$upr<-lm.pred[,"upr"]
+    lm.eval.points$fit <- lm.pred[,"fit"]
+    lm.eval.points$lwr <- lm.pred[,"lwr"]
+    lm.eval.points$upr <- lm.pred[,"upr"]
     
     
     my.ylim<-c(min(c(lm.eval.points$lwr,my.ylim),na.rm=T),max(c(lm.eval.points$upr,my.ylim),na.rm=T))
@@ -61,7 +61,7 @@ plotPlumeTimeSeries <- function(panel, substance, PlumeStats.df) {
            ylab = my.ylab)
       )
   
-  try(mtext(paste("Plume Threshold Conc =",as.numeric(panel$PlumeLimEntry[substance]),"ug/l",sep=""),side=3,line=-1,cex=0.75))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""),side=3,line=-1,cex=0.75))
   
   if(!inherits(lmPlumeMass,"try-error")){
     
@@ -123,7 +123,7 @@ plotPlumeTimeSeries <- function(panel, substance, PlumeStats.df) {
       )
       
   
-  try(mtext(paste("Plume Threshold Conc =", as.numeric(panel$PlumeLimEntry[substance]),"ug/l",sep=""),side=3,line=-1,cex=0.75))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""), side = 3, line = -1, cex = 0.75))
   
   if (!inherits(lmPlumeArea,"try-error")) {
     
@@ -180,7 +180,7 @@ plotPlumeTimeSeries <- function(panel, substance, PlumeStats.df) {
            cex = 1.5,
            ylab = my.ylab))
   
-  try(mtext(paste("Plume Threshold Conc =", as.numeric(panel$PlumeLimEntry[substance]),"ug/l",sep = ""),side=3,line=-1,cex = 0.75))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""),side = 3, line = -1, cex = 0.75))
   
   if (!inherits(lmPlumeAverageConc,"try-error")) {
     
@@ -205,14 +205,14 @@ plotPlumeTimeSeries <- function(panel, substance, PlumeStats.df) {
 
 
 
-makePlumeTimeSeriesPPT <- function(panel, substance, plume_stats){
+plotPlumeTimeSeriesPPT <- function(panel, substance, plume_thresh, plume_stats){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
   
   win.metafile(mytemp) 
-  plotPlumeTimeSeries(panel, substance, plume_stats)
+  plotPlumeTimeSeries(panel, substance, plume_thresh, plume_stats)
   dev.off()
   
   # Put into powerpoint slide.

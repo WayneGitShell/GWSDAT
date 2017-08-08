@@ -1,8 +1,8 @@
 
-getFullPlumeStats <- function(panel, substance) {
+getFullPlumeStats <- function(panel, substance, plume_thresh, ground_porosity) {
 
-  PlumeStats.df <- data.frame(Agg.Date = panel$All.Data$All.Agg.Dates)
-  PlumeStats.df$PlumeMass <- PlumeStats.df$PlumeArea <- PlumeStats.df$COMx <- PlumeStats.df$COMy <- PlumeStats.df$PlumeAverageConc <- rep(NA,nrow(PlumeStats.df))
+  full_plume_stats <- data.frame(Agg.Date = panel$All.Data$All.Agg.Dates)
+  full_plume_stats$PlumeMass <- full_plume_stats$PlumeArea <- full_plume_stats$COMx <- full_plume_stats$COMy <- full_plume_stats$PlumeAverageConc <- rep(NA,nrow(full_plume_stats))
 
 
   for (i in 1:length(panel$All.Data$All.Agg.Dates)) {
@@ -13,18 +13,18 @@ getFullPlumeStats <- function(panel, substance) {
     
     interp.pred <- interpData(panel, substance, i, panel$ScaleCols["Scale colours to Data"])
     
-    TotalPlume <- getPlumeStats(panel, substance, timestep = i, interp.pred$data)
+    plume_stats <- getPlumeStats(panel, substance, timestep = i, interp.pred$data, plume_thresh, ground_porosity)
     
-    PlumeStats.df$PlumeArea[i] <- TotalPlume$area
-    PlumeStats.df$PlumeMass[i] <- TotalPlume$Mass
-    PlumeStats.df$COMx[i] <- TotalPlume$PlumeCentreofMass[1]
-    PlumeStats.df$COMy[i] <- TotalPlume$PlumeCentreofMass[2]
-    PlumeStats.df$PlumeAverageConc[i] <- TotalPlume$volume / TotalPlume$area
+    full_plume_stats$PlumeArea[i] <- plume_stats$area
+    full_plume_stats$PlumeMass[i] <- plume_stats$Mass
+    full_plume_stats$COMx[i] <- plume_stats$PlumeCentreofMass[1]
+    full_plume_stats$COMy[i] <- plume_stats$PlumeCentreofMass[2]
+    full_plume_stats$PlumeAverageConc[i] <- plume_stats$volume / plume_stats$area
     
   }
 
   
-  return(PlumeStats.df)
+  return(full_plume_stats)
 }
 
 #' Calculate the plume statistics including mass, area, center, and average concentration.
@@ -38,13 +38,17 @@ getFullPlumeStats <- function(panel, substance) {
 #' @export
 #'
 #' @examples
-getPlumeStats <- function(panel, substance, timestep, predicted_val ) {
+getPlumeStats <- function(panel, 
+                          substance, 
+                          timestep, 
+                          predicted_val, 
+                          plume_thresh, 
+                          ground_porosity ) {
   
-  PLumeCutoff <- as.numeric(panel$PlumeLimEntry[match(substance, names(panel$Fitted.Data))])  #Defined in ug/L
-  if (panel$rgUnits == "mg/l") {PLumeCutoff <- PLumeCutoff/1000}
-  if (panel$rgUnits == "ng/l") {PLumeCutoff <- PLumeCutoff*1000}
+  if (panel$rgUnits == "mg/l") {plume_thresh <- plume_thresh/1000}
+  if (panel$rgUnits == "ng/l") {plume_thresh <- plume_thresh*1000}
   
-  cL <- contourLines(predicted_val, levels = PLumeCutoff)
+  cL <- contourLines(predicted_val, levels = plume_thresh)
   
   model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
@@ -66,7 +70,7 @@ getPlumeStats <- function(panel, substance, timestep, predicted_val ) {
         tempPlumeQuant <- CalcPlumeStats(model.tune$best.mod,
                                          AggDate = temp.time.eval,
                                          cL[[i]],
-                                         PLumeCutoff = PLumeCutoff,
+                                         plume_thresh = plume_thresh,
                                          type = as.character(panel$PredInterval),
                                          units = panel$rgUnits)
         
@@ -93,32 +97,32 @@ getPlumeStats <- function(panel, substance, timestep, predicted_val ) {
   
   
   
-  TotalPlume <- list()
-  TotalPlume$PLumeCutoff <- PLumeCutoff
+  plume_stats <- list()
+  plume_stats$plume_thresh <- plume_thresh
   
   if (length(PlumeDetails$cL) > 0) {
     
-    TotalPlume$area <- sum(unlist(lapply(PlumeDetails$cL,function(l){l$area})))
-    TotalPlume$volume <- sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
-    TotalPlume$Mass <- TotalPlume$volume * as.numeric(panel$Porosity)
+    plume_stats$area <- sum(unlist(lapply(PlumeDetails$cL,function(l){l$area})))
+    plume_stats$volume <- sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
+    plume_stats$Mass <- plume_stats$volume * ground_porosity
     
     COMWeights <- unlist(lapply(PlumeDetails$cL,function(l){l$Volume}))/sum(unlist(lapply(PlumeDetails$cL,function(l){l$Volume})))
-    TotalPlume$PlumeCentreofMass <- rep(NA,2)
-    TotalPlume$PlumeCentreofMass[1] <- sum(COMWeights*unlist(lapply(PlumeDetails$cL,function(l){l$PlumeCentreofMass[1]})))
-    TotalPlume$PlumeCentreofMass[2] <- sum(COMWeights*unlist(lapply(PlumeDetails$cL,function(l){l$PlumeCentreofMass[2]})))
+    plume_stats$PlumeCentreofMass <- rep(NA,2)
+    plume_stats$PlumeCentreofMass[1] <- sum(COMWeights*unlist(lapply(PlumeDetails$cL,function(l){l$PlumeCentreofMass[1]})))
+    plume_stats$PlumeCentreofMass[2] <- sum(COMWeights*unlist(lapply(PlumeDetails$cL,function(l){l$PlumeCentreofMass[2]})))
     
     
   } else {
     
-    TotalPlume$area <- NA
-    TotalPlume$volume <- NA
-    TotalPlume$Mass <- NA
-    TotalPlume$PlumeCentreofMass <- c(NA,NA)
+    plume_stats$area <- NA
+    plume_stats$volume <- NA
+    plume_stats$Mass <- NA
+    plume_stats$PlumeCentreofMass <- c(NA,NA)
     
   }
   
   
-  return(TotalPlume)
+  return(plume_stats)
   
 }
 
@@ -188,7 +192,7 @@ expandpoly <- function(mypol, fact) {
 
 
 
-CalcPlumeStats <- function(model,AggDate,cL,PLumeCutoff,type,units){
+CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
   
   temppts <- cbind(cL$x,cL$y)
   temppts <- gridpts(temppts,100)
@@ -208,7 +212,7 @@ CalcPlumeStats <- function(model,AggDate,cL,PLumeCutoff,type,units){
   
   
   
-  cL.Tri.Points<-data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(PLumeCutoff,length(cL$x)))
+  cL.Tri.Points<-data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(plume_thresh,length(cL$x)))
   Vol.Tri.Points<-unique(rbind(Plume.Tri.Points[,c("XCoord","YCoord","z")],cL.Tri.Points))
   
   mydeldir<-deldir(x=Vol.Tri.Points$XCoord,y=Vol.Tri.Points$YCoord,z=Vol.Tri.Points$z)
@@ -249,7 +253,7 @@ yVolIndTri<-function(l){
 
 checkPlumeClosure <- function(cl){
   
-  cl$x[1] == cl$x[length(cl$x)] & cl$y[1]==cl$y[length(cl$y)]
+  cl$x[1] == cl$x[length(cl$x)] & cl$y[1] == cl$y[length(cl$y)]
   
 }
 
@@ -263,19 +267,19 @@ VolIndTri <- function(l){
 }
 
 
-printPlumeStatsCSV <- function(PlumeStats.df, substance, length_unit, conc_unit, plume_thresh) {
+printPlumeStatsCSV <- function(full_plume_stats, substance, length_unit, conc_unit, plume_thresh) {
   
   # Retrieve proper unit strings.
   tempUnitHandle <- PlumeUnitHandlingFunc(length_unit, conc_unit, NaN, NaN)
   
   # Add units to column names.
-  names(PlumeStats.df)[names(PlumeStats.df) == "PlumeAverageConc"] <- paste("PlumeAverageConc", tempUnitHandle$PlumeAverageUnits, sep = "")
-  names(PlumeStats.df)[names(PlumeStats.df) == "PlumeArea"] <- paste("PlumeArea", tempUnitHandle$PlumeAreaUnits, sep = "")
-  names(PlumeStats.df)[names(PlumeStats.df) == "PlumeMass"] <- paste("PlumeMass", tempUnitHandle$PlumeMassUnits, sep = "")
+  names(full_plume_stats)[names(full_plume_stats) == "PlumeAverageConc"] <- paste("PlumeAverageConc", tempUnitHandle$PlumeAverageUnits, sep = "")
+  names(full_plume_stats)[names(full_plume_stats) == "PlumeArea"] <- paste("PlumeArea", tempUnitHandle$PlumeAreaUnits, sep = "")
+  names(full_plume_stats)[names(full_plume_stats) == "PlumeMass"] <- paste("PlumeMass", tempUnitHandle$PlumeMassUnits, sep = "")
  
   # Add a column with the plume threshold value.
-  PlumeStats.df[,"Plume Threshold Conc(ug/l)"] <- as.numeric(plume_thresh)
+  full_plume_stats[,"Plume Threshold Conc(ug/l)"] <- plume_thresh
   
-  return(PlumeStats.df)
+  return(full_plume_stats)
  
 }

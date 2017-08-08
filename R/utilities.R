@@ -100,7 +100,7 @@ AddPlotPPV2 <- function(wmf_file, asp = FALSE){
       
       my.size <- c(10,(540 - 700*my.din[2]/my.din[1])/2,700,700*my.din[2]/my.din[1])
       
-    }else{
+    } else {
       
       my.size <- c((720 - 500*my.din[1]/my.din[2])/2,20,500*my.din[1]/my.din[2],500)
       
