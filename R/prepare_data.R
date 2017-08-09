@@ -7,10 +7,10 @@
 
 prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
 
-  
+
   
   AG.ALL <- solute_data
-  Well.Coords <- well_data$WellCoords
+  well_tmp_data <- well_data$data
   
   
   # Read the shape files.
@@ -48,22 +48,22 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   ############ Well Data Sort  #############################
   
   AG.ALL$WellName <- factor(rm_spaces(as.character(AG.ALL$WellName)))
-  Well.Coords$WellName <- factor(rm_spaces(as.character(Well.Coords$WellName)))
+  well_tmp_data$WellName <- factor(rm_spaces(as.character(well_tmp_data$WellName)))
   
   
   #### Aquifer Selection ####################################
   
   # Tranform Aquifer column into characters for easier handling.
-  Well.Coords$Aquifer <- as.character(Well.Coords$Aquifer)  
+  well_tmp_data$Aquifer <- as.character(well_tmp_data$Aquifer)  
   
   
   # Replace empty "" or <NA> elements with "Blank" keyword. 
-  Well.Coords$Aquifer[Well.Coords$Aquifer == ""] <- "Blank"
-  Well.Coords$Aquifer[is.na(Well.Coords$Aquifer)] <- "Blank"
+  well_tmp_data$Aquifer[well_tmp_data$Aquifer == ""] <- "Blank"
+  well_tmp_data$Aquifer[is.na(well_tmp_data$Aquifer)] <- "Blank"
 
   
   # Extract unique Aquifer group names.
-  Aq_list <- unique(Well.Coords$Aquifer)
+  Aq_list <- unique(well_tmp_data$Aquifer)
 
   # Only show the tk selection choice for Aquifer if not in headless mode.
   if ((length(Aq_list) > 1) && !GWSDAT_Options$HeadlessMode)
@@ -74,30 +74,30 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
     Aq_sel <- Aq_list[[1]]
   
   # Extract the Wells flagged with the Aquifer 'Aq_sel'. 	
-  Well.Coords <- Well.Coords[Well.Coords$Aquifer == Aq_sel,]
+  well_tmp_data <- well_tmp_data[well_tmp_data$Aquifer == Aq_sel,]
   
   
   # Extract the corresponding Wells from the concentration table.
-  AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+  AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% as.character(well_tmp_data$WellName),]
   	
   
-  # Keep only the following columns in the Well.Coords table.
-  Well.Coords <- Well.Coords[,c("WellName","XCoord","YCoord")]
+  # Keep only the following columns in the well_tmp_data table.
+  well_tmp_data <- well_tmp_data[,c("WellName","XCoord","YCoord")]
   
   #
   # This is the previous Aquifer Selection code:
   #
   #
-  # if(!all(is.na(Well.Coords$Aquifer)) && !all(as.character(Well.Coords$Aquifer)=="")){
+  # if(!all(is.na(well_tmp_data$Aquifer)) && !all(as.character(well_tmp_data$Aquifer)=="")){
   #   
   #   
-  #   un.Aq.sel<-unique(as.character(Well.Coords$Aquifer))
+  #   un.Aq.sel<-unique(as.character(well_tmp_data$Aquifer))
   #   if(any(un.Aq.sel=="")){un.Aq.sel[un.Aq.sel==""]<-"Blank"}
   #   if(length(un.Aq.sel)==1){Aq.sel<-as.character(un.Aq.sel)}else{Aq.sel<-GWSDAT.select.list(un.Aq.sel,title="Select an Aquifer to Analyse")}
   #   if(Aq.sel==""){stop("User must select an Aquifer")}
   #   if(Aq.sel=="Blank"){Aq.sel<-""}
-  #   Well.Coords<-Well.Coords[as.character(Well.Coords$Aquifer)==Aq.sel,]
-  #   AG.ALL<-AG.ALL[as.character(AG.ALL$WellName) %in% as.character(Well.Coords$WellName),]
+  #   well_tmp_data<-well_tmp_data[as.character(well_tmp_data$Aquifer)==Aq.sel,]
+  #   AG.ALL<-AG.ALL[as.character(AG.ALL$WellName) %in% as.character(well_tmp_data$WellName),]
   #   
   # }else{
   #   
@@ -110,13 +110,13 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   
   
   All.Wells <- unique(as.character(AG.ALL$WellName))
-  Well.Coords$XCoord <- as.numeric(rm_spaces(as.character(Well.Coords$XCoord)))
-  Well.Coords$YCoord <- as.numeric(rm_spaces(as.character(Well.Coords$YCoord)))
-  Well.Coords <- na.omit(Well.Coords)
-  Well.Coords <- unique(Well.Coords)
+  well_tmp_data$XCoord <- as.numeric(rm_spaces(as.character(well_tmp_data$XCoord)))
+  well_tmp_data$YCoord <- as.numeric(rm_spaces(as.character(well_tmp_data$YCoord)))
+  well_tmp_data <- na.omit(well_tmp_data)
+  well_tmp_data <- unique(well_tmp_data)
   
   
-  if (any(table(Well.Coords$WellName) > 1)) {
+  if (any(table(well_tmp_data$WellName) > 1)) {
 
     #
     # Fixme: Implement in shiny only mode. 
@@ -127,7 +127,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
     stop("Non Unique Well Names")
   }
   
-  if (nrow(unique(Well.Coords[,c("XCoord","YCoord")])) < nrow(Well.Coords)) {
+  if (nrow(unique(well_tmp_data[,c("XCoord","YCoord")])) < nrow(well_tmp_data)) {
 
     #
     # Fixme: Implement in shiny only mode. 
@@ -141,13 +141,13 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
     }
   }
   
-  Well.Coords <- Well.Coords[as.character(Well.Coords$WellName) %in% All.Wells,]
+  well_tmp_data <- well_tmp_data[as.character(well_tmp_data$WellName) %in% All.Wells,]
   
-  if (length(setdiff(All.Wells,as.character(Well.Coords$WellName))) != 0) {
+  if (length(setdiff(All.Wells,as.character(well_tmp_data$WellName))) != 0) {
 
     if (!GWSDAT_Options$HeadlessMode) {
 
-      tkmessageBox(title = "Warning!",message = paste("Missing Well Coordinates for: ",paste(setdiff(All.Wells,as.character(Well.Coords$WellName)),collapse=", ")),icon="warning",type="ok")
+      tkmessageBox(title = "Warning!",message = paste("Missing Well Coordinates for: ",paste(setdiff(All.Wells,as.character(well_tmp_data$WellName)),collapse=", ")),icon="warning",type="ok")
       
       if (as.character(tkmessageBox(message = "Do you wish to continue?",icon = "question",type="yesno",default="yes")) == "yes"){
   
@@ -169,7 +169,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
     }
   }
   
-  Well.Area <- areapl(as.matrix(Well.Coords[chull(Well.Coords[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
+  Well.Area <- areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
 
   #--------------------------------------------------------#
   
@@ -359,7 +359,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
     
     
     NAPL.Thickness.Data <- try(NAPL.Thickness.Data[order(NAPL.Thickness.Data$SampleDate),])
-    NAPL.Thickness.Data[,c("XCoord","YCoord")]<-Well.Coords[match(as.character(NAPL.Thickness.Data$WellName),as.character(Well.Coords$WellName)),c("XCoord","YCoord")]
+    NAPL.Thickness.Data[,c("XCoord","YCoord")]<-well_tmp_data[match(as.character(NAPL.Thickness.Data$WellName),as.character(well_tmp_data$WellName)),c("XCoord","YCoord")]
 
     #
     # Fixme: If headless, include shiny dialog. For now keep "yes". 
@@ -466,7 +466,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   ##################################### ND correction Handling ##############################################
   
   if(GWSDAT_Options$NDMethod=="Half of ND Value"){Cont.Data$Result.Corr.ND[Cont.Data$ND]<-0.5*Cont.Data$Result.Corr.ND[Cont.Data$ND]}
-  Cont.Data[,c("XCoord","YCoord")]<-Well.Coords[match(as.character(Cont.Data$WellName),as.character(Well.Coords$WellName)),c("XCoord","YCoord")]
+  Cont.Data[,c("XCoord","YCoord")]<-well_tmp_data[match(as.character(Cont.Data$WellName),as.character(well_tmp_data$WellName)),c("XCoord","YCoord")]
   #-------------------------------------------------------------------------------------------------------#
   
   
@@ -497,7 +497,7 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   
   GW.Data$Result <- as.numeric(as.character(GW.Data$Result))
   GW.Data <- GW.Data[!is.na(GW.Data$Result),]
-  GW.Data[,c("XCoord","YCoord")] <- Well.Coords[match(as.character(GW.Data$WellName),as.character(Well.Coords$WellName)),c("XCoord","YCoord")]
+  GW.Data[,c("XCoord","YCoord")] <- well_tmp_data[match(as.character(GW.Data$WellName),as.character(well_tmp_data$WellName)),c("XCoord","YCoord")]
   #-------------------------------------------------------------------------------------------------------#
   
   
@@ -508,9 +508,10 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
   if (exists("NAPL.Thickness.Data")) { All.Dates <- sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))}
   
   
-  agg_data <- aggregateData(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, 
+  agg_data <- aggregateData(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, well_tmp_data, 
                                     NAPL.Thickness.Data = if (exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL} )
   
+  well_data$data <- well_tmp_data
   
   All.Data <- list(GW.Data = GW.Data,
                  Agg_GW_Data = agg_data$Agg_GW_Data,
@@ -519,17 +520,16 @@ prepare_data <- function(solute_data, well_data, GWSDAT_Options, Aq_sel = NULL){
                  All.Conts = All.Conts,
                  All.Dates = All.Dates,
                  All.Agg.Dates = agg_data$All.Agg.Dates,
-                 All.Wells = All.Wells,
-                 Well.Coords = Well.Coords,
-                 All.Well.Area = Well.Area,
                  Aq.sel = Aq_sel,
                  Aq_list = Aq_list,
                  GW.Units = GW.Units,
                  NAPL.Units = if (exists("NAPL.Units")) { NAPL.Units } else {NULL}, 
                  ElecAccepts = ElecAccepts,
                  solute_data = solute_data,
-                 well_data = well_data,
-                 ShapeFiles = ShapeFiles
+                 ShapeFiles = ShapeFiles,
+                 well_coords = well_data,
+                 All.Wells = All.Wells,
+                 All.Well.Area = Well.Area
                  )
   
   return(All.Data)

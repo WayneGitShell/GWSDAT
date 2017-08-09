@@ -228,17 +228,18 @@ GWSDAT.xyplotAllContbyWells <- function(panel, Cont.Data, SiteName="", UseLogSca
 
 
 
-makeWellReportPPT <- function(panel, substances, locations, use_log_scale){
+plotWellReportPPT <- function(panel, substances, locations, use_log_scale,
+                              width = 9, height = 5){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
-  win.metafile(mytemp) 
+  win.metafile(mytemp, width = width, height = height) 
   plotWellReport(panel, substances, locations, use_log_scale)
   dev.off()
   
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, asp = TRUE) 
+  AddPlotPPV2(mytemp, width, height) 
   
   try(file.remove(mytemp))
   

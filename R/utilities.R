@@ -60,7 +60,7 @@ setupPPV2 <- function(){
 
 
 
-AddPlotPPV2 <- function(wmf_file, asp = FALSE){
+AddPlotPPV2 <- function(wmf_file, width, height){
   
 
   calledsetupPP <- FALSE
@@ -92,27 +92,42 @@ AddPlotPPV2 <- function(wmf_file, asp = FALSE){
   mySlide <- myPres[["Slides"]]$add(as.integer(max(1,myPres[["Slides"]]$Count()+1)),as.integer(12))
   myShapes <- mySlide$Shapes()
   
-  if (asp) {### Maintain aspect ratio in PowerPoint Plots!
-    
-    my.din <- par()$din
-    
-    if ((my.din[1]/my.din[2]) >= 1.4) {
-      
-      my.size <- c(10,(540 - 700*my.din[2]/my.din[1])/2,700,700*my.din[2]/my.din[1])
-      
-    } else {
-      
-      my.size <- c((720 - 500*my.din[1]/my.din[2])/2,20,500*my.din[1]/my.din[2],500)
-      
-    }
-  } else {
-    
-    my.size <- c(10,10,700,500)
-    
-  }
+ 
+  #
+  # Won't work, because I plot directly to wmf not a screen.
+  #
+  #
+  # if (asp) {### Maintain aspect ratio in PowerPoint Plots!
+  #   
+  #   # Get device dimension
+  #   # Note: This will not match the dimension passed to a image device, such
+  #   # as win.metafile(). Thus it will only work if something was previously 
+  #   # plotted to the screen.
+  #   my.din <- par()$din
+  #   
+  #   # translate inch to px
+  #   if ((my.din[1]/my.din[2]) >= 1.4) {
+  #
+  #     my.size <- c(10,(540 - 700*my.din[2]/my.din[1])/2,700,700*my.din[2]/my.din[1])
+  #     
+  #   } else {
+  #     
+  #     my.size <- c((720 - 500*my.din[1]/my.din[2])/2,20,500*my.din[1]/my.din[2],500)
+  #     
+  #   }
+  # } else {
+  #   
+  #   my.size <- c(10,10,700,500)
+  #   
+  # }
   
+  # Just assume this pixel density per inch
+  ppi = 120
   
-  myShapes$AddPicture(wmf_file,0,-1,my.size[1],my.size[2],my.size[3],my.size[4]) 
+  # Translate width/height in inch to pixel.
+  my.size <- c(1,20, ppi * width, ppi * height)
+  
+  myShapes$AddPicture(wmf_file, 0, -1, my.size[1], my.size[2], my.size[3], my.size[4]) 
   mySlide$Select()
   
   

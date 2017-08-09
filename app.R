@@ -115,7 +115,7 @@ server <- function(input, output, session) {
 
     # If there is any plume mass, show the plot and hide the message text, and 
     #  vice versa. 
-    if (all(is.na(val$PlumeMass))) {
+    if (all(is.na(val$mass))) {
       shinyjs::hide("plume_diagn_plot_div")
       shinyjs::show("plume_diagn_msg_div")
     } else {
@@ -169,12 +169,8 @@ server <- function(input, output, session) {
     # The return value is the full plume statistics (for all timesteps). 
     isolate(plume_stats <- checkPlumeStats())
 
-    # Isolate the inputs
-    isolate(plotPlumeTimeSeries(pnl, 
-                                input$solute_select_plume_pd, 
-                                input$plume_threshold_pd, 
-                                plume_stats)
-            )
+    plotPlumeTimeSeries(plume_stats)
+
     
   })
   
@@ -335,7 +331,7 @@ server <- function(input, output, session) {
                               pnl$All.Data$All.Dates, 
                               pnl$All.Data$GW.Data, 
                               pnl$All.Data$Cont.Data, 
-                              pnl$All.Data$Well.Coords, 
+                              pnl$All.Data$well_coords$data, 
                               pnl$All.Data$NAPL.Thickness.Data)
       
     # Write back.
@@ -582,18 +578,15 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "ppt") {
         
-        makeTimeSeriesPPT(pnl, input$solute_select, input$well_select)
+        makeTimeSeriesPPT(pnl, input$solute_select, input$well_select,
+                          width = input$img_width_inch, height = input$img_height_inch)
         
       } else {
         
         if (input$export_format_ts == "png") png(file, width = input$img_width_px, height = input$img_height_px)
-        
         if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
-        
         if (input$export_format_ts == "ps") postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
-        
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-        
         if (input$export_format_ts == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
         
         plotTimeSeries(pnl, input$solute_select, input$well_select)
@@ -613,22 +606,19 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "ppt") {
         
-        makeSpatialPPT(pnl, input$solute_select_contour, input$time_steps)
+        plotSpatialImagePPT(pnl, input$solute_select_contour, input$time_steps,
+                       width = input$img_width_inch, height = input$img_height_inch)
       
         } else {
         
-        if (input$export_format_sp == "png") png(file, width = 800, height = 800)
-     
-        if (input$export_format_sp == "pdf") pdf(file) 
-        
-        if (input$export_format_sp == "ps") postscript(file) 
-        
-        if (input$export_format_sp == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
-      
-        if (input$export_format_sp == "wmf") win.metafile(file) 
-        
-        plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
-        dev.off()
+          if (input$export_format_sp == "png") png(file, width = input$img_width_px, height = input$img_height_px)
+          if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
+          if (input$export_format_sp == "ps") postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
+          if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
+          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
+          
+          plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
+          dev.off()
       }
       
     }
@@ -645,19 +635,16 @@ server <- function(input, output, session) {
       
       if (input$export_format_tt == "ppt") {
         
-        makeTrendTablePPT(pnl, input$time_steps_traffic)
+        plotTrendTablePPT(pnl, input$time_steps_traffic, 
+                          width = input$img_width_inch, height = input$img_height_inch)
         
       } else {
         
-        if (input$export_format_tt == "png") png(file, width = 800, height = 800)
-        
-        if (input$export_format_tt == "pdf") pdf(file) 
-        
-        if (input$export_format_tt == "ps") postscript(file) 
-        
-        if (input$export_format_tt == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
-        
-        if (input$export_format_tt == "wmf") win.metafile(file) 
+        if (input$export_format_tt == "png") png(file, width = input$img_width_px, height = input$img_height_px)
+        if (input$export_format_tt == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
+        if (input$export_format_tt == "ps")  postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
+        if (input$export_format_tt == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
+        if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
         
         plotTrendTable(pnl, input$time_steps_traffic)
         dev.off()
@@ -678,24 +665,19 @@ server <- function(input, output, session) {
       
       if (input$export_format_wr == "ppt") {
         
-        makeWellReportPPT(pnl, input$solute_chooser$left, 
-                          input$well_chooser$left, use_log_scale)
+        plotWellReportPPT(pnl, input$solute_chooser$left, 
+                          input$well_chooser$left, use_log_scale,
+                          width = input$img_width_inch_wide, height = input$img_height_inch_wide)
         
       } else {
         
-        if (input$export_format_wr == "png") png(file, width = 800, height = 800)
+        if (input$export_format_wr == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
+        if (input$export_format_wr == "pdf") pdf(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_wr == "ps") postscript(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_wr == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
+        if (input$export_format_wr == "wmf") win.metafile(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
         
-        if (input$export_format_wr == "pdf") pdf(file) 
-        
-        if (input$export_format_wr == "ps") postscript(file) 
-        
-        if (input$export_format_wr == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
-        
-        if (input$export_format_wr == "wmf") win.metafile(file) 
-        
-        
-        plotWellReport(pnl, input$solute_chooser$left, 
-                         input$well_chooser$left, use_log_scale)
+        plotWellReport(pnl, input$solute_chooser$left, input$well_chooser$left, use_log_scale)
         
         
         dev.off()
@@ -719,23 +701,19 @@ server <- function(input, output, session) {
       
       if (input$export_format_pd == "ppt") {
         
-        plotPlumeTimeSeriesPPT(pnl, input$solute_select_plume_pd, plume_thresh, plume_stats)
+        plotPlumeTimeSeriesPPT(plume_stats, 
+                               width = input$img_width_inch_wide, 
+                               height = input$img_height_inch_wide)
         
       } else {
         
-        if (input$export_format_pd == "png") png(file, width = 800, height = 800)
+        if (input$export_format_pd == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
+        if (input$export_format_pd == "pdf") pdf(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_pd == "ps")  postscript(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
+        if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
         
-        if (input$export_format_pd == "pdf") pdf(file) 
-        
-        if (input$export_format_pd == "ps") postscript(file) 
-        
-        if (input$export_format_pd == "jpg") jpeg(file, width = 700, height = 700, quality = 90) 
-        
-        if (input$export_format_pd == "wmf") win.metafile(file, file, width = input$img_width_inch, height = input$img_height_inch) 
-        
-       
-        plotPlumeTimeSeries(pnl, input$solute_select_plume_pd, plume_thresh, plume_stats)
-
+        plotPlumeTimeSeries(plume_stats)
         dev.off()
       }
       
@@ -751,10 +729,7 @@ server <- function(input, output, session) {
     content <- function(file) {
       plume_stats <- checkPlumeStats()
       
-      tmp_out <- printPlumeStatsCSV(plume_stats, input$solute_select_plume_pd, 
-                                    pnl$GWSDAT_Options$WellCoordsLengthUnits, 
-                                    pnl$rgUnits,
-                                    pnl$PlumeLimEntry[input$solute_select_plume_pd])
+      tmp_out <- printPlumeStatsCSV(plume_stats)
       
       write.csv(tmp_out, file) 
     }
@@ -762,7 +737,11 @@ server <- function(input, output, session) {
   
   # Generate PPT with spatial animation.
   observeEvent(input$generate_spatial_anim_ppt, {
-    makeSpatialAnimation(pnl, input$solute_select_contour)
+    makeSpatialAnimation(pnl, input$solute_select_contour,
+                         input$img_width_inch,
+                         input$img_height_inch,
+                         input$img_width_inch_wide,
+                         input$img_height_inch_wide)
   })
   
   
@@ -856,9 +835,11 @@ server <- function(input, output, session) {
     #
     well_coords <- Read_Well_Coords(well_coord_file, header = input$header, sep = input$sep, quote = input$quote)
 
-    WellCoords <- well_coords$WellCoords
-    GWSDAT_Options$WellCoordsLengthUnits <-  well_coords$WellCoordsLengthUnits
-
+    #
+    # Do remaining data processing ... 
+    #
+    # .. 
+    
     
     #
     # Go back to Data Manager.
@@ -943,7 +924,7 @@ server <- function(input, output, session) {
     }
     
     
-    pnl$Porosity <- input$ground_porosity_input
+    pnl$Porosity <- input$ground_porosity
     
   })
   

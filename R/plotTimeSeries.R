@@ -351,17 +351,17 @@ plotTimeSeries <- function(panel,
 }
 
 
-makeTimeSeriesPPT <- function(panel, substance, location){
+makeTimeSeriesPPT <- function(panel, substance, location, width = 7, height = 5){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
-  win.metafile(mytemp) 
+  win.metafile(mytemp, width = width, height = height) 
   plotTimeSeries(panel, substance, location)
   dev.off()
   
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, asp = TRUE) 
+  AddPlotPPV2(mytemp, width, height) 
   
   try(file.remove(mytemp))
   

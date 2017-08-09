@@ -9,11 +9,6 @@ initSite <- function(GWSDAT_Options, progressBar) {
   solute_data <- Read_Well_Data(GWSDAT_Options$WellDataFilename)
   well_data <- Read_Well_Coords(GWSDAT_Options$WellCoordsFilename)
   
-  
-  # Save the distance unit of the well coordinates.
-  GWSDAT_Options$WellCoordsLengthUnits <- well_data$WellCoordsLengthUnits
-  
-
   # Prepare the input data.
   All.Data <- try(prepare_data(solute_data, well_data, 
                                GWSDAT_Options))

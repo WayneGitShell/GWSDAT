@@ -5,7 +5,7 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   
   model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
   
-  Well.Coords <- panel$All.Data$Well.Coords
+  Well.Coords <- panel$All.Data$well_coords$data
   
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
   

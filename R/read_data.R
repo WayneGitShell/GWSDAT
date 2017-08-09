@@ -82,17 +82,17 @@ Read_Well_Coords <- function(input_file, ...) {
   
   
   
-  WellCoordsLengthUnits <- as.character(WellCoords$CoordUnits[1])
+  coord_unit <- as.character(WellCoords$CoordUnits[1])
   
-  if (length(WellCoordsLengthUnits) == 0 || is.na(WellCoordsLengthUnits)){
-    WellCoordsLengthUnits <- NULL
+  if (length(coord_unit) == 0 || is.na(coord_unit)) {
+    coord_unit <- NULL
   }
   
   if (!"aquifer" %in% tolower(names(WellCoords))) {
     WellCoords$Aquifer <- rep(NA,nrow(WellCoords))
   }
   
-  WellCoords <- try(WellCoords[,which(tolower(names(WellCoords)) == "wellname"):which(tolower(names(WellCoords)) == "aquifer")]) #Ensuring correct columns are selected
+  WellCoords <- try(WellCoords[,which(tolower(names(WellCoords)) == "wellname"):which(tolower(names(WellCoords)) == "aquifer")]) 
   
   if (inherits(WellCoords, 'try-error')) {
     
@@ -106,8 +106,8 @@ Read_Well_Coords <- function(input_file, ...) {
     
     
   }
-
-  return(list(WellCoords = WellCoords, WellCoordsLengthUnits = WellCoordsLengthUnits ))
+  
+  return(list(data = WellCoords, unit = coord_unit ))
   
 }
 

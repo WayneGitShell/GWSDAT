@@ -177,24 +177,24 @@ plotTrendTable <- function(panel, timestep = 1, subset = FALSE){
 }
 
 
-makeTrendTablePPT <- function(panel, timestep, subset = FALSE){
+plotTrendTablePPT <- function(panel, timestep, subset = FALSE, width = 7, height = 5){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
-  win.metafile(mytemp) 
+  win.metafile(mytemp, width = width, height = height) 
   plotTrendTable(panel, timestep)
   dev.off()
   
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, asp = TRUE) 
+  AddPlotPPV2(mytemp, width, height) 
   
   try(file.remove(mytemp))
   
   
 }
 
-makeTrendTableAnimation <- function(panel){
+makeTrendTableAnimation <- function(panel, width = 7, height = 5){
   
   
   for (i in panel$timestep_range[1]:panel$timestep_range[2]) {
@@ -202,11 +202,11 @@ makeTrendTableAnimation <- function(panel){
     # Create temporary wmf file. 
     mytemp <- tempfile(fileext = ".wmf")
     
-    win.metafile(mytemp) 
+    win.metafile(mytemp, width = width, height = height) 
     plotTrendTable(panel, timestep = i)
     dev.off()
     
-    AddPlotPPV2(mytemp, asp = TRUE) 
+    AddPlotPPV2(mytemp, width, height) 
     
   }
   

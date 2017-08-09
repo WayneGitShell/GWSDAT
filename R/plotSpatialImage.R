@@ -51,7 +51,7 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
   if ("Overlay ShapeFiles" %in% names(panel$ScaleCols))
     Show.ShapeFile <- panel$ScaleCols["Overlay ShapeFiles"]
  
-  Well.Coords <- panel$All.Data$Well.Coords
+  Well.Coords <- panel$All.Data$well_coords$data
   
   
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
@@ -143,31 +143,6 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
   
   n.col <- length(lev.cut) - 1 #should be n.col-1
   
-  #
-  #
-  # The following is now done in the plot batch, above.
-  #
-  #
-  # Interpolate the concentration values.
-  # interp_tmp <- interpData(panel, substance, timestep, panel$ScaleCols["Scale colours to Data"])
-  
-  #Do.Image <- interp_tmp$Do.Image
-  #interp.pred <- interp_tmp$data
-  
-  # This calculates the area, mass, volume and center of the plume.
-  # It will be used to include a status text at the bottom of the plot, and
-  # to plot the plume contour. 
-  #if (panel$ScaleCols["Plume Diagnostics"]) {
-    
-    # Extract plume threshold, defined in ug/L.
-  #  plume_thresh <- as.numeric(panel$PlumeLimEntry[substance])
-    
-  #  plume_stats <- getPlumeStats(panel, substance, timestep, interp.pred, 
-  #                              plume_thresh, as.numeric(panel$Porosity))
-    
-  #}
-    
-    
   
   GWFlows <- attr(panel$Fitted.Data,"GWFlows")
   if (!inherits(GWFlows, "try-error")) {
@@ -372,9 +347,9 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
 
                             if (!is.null(plume_stats) & panel$ScaleCols["Plume Diagnostics"]) {
                               
-                              try(contour(interp.pred, levels = plume_stats$plume_thresh, add = T, col = "red", lwd = 2, labcex = .8))
+                              try(contour(interp.pred, levels = plume_stats$conc_thresh, add = T, col = "red", lwd = 2, labcex = .8))
                               
-                              try(points(plume_stats$PlumeCentreofMass[1], plume_stats$PlumeCentreofMass[2], cex = 1.3, pch = 3, lwd = 2, col = "red"))
+                              try(points(plume_stats$mass_centre_x, plume_stats$mass_centre_y, cex = 1.3, pch = 3, lwd = 2, col = "red"))
                             }
                         
                             
@@ -388,7 +363,7 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
     
     if (panel$ScaleCols["Plume Diagnostics"]) {
       
-      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits, panel$rgUnits,plume_stats$Mass[1],plume_stats$area[1])
+      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits, panel$rgUnits, plume_stats$mass, plume_stats$area)
       
       tp <- paste("Plume Mass=", signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
       mtext(tp,side = 1,adj = -0.1, line = 2,cex = 0.85)
@@ -409,24 +384,21 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
                             
-                            if(Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
-                            if(Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
+                            if (Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
+                            if (Show.Values & length(as.character(temp.Cont.Data$Result)) > 0) try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
                             
                             if (!is.null(plume_stats) & panel$ScaleCols["Plume Diagnostics"]) {
                               
-                              contour(interp.pred, levels = plume_stats$plume_thresh, add = T, col = "red", lwd = 2, labcex = .8)
-                              # Fixme: why plot twice?
-                              try(contour(interp.pred, levels = plume_stats$plume_thresh, add = T, col = "red", lwd = 2, labcex = .8))
-                            
+                              contour(interp.pred, levels = plume_stats$conc_thresh, add = T, col = "red", lwd = 2, labcex = .8)
                                   
-                              try(points(plume_stats$PlumeCentreofMass[1],plume_stats$PlumeCentreofMass[2],cex=1.3,pch=3,lwd=2,col="red"))
+                              points(plume_stats$mass_centre_x, plume_stats$mass_centre_y, cex = 1.3, pch = 3, lwd = 2, col = "red")
                             }
                             #--------------------------------------#
                             
-                            if(nrow(Bad.Wells)>0 & Show.Well.Labels & Do.Image){text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
-                            try(arrows(x0, y0, x1, y1, length = 0.1,lwd=2,col="blue"), silent = TRUE)
+                            if (nrow(Bad.Wells) > 0 & Show.Well.Labels & Do.Image) {text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
+                            try(arrows(x0, y0, x1, y1, length = 0.1,lwd = 2, col = "blue"), silent = TRUE)
                             
                           }
                           
@@ -434,9 +406,9 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
     
     if (panel$ScaleCols["Plume Diagnostics"]) {
       
-      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,plume_stats$Mass[1],plume_stats$area[1])
+      tempUnitHandle <- PlumeUnitHandlingFunc(panel$GWSDAT_Options$WellCoordsLengthUnits,panel$rgUnits,plume_stats$mass,plume_stats$area)
       
-      #tp<-paste("Estimated Plume Mass=",round(plume_stats$Mass,2),";   Estimated Plume Area=",round(plume_stats$area,2),sep="")
+      #tp<-paste("Estimated Plume Mass=",round(plume_stats$mass, 2),";   Estimated Plume Area=",round(plume_stats$area,2),sep="")
       
       tp <- paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
       mtext(tp,side = 1,adj = -0.1,line = 2, cex = 0.85)
@@ -454,8 +426,8 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
 }
 
 
-makeSpatialPPT <- function(panel, substance, timestep,
-                           width = 9, height = 5){
+plotSpatialImagePPT <- function(panel, substance, timestep,
+                           width = 7, height = 5){
  
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
@@ -465,7 +437,7 @@ makeSpatialPPT <- function(panel, substance, timestep,
   dev.off()
    
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, asp = TRUE) 
+  AddPlotPPV2(mytemp, width, height) 
   
   try(file.remove(mytemp))
   
@@ -475,15 +447,12 @@ makeSpatialPPT <- function(panel, substance, timestep,
 
 
 makeSpatialAnimation <- function(panel, substance,
-                                 width_plume = 9, height_plume = 5) {
+                                 width = 7,
+                                 height = 5,
+                                 width_plume = 9, 
+                                 height_plume = 5) {
   
-  # If to include plume diagnostics, create variable to hold the plume stats 
-  # for each timestep. 
-  if (panel$ScaleCols["Plume Diagnostics"]) {
-    full_plume_stats <- data.frame(Agg.Date = panel$All.Data$All.Agg.Dates)
-    full_plume_stats$PlumeMass <- full_plume_stats$PlumeArea <- full_plume_stats$COMx <- full_plume_stats$COMy <- full_plume_stats$PlumeAverageConc <- rep(NA,nrow(full_plume_stats))
-  }
-  
+  full_plume_stats <- NULL 
   
   # Loop over each time step.. 
   for (i in panel$timestep_range[1]:panel$timestep_range[2]) {
@@ -492,30 +461,39 @@ makeSpatialAnimation <- function(panel, substance,
     interp.pred <- interpData(panel, substance, i, panel$ScaleCols["Scale colours to Data"])
     
     # Create plume statistics if needed.
+    #
+    # Note: This is a dupliate from function getFullPlumeStats(). It could be called 
+    #       separately and before plotSpatialImage_main(). However, both functions
+    #       depend on interpData() and I don't like to call it twice.
+    #       Fixme: Call interpData() separately, and pass results for each timestep 
+    #              to getPlumeStats() and plotSpatialImage_main().
+    #
     plume_stats <- NULL
     if (panel$ScaleCols["Plume Diagnostics"]) {
       
-      
       plume_stats <- getPlumeStats(panel, substance, timestep = i, interp.pred$data, 
                                    panel$PlumeLimEntry[substance], panel$Porosity)
+    
+      # Add date. 
+      plume_stats = cbind(plume_stats, "Agg.Date" = panel$All.Data$All.Agg.Dates[i])
       
-      # Save this for the final plume time series plot.
-      full_plume_stats$PlumeArea[i] <- plume_stats$area
-      full_plume_stats$PlumeMass[i] <- plume_stats$Mass
-      full_plume_stats$COMx[i] <- plume_stats$PlumeCentreofMass[1]
-      full_plume_stats$COMy[i] <- plume_stats$PlumeCentreofMass[2]
-      full_plume_stats$PlumeAverageConc[i] <- plume_stats$volume / plume_stats$area
+      
+      # Append to full plume stats table.
+      if (is.null(full_plume_stats))
+        full_plume_stats <- plume_stats
+      else
+        full_plume_stats <- rbind(full_plume_stats, plume_stats)
       
     }
 
     # Make the plot and save to ppt
     mytemp <- tempfile(fileext = ".wmf")
   
-    win.metafile(mytemp) 
+    win.metafile(mytemp, width = width, height = height) 
     plotSpatialImage_main(panel, substance, timestep = i, interp.pred, plume_stats)
     dev.off()
     
-    AddPlotPPV2(mytemp, asp = TRUE) 
+    AddPlotPPV2(mytemp, width, height) 
     
     
   } # end of for
@@ -524,13 +502,10 @@ makeSpatialAnimation <- function(panel, substance,
   # Add slide with plume statistics.
   if (panel$ScaleCols["Plume Diagnostics"]) {
     win.metafile(mytemp, width = width_plume, height = height_plume) 
-    plotPlumeTimeSeries(panel, 
-                        substance, 
-                        panel$PlumeLimEntry[substance], 
-                        full_plume_stats)
+    plotPlumeTimeSeries(full_plume_stats)
     dev.off()
     
-    AddPlotPPV2(mytemp, asp = TRUE)
+    AddPlotPPV2(mytemp, width = width_plume, height = height_plume)
   }
   
   try(file.remove(mytemp))
