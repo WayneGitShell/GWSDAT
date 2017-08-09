@@ -1,4 +1,4 @@
-provide.data(trout)
+with(trout, {
 conc <- N <- dead <-rep(0,6)
 for(i in 1:6){
   conc[i] <- Concentr[i*4]
@@ -7,3 +7,4 @@ for(i in 1:6){
       dead[i] <- dead[i] + Dead[(i-1)*4+j]
   }}
 sm.binomial.bootstrap(log(conc), dead, N, 0.5, nboot=50)
+})

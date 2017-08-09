@@ -1,4 +1,4 @@
-provide.data(lcancer)
+with(lcancer, {
 cases    <- cbind(Easting, Northing)[Cancer == 1,]/10000
 controls <- cbind(Easting, Northing)[Cancer == 2,]/10000
 xlim     <- range(Easting/10000)
@@ -33,3 +33,4 @@ contour(xgrid, ygrid, diff.sm/se, levels = c(-4, -2), col = 2, add = TRUE)
 contour(xgrid, ygrid, diff.sm/se, levels = c( 2,  4), col = 6, add = TRUE)
 par(cex=1)
 par(mfrow=c(1,1))
+})

@@ -12,8 +12,6 @@ ani.options             Set or query animation options
 ani.pause               Pause for a while and flush the current
                         graphical device
 ani.record              Record and replay animations
-ani.start               Start the generation of an HTML animation page
-ani.stop                Write the HTML animation page
 animation-package       A Gallery of Animations in Statistics and
                         Utilities to Create Animations
 bisection.method        Demonstration of the Bisection Method for

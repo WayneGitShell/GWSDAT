@@ -4,8 +4,9 @@
 #	increased by adding an argument such as "ngrid=20"
 #	to sm.density.
 
-provide.data(geys3d)
+with(geys3d, {
 par(mfrow=c(1,2))
 plot(Waiting, Duration)
 sm.density(geys3d)
 par(mfrow=c(1,1))
+})

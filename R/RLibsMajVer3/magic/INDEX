@@ -48,6 +48,7 @@ minmax                  are all elements of a vector identical?
 notmagic.2n             An unmagic square
 nqueens                 N queens problem
 panmagic.4              Panmagic squares of order 4
+panmagic.6npm1          Panmagic squares of order 4n, 6n+1 and 6n-1
 panmagic.8              Panmagic squares of order 8
 perfectcube5            A perfect magic cube of order 5
 perfectcube6            A perfect cube of order 6

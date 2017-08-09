@@ -1,4 +1,4 @@
-subroutine master(x,y,sort,rw,npd,ntot,nadj,madj,ind,tx,ty,ilst,eps,
+subroutine master(x,y,rw,npd,ntot,nadj,madj,tx,ty,eps,
                   delsgs,ndel,delsum,dirsgs,ndir,dirsum,nerror)
 
 # Master subroutine:
@@ -8,26 +8,15 @@ subroutine master(x,y,sort,rw,npd,ntot,nadj,madj,ind,tx,ty,ilst,eps,
 # And in the darkness bind them.
 
 implicit double precision(a-h,o-z)
-logical sort, adj
+logical adj
 dimension x(-3:ntot), y(-3:ntot)
 dimension nadj(-3:ntot,0:madj)
-dimension ind(npd), tx(npd), ty(npd), ilst(npd), rw(4)
-dimension delsgs(6,ndel), dirsgs(8,ndir)
+dimension tx(npd), ty(npd), rw(4)
+dimension delsgs(6,ndel), dirsgs(10,ndir)
 dimension delsum(npd,4), dirsum(npd,3)
 
 # Define one.
 one = 1.d0
-
-# Sort the points into bins, the number of such being approx. sqrt(n).
-if(sort) {
-	call binsrt(x,y,ntot,rw,npd,ind,tx,ty,ilst,nerror)
-	if(nerror > 0) return
-}
-else {
-	do i = 1,npd {
-		ind(i) = i
-	}
-}
 
 # Initialize the adjacency list; counts to 0, other entries to -99.
 do i = -3,ntot {
@@ -74,14 +63,14 @@ do j = 2,npd {
 }
 
 # Obtain the description of the triangulation.
-call delseg(delsgs,ndel,nadj,madj,x,y,ntot,ind,nerror)
+call delseg(delsgs,ndel,nadj,madj,npd,x,y,ntot,nerror)
 if(nerror>0) return
 
-call delout(delsum,nadj,madj,x,y,ntot,npd,ind,nerror)
+call delout(delsum,nadj,madj,x,y,ntot,npd,nerror)
 if(nerror>0) return
 
-call dirseg(dirsgs,ndir,nadj,madj,x,y,ntot,rw,eps,ind,nerror)
+call dirseg(dirsgs,ndir,nadj,madj,npd,x,y,ntot,rw,eps,nerror)
 if(nerror>0) return
-call dirout(dirsum,nadj,madj,x,y,ntot,npd,rw,ind,eps,nerror)
+call dirout(dirsum,nadj,madj,x,y,ntot,npd,rw,eps,nerror)
 return
 end

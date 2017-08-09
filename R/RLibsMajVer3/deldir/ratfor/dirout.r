@@ -1,4 +1,4 @@
-subroutine dirout(dirsum,nadj,madj,x,y,ntot,npd,rw,ind,eps,nerror)
+subroutine dirout(dirsum,nadj,madj,x,y,ntot,npd,rw,eps,nerror)
 
 # Output the description of the Dirichlet tile centred at point
 # i for i = 1, ..., npd.  Do this in the original order of the
@@ -7,10 +7,10 @@ subroutine dirout(dirsum,nadj,madj,x,y,ntot,npd,rw,ind,eps,nerror)
 
 implicit double precision(a-h,o-z)
 dimension nadj(-3:ntot,0:madj), x(-3:ntot), y(-3:ntot)
-dimension dirsum(npd,3), ind(npd), rw(4)
-logical collin, intfnd, bptab, bptcd
+dimension dirsum(npd,3), rw(4)
+logical collin, intfnd, bptab, bptcd, rwu
 
-# Note that at this point some Delaunay neighbors may be
+# Note that at this point some Delaunay neighbours may be
 # `spurious'; they are the corners of a `large' rectangle in which
 # the rectangular window of interest has been suspended.  This
 # large window was brought in simply to facilitate output concerning
@@ -25,30 +25,23 @@ xmax = rw(2)
 ymin = rw(3)
 ymax = rw(4)
 
-do i1 = 1,npd {
+do i = 1,npd {
         area = 0. # Initialize the area of the ith tile to zero.
 	nbpt = 0  # Initialize the number of boundary points of
                   # the ith tile to zero.
         npt = 0   # Initialize the number of tile boundaries to zero.
 
-        i = ind(i1)
         np = nadj(i,0)
-	xi = x(i)
-	yi = y(i)
 
         # Output the point number, its coordinates, and the number of
-        # its Delaunay neighbors == the number of boundary segments in
+        # its Delaunay neighbours == the number of boundary segments in
         # its Dirichlet tile.
 
-        # For each Delaunay neighbor, find the circumcentres of the
+        # For each Delaunay neighbour, find the circumcentres of the
         # triangles on each side of the segment joining point i to that
-        # neighbor.
+        # neighbour.
         do j1 = 1,np {
                 j = nadj(i,j1)
-                xj = x(j)
-                yj = y(j)
-                xij = 0.5*(xi+xj)
-                yij = 0.5*(yi+yj)
                 call pred(k,i,j,nadj,madj,ntot,nerror)
 		if(nerror > 0) return
                 call succ(l,i,j,nadj,madj,ntot,nerror)
@@ -76,13 +69,25 @@ do i1 = 1,npd {
 
                 # If a circumcentre is outside the rectangular window, replace
                 # it with the intersection of the rectangle boundary with the
-                # line joining the circumcentre to the midpoint of
-                # (xi,yi)->(xj,yj).  Then output the number of the current
-                # Delaunay neighbor and the two circumcentres (or the points
-                # with which they have been replaced).
-                call dldins(a,b,xij,yij,ai,bi,rw,intfnd,bptab)
+                # line joining the two circumcentres.  Then output
+                # the number of the current Delaunay neighbour and
+                # the two circumcentres (or the points with which
+                # they have been replaced).
+                # Note: rwu = "right way up".
+                xi = x(i)
+                xj = x(j)
+                yi = y(i)
+                yj = y(j)
+                if(yi!=yj) {
+                    slope = (xi - xj)/(yj - yi)
+                    rwu = .true.
+                } else {
+                    slope = 0.d0
+                    rwu = .false.
+                }
+                call dldins(a,b,slope,rwu,ai,bi,rw,intfnd,bptab,nedge)
                 if(intfnd) {
-			call dldins(c,d,xij,yij,ci,di,rw,intfnd,bptcd)
+                        call dldins(c,d,slope,rwu,ci,di,rw,intfnd,bptcd,nedge)
                 	if(!intfnd) {
 				nerror = 17
 				return
@@ -100,10 +105,10 @@ do i1 = 1,npd {
 				if(bptab | bptcd) nbpt = nbpt+1
 			}
 		}
-		dirsum(i1,1) = npt
-		dirsum(i1,2) = nbpt
-		dirsum(i1,3) = area
 	}
+        dirsum(i,1) = npt
+        dirsum(i,2) = nbpt
+        dirsum(i,3) = area
 }
 
 return

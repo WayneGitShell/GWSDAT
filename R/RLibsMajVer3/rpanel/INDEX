@@ -69,6 +69,10 @@ rp.text                 Text boxes for a panel
 rp.textentry            Text entry boxes for a panel
 rp.timer                Creates a series of timed actions
 rp.tkrplot              rpanel calls for tkrplot and tkrreplot
+rp.var.get              Retrieves an object from the rpanel
+                        envrionment, usually from a panel.
+rp.var.put              Places an object in the rpanel envrionment,
+                        usually within a panel.
 rp.widget.dispose       Removes a widget
 rpanel-package          Simple interactive controls for R functions
                         using the tcltk package

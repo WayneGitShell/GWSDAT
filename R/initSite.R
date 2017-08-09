@@ -6,11 +6,11 @@ initSite <- function(GWSDAT_Options, progressBar) {
  
   
   # Read Well data and coordinates from file.
-  solute_data <- Read_Well_Data(GWSDAT_Options$WellDataFilename)
-  well_data <- Read_Well_Coords(GWSDAT_Options$WellCoordsFilename)
+  solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
+  well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
   
   # Prepare the input data.
-  All.Data <- try(prepare_data(solute_data, well_data, 
+  All.Data <- try(processData(solute_data, well_data, 
                                GWSDAT_Options))
   
   if (inherits(All.Data, 'try-error')) {

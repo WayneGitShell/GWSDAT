@@ -7,6 +7,8 @@ SpatialLines2PolySet    Convert sp line and polygon objects to
                         PBSmapping PolySet objects
 SpatialLinesMidPoints   Line midpoints
 SplashDams              Data for Splash Dams in western Oregon
+as.linnet.SpatialLines
+                        Convert SpatialLines to Linear Network
 as.owin.SpatialGridDataFrame
                         coercion between sp objects and spatstat
                         objects

@@ -50,6 +50,7 @@ is.centrosymmetric	is.square.palindromic
 is.circulant	circulant
 is.diagonally.correct	is.magichypercube
 is.hadamard	hadamard
+is.heterosquare	is.magic
 is.incidence	latin
 is.incidence.improper	latin
 is.latin	is.magic
@@ -75,6 +76,7 @@ is.stam	is.magic
 is.standard	as.standard
 is.standard.toroidal	as.standard
 is.totally.antimagic	is.magic
+is.totally.heterosquare	is.magic
 is.ultramagic	is.magic
 latin	latin
 le	eq
@@ -99,6 +101,10 @@ notmagic.2n	notmagic.2n
 nqueens	nqueens
 Ollerenshaw	Ollerenshaw
 panmagic.4	panmagic.4
+panmagic.4n	panmagic.6npm1
+panmagic.6nm1	panmagic.6npm1
+panmagic.6np1	panmagic.6npm1
+panmagic.6npm1	panmagic.6npm1
 panmagic.8	panmagic.8
 perfectcube5	perfectcube5
 perfectcube6	perfectcube6

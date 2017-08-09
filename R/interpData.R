@@ -5,7 +5,7 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   
   model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
   
-  Well.Coords <- panel$All.Data$well_coords$data
+  Well.Coords <- panel$All.Data$sample_loc$data
   
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
   
@@ -35,7 +35,7 @@ interpData <- function(panel, substance, timestep, Col.Option) {
     my.area <- as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
   }
   
-  if ((areapl(my.area[chull(my.area),]) / panel$All.Data$All.Well.Area) < 0.01) {
+  if ((areapl(my.area[chull(my.area),]) / panel$All.Data$sample_loc$area) < 0.01) {
     Do.Image = FALSE
     my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
   }

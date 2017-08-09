@@ -45,6 +45,8 @@ export(as.owin.SpatialGridDataFrame, as.owin.SpatialPixelsDataFrame, as.owin.Spa
 
 export(as.psp.SpatialLinesDataFrame, as.psp.SpatialLines, as.psp.Lines, as.psp.Line, as.SpatialLines.psp)
 
+export(as.linnet.SpatialLines)
+
 export(gpclibPermit, gpclibPermitStatus, rgeosStatus)
 
 export(unionSpatialPolygons, nowrapSpatialPolygons, nowrapRecenter, checkPolygonsHoles, nowrapSpatialLines)

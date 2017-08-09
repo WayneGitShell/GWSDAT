@@ -1,4 +1,4 @@
-provide.data(tephra)
+with(tephra, {
 logit <- log(Al2O3/(100-Al2O3))
 nn    <- nnbr(logit, 7)
 hw    <- nn/exp(mean(log(nn)))
@@ -7,3 +7,4 @@ hw    <- sqrt(nn)
 hw    <- hw/exp(mean(log(hw)))
 sm.density(logit, h.weights = hw, lty = 3, add = TRUE)
 sm.density(logit, add = TRUE)
+})

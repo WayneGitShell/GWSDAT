@@ -1,4 +1,4 @@
-provide.data(aircraft)
+with(aircraft, {
 log.span.3 <- log(Span[Period==3])
 
 par(mfrow=c(1,2))
@@ -27,3 +27,4 @@ for (i in 1:nsub) {
    }
 
 par(mfrow=c(1,1))
+})

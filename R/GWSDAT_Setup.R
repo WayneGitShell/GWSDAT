@@ -44,12 +44,11 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
   
     # added 07/2017
     
-    source(paste(GWSDATHome, "R/prepare_data.R", sep = "/"))
+    
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep = "/"))
     source(paste(GWSDATHome, "R/Plot_Legend.R", sep = "/"))
-    source(paste(GWSDATHome, "R/read_data.R", sep = "/"))
-    
-  
+    source(paste(GWSDATHome, "R/readData.R", sep = "/"))
+    source(paste(GWSDATHome, "R/processData.R", sep = "/"))
     source(paste(GWSDATHome, "R/fitData.R", sep = "/"))
     source(paste(GWSDATHome, "R/createPanelAttr.R", sep = "/"))
     source(paste(GWSDATHome, "R/initSite.R", sep = "/"))

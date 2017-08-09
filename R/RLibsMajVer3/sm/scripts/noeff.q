@@ -1,4 +1,4 @@
-provide.data(trawl)
+with(trawl, {
 
 ind <- (Year == 1 & Zone == 1 & !is.na(Depth))
 y <- Score1[ind]
@@ -17,3 +17,4 @@ for (i in 1:100) {
    cat(i," ")
    }
 cat("\nEmpirical p-value: ", round(p/100, 2),"\n")
+})

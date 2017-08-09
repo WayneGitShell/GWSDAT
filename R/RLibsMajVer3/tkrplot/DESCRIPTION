@@ -9,5 +9,5 @@ Maintainer: Luke Tierney <luke@stat.uiowa.edu>
 Packaged: 2011-11-18 23:36:41 UTC; luke
 Repository: CRAN
 Date/Publication: 2011-11-19 09:56:45
-Built: R 3.0.0; x86_64-w64-mingw32; 2013-03-06 15:41:46 UTC; windows
+Built: R 3.4.0; x86_64-w64-mingw32; 2017-04-22 14:25:11 UTC; windows
 Archs: i386, x64

@@ -1,4 +1,4 @@
-provide.data(radioc)
+with(radioc, {
 cal.age <- Cal.age[Cal.age>2000 & Cal.age<3000]
 rc.age  <-  Rc.age[Cal.age>2000 & Cal.age<3000]
 
@@ -28,3 +28,4 @@ for (i in 1:4) {
   }
 
 par(mfrow=c(1,1))
+})

@@ -1,7 +1,6 @@
-provide.data(trawl)
-ind       <- (Year == 0 & Zone == 1)
-score     <- Score1[ind]
-longitude <- Longitude[ind]
+ind       <- (trawl$Year == 0 & trawl$Zone == 1)
+score     <- trawl$Score1[ind]
+longitude <- trawl$Longitude[ind]
 par(mfrow=c(1,2))
 sig.trace(sm.regression(longitude, score, 
         model = "linear", display="none"), 
@@ -9,4 +8,3 @@ sig.trace(sm.regression(longitude, score,
 sm.regression(longitude, score, h = 0.1, model = "linear")
 par(mfrow=c(1,1))
 print(summary(lm(score ~ poly(longitude,2))))
-

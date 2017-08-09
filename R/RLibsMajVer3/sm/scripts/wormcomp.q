@@ -1,4 +1,4 @@
-provide.data(worm)
+with(worm, {
 Males   <- sm.binomial(Age[Sex == 1], Infection[Sex == 1], h = 10,
               display = "none")
 agem    <- Males$eval.points
@@ -17,3 +17,4 @@ polygon(c(agem, rev(agem)), c(upper, rev(lower)),
       col = "cyan", border = FALSE)
 lines(agem, estm)
 lines(agem, estf, lty = 3)
+})

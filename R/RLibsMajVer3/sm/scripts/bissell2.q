@@ -1,4 +1,4 @@
-provide.data(bissell)
+with(bissell, {
 plot(Length, Flaws, xlim=c(0,1000), pch="o")
 beta <- sum(Flaws)/sum(Length)
 x <- seq(0, 1000, length=50)
@@ -9,3 +9,4 @@ sm.beta <- (W %*% Flaws)/(W %*% Length)
 lines(x,sm.beta*x)
 lines(x,sm.beta*x+2*sqrt(sm.beta*x),lty=3)
 lines(x,pmax(0,sm.beta*x-2*sqrt(sm.beta*x)),lty=3)
+})

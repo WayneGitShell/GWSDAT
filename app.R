@@ -331,7 +331,7 @@ server <- function(input, output, session) {
                               pnl$All.Data$All.Dates, 
                               pnl$All.Data$GW.Data, 
                               pnl$All.Data$Cont.Data, 
-                              pnl$All.Data$well_coords$data, 
+                              pnl$All.Data$sample_loc$data, 
                               pnl$All.Data$NAPL.Thickness.Data)
       
     # Write back.
@@ -536,7 +536,7 @@ server <- function(input, output, session) {
   #   if (tmpval != pnl$All.Data$Aq.sel) {
   #     
   #     # Prepare the input data with the selected Aquifer.
-  #     pnl$All.Data <<- try(prepare_data(pnl$All.Data$solute_data, 
+  #     pnl$All.Data <<- try(processData(pnl$All.Data$solute_data, 
   #                                  pnl$All.Data$well_data, 
   #                                  pnl$GWSDAT_Options, 
   #                                  Aq_sel = tmpval))
@@ -827,13 +827,13 @@ server <- function(input, output, session) {
       return(NULL)
     
     
-    AGALL <- Read_Well_Data(well_data_file, header = input$header, sep = input$sep, quote = input$quote)
+    AGALL <- readConcData(well_data_file, header = input$header, sep = input$sep, quote = input$quote)
     
     
     #
     # Read the well coordinates.
     #
-    well_coords <- Read_Well_Coords(well_coord_file, header = input$header, sep = input$sep, quote = input$quote)
+    sample_loc <- readWellCoords(well_coord_file, header = input$header, sep = input$sep, quote = input$quote)
 
     #
     # Do remaining data processing ... 

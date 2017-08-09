@@ -1,5 +1,5 @@
 library(gam)
-provide.data(trawl)
+with(trawl, {
 ind       <- (Year == 0 & Zone == 1)
 score1    <- Score1[ind]
 latitude  <- Latitude[ind]
@@ -28,3 +28,4 @@ persp(ex, ey, matrix(surface * mask, ncol = ngrid),
               xlab = "Latitude", ylab = "Longitude")
 sm.regression(position, score1, h = c(100, 0.1))
 par(mfrow=c(1,1))
+})

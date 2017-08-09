@@ -1,9 +1,88 @@
-		  CHANGES IN animation VERSION 2.0-7
+		  CHANGES IN animation VERSION 2.5
+
+MAJOR CHANGES
+
+  o removed all examples from the package, since this package failed to pass R
+  CMD check on CRAN for unknown reasons; all examples are still available on
+  Github https://github.com/yihui/animation/tree/master/inst/examples and they
+  will be moved to https://yihui.name/animation in the future
+
+		  CHANGES IN animation VERSION 2.4
+
+BUG FIXES
+
+  o saveGIF() on Windows might give an error message "the input line it too
+  long" when the command to be passed to ImageMagick/GraphicsMagic is too long;
+  now the command is quoted by double quotes (based on an answer to
+  http://stackoverflow.com/q/682799/559676) (thanks, Aaron Dodd)
+
+  o save*() functions should overwrite the output file (#50, #60).
+
+		  CHANGES IN animation VERSION 2.3
+
+NEW FEATURES
+
+  o added a new argument 'navigator' to saveHTML() so that we can remove the
+  navigator conveniently without having to understand SciAnimator library
+
+MAJOR CHANGES
+
+  o the default value for the argument `other.opts` in saveVideo() was changed
+  to '-pix_fmt yuv420p' when the output format is MP4 (Skye Bender-deMoll, #49)
+
+  o the defunct functions highlight.def(), write.rss() and ani.news() were
+  finally removed from this package
+
+  o the functions ani.start() and ani.stop() are defunct and will be removed
+  in the next version of this package; please use saveHTML() instead
+
+  o the animation option `outdir` in ani.options() was removed because it
+  was confusing to many users that the output is in a temporary directory by
+  default; now all files are written relative to the current working
+  directory (#31)
+
+  o the animation option `convert` in ani.options() is expected to be the
+  path to ImageMagick/GraphicsMagick _without_ quotes, i.e. not the
+  shQuote() version (#35)
+
+  o the animation option 'htmlfile' in ani.options() was removed, because it
+  was only used in saveHTML() and g.brownian.motion(), and is not a general
+  enough option
+
+  o the 'clean' argument in saveVideo() was removed: images will be created
+  in the temporary directory, and will not be explicitly cleaned (R will
+  clean them then it quits)
+
+		  CHANGES IN animation VERSION 2.2
+
+MINOR CHANGES
+
+  o datasets in this package are lazy loaded now, which means we no longer need,
+  for example, data(pollen) -- just use pollen
+
+  o added an article in the articles/ directory of the package, which will be
+  published in the Journal of Statistical Software; see citation('animation')
+
+BUG FIXES
+
+  o fixed #28: the single quotes in the example code of saveHTML() in the PDF
+  manual were not correctly rendered (thanks, James Marca)
+
+DOCUMENTATION
+
+  o the animation website http://animation.yihui.name is being rebuilt with
+  knitr and Jekyll on Github (contributions/pull requests are welcome):
+  http://vis.supstat.com/categories.html#Animation-ref
+
+		  CHANGES IN animation VERSION 2.1
 
 MINOR CHANGES
 
   o x- and y-axis in the top scatter plot in boot.iid() are switched;
   now x-axis is the sample value and y-axis is the index
+
+  o Rosling.bubbles() was rewritten to avoid .Internal() and the usage
+  was slightly changed (see documentation)
 
 
 		  CHANGES IN animation VERSION 2.0-6

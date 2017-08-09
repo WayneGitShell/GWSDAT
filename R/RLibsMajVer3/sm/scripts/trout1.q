@@ -1,4 +1,4 @@
-provide.data(trout)
+with(trout, {
  
 # first, select treatment group 1 ("water hardening")
 # and pool data with equal concentration
@@ -10,3 +10,4 @@ for(i in 1:6){
       dead[i] <- dead[i] + Dead[(i-1)*4+j]
   }}
 sm.binomial(log(conc), dead, N, 0.5)
+})

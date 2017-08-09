@@ -64,6 +64,8 @@ rp.textentry	rp.textentry
 rp.timer	rp.timer
 rp.tkrplot	rp.tkrplot
 rp.tkrreplot	rp.tkrplot
+rp.var.get	rp.var.get
+rp.var.put	rp.var.put
 rp.widget.dispose	rp.widget.dispose
 rpanel	rpanel.package
 SO2	SO2

@@ -1,7 +1,6 @@
-provide.data(trawl)
-ind       <- (Year == 1 & Zone == 1 & !is.na(Depth))
-score1    <- Score1[ind]
-depth     <- Depth[ind]
+ind       <- (trawl$Year == 1 & trawl$Zone == 1 & !is.na(trawl$Depth))
+score1    <- trawl$Score1[ind]
+depth     <- trawl$Depth[ind]
 summary(lm(score1 ~ depth))
 sig.trace(sm.regression(depth, score1, 
         model = "no.effect", display="none"), 

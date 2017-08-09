@@ -17,7 +17,7 @@ uiAnalyse <- function() {
                                 #    selectInput("aquifer_timeseries", label = "Aquifer Group", choices = pnl$All.Data$Aq_list,
                                 #                selected = pnl$All.Data$Aq.sel, width = '80%') ),
                                 
-                                selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$All.Data$All.Wells)),
+                                selectInput("well_select", label = "Select Monitoring Well", choices = sort(as.character(pnl$All.Data$sample_loc$names)),
                                             selected = pnl$Well, width = "80%"),
                                 
                                 selectInput("solute_select", label = "Solute", choices = names(pnl$Fitted.Data),

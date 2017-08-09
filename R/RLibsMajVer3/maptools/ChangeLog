@@ -1,3 +1,47 @@
+2017-02-23 09:29  rsbivand
+
+	* src/Rcentroid.c, src/Rgshhs.c, src/init.c, src/maptools.h: add
+	  registration
+
+2017-02-23 08:39  rsbivand
+
+	* ChangeLog, inst/ChangeLog: tidy
+
+2017-02-23 08:38  rsbivand
+
+	* DESCRIPTION, man/gcDestination.Rd: tidy
+
+2017-02-23 08:23  rsbivand
+
+	* R/Spatial-methods.R, R/SpatialLines-methods.R,
+	  R/SpatialPoints-methods.R, R/SpatialPolys-methods.R,
+	  man/readShapeLines.Rd, man/readShapePoints.Rd,
+	  man/readShapePoly.Rd, man/readShapeSpatial.Rd: set .Deprecated
+	  for maptools shapelib use
+
+2017-02-23 08:11  rsbivand
+
+	* man/readShapeLines.Rd, man/readShapePoints.Rd,
+	  man/readShapePoly.Rd, man/readShapeSpatial.Rd: fix docu-bug
+
+2017-01-07 16:53  rsbivand
+
+	* ChangeLog, inst/ChangeLog: tidy
+
+2017-01-02 11:17  rsbivand
+
+	* DESCRIPTION: tidy
+
+2016-12-30 20:01  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/as.linnet.SL.R,
+	  man/as.linnet.SpatialLines.Rd: adding coercion to
+	  spatstat::linnet
+
+2016-11-14 13:33  rsbivand
+
+	* ChangeLog, inst/ChangeLog, man/nowrapSpatialLines.Rd: tidy
+
 2016-11-13 19:29  rsbivand
 
 	* DESCRIPTION, R/AAA.R, data/wrld_simpl.rda: cache on load not
@@ -1294,4 +1338,831 @@
 2005-09-01 18:26  
 
 	* New repository initialized by cvs2svn.
+
+2010-11-13 16:54  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/Rgshhs.R, man/Rgshhs.Rd: adding
+	  getRgshhsMap
+
+2010-10-17 20:29  rsbivand
+
+	* DESCRIPTION, R/spatstat1.R: ppp marks as data.frame not vector
+
+2010-09-08 19:12  rsbivand
+
+	* ChangeLog, inst/ChangeLog: zero nParts for lines
+
+2010-09-08 18:36  rsbivand
+
+	* DESCRIPTION, R/SpatialLines-methods.R, man/readShapeLines.Rd,
+	  man/readShapePoly.Rd, man/readShapeSpatial.Rd: zero nParts for
+	  lines
+
+2010-08-28 12:34  rsbivand
+
+	* R/Rgshhs.R, R/maptools.R, R/shapelib.R, R/sp2pbs.R, R/sp_spat1.R,
+	  R/union.R, ChangeLog, inst/ChangeLog: as.double to storage.mode
+
+2010-08-26 12:36  rsbivand
+
+	* ChangeLog, inst/ChangeLog: check Sys.which value
+
+2010-08-26 12:32  rsbivand
+
+	* DESCRIPTION, R/readGPS.R: check Sys.which value
+
+2010-08-12 17:08  rsbivand
+
+	* R/kmlLine.R, man/holepolys.Rd, DESCRIPTION, ChangeLog,
+	  inst/ChangeLog: data docs fix
+
+2010-04-22 04:47  rsbivand
+
+	* DESCRIPTION, R/shapelib.R, ChangeLog, inst/ChangeLog: read.shape
+	  filen without extension
+
+2010-04-12 08:55  rsbivand
+
+	* DESCRIPTION, ChangeLog, inst/ChangeLog: tidy
+
+2010-04-05 12:42  rsbivand
+
+	* DESCRIPTION, man/checkPolygonsHoles.Rd,
+	  man/thinnedSpatialPoly.Rd, man/unionSpatialPolygons.Rd: comment
+	  out links to rgeos
+
+2010-04-03 21:24  rsbivand
+
+	* DESCRIPTION, R/DP.R, R/Rgshhs.R, R/checkHoles.R,
+	  R/nowrapRecenter.R, R/union.R, ChangeLog, inst/ChangeLog: hide
+	  rgeos
+
+2010-04-03 18:22  rsbivand
+
+	* R/shapelib.R, ChangeLog, inst/ChangeLog: DBF filename, GSHHS C
+	  code errors addressed
+
+2010-04-03 18:01  rsbivand
+
+	* DESCRIPTION, R/AAA.R, R/shapelib.R, R/union.R,
+	  man/readShapeLines.Rd, man/readShapePoints.Rd,
+	  man/readShapePoly.Rd, man/readShapeSpatial.Rd,
+	  man/unionSpatialPolygons.Rd, src/Rgshhs.c, src/Rgshhs.h,
+	  ChangeLog, inst/ChangeLog: DBF filename, GSHHS C code errors
+	  addressed
+
+2010-01-17 20:26  rsbivand
+
+	* R/AAA.R, R/sp_bind.R, man/spRbind-methods.Rd: change spRbind for
+	  SpatialPointsDataFrame objects
+
+2010-01-10 20:42  rsbivand
+
+	* ChangeLog, inst/ChangeLog: gshhs hole fix
+
+2010-01-10 20:37  rsbivand
+
+	* R/Rgshhs.R: gshhs hole fix
+
+2010-01-08 10:46  rsbivand
+
+	* R/Rgshhs.R, ChangeLog, inst/ChangeLog: hole assignment in GSHHS
+
+2010-01-07 19:07  rsbivand
+
+	* ChangeLog, inst/ChangeLog: rgeos integration
+
+2010-01-07 19:03  rsbivand
+
+	* R/AAA.R, R/Rgshhs.R, man/Rgshhs.Rd: rgeos integration
+
+2010-01-07 13:10  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/DP.R, R/Rgshhs.R, R/checkHoles.R,
+	  R/nowrapRecenter.R, R/union.R, R/zzz.R, man/Rgshhs.Rd,
+	  man/checkPolygonsHoles.Rd, man/nowrapRecenter.Rd,
+	  man/thinnedSpatialPoly.Rd, man/unionSpatialPolygons.Rd, R/AAA.R:
+	  rgeos integration
+
+2009-12-21 13:39  rsbivand
+
+	* ChangeLog, INDEX, inst/ChangeLog: adding CCmaps
+
+2009-12-21 13:35  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/CCmaps.R, man/CCmaps.Rd, src/Rgshhs.c:
+	  adding CCmaps
+
+2009-12-18 22:56  rsbivand
+
+	* inst/share/gshhs_c.b, inst/share/wdb_borders_c.b, man/Rgshhs.Rd,
+	  man/spRbind-methods.Rd, src/Rgshhs.c, src/Rgshhs.h: GSHHS upgrade
+	  to 2.0
+
+2009-12-03 08:34  rsbivand
+
+	* INDEX, ChangeLog, inst/ChangeLog: hole example format change
+
+2009-12-03 08:31  rsbivand
+
+	* ChangeLog, DESCRIPTION, data/gpcholes.rda, man/holepolys.Rd,
+	  inst/ChangeLog: hole example format change
+
+2009-11-23 12:49  rsbivand
+
+	* man/getinfo.shape.Rd, ChangeLog, inst/ChangeLog: reinstate
+	  getinfo.shape
+
+2009-11-23 12:45  rsbivand
+
+	* NAMESPACE: reinstate getinfo.shape
+
+2009-11-20 13:26  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/dotsinpolys.R,
+	  inst/old_man/Map2poly.Rd, inst/old_man/get.Pcent.Rd,
+	  inst/old_man/maptools.Rd, inst/old_man/plot.Map.Rd,
+	  inst/old_man/plot.polylist.Rd, inst/old_man/read.shape.Rd,
+	  inst/old_man/subset.polylist.Rd,
+	  inst/old_man/write.linelistShape.Rd,
+	  inst/old_man/write.pointShape.Rd,
+	  inst/old_man/write.polylistShape.Rd, man/Map2poly.Rd,
+	  man/dotsInPolys.Rd, man/get.Pcent.Rd, man/holepolys.Rd,
+	  man/maptools.Rd, man/plot.Map.Rd, man/plot.polylist.Rd,
+	  man/read.shape.Rd, man/readShapeLines.Rd, man/readShapePoints.Rd,
+	  man/readShapePoly.Rd, man/readShapeSpatial.Rd,
+	  man/subset.polylist.Rd, man/symbolsInPolys.Rd,
+	  man/write.linelistShape.Rd, man/write.pointShape.Rd,
+	  man/write.polylistShape.Rd, man/leglabs.Rd, ChangeLog,
+	  inst/ChangeLog: moving deprecated functions from namespace
+
+2009-11-19 21:11  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/DP.R, man/spCbind-methods.Rd,
+	  man/spRbind-methods.Rd, man/thinnedSpatialPoly.Rd, ChangeLog,
+	  inst/ChangeLog: adding thinnedSpatialPoly
+
+2009-11-05 17:26  edzer
+
+	* R/sp_bind.R, man/spChFIDs-methods.Rd: moved spChFID method,
+	  functions and docs to package sp
+
+2009-09-17 10:22  rsbivand
+
+	* DESCRIPTION, man/GE_SpatialGrid.Rd, man/Map2poly.Rd,
+	  man/SpatialLines2PolySet.Rd, man/asciigrid.Rd, man/kmlLine.Rd,
+	  man/kmlOverlay.Rd, man/nowrapRecenter.Rd, ChangeLog,
+	  inst/ChangeLog: fix documentation links
+
+2009-07-14 11:17  rsbivand
+
+	* man/: GE_SpatialGrid.Rd, kmlLine.Rd, kmlOverlay.Rd,
+	  kmlPolygon.Rd: KML WGS84 notes added
+
+2009-06-22 16:52  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/SpatialPolys-methods.R, inst/ChangeLog:
+	  changed all.equal to identical in closed ring forcing
+
+2009-06-10 16:33  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/SpatialPolys-methods.R, inst/ChangeLog:
+	  more NULL geometry trapping
+
+2009-05-26 12:22  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/sp_spat1.R, R/spatstat1.R,
+	  inst/ChangeLog, man/as.ppp.Rd: coercion from owin/tess to
+	  SpatialPolygons
+
+2009-04-08 19:29  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/spatstat1.R, inst/ChangeLog:
+	  improvements to spatstat support - Adrian Baddeley
+
+2009-03-29 17:32  rsbivand
+
+	* ChangeLog, DESCRIPTION, inst/ChangeLog: drop=FALSE in reading
+	  line and polygon shapefiles
+
+2009-03-29 17:29  rsbivand
+
+	* LICENSE, R/SpatialLines-methods.R, R/SpatialPolys-methods.R,
+	  inst/LICENSE: drop=FALSE in reading line and polygon shapefiles
+
+2009-03-17 21:43  vir
+
+	* R/readSplus.R: Minor fix to allow for a line with NA's just
+	  before the END.
+
+2009-03-10 18:23  rsbivand
+
+	* INDEX, LICENSE, inst/LICENSE, ChangeLog, inst/ChangeLog: data web
+	  link
+
+2009-02-18 12:58  rsbivand
+
+	* inst/shapes/fylk-val-ll.dbf, inst/shapes/fylk-val-ll.shp,
+	  inst/shapes/fylk-val-ll.shx, data/wrld_simpl.rda, ChangeLog,
+	  inst/ChangeLog: kml writing; GSHHS lines shift
+
+2009-02-18 12:55  rsbivand
+
+	* ChangeLog, DESCRIPTION, INDEX, NAMESPACE, R/Rgshhs.R,
+	  inst/ChangeLog, inst/LICENSE, inst/share/gshhs_c.b,
+	  man/Rgshhs.Rd, R/getKMLcoordinates.R, R/kmlLine.R,
+	  R/kmlPolygon.R, man/getKMLcoordinates.Rd, man/kmlLine.Rd,
+	  man/kmlPolygon.Rd, man/wrld_simpl.Rd: kml writing; GSHHS lines
+	  shift
+
+2009-02-05 18:45  rsbivand
+
+	* man/asciigrid.Rd: tidy
+
+2009-02-05 16:38  rsbivand
+
+	* R/readSplus.R, man/sp2WB.Rd, ChangeLog, inst/ChangeLog: adding
+	  features to readSplus
+
+2009-02-05 14:38  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/readSplus.R, inst/share/Splus.map,
+	  man/readSplus.Rd, ChangeLog, inst/ChangeLog: adding readSplus for
+	  WinBUGS
+
+2009-01-20 15:38  rsbivand
+
+	* DESCRIPTION, R/sun-methods.R, ChangeLog, inst/ChangeLog: sun NULL
+	  tz
+
+2008-11-13 15:06  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/readGPS.R, inst/ChangeLog,
+	  man/readGPS.Rd: ... for readGPS()
+
+2008-11-12 15:55  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/SP2owin.R, R/sp_spat1.R, R/spatstat1.R,
+	  man/as.ppp.Rd, man/ppp.Rd: as.psp
+
+2008-10-02 16:46  rsbivand
+
+	* ChangeLog, inst/ChangeLog: changelog
+
+2008-08-14 11:09  rsbivand
+
+	* DESCRIPTION, INDEX, R/spmaps.R: NULL bug in maps2SP
+
+2008-06-27 10:15  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/SpatialLines-methods.R,
+	  R/SpatialPoints-methods.R, R/SpatialPolys-methods.R,
+	  R/maptools.R, R/pcent.R, R/readGPS.R, R/shapelib.R, R/subset.R,
+	  inst/changes, man/readShapePoly.Rd, R/Spatial-methods.R,
+	  man/readShapeSpatial.Rd, ChangeLog, inst/ChangeLog: readSpatial
+	  wrapper
+
+2008-06-19 07:56  rsbivand
+
+	* DESCRIPTION, R/sp2pbs.R: PolySet2SpatialLines UTM zone update
+
+2008-05-24 19:18  rsbivand
+
+	* ChangeLog, INDEX, inst/ChangeLog: GSHHS support to 1.10
+
+2008-05-24 18:27  rsbivand
+
+	* DESCRIPTION, R/Rgshhs.R, R/sp2pbs.R, inst/share/gshhs_c.b,
+	  inst/share/wdb_borders_c.b, man/Rgshhs.Rd, src/Rgshhs.c,
+	  src/Rgshhs.h: GSHHS support to 1.10
+
+2008-04-14 22:49  rsbivand
+
+	* DESCRIPTION: tidy
+
+2008-04-14 22:35  rsbivand
+
+	* ChangeLog, inst/ChangeLog: tidy
+
+2008-04-14 22:33  rsbivand
+
+	* DESCRIPTION: PolySet
+
+2008-04-13 18:47  rsbivand
+
+	* DESCRIPTION, INDEX, R/sp2pbs.R: PBS to SP SID bug
+
+2008-04-10 16:07  rsbivand
+
+	* man/readShapePoly.Rd: tidy
+
+2008-04-04 19:59  rsbivand
+
+	* DESCRIPTION, R/SpatialPolys-methods.R, man/readShapePoly.Rd: ABS
+	  nulls
+
+2008-03-30 21:48  rsbivand
+
+	* DESCRIPTION, R/Rgshhs.R, man/Rgshhs.Rd: GSHHS clip
+
+2008-03-03 22:47  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/GE_png.R, R/shapelib.R, inst/ChangeLog,
+	  man/GE_SpatialGrid.Rd, man/readShapeLines.Rd,
+	  man/readShapePoints.Rd, man/readShapePoly.Rd: makegrid
+
+2008-02-09 13:42  rsbivand
+
+	* DESCRIPTION, man/Rgshhs.Rd, man/SpatialLines2PolySet.Rd,
+	  man/checkPolygonsHoles.Rd, man/dotsInPolys.Rd,
+	  man/gcDestination.Rd, man/map2SpatialPolygons.Rd,
+	  man/nowrapRecenter.Rd, man/pal2SpatialPolygons.Rd,
+	  man/plot.polylist.Rd, man/pointLabel.Rd, man/readGPS.Rd,
+	  man/readShapeLines.Rd, man/readShapePoints.Rd,
+	  man/readShapePoly.Rd, man/sp2WB.Rd, man/sp2tmap.Rd,
+	  man/sun-methods.Rd, man/symbolsInPolys.Rd,
+	  man/unionSpatialPolygons.Rd, man/write.linelistShape.Rd,
+	  man/write.pointShape.Rd, man/write.polylistShape.Rd: line lengths
+	  in help
+
+2008-01-30 21:53  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/GE_png.R, man/GE_SpatialGrid.Rd: SG
+	  creation
+
+2008-01-30 09:26  rsbivand
+
+	* R/elide.R: ppp + getinfo
+
+2008-01-29 12:36  rsbivand
+
+	* R/elide.R: ppp + getinfo
+
+2008-01-29 12:00  rsbivand
+
+	* R/elide.R, man/elide-methods.Rd: ppp + getinfo
+
+2008-01-29 11:37  rsbivand
+
+	* R/: sp_spat1.R, spatstat1.R: ppp + getinfo
+
+2008-01-29 10:52  rsbivand
+
+	* R/shapelib.R, R/sp_spat1.R, src/Rshapeget.c, src/Rshapeinfo.c:
+	  ppp + getinfo
+
+2008-01-29 10:03  rsbivand
+
+	* src/Rshapeinfo.c: ppp + getinfo
+
+2008-01-29 09:50  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/shapelib.R, R/sp_spat1.R,
+	  R/spatstat1.R, src/Rshapeinfo.c: ppp + getinfo
+
+2008-01-20 16:08  rsbivand
+
+	* ChangeLog, DESCRIPTION, NAMESPACE, R/SpatialPolys-methods.R,
+	  R/sp2pbs.R, inst/ChangeLog, man/SpatialLines2PolySet.Rd: pbs to
+	  sp
+
+2007-12-13 18:32  rsbivand
+
+	* DESCRIPTION, R/elide.R: elide
+
+2007-12-09 19:03  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/elide.R, inst/ChangeLog,
+	  man/elide-methods.Rd, src/Rgshhs.c, src/Rgshhs.h: elide shift
+
+2007-11-21 23:37  rsbivand
+
+	* R/elide.R: elide bug
+
+2007-11-16 10:12  rsbivand
+
+	* DESCRIPTION, inst/changes, inst/share/gshhs_c.b, man/Rgshhs.Rd,
+	  src/Rgshhs.c, src/Rgshhs.h, src/shpopen.c: GSHHS to 1.5
+
+2007-11-10 14:17  rsbivand
+
+	* src/: shpopen.c, shptree.c: assert
+
+2007-10-31 16:43  rsbivand
+
+	* ChangeLog, R/sp2WB.R, inst/ChangeLog: thingy to slot
+
+2007-10-31 14:46  rsbivand
+
+	* ChangeLog, DESCRIPTION, R/SP2owin.R, R/SpatialLines-methods.R,
+	  R/SpatialPolys-methods.R, R/checkHoles.R, R/dotsinpolys.R,
+	  R/nowrapRecenter.R, R/sp2WB.R, R/sp2pbs.R, R/union.R,
+	  inst/ChangeLog, inst/changes, man/checkPolygonsHoles.Rd,
+	  man/dotsInPolys.Rd, man/gcDestination.Rd,
+	  man/map2SpatialPolygons.Rd, man/pal2SpatialPolygons.Rd,
+	  man/readShapePoly.Rd, man/symbolsInPolys.Rd,
+	  man/unionSpatialPolygons.Rd: thingy to slot
+
+2007-10-23 14:50  rsbivand
+
+	* DESCRIPTION, LICENSE, inst/LICENSE, inst/changes,
+	  man/Map2poly.Rd, man/as.ppp.Rd, man/readShapeLines.Rd,
+	  man/readShapePoints.Rd, man/readShapePoly.Rd: license
+
+2007-10-10 08:25  rsbivand
+
+	* ChangeLog, INDEX, inst/ChangeLog, inst/changes: tidy
+
+2007-10-06 19:38  rsbivand
+
+	* man/gcDestination.Rd: elide first cut
+
+2007-10-06 12:05  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/elide.R, R/gc_dist.R,
+	  man/elide-methods.Rd: elide first cut
+
+2007-09-29 18:37  rsbivand
+
+	* R/pointLabel.R: pointLabel update
+
+2007-09-26 11:09  rsbivand
+
+	* R/asciigrid.R: Ascii Grid dec
+
+2007-09-18 10:19  rsbivand
+
+	* ChangeLog, inst/ChangeLog, inst/changes: tidy
+
+2007-09-18 10:15  rsbivand
+
+	* DESCRIPTION, R/maptools.R, R/sp2WB.R: tidy
+
+2007-09-14 22:14  rsbivand
+
+	* R/sp2Mondrian.R, man/sp2Mondrian.Rd: Mondrian new format
+
+2007-09-14 08:58  rsbivand
+
+	* DESCRIPTION, R/SpatialLines-methods.R, R/SpatialPoints-methods.R,
+	  R/SpatialPolys-methods.R, R/shapelib.R, man/readShapeLines.Rd,
+	  man/readShapePoints.Rd, man/readShapePoly.Rd,
+	  man/write.linelistShape.Rd, man/write.pointShape.Rd,
+	  man/write.polylistShape.Rd: pass through max_nchar
+
+2007-09-05 18:07  rsbivand
+
+	* DESCRIPTION, R/spmaps.R, ChangeLog, inst/ChangeLog, inst/changes:
+	  double NA at end of map coords
+
+2007-07-25 10:49  rsbivand
+
+	* man/write.polylistShape.Rd: 3D polylist, write line shape, owin
+	  poly
+
+2007-07-19 21:33  rsbivand
+
+	* DESCRIPTION, R/SP2owin.R, R/maptools.R, R/shapelib.R,
+	  inst/changes, man/as.ppp.Rd, man/write.linelistShape.Rd,
+	  man/write.polylistShape.Rd, src/Rshapewrite1.c: 3D polylist
+	  writing
+
+2007-06-11 10:05  rsbivand
+
+	* DESCRIPTION: encoding
+
+2007-06-10 23:27  rsbivand
+
+	* ChangeLog, INDEX, inst/ChangeLog, inst/changes, man/Map2poly.Rd,
+	  man/sp2WB.Rd: encode
+
+2007-06-10 22:47  rsbivand
+
+	* ChangeLog, DESCRIPTION, NAMESPACE, R/pointLabel.R,
+	  inst/ChangeLog, man/pointLabel.Rd: pointLabel
+
+2007-06-05 15:31  rsbivand
+
+	* INDEX, R/readGPS.R: con correction
+
+2007-05-08 18:35  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/sp_spat1.R, man/as.ppp.Rd: revert
+	  spatstat coerce
+
+2007-05-07 10:55  rsbivand
+
+	* man/readGPS.Rd: tidy
+
+2007-04-28 21:41  rsbivand
+
+	* man/readShapePoints.Rd: doc error
+
+2007-04-27 18:37  rsbivand
+
+	* man/readGPS.Rd: resolve GPS conflict
+
+2007-04-21 06:27  rsbivand
+
+	* DESCRIPTION, INDEX, R/GE_png.R: GE dimnames
+
+2007-04-16 06:01  rsbivand
+
+	* man/readGPS.Rd: sp problem and gps
+
+2007-04-16 04:40  rsbivand
+
+	* DESCRIPTION, R/readGPS.R, R/spmaps.R, man/readGPS.Rd: sp problem
+	  and gps
+
+2007-03-29 16:34  rsbivand
+
+	* inst/changes: tidy
+
+2007-03-23 18:50  rsbivand
+
+	* DESCRIPTION, INDEX, NAMESPACE, R/plot.Map.R, R/readGPS.R,
+	  man/readGPS.Rd: readGPS
+
+2007-02-09 21:09  rsbivand
+
+	* R/SpatialPolys-methods.R, man/readShapePoly.Rd: force_ring in
+	  readShapePoly
+
+2007-02-01 15:28  rsbivand
+
+	* DESCRIPTION, INDEX, R/sun-methods.R, man/plot.Map.Rd,
+	  man/plot.polylist.Rd, man/sun-methods.Rd: sun manual tidy
+
+2007-01-21 11:50  rsbivand
+
+	* man/: GE_SpatialGrid.Rd, kmlOverlay.Rd: GE_PNG additions
+
+2007-01-20 22:35  rsbivand
+
+	* DESCRIPTION, NAMESPACE, inst/changes, R/GE_png.R,
+	  man/GE_SpatialGrid.Rd, man/kmlOverlay.Rd: GE_PNG additions
+
+2007-01-16 10:39  rsbivand
+
+	* INDEX: im and sun-methods
+
+2007-01-16 10:23  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/sp_spat1.R, inst/changes,
+	  man/as.ppp.Rd, man/crepuscule-methods.Rd, man/ppp.Rd,
+	  man/solarnoon-methods.Rd, man/solarpos-methods.Rd,
+	  man/sun-methods.Rd, man/sunriset-methods.Rd: im and sun-methods
+
+2006-12-02 16:38  rsbivand
+
+	* DESCRIPTION, INDEX, man/solarnoon-methods.Rd: release
+
+2006-11-22 13:03  rsbivand
+
+	* R/Rgshhs.R: Rgshhs
+
+2006-11-16 15:34  rsbivand
+
+	* R/sp_bind.R, inst/share/nc_xtra.dbf, man/spCbind-methods.Rd,
+	  man/spChFIDs-methods.Rd, man/spRbind-methods.Rd: bind
+
+2006-11-16 15:31  rsbivand
+
+	* DESCRIPTION, INDEX, NAMESPACE, R/sp2pbs.R, man/Rgshhs.Rd,
+	  man/map2SpatialPolygons.Rd, man/plot.polylist.Rd,
+	  man/read.shape.Rd, man/subset.polylist.Rd, src/Rgshhs.c: bind
+
+2006-10-31 14:06  rsbivand
+
+	* NAMESPACE, R/SP2owin.R, R/sp_tools.R, R/sun.R, inst/changes,
+	  inst/share/co37_d90.e00, inst/share/gshhs_c.b, R/Rgshhs.R,
+	  R/checkHoles.R, R/nowrapRecenter.R, R/union.R, man/Rgshhs.Rd,
+	  man/checkPolygonsHoles.Rd, man/nowrapRecenter.Rd,
+	  man/pal2SpatialPolygons.Rd, man/unionSpatialPolygons.Rd,
+	  src/Rgshhs.c, src/Rgshhs.h: sun and r-spatial integration
+
+2006-10-31 09:29  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/sun.R, R/zzz.R, R/SP2owin.R,
+	  R/sp2pbs.R, R/sp_spat1.R, R/sp_tools.R, R/spatstat1.R,
+	  R/spmaps.R, R/sun-methods.R, man/ContourLines2SLDF.Rd,
+	  man/SpatialLines2PolySet.Rd, man/as.ppp.Rd,
+	  man/crepuscule-methods.Rd, man/map2SpatialPolygons.Rd,
+	  man/ppp.Rd, man/solarnoon-methods.Rd, man/solarpos-methods.Rd,
+	  man/sun.Rd, man/sunriset-methods.Rd: sun and r-spatial
+	  integration
+
+2006-10-29 14:53  rsbivand
+
+	* R/sun.R: sun ephemerides
+
+2006-10-28 21:56  rsbivand
+
+	* R/sun.R: sun ephemerides
+
+2006-10-28 19:23  rsbivand
+
+	* DESCRIPTION, INDEX, NAMESPACE, R/sun.R, inst/changes, man/sun.Rd:
+	  sun ephemerides
+
+2006-10-19 22:03  rsbivand
+
+	* DESCRIPTION, R/dotsinpolys.R, inst/changes: dostInPolys NULL
+
+2006-09-21 21:42  rsbivand
+
+	* DESCRIPTION: R 2.4.0
+
+2006-08-30 16:50  rsbivand
+
+	* DESCRIPTION, src/Rshapewrite1.c: pointZ
+
+2006-08-30 08:59  rsbivand
+
+	* DESCRIPTION, LICENSE, R/maptools.R, R/shapelib.R, inst/LICENSE,
+	  inst/changes, man/readShapePoints.Rd, src/Rshapewrite.c,
+	  inst/shapes/pointZ.dbf, inst/shapes/pointZ.prj,
+	  inst/shapes/pointZ.shp, inst/shapes/pointZ.shx: pointZ
+
+2006-05-02 09:07  rsbivand
+
+	* DESCRIPTION, R/SpatialLines-methods.R, R/SpatialPoints-methods.R,
+	  R/SpatialPolys-methods.R, R/shapelib.R, inst/changes,
+	  man/read.shape.Rd, man/readShapeLines.Rd, man/readShapePoints.Rd,
+	  man/readShapePoly.Rd, src/Rshapeget.c: Geolytics bug
+
+2006-04-10 21:21  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/asciigrid.R, R/azimuth.R, R/sp2WB.R,
+	  inst/changes, man/asciigrid.Rd, man/dotsInPolys.Rd,
+	  man/gzAzimuth.Rd: fix to sp2WB, readAsciiGrid, writeAsciiGrid
+
+2006-03-20 09:32  rsbivand
+
+	* DESCRIPTION, R/sp2Mondrian.R, man/sp2Mondrian.Rd: Mondrian
+
+2006-03-10 13:49  rsbivand
+
+	* DESCRIPTION, INDEX, NAMESPACE, R/asciigrid.R, R/sp2tmap.R,
+	  inst/changes, man/asciigrid.Rd, man/sp2WB.Rd, R/azimuth.R,
+	  R/sp2Mondrian.R, man/gzAzimuth.Rd, man/sp2Mondrian.Rd:
+	  sp2Mondrian
+
+2006-03-01 09:53  rsbivand
+
+	* DESCRIPTION, INDEX, R/SpatialPoints-methods.R,
+	  R/SpatialPolys-methods.R, R/plot.Map.R, R/shapelib.R,
+	  inst/changes, man/plot.Map.Rd, man/write.linelistShape.Rd,
+	  man/write.pointShape.Rd, man/write.polylistShape.Rd,
+	  src/Rshapeget.c: checks on polylists
+
+2006-01-11 12:08  rsbivand
+
+	* R/sp2tmap.R, man/sp2tmap.Rd: tmap
+
+2006-01-10 14:08  rsbivand
+
+	* R/sp2tmap.R, man/sp2tmap.Rd: tmap
+
+2006-01-09 14:33  rsbivand
+
+	* NAMESPACE, man/sp2tmap.Rd: sp2tmap
+
+2006-01-08 22:23  rsbivand
+
+	* man/sp2tmap.Rd: adding sp2tmap
+
+2006-01-08 19:34  rsbivand
+
+	* DESCRIPTION, R/sp2WB.R, R/sp2tmap.R, man/asciigrid.Rd,
+	  man/sp2tmap.Rd: adding sp2tmap
+
+2005-12-15 16:00  rsbivand
+
+	* INDEX: to 5-4
+
+2005-12-12 22:27  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/SpatialPoints-methods.R,
+	  R/SpatialPolys-methods.R, R/shapelib.R, R/sp2WB.R, inst/changes,
+	  man/readShapePoly.Rd, man/sp2WB.Rd, man/write.pointShape.Rd:
+	  sp2WB
+
+2005-10-03 19:44  rsbivand
+
+	* DESCRIPTION, R/SpatialLines-methods.R, inst/changes: lines bugs
+
+2005-09-14 23:08  rsbivand
+
+	* R/SpatialPolys-methods.R: as at 0.5-2
+
+2005-09-13 19:24  rsbivand
+
+	* man/: dotsInPolys.Rd, symbolsInPolys.Rd: remove suggested splancs
+
+2005-09-13 16:53  rsbivand
+
+	* DESCRIPTION, R/dotsinpolys.R, man/dotsInPolys.Rd,
+	  man/plot.Map.Rd, man/readShapePoly.Rd, man/symbolsInPolys.Rd:
+	  remove suggested splancs
+
+2005-09-09 16:28  rsbivand
+
+	* R/plot.Map.R: ... in plot.Map
+
+2005-09-08 22:28  rsbivand
+
+	* INDEX, R/SpatialPolys-methods.R, R/dotsinpolys.R,
+	  man/dotsInPolys.Rd: dotsinpolys begun
+
+2005-09-08 13:11  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/maptools.R, R/shapelib.R: codetools
+
+2005-09-05 14:54  rsbivand
+
+	* man/asciigrid.Rd: links
+
+2005-09-05 11:00  rsbivand
+
+	* DESCRIPTION, NAMESPACE, R/SpatialLines-methods.R,
+	  R/SpatialPoints-methods.R, R/SpatialPolys-methods.R,
+	  R/asciigrid.R, man/asciigrid.Rd, man/readShapeLines.Rd,
+	  man/readShapePoints.Rd, man/readShapePoly.Rd,
+	  man/read_ShapeLines.Rd, man/read_ShapePoints.Rd,
+	  man/read_ShapePoly.Rd: removing _
+
+2005-09-03 18:19  rsbivand
+
+	* inst/changes, man/read_ShapeLines.Rd, man/read_ShapePoly.Rd:
+	  added ... to degAxis()
+
+2005-09-02 09:40  rsbivand
+
+	* NAMESPACE, R/asciigrid.R, man/asciigrid.Rd: more asciigrid
+
+2005-09-01 20:26  rsbivand
+
+	* inst/: shapes/fylk-val.shp, shapes/fylk-val.shx, grids/simple.ag,
+	  shapes/sids.shp, shapes/sids.shx, grids/test.ag: Initial import.
+
+2005-09-01 20:26  rsbivand
+
+	* inst/: shapes/fylk-val.shp, shapes/fylk-val.shx, grids/simple.ag,
+	  shapes/sids.shp, shapes/sids.shx, grids/test.ag: Initial revision
+
+2005-09-01 20:21  rsbivand
+
+	* R/SpatialPolys-methods.R, man/Map2poly.Rd, man/dotsInPolys.Rd,
+	  man/get.Pcent.Rd, man/holepolys.Rd, man/maptools.Rd,
+	  man/plot.Map.Rd, man/plot.polylist.Rd, man/read.shape.Rd,
+	  man/read_ShapeLines.Rd, man/subset.polylist.Rd,
+	  man/symbolsInPolys.Rd, man/write.linelistShape.Rd,
+	  man/write.pointShape.Rd, man/asciigrid.Rd,
+	  man/read_ShapePoints.Rd, man/read_ShapePoly.Rd,
+	  man/write.polylistShape.Rd, src/Rcentroid.c, src/Rshapeget.c,
+	  src/Rshapeinfo.c, src/Rshapewrite.c, src/insiders.c,
+	  src/maptools.h, src/Rshapewrite1.c, src/shapefil.h,
+	  src/shpopen.c, src/shptree.c, data/gpcholes.rda, inst/LICENSE,
+	  inst/changes, inst/shapes/sids.dbf, src/pip.c,
+	  inst/shapes/baltim.dbf, inst/shapes/baltim.shp,
+	  inst/shapes/baltim.shx, inst/shapes/columbus.dbf,
+	  inst/shapes/fylk-val.dbf, inst/shapes/columbus.shp,
+	  inst/shapes/columbus.shx: Initial import.
+
+2005-09-01 20:21  rsbivand
+
+	* R/SpatialPolys-methods.R, man/Map2poly.Rd, man/dotsInPolys.Rd,
+	  man/get.Pcent.Rd, man/holepolys.Rd, man/maptools.Rd,
+	  man/plot.Map.Rd, man/plot.polylist.Rd, man/read.shape.Rd,
+	  man/read_ShapeLines.Rd, man/subset.polylist.Rd,
+	  man/symbolsInPolys.Rd, man/write.linelistShape.Rd,
+	  man/write.pointShape.Rd, man/asciigrid.Rd,
+	  man/read_ShapePoints.Rd, man/read_ShapePoly.Rd,
+	  man/write.polylistShape.Rd, src/Rcentroid.c, src/Rshapeget.c,
+	  src/Rshapeinfo.c, src/Rshapewrite.c, src/insiders.c,
+	  src/maptools.h, src/Rshapewrite1.c, src/shapefil.h,
+	  src/shpopen.c, src/shptree.c, data/gpcholes.rda, inst/LICENSE,
+	  inst/changes, inst/shapes/sids.dbf, src/pip.c,
+	  inst/shapes/baltim.dbf, inst/shapes/baltim.shp,
+	  inst/shapes/baltim.shx, inst/shapes/columbus.dbf,
+	  inst/shapes/fylk-val.dbf, inst/shapes/columbus.shp,
+	  inst/shapes/columbus.shx: Initial revision
+
+2005-09-01 20:18  rsbivand
+
+	* DESCRIPTION, INDEX, LICENSE, NAMESPACE, R/shapelib.R,
+	  R/SpatialLines-methods.R, R/SpatialPoints-methods.R,
+	  R/asciigrid.R, R/colslegs.R, R/dotsinpolys.R, R/maptools.R,
+	  R/maptoolsChanges.R, R/pcent.R, R/plot.Map.R,
+	  R/point.in.polygon.R, R/subset.R, R/zzz.R: Initial import.
+
+2005-09-01 20:18  rsbivand
+
+	* DESCRIPTION, INDEX, LICENSE, NAMESPACE, R/shapelib.R,
+	  R/SpatialLines-methods.R, R/SpatialPoints-methods.R,
+	  R/asciigrid.R, R/colslegs.R, R/dotsinpolys.R, R/maptools.R,
+	  R/maptoolsChanges.R, R/pcent.R, R/plot.Map.R,
+	  R/point.in.polygon.R, R/subset.R, R/zzz.R: Initial revision
 

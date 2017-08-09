@@ -1,4 +1,4 @@
-provide.data(trawl)
+with(trawl, {
 
 ind       <- (Zone == 1)
 score1    <- Score1[ind]
@@ -50,4 +50,5 @@ contour(x1, x2, (est1 - est0)/se, xlab = "longitude", ylab = "latitude")
 
 par(cex=1)
 par(mfrow = c(1,1))
+})
 

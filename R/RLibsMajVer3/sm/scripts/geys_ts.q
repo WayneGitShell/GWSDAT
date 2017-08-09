@@ -1,4 +1,3 @@
-data(geyser)
 d<-geyser$duration
 cat("Data are: d=(duration of geyser eruption)\n")
 cat("Marginal density of d(t) first, followed by\n")

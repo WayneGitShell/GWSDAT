@@ -1,4 +1,4 @@
-provide.data(stanford)
+with(stanford, {
 
 x            <- Age
 y            <- Log.time
@@ -19,3 +19,4 @@ for (i in (2:length(hseq))) {
   text(x[status != st.code], y[status != st.code], "o")
   estimate.old <- estimate.new
   }
+})

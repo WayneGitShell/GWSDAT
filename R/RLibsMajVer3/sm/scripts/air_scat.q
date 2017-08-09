@@ -1,4 +1,4 @@
-provide.data(airpc)
+with(airpc, {
 pc  <- cbind(Comp.1, Comp.2)
 pc1 <- pc[Period==1,]
 pc2 <- pc[Period==2,]
@@ -20,3 +20,4 @@ plot(pc3, xlim = xlim, ylim = ylim, main="1956-84")
 lines(xlim, c(0,0), lty=2)
 lines(c(0,0), ylim, lty=2)
 par(mfrow=c(1,1))
+})

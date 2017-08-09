@@ -1,9 +1,8 @@
 library(gam)
-provide.data(trawl)
-ind       <- (Year == 0 & Zone == 1)
-score1    <- Score1[ind]
-latitude  <- Latitude[ind]
-longitude <- Longitude[ind] - 143
+ind       <- (trawl$Year == 0 & trawl$Zone == 1)
+score1    <- trawl$Score1[ind]
+latitude  <- trawl$Latitude[ind]
+longitude <- trawl$Longitude[ind] - 143
 position  <- cbind(latitude, longitude = -longitude)
 
 par(mfrow = c(2,2))

@@ -1,4 +1,4 @@
-subroutine delout(delsum,nadj,madj,x,y,ntot,npd,ind,nerror)
+subroutine delout(delsum,nadj,madj,x,y,ntot,npd,nerror)
 
 # Put a summary of the Delaunay triangles with a vertex at point i,
 # for i = 1, ..., npd, into the array delsum.  Do this in the original
@@ -8,15 +8,13 @@ subroutine delout(delsum,nadj,madj,x,y,ntot,npd,ind,nerror)
 
 implicit double precision(a-h,o-z)
 dimension nadj(-3:ntot,0:madj), x(-3:ntot), y(-3:ntot)
-dimension delsum(npd,4), ind(npd)
+dimension delsum(npd,4)
 
-do i1 = 1,npd {
+do i = 1,npd {
         area = 0.   # Initialize area of polygon consisting of triangles
                     # with a vertex at point i.
-
-        # Get the point number, its coordinates and the number of
+        # Get the coordinates of the point and the number of
         # (real) triangles emanating from it.
-        i = ind(i1)
         np = nadj(i,0)
 	xi = x(i)
 	yi = y(i)
@@ -45,10 +43,10 @@ do i1 = 1,npd {
                 # triangle eventually appears 3 times over.
                 area = area+tmp/3.
         }
-	delsum(i1,1) = xi
-	delsum(i1,2) = yi
-	delsum(i1,3) = npt
-	delsum(i1,4) = area
+	delsum(i,1) = xi
+	delsum(i,2) = yi
+	delsum(i,3) = npt
+	delsum(i,4) = area
 }
 
 return

@@ -1,6 +1,7 @@
 ArcObj2SLDF	ContourLines2SLDF
 as.im.RasterLayer	as.ppp
 as.im.SpatialGridDataFrame	as.ppp
+as.linnet.SpatialLines	as.linnet.SpatialLines
 as.owin.SpatialGridDataFrame	as.ppp
 as.owin.SpatialPixelsDataFrame	as.ppp
 as.owin.SpatialPolygons	as.ppp
@@ -31,7 +32,9 @@ coerce,psp,SpatialLines-method	as.ppp
 coerce,RasterLayer,im-method	as.ppp
 coerce,SpatialGridDataFrame,im-method	as.ppp
 coerce,SpatialGridDataFrame,owin-method	as.ppp
+coerce,SpatialLines,linnet-method	as.linnet.SpatialLines
 coerce,SpatialLines,psp-method	as.ppp
+coerce,SpatialLinesDataFrame,linnet-method	as.linnet.SpatialLines
 coerce,SpatialLinesDataFrame,psp-method	as.ppp
 coerce,SpatialPixelsDataFrame,owin-method	as.ppp
 coerce,SpatialPoints,ppp-method	as.ppp

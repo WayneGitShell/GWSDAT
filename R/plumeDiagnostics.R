@@ -110,7 +110,7 @@ getPlumeStats <- function(panel,
                             conc_thresh = plume_thresh,
                             substance = substance,
                             ground_porosity = ground_porosity,
-                            coord_unit = panel$All.Data$well_coords$unit,
+                            coord_unit = panel$All.Data$sample_loc$unit,
                             conc_unit = panel$rgUnits
                             )
   

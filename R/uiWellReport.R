@@ -19,9 +19,9 @@ uiWellReport <- function() {
       chooserInput("well_chooser", 
                  leftLabel = "Include in Report", 
                  rightLabel = "Exclude from Report", 
-                 leftChoices = sort(as.character(pnl$All.Data$All.Wells)), 
+                 leftChoices = sort(as.character(pnl$All.Data$sample_loc$names)), 
                  rightChoices = c(), 
-                 size = min(15, length(pnl$All.Data$All.Wells) + 3), multiple = TRUE 
+                 size = min(15, length(pnl$All.Data$sample_loc$names) + 3), multiple = TRUE 
                 ),
       
       radioButtons("well_report_logscale", label = "Use Log-Scale",

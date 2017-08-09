@@ -1,5 +1,8 @@
+import(methods)
+
 exportClasses(COMIDispatch, IUnknown, COMList, COMTypedList)
-exportClasses(CompiledCOMIDispatch, COMTypedNamedList, COMTypedParameterizedNamedList, CompiledCOMCoClass) 
+exportClasses(CompiledCOMIDispatch, COMTypedNamedList,
+              COMTypedParameterizedNamedList, CompiledCOMCoClass)
 
 export(COMNames)
 

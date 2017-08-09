@@ -51,7 +51,7 @@ plotSpatialImage_main <- function(panel, substance = " ", timestep = 1,
   if ("Overlay ShapeFiles" %in% names(panel$ScaleCols))
     Show.ShapeFile <- panel$ScaleCols["Overlay ShapeFiles"]
  
-  Well.Coords <- panel$All.Data$well_coords$data
+  Well.Coords <- panel$All.Data$sample_loc$data
   
   
   temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]

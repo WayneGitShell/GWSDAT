@@ -1,4 +1,4 @@
-provide.data(aircraft)
+with(aircraft, {
 Speed3 <- log(Speed[Period==3])
 Span3  <- log(Span[Period==3])
 air3  <- cbind(Span3, Speed3)	
@@ -23,4 +23,5 @@ for (i in 1:nsim) {
    cat(i, " ")
    }
 cat("Empirical significance:", round(p/nsim,3), "\n")
+})
 

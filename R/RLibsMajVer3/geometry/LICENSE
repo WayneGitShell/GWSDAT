@@ -1,4 +1,16 @@
-                    Qhull, Copyright (c) 1993-2003
+This package is available under GPL (>= 3).
+
+All files in src/ apart from Rgeometry.h, Rconvhulln.c, Rdelaunayn.c
+and Rtsearch.c are taken from or based on Qhull
+(http://www.qhull.org/), and covered by the following license from
+Qhull 2012.1:
+
+                    Qhull, Copyright (c) 1993-2013
+                    
+                            C.B. Barber
+                           Arlington, MA 
+                          
+                               and
 
        The National Science and Technology Research Center for
         Computation and Visualization of Geometric Structures
@@ -7,9 +19,9 @@
 
                        email: qhull@qhull.org
 
-This software includes Qhull from The Geometry Center.  Qhull is 
-copyrighted as noted above.  Qhull is free software and may be obtained 
-via http from www.qhull.org.  It may be freely copied, modified, 
+This software includes Qhull from C.B. Barber and The Geometry Center.  
+Qhull is copyrighted as noted above.  Qhull is free software and may 
+be obtained via http from www.qhull.org.  It may be freely copied, modified, 
 and redistributed under the following conditions:
 
 1. All copyright notices must remain intact in all files.

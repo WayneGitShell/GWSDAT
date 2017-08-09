@@ -1,16 +1,16 @@
 library(gam)
-provide.data(smacker)
-Presence <- Density
+Presence <- smacker$Density
 Presence[Presence > 0] <- 1
-position <- cbind(Latitude=smack.lat, Longitude=smack.long)
-Log.depth <- log(smack.depth)
+position <- cbind(Latitude=smacker$smack.lat, Longitude=smacker$smack.long)
+Log.depth <- log(smacker$smack.depth)
+temperature <- smacker$Temperature
 model1 <- gam(Presence ~ lo(position) + lo(Log.depth)
-              + lo(Temperature), family = binomial)
-model2 <- gam(Presence ~ lo(position) + lo(Temperature),
+              + lo(temperature), family = binomial)
+model2 <- gam(Presence ~ lo(position) + lo(temperature),
               family = binomial)
 model3 <- gam(Presence ~ lo(position) + lo(Log.depth),
               family = binomial)
-model4 <- gam(Presence ~ lo(Log.depth) + lo(Temperature),
+model4 <- gam(Presence ~ lo(Log.depth) + lo(temperature),
               family = binomial)
 print(anova(model1))
 par(mfrow=c(2,2))

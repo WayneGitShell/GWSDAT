@@ -1,4 +1,4 @@
-provide.data(lcancer)
+with(lcancer, {
 cases    <- cbind(Easting, Northing)[Cancer == 1,]/10000
 controls <- cbind(Easting, Northing)[Cancer == 2,]/10000
 xlim     <- range(Easting/10000)
@@ -14,3 +14,4 @@ h <- c(0.12,0.12)
 sm.density(cases,    h = h, xlim=xlim, ylim=ylim, zlim=c(0,2))
 sm.density(controls, h = h, xlim=xlim, ylim=ylim, zlim=c(0,2))
 par(mfrow=c(1,1))
+})

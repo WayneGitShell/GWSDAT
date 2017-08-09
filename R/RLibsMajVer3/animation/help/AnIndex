@@ -1,13 +1,11 @@
 animation-package	animation-package
-ani.news	animation-defunct
 ani.options	ani.options
 ani.pause	ani.pause
 ani.record	ani.record
 ani.replay	ani.record
 ani.start	ani.start
-ani.stop	ani.stop
+ani.stop	ani.start
 animation	animation-package
-animation-defunct	animation-defunct
 bisection.method	bisection.method
 BM.circle	BM.circle
 boot.iid	boot.iid
@@ -24,7 +22,6 @@ flip.coin	flip.coin
 g.brownian.motion	g.brownian.motion
 gm.convert	convert
 grad.desc	grad.desc
-highlight.def	animation-defunct
 HuSpeech	HuSpeech
 iatemp	iatemp
 im.convert	convert
@@ -45,6 +42,7 @@ pollen	pollen
 price.ani	price.ani
 qpdf	qpdf
 quincunx	quincunx
+quincunx2	quincunx
 Rosling.bubbles	Rosling.bubbles
 sample.cluster	sample.cluster
 sample.ratio	sample.ratio
@@ -61,4 +59,3 @@ sim.qqnorm	sim.qqnorm
 vanke1127	vanke1127
 vi.grid.illusion	vi.grid.illusion
 vi.lilac.chaser	vi.lilac.chaser
-write.rss	animation-defunct

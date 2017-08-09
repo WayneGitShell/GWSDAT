@@ -1,9 +1,10 @@
-subroutine binsrt(x,y,ntot,rw,npd,ind,tx,ty,ilst,nerror)
+subroutine binsrt(x,y,rw,npd,ind,rind,tx,ty,ilst,nerror)
 # Sort the data points into bins.
 # Called by master.
 
 implicit double precision(a-h,o-z)
-dimension x(-3:ntot), y(-3:ntot), tx(npd), ty(npd)
+dimension x(npd), y(npd), tx(npd), ty(npd)
+integer rind(npd)
 dimension ind(npd), ilst(npd)
 dimension rw(4)
 
@@ -36,7 +37,7 @@ ky   = 1
 ink  = 1
 k    = 0
 do i = 1,npd { ilst(i) = 0 } # Keeps a list of those points already added
-while(ky<=kdiv) {             # to the new list.
+while(ky<=kdiv) {            # to the new list.
         do i = 1,npd {
                 if(ilst(i)==1) next  # The i-th point has already been added
                                      # to the new list.
@@ -50,7 +51,8 @@ while(ky<=kdiv) {             # to the new list.
                 if(ix==kx&jy==ky) {
                         k = k+1
                         ind(i)  = k  # Index i is the pos'n. of (x,y) in the
-                        tx(k)   = xt # old list; k is its pos'n. in the new one.
+                        rind(k) = i  # old list; k is its pos'n. in the new one.
+                        tx(k)   = xt
                         ty(k)   = yt
                         ilst(i) = 1  # Cross the i-th point off the old list.
                 }

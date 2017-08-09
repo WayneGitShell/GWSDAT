@@ -1,4 +1,4 @@
-provide.data(tephra)
+with(tephra, {
 logit <- log(Al2O3/(100-Al2O3))
 par(mfrow=c(1,2))
 h.cv <- hcv(logit, display = "line", ngrid = 32)
@@ -9,3 +9,4 @@ lines(h, nmise(sd, n, h) - 5.5, lty = 3)
 sm.density(logit, h.cv)
 sm.density(logit, lty = 3, add = TRUE)
 par(mfrow=c(1,1))
+})

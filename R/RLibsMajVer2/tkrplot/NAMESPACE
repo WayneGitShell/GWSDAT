@@ -1,3 +1,0 @@
-import(tcltk)
-export(tkpersp, tkrplot, tkrreplot)
-export(.make.tkindex, .my.tkdev)

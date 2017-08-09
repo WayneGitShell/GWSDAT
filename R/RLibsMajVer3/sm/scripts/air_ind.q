@@ -1,4 +1,4 @@
-provide.data(aircraft)
+with(aircraft, {
 Speed3 <- log(Speed[Period==3])
 Span3  <- log(Span[Period==3])
 par(mfrow=c(1,2))
@@ -7,3 +7,4 @@ air3  <- cbind(Span3, Speed3)
 sm.density(air3, display="slice", 
         xlab= "Log Span", ylab = "Log Speed")
 par(mfrow=c(1,1))
+})

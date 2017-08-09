@@ -146,11 +146,11 @@ return(list(Betas=out.Betas,trend.upper.lim=out.upper,h=sm.fit$h))
 
 
 
-All.Time.Evals  <-All.Data$All.Agg.Dates
-All.Wells       <-All.Data$All.Wells
-All.Conts       <-names(Fitted.Data)
-smThreshSe      <-as.numeric(GWSDAT_Options$smThreshSe)
-smMethod        <-GWSDAT_Options$smMethod
+All.Time.Evals  <- All.Data$All.Agg.Dates
+sample_loc_names       <- All.Data$sample_loc$names
+All.Conts       <- names(Fitted.Data)
+smThreshSe      <- as.numeric(GWSDAT_Options$smThreshSe)
+smMethod        <- GWSDAT_Options$smMethod
 
 
 
@@ -159,14 +159,14 @@ tr<-try(by(data=All.Data$Cont.Data,INDICES=list(Wells=All.Data$Cont.Data$WellNam
 
 Beta.check.ND<-try(by(data=All.Data$Cont.Data,INDICES=list(Wells=All.Data$Cont.Data$WellName,Conts=All.Data$Cont.Data$Constituent),FUN=Wrap.ND.Beta.Check,All.Time.Evals=All.Time.Evals))
 
-Abs.Thresh.Check<-my.Betas<-my.uppers<-my.Beta.ND.Check<-array(NA,dim=c(length(All.Wells),length(All.Conts),length(All.Time.Evals)))
+Abs.Thresh.Check<-my.Betas<-my.uppers<-my.Beta.ND.Check<-array(NA,dim=c(length(sample_loc_names),length(All.Conts),length(All.Time.Evals)))
 
-dimnames(Abs.Thresh.Check)<-dimnames(my.uppers)<-dimnames(my.Betas)<- 
-dimnames(my.Beta.ND.Check)<-list(sort(as.character(All.Wells),decreasing =TRUE),sort(as.character(All.Conts)),as.character(All.Time.Evals))
+dimnames(Abs.Thresh.Check)<-dimnames(my.uppers)<-dimnames(my.Betas) <- 
+dimnames(my.Beta.ND.Check)<-list(sort(sample_loc_names, decreasing = TRUE), sort(as.character(All.Conts)),as.character(All.Time.Evals))
 
-my.h<-matrix(NA,nrow=length(All.Wells),ncol=length(All.Conts))
-rownames(my.h)<-as.character(All.Wells)
-colnames(my.h)<-as.character(All.Conts)
+my.h<-matrix(NA,nrow = length(sample_loc_names), ncol=length(All.Conts))
+rownames(my.h) <- sample_loc_names
+colnames(my.h) <- All.Conts
 
 
 

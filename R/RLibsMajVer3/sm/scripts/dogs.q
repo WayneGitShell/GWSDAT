@@ -1,4 +1,4 @@
-provide.data(dogs)
+with(dogs, {
 Time <- c(1,3,5,7,9,11,13)
 plot(c(1,13), c(3,6), type="n", xlab="time", ylab="potassium")
 G <- as.numeric(dogs$Group)
@@ -21,3 +21,4 @@ sm2  <- sm.rm(Time, gr2, display="se", add=TRUE)
 points(Time,sm2$aux$mean,pch=G)
 Title <- paste(c(Title, "and", as.character(G)), collapse=" ")
 title(Title)
+})

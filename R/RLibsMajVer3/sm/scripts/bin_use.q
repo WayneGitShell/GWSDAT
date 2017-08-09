@@ -23,7 +23,7 @@ pause()
 
 #      and another
 
-provide.data(airpc)
+with(airpc, {
 pc3    <- cbind(Comp.1, Comp.2)[Period==3,]
 pc.bin <- binning(pc3)
 par(mfrow=c(1,2))
@@ -34,5 +34,5 @@ cat("this time original data rather than grid data are plotted\n")
 sm.density(pc.bin$x, h = hnorm(pc3), display = "slice", ngrid=30,
           add=TRUE, weights=pc.bin$x.freq)
 par(mfrow=c(1,1))
-
+})
 

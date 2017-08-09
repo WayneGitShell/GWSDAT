@@ -1,4 +1,4 @@
-provide.data(lcancer)
+with(lcancer, {
 
 cases    <- cbind(Easting/10000, Northing/10000)[Cancer == 1,]
 controls <- cbind(Easting/10000, Northing/10000)[Cancer == 2,]
@@ -34,4 +34,5 @@ for (i in 1:nboot) {
   }
 p <- p/nboot
 cat("\np-value = ", p, "\n")
+})
 

@@ -68,13 +68,13 @@ uiDataImport <- function() {
            
     ), # end column
     
-    column(4,
-           #h4("Well and Solute data"),
-           tableOutput('table_well_data')
-    ), # end column
-    column(4,
-           #h4("Well and Solute data"),
+    tabBox("Data", width = 8, 
+      tabPanel(title = "Concentration Measures",
+        tableOutput('table_well_data')
+      ), 
+      tabPanel(title = "Well Coordinates",
            tableOutput('table_well_coord')
+      )
     )
     
   ) # end fluidPage

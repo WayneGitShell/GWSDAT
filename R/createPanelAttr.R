@@ -86,14 +86,10 @@ createPanelAttr <- function(Curr.Site.Data) {
   panel$tempTotalPlumeDetails <-  NULL
   panel$PlumeLimEntry <- PlumeLimEntry
   panel$Porosity <- Porosity
-  
   panel$rgUnits <- "ug/l"
   panel$rgUnits_choice <-  list("ng/l","ug/l","mg/l")
   panel$Cont.rg <- names(Fitted.Data)[1]
-  
-  sorted_Wells <-  sort(as.character(All.Data$All.Wells))
-  panel$Well <- if (Use.Defaults && !is.null(Default.Values$Well)) {Default.Values$Well} else {sorted_Wells[1]}
-  
+  panel$Well <- sort(All.Data$sample_loc$names)[1]
   panel$timestep_range = c(1, length(All.Data$All.Agg.Dates))
   panel$timestep = 1
   

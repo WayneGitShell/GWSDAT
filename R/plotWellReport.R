@@ -9,8 +9,6 @@ plotWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   
   Cont.Data <- panel$All.Data$Cont.Data
   All.Conts <- panel$All.Data$All.Conts
-  All.Wells <- sort(as.character(panel$All.Data$All.Wells))
-  
   SiteName <- panel$GWSDAT_Options$SiteName
   
      

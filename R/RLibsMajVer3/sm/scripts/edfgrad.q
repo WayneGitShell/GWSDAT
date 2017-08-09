@@ -1,4 +1,4 @@
-provide.data(aircraft)
+with(aircraft, {
 
 y <- log(Span[Period==3])
 n <- length(y)
@@ -15,3 +15,4 @@ lines(c(x1,x2,x2,x1),c(y1,y1,y2,y1))
 text(x + diff(range(y))/20, y1 - 0.05, "2d")
 text(x2 + diff(range(y))/20, (y1 + y2)/2, "k/n")
 text(x, 0.02, "y")
+})
