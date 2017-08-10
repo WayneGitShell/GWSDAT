@@ -10,18 +10,18 @@ uiWellReport <- function() {
       chooserInput("solute_chooser", 
                  leftLabel = "Include in Report", 
                  rightLabel = "Exclude from Report", 
-                 leftChoices = names(pnl$Fitted.Data), 
+                 leftChoices = csite$ui_attr$substance_names, 
                  rightChoices = c(), 
-                 size = min(10, length(names(pnl$Fitted.Data)) + 3), multiple = TRUE 
+                 size = min(10, length(csite$ui_attr$substance_names) + 3), multiple = TRUE 
                 ),
     
       "Exclude wells by moving them to the right.",
       chooserInput("well_chooser", 
                  leftLabel = "Include in Report", 
                  rightLabel = "Exclude from Report", 
-                 leftChoices = sort(as.character(pnl$All.Data$sample_loc$names)), 
+                 leftChoices = csite$ui_attr$sample_loc_names, 
                  rightChoices = c(), 
-                 size = min(15, length(pnl$All.Data$sample_loc$names) + 3), multiple = TRUE 
+                 size = min(15, length(csite$ui_attr$sample_loc_names) + 3), multiple = TRUE 
                 ),
       
       radioButtons("well_report_logscale", label = "Use Log-Scale",
@@ -40,8 +40,8 @@ uiWellReport <- function() {
           
           div(style = "display: inline-block;",
               selectInput("export_format_wr", label = "Image format", 
-                          choices = pnl$image_formats, 
-                          selected = pnl$image_formats[[1]]
+                          choices = csite$ui_attr$img_formats, 
+                          selected = csite$ui_attr$img_formats[[1]]
               )
           ),
           

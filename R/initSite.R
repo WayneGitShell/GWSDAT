@@ -25,18 +25,23 @@ initSite <- function(GWSDAT_Options, progressBar) {
     stop("No fitted data returned, return class is: ", class(Fitted.Data), "\n")
   }
   
-  
+
+  # Create UI attributes
+  ui_attr <- createUIAttr(All.Data, Fitted.Data, GWSDAT_Options)
+
   # Build list with all data.
-  Curr.Site.Data <-  list(All.Data = All.Data,
-                      Fitted.Data = Fitted.Data,
-                      GWSDAT_Options = GWSDAT_Options
-                     )
+  site_data <- list(All.Data       = All.Data,
+                    Fitted.Data    = Fitted.Data,
+                    GWSDAT_Options = GWSDAT_Options,
+                    Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
+                    ui_attr        = ui_attr
+                    )
   
-  class(Curr.Site.Data) <- 'GWSDAT.Data'
+  #class(site_data) <- 'GWSDAT.Data'
   
   
-  try(rm(Fitted.Data, All.Data, GWSDAT_Options))
+  try(rm(Fitted.Data, All.Data, GWSDAT_Options, ui_attr))
   
-  return(Curr.Site.Data)
+  return(site_data)
 
 }

@@ -1,15 +1,15 @@
 
 
-plotWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,  
+plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,  
                              UseLogScale = FALSE, toPPT = FALSE){
   
   on.exit(palette("default"))
   
   require(lattice)
   
-  Cont.Data <- panel$All.Data$Cont.Data
-  All.Conts <- panel$All.Data$All.Conts
-  SiteName <- panel$GWSDAT_Options$SiteName
+  Cont.Data <- csite$All.Data$Cont.Data
+  All.Conts <- csite$All.Data$All.Conts
+  SiteName <- csite$GWSDAT_Options$SiteName
   
      
   Cont.Data <- Cont.Data[as.character(Cont.Data$Constituent) %in% Conts.to.plot,]
@@ -23,21 +23,21 @@ plotWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   Cont.Data$WellName <- factor(as.character(Cont.Data$WellName), levels = sort(Wells.to.Plot))
   Cont.Data <- Cont.Data[order(Cont.Data$SampleDate),]
   
-  if (panel$rgUnits == "mg/l") {Cont.Data$Result.Corr.ND <- Cont.Data$Result.Corr.ND/1000}
-  if (panel$rgUnits == "ng/l") {Cont.Data$Result.Corr.ND <- Cont.Data$Result.Corr.ND*1000}
+  if (csite$ui_attr$conc_unit_selected == "mg/l") {Cont.Data$Result.Corr.ND <- Cont.Data$Result.Corr.ND/1000}
+  if (csite$ui_attr$conc_unit_selected == "ng/l") {Cont.Data$Result.Corr.ND <- Cont.Data$Result.Corr.ND*1000}
   
   if (length(Conts.to.plot) == 1) {
     
-    myplot <- GWSDAT.xyplotWells(panel, Cont.Data, SiteName = SiteName,sm.fit=panel$dlines["Conc. Trend Smoother"],UseLogScale=UseLogScale)
+    myplot <- GWSDAT.xyplotWells(csite, Cont.Data, SiteName = SiteName,sm.fit=csite$ui_attr$ts_options["Conc. Trend Smoother"],UseLogScale=UseLogScale)
     
   } else {
     
-    myplot <- GWSDAT.xyplotAllContbyWells(panel, Cont.Data, SiteName = SiteName, UseLogScale = UseLogScale)
+    myplot <- GWSDAT.xyplotAllContbyWells(csite, Cont.Data, SiteName = SiteName, UseLogScale = UseLogScale)
     
   }
   
   # Make the plot. If called inside renderPlot this will send it into the 
-  # corresponding panel. 
+  # corresponding csite. 
   print(myplot)
     
   
@@ -47,7 +47,7 @@ plotWellReport <- function(panel, Conts.to.plot = NULL, Wells.to.Plot = NULL,
 
 
 
-GWSDAT.xyplotWells <- function(myrpanel, Cont.Data, SiteName="", sm.fit=TRUE, UseLogScale=FALSE){
+GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, UseLogScale=FALSE){
   
   require(lattice)
   
@@ -55,106 +55,104 @@ GWSDAT.xyplotWells <- function(myrpanel, Cont.Data, SiteName="", sm.fit=TRUE, Us
   
   
   Cont <- unique(Cont.Data$Constituent)
-  my.xlim <- range(c(myrpanel$Cont.Data$SampleDate,myrpanel$All.Data$GW.Data$SampleDate)) 
+  browser() ### csite$Cont.Data should not exist
+  my.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate)) 
   
   my.xlim.orig = my.xlim
   my.xlim[1] <- my.xlim.orig[1] - 0.025*as.numeric(diff(my.xlim.orig))
   my.xlim[2] <- my.xlim.orig[2] + 0.025*as.numeric(diff(my.xlim.orig))
   
   
-  my.key <- list( 
-    space = "top", 
-    border = FALSE, 
-    columns=2,
-    points = list( 
-      pch = rep(19,2), 
-      cex = rep(1.4,2), 
-      col = c("black","orange")
+  my.key <- list(
+    space   = "top", 
+    border  = FALSE, 
+    columns = 2,
+    points  = list( 
+    pch     = rep(19,2), 
+    cex     = rep(1.4,2), 
+    col     = c("black","orange")
     ), 
     text = list( 
-      lab=c("Detectable Data","Non-Detect Data")
+      lab = c("Detectable Data","Non-Detect Data")
     ) 
   ) 
   
-  if(NAPL.Present){
+  if (NAPL.Present) {
     
     my.key <- list( 
       space = "top", 
       border = FALSE, 
       columns=3,
       points = list( 
-        pch = rep(19,3), 
-        cex = rep(1.4,3), 
-        col = c("black","orange","red")
+      pch = rep(19,3), 
+      cex = rep(1.4,3), 
+      col = c("black","orange","red")
       ), 
       text = list( 
-        lab=c("Detectable Data","Non-Detect Data","NAPL Substituted Data")
+        lab = c("Detectable Data","Non-Detect Data","NAPL Substituted Data")
       ) 
     ) 
     
-    Cont.Data$ND<-as.character(Cont.Data$ND)
-    Cont.Data$ND[tolower(as.character(Cont.Data$Result))=="napl"]<-"NAPL"
+    Cont.Data$ND <- as.character(Cont.Data$ND)
+    Cont.Data$ND[tolower(as.character(Cont.Data$Result)) == "napl"] <- "NAPL"
   }
   
+  #
+  # There is too much going on in the function arguments. Untangle this..
+  #
   
-  my.plot <- xyplot(Result.Corr.ND~as.Date(SampleDate)|WellName,data=Cont.Data,groups=as.character(Cont.Data$ND),
-                  
-                  panel = function(x, y,groups,subscripts) {
-                    try(panel.grid(h=-1, v= 2))
-                    groupNDx<-x[groups[subscripts]=="TRUE"]
-                    groupNDy<-y[groups[subscripts]=="TRUE"]
-                    panel.xyplot(groupNDx,groupNDy,col="orange",pch=19,cex=1.0)
+  my.plot <- xyplot(Result.Corr.ND ~ as.Date(SampleDate) | WellName,
+                    data = Cont.Data,
+                    groups = as.character(Cont.Data$ND),
+                    panel = function(x, y,groups,subscripts) {
+                      try(csite.grid(h = -1, v = 2))
+                      groupNDx <- x[groups[subscripts] == "TRUE"]
+                      groupNDy <- y[groups[subscripts] == "TRUE"]
+                      panel.xyplot(groupNDx,groupNDy,col = "orange", pch = 19, cex = 1.0)
                     
+                      groupx<-x[groups[subscripts] == "FALSE"]
+                      groupy<-y[groups[subscripts] == "FALSE"]
+                      panel.xyplot(groupx,groupy,col = "black",pch=19,cex=1.0)
                     
+                      groupNAPLx <- x[groups[subscripts] == "NAPL"]
+                      groupNAPLy <- y[groups[subscripts] == "NAPL"]
                     
-                    groupx<-x[groups[subscripts]=="FALSE"]
-                    groupy<-y[groups[subscripts]=="FALSE"]
-                    panel.xyplot(groupx,groupy,col="black",pch=19,cex=1.0)
+                      if (length(groupNAPLx)>0) {panel.xyplot(groupNAPLx, groupNAPLy, col = "red", pch = 19,cex = 1.0)}
                     
-                    
-                    groupNAPLx<-x[groups[subscripts]=="NAPL"]
-                    groupNAPLy<-y[groups[subscripts]=="NAPL"]
-                    
-                    if(length(groupNAPLx)>0){panel.xyplot(groupNAPLx,groupNAPLy,col="red",pch=19,cex=1.0)}
-                    
-                    
-                    
-                    if(sm.fit && length(x)>1){
+                      if (sm.fit && length(x) > 1) {
+                      
+                        h = try(csite$Traffic.Lights$h[as.character(unique(Cont.Data[subscripts,"WellName"])),as.character(Cont)])
+                        try(eval.points<-seq(min(x,na.rm=T),max(x,na.rm=T),l=40))
+                        try(if(UseLogScale){y=log(10^y)}else{y=log(y)})
+                        try(sr<-sm.regression(x,y,h=h,display="none",eval.points=eval.points))
+                      
+                        try(sr.keep<-sr$estimate)
+                        #try(sm.est.keep  <- sm.fit$estimate)
+                        try(sr.keep      <- if(UseLogScale){log(exp(sr$estimate),base=10)}else{exp(sr$estimate)})
+                        try(sr.95up.keep <- if(UseLogScale){log(exp(sr$estimate+2*sr$se),base=10)}else{exp(sr$estimate+2*sr$se)})
+                        try(sr.95low.keep<- if(UseLogScale){log(exp(sr$estimate-2*sr$se),base=10)}else{exp(sr$estimate-2*sr$se)})
+                        try(panel.xyplot(as.Date(sr$eval.points), sr.keep,type="l",col="grey"))
+                        try(panel.xyplot(as.Date(sr$eval.points), sr.95up.keep,type="l",col="grey"))
+                        try(panel.xyplot(as.Date(sr$eval.points), sr.95low.keep,type="l",col="grey"))
                       
                       
-                      h=try(myrpanel$Traffic.Lights$h[as.character(unique(Cont.Data[subscripts,"WellName"])),as.character(Cont)])
-                      try(eval.points<-seq(min(x,na.rm=T),max(x,na.rm=T),l=40))
-                      try(if(UseLogScale){y=log(10^y)}else{y=log(y)})
-                      try(sr<-sm.regression(x,y,h=h,display="none",eval.points=eval.points))
-                      
-                      try(sr.keep<-sr$estimate)
-                      #try(sm.est.keep  <- sm.fit$estimate)
-                      try(sr.keep      <- if(UseLogScale){log(exp(sr$estimate),base=10)}else{exp(sr$estimate)})
-                      try(sr.95up.keep <- if(UseLogScale){log(exp(sr$estimate+2*sr$se),base=10)}else{exp(sr$estimate+2*sr$se)})
-                      try(sr.95low.keep<- if(UseLogScale){log(exp(sr$estimate-2*sr$se),base=10)}else{exp(sr$estimate-2*sr$se)})
-                      try(panel.xyplot(as.Date(sr$eval.points), sr.keep,type="l",col="grey"))
-                      try(panel.xyplot(as.Date(sr$eval.points), sr.95up.keep,type="l",col="grey"))
-                      try(panel.xyplot(as.Date(sr$eval.points), sr.95low.keep,type="l",col="grey"))
-                      
-                      
-                      try(sr$estimate[sr$se>myrpanel$GWSDAT_Options$smThreshSe]<-NA)
-                      try(sr.fit<-  if(UseLogScale){log(exp(sr$estimate),base=10)}else{exp(sr$estimate)})
-                      try(sr.95up<- if(UseLogScale){log(exp(sr$estimate+2*sr$se),base=10)}else{exp(sr$estimate+2*sr$se)})
-                      try(sr.95low<-if(UseLogScale){log(exp(sr$estimate-2*sr$se),base=10)}else{exp(sr$estimate-2*sr$se)})
-                      try(panel.xyplot(as.Date(sr$eval.points), sr.fit,type="l",col="blue"))
-                      try(panel.xyplot(as.Date(sr$eval.points), sr.95up,type="l",col="blue"))
-                      try(panel.xyplot(as.Date(sr$eval.points), sr.95low,type="l",col="blue"))
-                      
-                    }
-                    
-                  },
-                  
-                  scales=list(y=list(log=UseLogScale)),
-                  xlab=list("Sampling Date",cex=1.5),ylab=list(paste("Solute concentration"," (",myrpanel$rgUnits,")",sep=""),cex=1.5),
-                  layout=if(length(levels(Cont.Data$Well))>30){c(4,4)}else{NULL},xlim=my.xlim,
-                  
-                  main=if(myrpanel$All.Data$Aq.sel==""){paste(Cont,"at",SiteName)}else{paste(Cont," at ",SiteName,": Aquifer-",myrpanel$All.Data$Aq.sel,sep="")},
-                  drop.unused.levels=FALSE,key=my.key) 
+                        try(sr$estimate[sr$se > csite$GWSDAT_Options$smThreshSe]<-NA)
+                        try(sr.fit<-  if(UseLogScale){log(exp(sr$estimate),base=10)}else{exp(sr$estimate)})
+                        try(sr.95up<- if(UseLogScale){log(exp(sr$estimate+2*sr$se),base=10)}else{exp(sr$estimate+2*sr$se)})
+                        try(sr.95low<-if(UseLogScale){log(exp(sr$estimate-2*sr$se),base=10)}else{exp(sr$estimate-2*sr$se)})
+                        try(panel.xyplot(as.Date(sr$eval.points), sr.fit,type="l",col="blue"))
+                        try(panel.xyplot(as.Date(sr$eval.points), sr.95up,type="l",col="blue"))
+                        try(panel.xyplot(as.Date(sr$eval.points), sr.95low,type="l",col="blue"))
+                      }
+                    },
+                  scales = list(y=list(log = UseLogScale)),
+                  xlab = list("Sampling Date",cex = 1.5),
+                  ylab = list(paste("Solute concentration"," (", csite$ui_attr$conc_unit_selected,")", sep = ""),cex=1.5),
+                  layout = if(length(levels(Cont.Data$Well))>30){c(4,4)}else{NULL},
+                  xlim = my.xlim,
+                  main = if (csite$All.Data$Aq.sel == "") {paste(Cont,"at",SiteName)} else { 
+                    paste(Cont," at ",SiteName,": Aquifer-", csite$All.Data$Aq.sel, sep = "")},
+                  drop.unused.levels = FALSE, key = my.key) 
   
   return(my.plot)
   
@@ -166,12 +164,12 @@ GWSDAT.xyplotWells <- function(myrpanel, Cont.Data, SiteName="", sm.fit=TRUE, Us
 ################### All Wells all Conts #########################################
 
 
-GWSDAT.xyplotAllContbyWells <- function(panel, Cont.Data, SiteName="", UseLogScale=FALSE) {
+GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogScale=FALSE) {
   
   my.xlim <- c(min(Cont.Data$SampleDate,na.rm = T),max(Cont.Data$AggDate,na.rm = T)) 
   
   # Add GW date range into xlim - Is this needed ? Turn off for now. 
-  # my.xlim <- range(c(my.xlim, panel$All.Data$GW.Data$SampleDate), na.rm = T) 
+  # my.xlim <- range(c(my.xlim, csite$All.Data$GW.Data$SampleDate), na.rm = T) 
   
   my.xlim.orig <-  my.xlim
   my.xlim[1]   <- my.xlim.orig[1] - 0.025 * as.numeric(diff(my.xlim.orig))
@@ -203,16 +201,16 @@ GWSDAT.xyplotAllContbyWells <- function(panel, Cont.Data, SiteName="", UseLogSca
                  groups = Constituent,
                  data   = Cont.Data,
                  scales = list( y = list(log = UseLogScale)),
-                 layout = if(length(unique(Cont.Data$WellName)) > 30) { c(4,4)} else {NULL},
+                 layout = if (length(unique(Cont.Data$WellName)) > 30) { c(4,4)} else {NULL},
                  type   = c("b"),
                  pch    = 19,
                  cex    = 0.75,
                  col    = 1:Num.Conts,
                  lwd    = 1,
                  key    = my.key,
-                 xlab   = list("Sampling Date",cex=1.5),
-                 ylab   = list(paste("Solute concentration"," (",panel$rgUnits,")",sep = ""),cex = 1.5),
-                 main   = if (panel$All.Data$Aq.sel == "") {SiteName} else {paste(SiteName,": Aquifer-",panel$All.Data$Aq.sel,sep = "")},
+                 xlab   = list("Sampling Date",cex = 1.5),
+                 ylab   = list(paste("Solute concentration"," (", csite$ui_attr$conc_unit_selected, ")",sep = ""),cex = 1.5),
+                 main   = if (csite$All.Data$Aq.sel == "") {SiteName} else {paste(SiteName,": Aquifer-",csite$All.Data$Aq.sel,sep = "")},
                  drop.unused.levels = FALSE,
                  xlim   = my.xlim
   )
@@ -226,14 +224,14 @@ GWSDAT.xyplotAllContbyWells <- function(panel, Cont.Data, SiteName="", UseLogSca
 
 
 
-plotWellReportPPT <- function(panel, substances, locations, use_log_scale,
+plotWellReportPPT <- function(csite, substances, locations, use_log_scale,
                               width = 9, height = 5){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
   win.metafile(mytemp, width = width, height = height) 
-  plotWellReport(panel, substances, locations, use_log_scale)
+  plotWellReport(csite, substances, locations, use_log_scale)
   dev.off()
   
   # Put into powerpoint slide.

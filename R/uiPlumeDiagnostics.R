@@ -7,15 +7,16 @@ uiPlumeDiagnostics <- function() {
     column(2,
            wellPanel(solidHeader = T,
             selectInput("solute_select_plume_pd", label = "Substance", 
-                        choices  = names(pnl$Fitted.Data),
-                        selected = names(pnl$Fitted.Data)[1], width = '100%'),
+                        choices  = csite$ui_attr$substance_names,
+                        selected = csite$ui_attr$substance_selected, width = '100%'),
 
-            numericInput("plume_threshold_pd", label = "Plume Threshold", value = pnl$GWSDAT_Options$DefPlumeThresh),
+            numericInput("plume_threshold_pd", label = "Plume Threshold", 
+                         value = csite$ui_attr$plume_thresh[1]),
             
             sliderInput("ground_porosity_pd", "Ground Porosity (%)",
                         min = 0, 
                         max = 1, 
-                        value = pnl$Porosity,
+                        value = csite$ui_attr$ground_porosity,
                         width = '150px'
             ),
             
@@ -32,8 +33,8 @@ uiPlumeDiagnostics <- function() {
 
           div(style = "display: inline-block;",
               selectInput("export_format_pd", label = "Image format", 
-                          choices = pnl$image_formats, 
-                          selected = pnl$image_formats[[1]]
+                          choices = csite$ui_attr$img_formats, 
+                          selected = csite$ui_attr$img_formats[[1]]
               )
           ),
           

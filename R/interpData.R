@@ -1,23 +1,33 @@
 
 
-interpData <- function(panel, substance, timestep, Col.Option) {
+interpData <- function(csite, substance, timestep) {
   
   
-  model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
-  
-  Well.Coords <- panel$All.Data$sample_loc$data
-  
-  temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
+  model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
+  Well.Coords    <- csite$All.Data$sample_loc$data
+  temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[timestep]
+  Col.Option     <- csite$ui_attr$spatial_options["Scale colours to Data"]
   
   #
   # Extract useable wells for given substance and timestep.
   #
-  tmp_cont <- panel$Fitted.Data[[substance]]$Cont.Data
+  tmp_cont <- csite$Fitted.Data[[substance]]$Cont.Data
   
   tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= temp.time.eval,]$WellName)
   tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= temp.time.eval,]$WellName)
   
   Good.Wells <- intersect(as.character(tmp_wells_earlier), as.character(tmp_wells_later))
+  
+  #
+  # Find the limits of the contour.
+  #
+  diffrangeX <- 0.06*(range(Well.Coords$XCoord)[2] - range(Well.Coords$XCoord)[1])
+  diffrangeY <- 0.06*(range(Well.Coords$YCoord)[2] - range(Well.Coords$YCoord)[1])
+  
+  if ((diffrangeX/diffrangeY) > 1.4) {diffrangeY = 0}
+  if ((diffrangeY/diffrangeX) > 1.4) {diffrangeX = 0}
+  Contour.xlim = c(range(Well.Coords$XCoord)[1] - diffrangeX,range(Well.Coords$XCoord)[2] + diffrangeX)
+  Contour.ylim = c(range(Well.Coords$YCoord)[1] - diffrangeY,range(Well.Coords$YCoord)[2] + diffrangeY)
   
   
   #
@@ -35,7 +45,7 @@ interpData <- function(panel, substance, timestep, Col.Option) {
     my.area <- as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
   }
   
-  if ((areapl(my.area[chull(my.area),]) / panel$All.Data$sample_loc$area) < 0.01) {
+  if ((areapl(my.area[chull(my.area),]) / csite$All.Data$sample_loc$area) < 0.01) {
     Do.Image = FALSE
     my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
   }
@@ -72,11 +82,11 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   #
   if (!inherits(model.tune,"try-error")) {
     
-    #interp.pred<-GWSDAT.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],eval.df,type=if(is.null(panel$PredInterval)){"predict"}else{as.character(panel$PredInterval)})
+    #interp.pred<-GWSDAT.Interp(model.tune$best.mod,AggDate=eval.df$AggDate[1],eval.df,type=if(is.null(csite$ui_attr$pred_interval)){"predict"}else{as.character(csite$ui_attr$pred_interval)})
     interp.pred <- try( GWSDAT.Bary.Interp(model.tune$best.mod,
                                            AggDate = eval.df$AggDate[1],
                                            my.area = my.area,
-                                           type = as.character(panel$PredInterval)
+                                           type = as.character(csite$ui_attr$pred_interval)
                                            )
                         )
     
@@ -86,7 +96,7 @@ interpData <- function(panel, substance, timestep, Col.Option) {
     
   } else {
     
-    interp.pred <- GWSDAT.Interp(NULL,AggDate=eval.df$AggDate[1],eval.df)
+    interp.pred <- GWSDAT.Interp(NULL, AggDate = eval.df$AggDate[1],eval.df)
     Do.Image <- FALSE
     
   }
@@ -95,15 +105,15 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   #  
   # Extract level cut (for interp.pred z dimension). 
   #
-  if (panel$PredInterval != "% sd") {
+  if (csite$ui_attr$pred_interval != "% sd") {
     
-    lev.cut <- panel$lev.cut
-    if (panel$rgUnits == "mg/l") {lev.cut <- lev.cut/10}
-    if (panel$rgUnits == "ng/l") {lev.cut <- lev.cut*10}
+    lev_cut <- csite$ui_attr$lev_cut
+    if (csite$ui_attr$conc_unit_selected == "mg/l") {lev_cut <- lev_cut/10}
+    if (csite$ui_attr$conc_unit_selected == "ng/l") {lev_cut <- lev_cut*10}
     
   } else {
     
-    lev.cut <- panel$sd.lev.cut
+    lev_cut <- csite$ui_attr$sd_lev_cut
     
   }
 
@@ -113,18 +123,18 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   #
   if (Do.Image) {
     
-    if (panel$PredInterval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")) {
+    if (csite$ui_attr$pred_interval %in% c("Lower 95% CI","Predicted","Upper 95% CI","IQR/2")) {
       
-      if (panel$PredInterval != "IQR/2") {interp.pred$z <- exp(interp.pred$z)}
+      if (csite$ui_attr$pred_interval != "IQR/2") {interp.pred$z <- exp(interp.pred$z)}
       
-      if (panel$rgUnits == "mg/l") {interp.pred$z <- interp.pred$z/1000}
-      if (panel$rgUnits == "ng/l") {interp.pred$z <- interp.pred$z*1000}
+      if (csite$ui_attr$conc_unit_selected == "mg/l") {interp.pred$z <- interp.pred$z/1000}
+      if (csite$ui_attr$conc_unit_selected == "ng/l") {interp.pred$z <- interp.pred$z*1000}
       
     }
     
-    if (max(interp.pred$z,na.rm = T) > lev.cut[length(lev.cut)] && !Col.Option) {
+    if (max(interp.pred$z,na.rm = T) > lev_cut[length(lev_cut)] && !Col.Option) {
       
-      interp.pred$z[which(interp.pred$z > lev.cut[length(lev.cut)],arr.ind = T)] <- lev.cut[length(lev.cut)]
+      interp.pred$z[which(interp.pred$z > lev_cut[length(lev_cut)],arr.ind = T)] <- lev_cut[length(lev_cut)]
     }
     
   } else{
@@ -135,7 +145,8 @@ interpData <- function(panel, substance, timestep, Col.Option) {
   }
   
   
-  return(list(data = interp.pred, Do.Image = Do.Image))
+  return(list(data = interp.pred, Do.Image = Do.Image, 
+              Contour.xlim = Contour.xlim, Contour.ylim = Contour.ylim))
   
 }
 

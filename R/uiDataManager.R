@@ -13,11 +13,12 @@ uiDataManager <- function() {
       hr(),
       #p(HTML("No data is present. <a href='#import_data_page'>Add</a> new data set.")),
       #a(id = "toggleDataImport", "Add", href = "#")#,
-      actionButton("add_new_data", label = " Import Data", icon = icon("plus"), style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+      actionButton("add_new_data", label = " Import Data", icon = icon("plus"), 
+                   style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
     )
   )
-
 }
+
 
 uiDataImport <- function() {
 
@@ -42,7 +43,7 @@ uiDataImport <- function() {
                                 'text/comma-separated-values,text/plain', 
                                 '.csv')),
            
-           tags$hr(),
+           hr(),
            
            checkboxInput('header', 'Header', TRUE),
            checkboxInput('excel_date', 'Transform Excel Date', FALSE),

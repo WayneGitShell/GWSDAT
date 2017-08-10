@@ -7,29 +7,41 @@ uiAnalyseOptions <- function() {
       global settings visit the _Settings_ page.",
       
       
-      div(style = "margin-top:30px", h4("Plume Diagnostic")),
-      p(style = "", paste("Specify plume threshold values in ", pnl$rgUnits, ".", sep = "")),
+      ## Concentration Thresholds ##############################################
+      
+      div(style = "margin-top:30px", 
+          h4("Concentration Thresholds")),
+      p(style = "", paste("Specify the thresholds in ", csite$ui_attr$conc_unit_selected, ".", sep = "")),
+      
+      uiOutput("thres_conc_select"),
+      
+      ## Plume Diagnostic ######################################################
+      
+      div(style = "margin-top:30px", 
+          h4("Plume Diagnostic")),
+      p(style = "", paste("Specify plume threshold values in ug/l.", sep = "")),
       
       uiOutput("thres_plume_select"),
       
       sliderInput("ground_porosity", "Ground Porosity (%)",
                   min = 0, 
                   max = 1, 
-                  value = pnl$Porosity,
+                  value = csite$ui_attr$ground_porosity,
                   width = '150px'
       ), 
       
-      ## Default Image Resolution Settings #############################################
+      ## Image Export Settings #################################################
       
-      div(style = "margin-top:30px, margin-bottom:10px", h4("Image Resolution (Default)")),
-      p("Resolution for file formats: png and jpeg."),
+      div(style = "margin-top:50px", 
+          h4("Image Export")),
+      p("Default resolution for most images"), # Resolution for file formats: png and jpeg."),
       
       div(style = "display: inline-block;", 
-          numericInput("img_width_px", label = "Width (pixel)", value = 800, width = "100px")
+          numericInput("img_width_px", label = "Width (pixel)", value = csite$ui_attr$img_width_px, width = "100px")
       ),
       
       div(style = "display: inline-block;", 
-          numericInput("img_height_px", label = "Height (pixel)", value = 600, width = "100px") 
+          numericInput("img_height_px", label = "Height (pixel)", value = csite$ui_attr$img_height_px, width = "100px") 
       ),
       
       # Disabled because it does not work, yet.
@@ -37,34 +49,19 @@ uiAnalyseOptions <- function() {
           checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
       )),
       
-      p("Size for file formats: pdf, ps, wmf, and ppt."),
-      
-      div(style = "display: inline-block;", 
-          numericInput("img_width_inch", label = "Width (inch)", value = 7, width = "100px")
-      ),
-      
-      div(style = "display: inline-block;", 
-          numericInput("img_height_inch", label = "Height (inch)", value = 5, width = "100px") 
-      ),
-      
-      # Disabled because it does not work, yet.
-      disabled(div(style = "display: inline-block;", 
-                   checkboxInput("img_asp_inch", label = "Keep Aspect Ratio", value = FALSE)
-      )),
-      
       
       ## Wide Image Resolution Settings #############################################
       
       div(style = "margin-top:30px, margin-bottom:10px", 
-          h4("Image Resolution for Wide Plots (Well Report, Plume Diagnostic)")),
-      p("Resolution for file formats: png and jpeg."),
-      
+          p("Resolution for wide plots, such as Well Report and Plume Diagnostic.")
+      ),
+
       div(style = "display: inline-block;", 
-          numericInput("img_width_px_wide", label = "Width (pixel)", value = 1200, width = "100px")
+          numericInput("img_width_px_wide", label = "Width (pixel)", value = csite$ui_attr$img_width_px_wide, width = "100px")
       ),
       
       div(style = "display: inline-block;", 
-          numericInput("img_height_px_wide", label = "Height (pixel)", value = 600, width = "100px") 
+          numericInput("img_height_px_wide", label = "Height (pixel)", value = csite$ui_attr$img_height_px_wide, width = "100px") 
       ),
       
       # Disabled because it does not work, yet.
@@ -72,20 +69,6 @@ uiAnalyseOptions <- function() {
                    checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
       )),
       
-      p("Size for file formats: pdf, ps, wmf, and ppt."),
-      
-      div(style = "display: inline-block;", 
-          numericInput("img_width_inch_wide", label = "Width (inch)", value = 9, width = "100px")
-      ),
-      
-      div(style = "display: inline-block;", 
-          numericInput("img_height_inch_wide", label = "Height (inch)", value = 4, width = "100px") 
-      ),
-      
-      # Disabled because it does not work, yet.
-      disabled(div(style = "display: inline-block;", 
-                   checkboxInput("img_asp_inch", label = "Keep Aspect Ratio", value = FALSE)
-      )),
       
       
       ## Image Quality #########################################################
@@ -94,13 +77,14 @@ uiAnalyseOptions <- function() {
           sliderInput("img_jpg_quality", "JPEG Quality (%)",
                   min = 1, 
                   max = 100, 
-                  value = 90,
+                  value = csite$ui_attr$img_jpg_quality,
                   width = '150px'
       )), 
       
       actionButton("save_analyse_options",
                    label = "Save", icon = icon("save"), 
-                   style = "color: #fff; background-color: Coral; border-color: Chocolate; float: right")
+                  # style = "color: #fff; background-color: Coral; border-color: Chocolate; float: right")
+                   style = "float: right")
       
       
   )

@@ -1,23 +1,19 @@
 
-getFullPlumeStats <- function(panel, substance, plume_thresh, ground_porosity) {
+getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity) {
 
   # This will become a data frame containing in each row the plume statistics 
   # of each date.
   full_plume_stats <- NULL 
 
 
-  for (i in 1:length(panel$All.Data$All.Agg.Dates)) {
+  for (i in 1:length(csite$All.Data$All.Agg.Dates)) {
     
-    # Fixme: Last argument for interpData (Col.Option) and lev.cut inside interpData()
-    #  both change interp.pred, how important is this? Can I get rid of it? 
-    #  I would need a "Scale colours to Data".  
+    interp.pred <- interpData(csite, substance, i)
     
-    interp.pred <- interpData(panel, substance, i, panel$ScaleCols["Scale colours to Data"])
-    
-    plume_stats <- getPlumeStats(panel, substance, timestep = i, interp.pred$data, plume_thresh, ground_porosity)
+    plume_stats <- getPlumeStats(csite, substance, timestep = i, interp.pred$data, plume_thresh, ground_porosity)
     
     # Add date. 
-    plume_stats = cbind(plume_stats, "Agg.Date" = panel$All.Data$All.Agg.Dates[i])
+    plume_stats = cbind(plume_stats, "Agg.Date" = csite$All.Data$All.Agg.Dates[i])
     
     
     # Append to full plume stats table.
@@ -34,7 +30,7 @@ getFullPlumeStats <- function(panel, substance, plume_thresh, ground_porosity) {
 
 #' Calculate the plume statistics including mass, area, center, and average concentration.
 #'
-#' @param panel
+#' @param csite
 #' @param substance  
 #' @param timestep
 #' @param predicted_val
@@ -43,20 +39,20 @@ getFullPlumeStats <- function(panel, substance, plume_thresh, ground_porosity) {
 #' @export
 #'
 #' @examples
-getPlumeStats <- function(panel, 
+getPlumeStats <- function(csite, 
                           substance, 
                           timestep, 
                           predicted_val, 
                           plume_thresh, 
                           ground_porosity ) {
   
-  if (panel$rgUnits == "mg/l") {plume_thresh <- plume_thresh/1000}
-  if (panel$rgUnits == "ng/l") {plume_thresh <- plume_thresh*1000}
+  if (csite$ui_attr$conc_unit_selected == "mg/l") {plume_thresh <- plume_thresh/1000}
+  if (csite$ui_attr$conc_unit_selected == "ng/l") {plume_thresh <- plume_thresh*1000}
   
   cL <- contourLines(predicted_val, levels = plume_thresh)
   
-  model.tune <- panel$Fitted.Data[[substance]][["Model.tune"]]
-  temp.time.eval <- panel$Fitted.Data[[substance]]$Time.Eval[timestep]
+  model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
+  temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[timestep]
   
   
   
@@ -76,8 +72,8 @@ getPlumeStats <- function(panel,
                                          AggDate = temp.time.eval,
                                          cL[[i]],
                                          plume_thresh = plume_thresh,
-                                         type = as.character(panel$PredInterval),
-                                         units = panel$rgUnits)
+                                         type  = csite$ui_attr$pred_interval,
+                                         units = csite$ui_attr$conc_unit_selected)
         
         cL[[i]]$Volume <- tempPlumeQuant$PlumeVol
         cL[[i]]$PlumeCentreofMass <- tempPlumeQuant$PlumeCentreofMass
@@ -110,8 +106,8 @@ getPlumeStats <- function(panel,
                             conc_thresh = plume_thresh,
                             substance = substance,
                             ground_porosity = ground_porosity,
-                            coord_unit = panel$All.Data$sample_loc$unit,
-                            conc_unit = panel$rgUnits
+                            coord_unit = csite$All.Data$sample_loc$unit,
+                            conc_unit = csite$ui_attr$conc_unit_selected
                             )
   
   if (length(PlumeDetails$cL) > 0) {

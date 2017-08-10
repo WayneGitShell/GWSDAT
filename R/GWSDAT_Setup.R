@@ -46,11 +46,9 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     
     
     source(paste(GWSDATHome, "R/GWSDAT_Msg.R", sep = "/"))
-    source(paste(GWSDATHome, "R/Plot_Legend.R", sep = "/"))
     source(paste(GWSDATHome, "R/readData.R", sep = "/"))
     source(paste(GWSDATHome, "R/processData.R", sep = "/"))
     source(paste(GWSDATHome, "R/fitData.R", sep = "/"))
-    source(paste(GWSDATHome, "R/createPanelAttr.R", sep = "/"))
     source(paste(GWSDATHome, "R/initSite.R", sep = "/"))
     source(paste(GWSDATHome, "R/utilities.R", sep = "/"))
     source(paste(GWSDATHome, "R/aggregateData.R", sep = "/"))
@@ -66,7 +64,7 @@ GWSDAT_Setup <- function(GWSDATHome = ".", UseGWSDATLib = FALSE){
     source(paste(GWSDATHome, "R/uiWellReport.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiPlumeDiagnostics.R", sep = "/"))
     source(paste(GWSDATHome, "R/uiAnalyseOptions.R", sep = "/"))
-  
+    source(paste(GWSDATHome, "R/uiAttr.R", sep = "/"))
   
     # Maybe move this to the other interpolation methods. Where are they? 
     source(paste(GWSDATHome, "R/interpData.R", sep = "/"))

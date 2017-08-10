@@ -28,10 +28,10 @@ if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
   
   GWSDAT_Options <-  createOptions(HeadlessMode)
   
-  #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-  #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-  #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-  #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
 
 }
 
@@ -42,11 +42,9 @@ if (Sys.info()["nodename"] == "LAPTOP-QU06V978")
   GWSDAT_Options[['DevMode']] <- TRUE
 
 
-curr_site = initSite(GWSDAT_Options, progressBar = progressBar)
+csite = initSite(GWSDAT_Options, progressBar = progressBar)
 
 
-# Create a complete GWSDAT instance with data, model, and options. 
-pnl <- createPanelAttr(curr_site)
 
 if (!GWSDAT_Options$HeadlessMode) {
     try(close(progressBar))
@@ -56,7 +54,7 @@ if (!GWSDAT_Options$HeadlessMode) {
 
   
 # Put into global environment, so the shiny server can see it. 
-.GlobalEnv$pnl <- pnl
+.GlobalEnv$csite <- csite
 
 
 
@@ -75,7 +73,7 @@ server <- function(input, output, session) {
   # E.g. GWSDAT_inst_lst = load_GWSDAT_inst(user_id)  # return array of GWSDAT_instance
   #      GWSDAT_inst_lst[[1]]     # access first GWSDAT_instance, holds data, fit, etc.
   #
-  #GWSDAT_inst_lst = list(pnl)
+  #GWSDAT_inst_lst = list(csite)
   #GWSDAT_inst <- GWSDAT_inst_lst[[1]] # How to access this in ui space?
   
   
@@ -107,7 +105,7 @@ server <- function(input, output, session) {
   
   checkPlumeStats <- reactive({
     
-    val <- getFullPlumeStats(pnl, 
+    val <- getFullPlumeStats(csite, 
                              input$solute_select_plume_pd, 
                              input$plume_threshold_pd,
                              input$ground_porosity_pd
@@ -178,27 +176,29 @@ server <- function(input, output, session) {
   # Plot time-series window
   output$time_series <- renderPlot({
     
+    optionsSaved()
+    
     #
     # Update control attributes from reactive variables. 
     #
     
-    pnl$rgUnits <<- input$solute_conc
-    pnl$dlines[1:length(pnl$dlines)] <<- FALSE
-    pnl$dlines[input$ts_true_options] <<- TRUE
+    csite$ui_attr$conc_unit_selected <<- input$solute_conc
+    csite$ui_attr$ts_options[1:length(csite$ui_attr$ts_options)] <<- FALSE
+    csite$ui_attr$ts_options[input$ts_true_options] <<- TRUE
     
     
-    # 'rg1' is also used in the Traffic Lights table (there it has
+    # 'trend_thresh_selected' is also used in the Traffic Lights table (there it has
     # two threshold option. However, here it is only about selecting
     # to display the threshold or not. 
     # ? Might think of separating these two, i.e. creating extra variable
-    #   here instead of rg1.
+    #   here instead of trend_thresh_selected.
     if (input$check_threshold)
-      pnl$rg1 <<- "Threshold - Absolute"
+      csite$ui_attr$trend_thresh_selected <<- "Threshold - Absolute"
     else 
-      pnl$rg1 <<- "Trend"
+      csite$ui_attr$trend_thresh_selected <<- "Trend"
     
-   
-    plotTimeSeries(pnl, input$solute_select, input$well_select)
+    
+    plotTimeSeries(csite, input$solute_select, input$well_select)
     
   })
   
@@ -224,26 +224,27 @@ server <- function(input, output, session) {
     # Update control attributes from reactive variables. 
     #
 
-    pnl$ScaleCols[1:length(pnl$ScaleCols)] <<-  FALSE
-    pnl$ScaleCols[input$imageplot_options] <<-  TRUE
-    pnl$GW.disp <<- input$gw_flows
-    pnl$Color.type <<- input$imageplot_type
+    csite$ui_attr$spatial_options[1:length(csite$ui_attr$spatial_options)] <<-  FALSE
+    csite$ui_attr$spatial_options[input$imageplot_options] <<-  TRUE
+    csite$ui_attr$gw_selected <<- input$gw_flows
+    csite$ui_attr$contour_selected <<- input$imageplot_type
     
     ## The following two also apply to time-series but they are copies
     ## I need the same input for both tabs!
-    pnl$rgUnits <<- input$solute_conc_contour
+    csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
     
     
     ##
     ## Note: There are separate observeEvents() for the following variables. 
     ##       I have them here to have renderPlot() called whenever they change.
     ##       I don't know yet how to trigger this renderPlot from observeEvents().
-    ##
-    #pnl$timestep <<- input$time_steps
-    pnl$GWSDAT_Options$Aggby <<- input$aggregate_data
+    ##  + I've got two places where I store aggr., need to clean this mess up. 
+    csite$GWSDAT_Options$Aggby <<- input$aggregate_data
+    csite$ui_attr$aggregate_selected <<- input$aggregate_data
+    
     
     # Input control in UI is commented out, thus input$aquifer_contour will be NULL
-    #pnl$All.Data$Aq.sel <<- input$aquifer_contour
+    #csite$All.Data$Aq.sel <<- input$aquifer_contour
     
     # PROFILING EXECUTION TIMES:
     #require(profr)
@@ -251,8 +252,8 @@ server <- function(input, output, session) {
     #tprof <- profr(..)
     
     #Rprof("Rprof_plotSpatialImage.out")
-    #replicate(n = 30, plotSpatialImage(pnl, input$solute_select_contour, input$time_steps))
-    plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
+    #replicate(n = 30, plotSpatialImage(csite, input$solute_select_contour, input$time_steps))
+    plotSpatialImage(csite, input$solute_select_contour, input$time_steps)
     #Rprof(NULL)
     
     #png("tprofile.png")
@@ -271,8 +272,8 @@ server <- function(input, output, session) {
     # Update control attributes from reactive variables. 
     #
     
-    pnl$rg1 <<-  input$trend_or_threshold
-    pnl$ColTrafficListbox <<- input$traffic_color
+    csite$ui_attr$trend_thresh_selected <<-  input$trend_or_threshold
+    csite$ui_attr$trend_color_selected  <<- input$traffic_color
     
     
     ##
@@ -280,16 +281,16 @@ server <- function(input, output, session) {
     ##       I have them here to have renderPlot() called whenever they change.
     ##       I don't know yet how to trigger this renderPlot from observeEvents().
     ##
-    #pnl$timestep <<- input$time_steps_traffic
-    pnl$GWSDAT_Options$Aggby <<- input$aggregate_data_traffic
+    csite$GWSDAT_Options$Aggby <<- input$aggregate_data_traffic
+    csite$ui_attr$aggregate_selected <<- input$aggregate_data
     
-    plotTrendTable(pnl, input$time_steps_traffic)
+    plotTrendTable(csite, input$time_steps_traffic)
     
   })
   
   
   # Plot the legend for the traffic lights table.
-  output$plot_legend_traffic <- renderPlot({ Plot_Legend_TrafficLights()  })
+  output$plot_legend_traffic <- renderPlot({ plotTrendTableLegend()  })
   
   
   #
@@ -299,7 +300,7 @@ server <- function(input, output, session) {
     
     use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
     
-    plotWellReport(pnl, input$solute_chooser$left, 
+    plotWellReport(csite, input$solute_chooser$left, 
                      input$well_chooser$left, use_log_scale)
     
   })
@@ -325,23 +326,24 @@ server <- function(input, output, session) {
     }
 
     
-    pnl$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
-      
-    agg_data <- aggregateData(pnl$GWSDAT_Options, 
-                              pnl$All.Data$All.Dates, 
-                              pnl$All.Data$GW.Data, 
-                              pnl$All.Data$Cont.Data, 
-                              pnl$All.Data$sample_loc$data, 
-                              pnl$All.Data$NAPL.Thickness.Data)
+    csite$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
+    csite$ui_attr$aggregate_selected <<- aggby
+    
+    agg_data <- aggregateData(csite$GWSDAT_Options, 
+                              csite$All.Data$All.Dates, 
+                              csite$All.Data$GW.Data, 
+                              csite$All.Data$Cont.Data, 
+                              csite$All.Data$sample_loc$data, 
+                              csite$All.Data$NAPL.Thickness.Data)
       
     # Write back.
-    pnl$All.Data$All.Agg.Dates <<- agg_data$All.Agg.Dates
-    pnl$All.Data$Cont.Data <<- agg_data$Cont.Data
-    pnl$All.Data$Agg_GW_Data <<- agg_data$Agg_GW_Data
-    pnl$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
+    csite$All.Data$All.Agg.Dates <<- agg_data$All.Agg.Dates
+    csite$All.Data$Cont.Data <<- agg_data$Cont.Data
+    csite$All.Data$Agg_GW_Data <<- agg_data$Agg_GW_Data
+    csite$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
       
     # Fit data. 
-    Fitted.Data = fitData(pnl$All.Data, pnl$GWSDAT_Options, 
+    Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options, 
                           updateProgress = updateProgress,
                           progressB = progress)
       
@@ -349,32 +351,32 @@ server <- function(input, output, session) {
       stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")
     }
       
-    pnl$Fitted.Data <<- Fitted.Data
+    csite$Fitted.Data <<- Fitted.Data
       
     # Update time step range.
-    pnl$timestep_range <<- c(1, length(pnl$All.Data$All.Agg.Dates))
+    csite$ui_attr$timestep_range <<- c(1, length(csite$All.Data$All.Agg.Dates))
     
   }
   
   
   updateNAPL <- function(location, substance) {
     
-    tmp_napl <- existsNAPL(pnl$All.Data, location, substance) 
+    tmp_napl <- existsNAPL(csite$All.Data, location, substance) 
     
     # Update checkbox control if NAPL changed.
-    if (tmp_napl != pnl$NAPL.Present) {
+    if (tmp_napl != csite$ui_attr$napl_present) {
       
       
       if (tmp_napl) 
-        pnl$dlines["Overlay NAPL Thickness"] <<- FALSE  # set to some value
+        csite$ui_attr$ts_options["Overlay NAPL Thickness"] <<- FALSE  # set to some value
       else 
-        pnl$dlines <<- pnl$dlines[-which(names(pnl$dlines) == "Overlay NAPL Thickness")]
+        csite$ui_attr$ts_options <<- csite$ui_attr$ts_options[-which(names(csite$ui_attr$ts_options) == "Overlay NAPL Thickness")]
         
       updateCheckboxGroupInput(session, "ts_true_options", label = "Time Series Plot Options", 
-                         choices = names(pnl$dlines),
-                         selected = names(which(pnl$dlines == TRUE)))
+                         choices = names(csite$ui_attr$ts_options),
+                         selected = names(which(csite$ui_attr$ts_options == TRUE)))
       
-      pnl$NAPL.Present <<- tmp_napl
+      csite$ui_attr$napl_present <<- tmp_napl
     }
   }
   
@@ -488,13 +490,13 @@ server <- function(input, output, session) {
   # Re-aggregate the data and mirror the controls in the 'Traffic Lights' tab.
   observeEvent(input$aggregate_data, {
     
-    if (pnl$GWSDAT_Options$Aggby != input$aggregate_data) {
+    if (csite$GWSDAT_Options$Aggby != input$aggregate_data) {
       reaggregateData(input$aggregate_data)
       
       #browser()
       # Update time step slider in this panel.
-      updateSliderInput(session, "time_steps", value = pnl$timestep_range[1], 
-                        min = pnl$timestep_range[1], max = pnl$timestep_range[2], step = 1)
+      updateSliderInput(session, "time_steps", value = csite$timestep_range[1], 
+                        min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
       
       # Mirror aggregation type to trend table.
       updateSelectInput(session, "aggregate_data_traffic", selected = input$aggregate_data ) 
@@ -506,13 +508,13 @@ server <- function(input, output, session) {
   # Re-aggregate the data and mirror the controls in the 'Spatial Plot' tab.
   observeEvent(input$aggregate_data_traffic, {
     
-    if (pnl$GWSDAT_Options$Aggby != input$aggregate_data_traffic) {
+    if (csite$GWSDAT_Options$Aggby != input$aggregate_data_traffic) {
       reaggregateData(input$aggregate_data_traffic)
     
       #browser()
       # Update time step slider in this panel.
-      updateSliderInput(session, "time_steps_traffic", value = pnl$timestep_range[1], 
-                        min = pnl$timestep_range[1], max = pnl$timestep_range[2], step = 1)
+      updateSliderInput(session, "time_steps_traffic", value = csite$timestep_range[1], 
+                        min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
       
       # Mirror aggregation type to spatial plot.
       updateSelectInput(session, "aggregate_data", selected = input$aggregate_data_traffic ) 
@@ -533,35 +535,35 @@ server <- function(input, output, session) {
   #   tmpval = input$aquifer_contour
   #   
   #   # If the selected aquifer group changed, reload the data.
-  #   if (tmpval != pnl$All.Data$Aq.sel) {
+  #   if (tmpval != csite$All.Data$Aq.sel) {
   #     
   #     # Prepare the input data with the selected Aquifer.
-  #     pnl$All.Data <<- try(processData(pnl$All.Data$solute_data, 
-  #                                  pnl$All.Data$well_data, 
-  #                                  pnl$GWSDAT_Options, 
+  #     csite$All.Data <<- try(processData(csite$All.Data$solute_data, 
+  #                                  csite$All.Data$well_data, 
+  #                                  csite$GWSDAT_Options, 
   #                                  Aq_sel = tmpval))
   #     
-  #     if (inherits(pnl$All.Data, 'try-error')) {
+  #     if (inherits(csite$All.Data, 'try-error')) {
   #       stop("Error in inputting and formatting data.")
   #     }
   #     
   #     
   #     # Fit the data.
-  #     pnl$Fitted.Data <<- GWSDAT_Fit_Data(pnl$All.Data, pnl$GWSDAT_Options)
+  #     csite$Fitted.Data <<- GWSDAT_Fit_Data(csite$All.Data, csite$GWSDAT_Options)
   #     
-  #     if (class(pnl$Fitted.Data) != "gwsdat_fit") {
+  #     if (class(csite$Fitted.Data) != "gwsdat_fit") {
   #       stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 
   #            class(Fitted.Data), "\n")
   #     }
   #     
-  #     tmp_Cont <- pnl$Cont.rg
-  #     tmp_rgUnits <- pnl$rgUnits
+  #     tmp_Cont <- csite$Cont.rg
+  #     tmp_rgUnits <- csite$rgUnits
   #   
   #     # Create a complete GWSDAT instance with data, model, and options. 
-  #     pnl <<- Create_PanelAttr(pnl)
+  #     csite <<- Create_PanelAttr(csite)
   #     
-  #     pnl$Cont.rg <<- tmp_Cont 
-  #     pnl$rgUnits <<- tmp_rgUnits
+  #     csite$Cont.rg <<- tmp_Cont 
+  #     csite$rgUnits <<- tmp_rgUnits
   #   }
   #   
   # 
@@ -578,18 +580,19 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "ppt") {
         
-        makeTimeSeriesPPT(pnl, input$solute_select, input$well_select,
-                          width = input$img_width_inch, height = input$img_height_inch)
+        makeTimeSeriesPPT(csite, input$solute_select, input$well_select,
+                          width  = input$img_width_px  / csite$ui_attr$img_ppi, 
+                          height = input$img_height_px / csite$ui_attr$img_ppi)
         
       } else {
         
         if (input$export_format_ts == "png") png(file, width = input$img_width_px, height = input$img_height_px)
-        if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
-        if (input$export_format_ts == "ps") postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
+        if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
+        if (input$export_format_ts == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-        if (input$export_format_ts == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
+        if (input$export_format_ts == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         
-        plotTimeSeries(pnl, input$solute_select, input$well_select)
+        plotTimeSeries(csite, input$solute_select, input$well_select)
         dev.off()
       }
     }
@@ -606,18 +609,19 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "ppt") {
         
-        plotSpatialImagePPT(pnl, input$solute_select_contour, input$time_steps,
-                       width = input$img_width_inch, height = input$img_height_inch)
+        plotSpatialImagePPT(csite, input$solute_select_contour, input$time_steps,
+                       width  = input$img_width_px  / csite$ui_attr$img_ppi,
+                       height = input$img_height_px / csite$ui_attr$img_ppi)
       
         } else {
         
           if (input$export_format_sp == "png") png(file, width = input$img_width_px, height = input$img_height_px)
-          if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
-          if (input$export_format_sp == "ps") postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
+          if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
+          if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
+          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           
-          plotSpatialImage(pnl, input$solute_select_contour, input$time_steps)
+          plotSpatialImage(csite, input$solute_select_contour, input$time_steps)
           dev.off()
       }
       
@@ -635,18 +639,18 @@ server <- function(input, output, session) {
       
       if (input$export_format_tt == "ppt") {
         
-        plotTrendTablePPT(pnl, input$time_steps_traffic, 
-                          width = input$img_width_inch, height = input$img_height_inch)
+        plotTrendTablePPT(csite, input$time_steps_traffic, 
+                          width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
         
       } else {
         
         if (input$export_format_tt == "png") png(file, width = input$img_width_px, height = input$img_height_px)
-        if (input$export_format_tt == "pdf") pdf(file, width = input$img_width_inch, height = input$img_height_inch) 
-        if (input$export_format_tt == "ps")  postscript(file, width = input$img_width_inch, height = input$img_height_inch) 
+        if (input$export_format_tt == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
+        if (input$export_format_tt == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_tt == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-        if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_inch, height = input$img_height_inch) 
+        if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         
-        plotTrendTable(pnl, input$time_steps_traffic)
+        plotTrendTable(csite, input$time_steps_traffic)
         dev.off()
       }
       
@@ -665,19 +669,20 @@ server <- function(input, output, session) {
       
       if (input$export_format_wr == "ppt") {
         
-        plotWellReportPPT(pnl, input$solute_chooser$left, 
+        plotWellReportPPT(csite, input$solute_chooser$left, 
                           input$well_chooser$left, use_log_scale,
-                          width = input$img_width_inch_wide, height = input$img_height_inch_wide)
+                          width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
+                          height = input$img_height_px_wide / csite$ui_attr$img_ppi)
         
       } else {
         
         if (input$export_format_wr == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
-        if (input$export_format_wr == "pdf") pdf(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
-        if (input$export_format_wr == "ps") postscript(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_wr == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        if (input$export_format_wr == "ps") postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_wr == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
-        if (input$export_format_wr == "wmf") win.metafile(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_wr == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
-        plotWellReport(pnl, input$solute_chooser$left, input$well_chooser$left, use_log_scale)
+        plotWellReport(csite, input$solute_chooser$left, input$well_chooser$left, use_log_scale)
         
         
         dev.off()
@@ -697,21 +702,20 @@ server <- function(input, output, session) {
 
       plume_stats <- checkPlumeStats()
       
-      plume_thresh <- pnl$PlumeLimEntry[input$solute_select_plume_pd]
       
       if (input$export_format_pd == "ppt") {
         
         plotPlumeTimeSeriesPPT(plume_stats, 
-                               width = input$img_width_inch_wide, 
-                               height = input$img_height_inch_wide)
+                               width = input$img_width_px_wide / csite$ui_attr$img_ppi, 
+                               height = input$img_height_px_wide / csite$ui_attr$img_ppi)
         
       } else {
         
         if (input$export_format_pd == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
-        if (input$export_format_pd == "pdf") pdf(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
-        if (input$export_format_pd == "ps")  postscript(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_pd == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        if (input$export_format_pd == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
-        if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_inch_wide, height = input$img_height_inch_wide) 
+        if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
         plotPlumeTimeSeries(plume_stats)
         dev.off()
@@ -737,17 +741,17 @@ server <- function(input, output, session) {
   
   # Generate PPT with spatial animation.
   observeEvent(input$generate_spatial_anim_ppt, {
-    makeSpatialAnimation(pnl, input$solute_select_contour,
-                         input$img_width_inch,
-                         input$img_height_inch,
-                         input$img_width_inch_wide,
-                         input$img_height_inch_wide)
+    makeSpatialAnimation(csite, input$solute_select_contour,
+                         input$img_width_px / csite$ui_attr$img_ppi,
+                         input$img_height_px / csite$ui_attr$img_ppi,
+                         input$img_width_px_wide / csite$ui_attr$img_ppi,
+                         input$img_height_px_wide / csite$ui_attr$img_ppi)
   })
   
   
   # Generate PPT with trend table animation.
   observeEvent(input$generate_trendtable_anim_ppt, {
-    makeTrendTableAnimation(pnl)
+    makeTrendTableAnimation(csite)
   })
   
 
@@ -882,7 +886,7 @@ server <- function(input, output, session) {
   #
   observeEvent(input$analyse_panel, {
     if (input$analyse_panel == "Spatial Plot" || input$analyse_panel == "Trends & Thresholds") {
-      if ( (.Platform$OS.type == "windows") || pnl$GWSDAT_Options$ExcelMode) {
+      if ( (.Platform$OS.type == "windows") || csite$GWSDAT_Options$ExcelMode) {
         shinyjs::show(id = "save_spatial_ppt_anim")
         shinyjs::show(id = "save_trendtable_ppt_anim")
       }
@@ -890,10 +894,10 @@ server <- function(input, output, session) {
   })
   
   # These inputs will modify the plume threshold for each substance, 
-  #  saved in pnl$PlumeLimEntry.
+  #  saved in csite$ui_attr$plume_thresh.
   output$thres_plume_select <- renderUI({
    
-    num_subst <- length(pnl$PlumeLimEntry)
+    num_subst <- length(csite$ui_attr$plume_thresh)
     
     lapply(1:num_subst, function(i) {
       div(style = "display: inline-block;", 
@@ -901,30 +905,68 @@ server <- function(input, output, session) {
           #
           # Note, I use a number for the input id instead of the substance name,
           #  which could have unusual characters or whitespaces. I will need to 
-          #  extract and match back the number to what is in PlumeLimEntry.
+          #  extract and match back the number to what is in ui_attr$plume_thresh.
           #
           numericInput(paste("plume_thresh_", i, sep = ""), 
-                       label = names(pnl$PlumeLimEntry)[i], 
-                       value = pnl$PlumeLimEntry[i], 
+                       label = names(csite$ui_attr$plume_thresh)[i], 
+                       value = csite$ui_attr$plume_thresh[i], 
                        width = "100px")
       )
     })
   })
   
   
+  # These inputs will modify the concentration thresholds for each substance, 
+  #  saved in csite$ui_attr$conc_thresh.
+  output$thres_conc_select <- renderUI({
+    
+    num_subst <- length(csite$ui_attr$conc_thres)
+    
+    lapply(1:num_subst, function(i) {
+      div(style = "display: inline-block;", 
+          
+          #
+          # Note, I use a number for the input id instead of the substance name,
+          #  which could have unusual characters or whitespaces. I will need to 
+          #  extract and match back the number to what is in ui_attr$plume_thresh.
+          #
+          numericInput(paste("conc_thresh_", i, sep = ""), 
+                       label = names(csite$ui_attr$conc_thresh)[i], 
+                       value = csite$ui_attr$conc_thresh[i], 
+                       width = "100px")
+      )
+    })
+  })
+  
   observeEvent(input$save_analyse_options, {
     
-    num_subst <- length(pnl$PlumeLimEntry)
     
+    
+    # Retrieve the substance concentration thresholds
+    num_subst <- length(csite$ui_attr$conc_thresh)
+    for (i in 1:num_subst) {
+      
+      # Create input variable name and evaluate the string as variable. 
+      input_var <- paste("input$conc_thresh_", i, sep = "")
+      csite$ui_attr$conc_thresh[i] <<- eval(parse(text = input_var))
+    }
+    
+    
+    # Retrieve the plume concentration thresholds
+    num_subst <- length(csite$ui_attr$plume_thresh)
     for (i in 1:num_subst) {
       
       # Create input variable name and evaluate the string as variable. 
       input_var <- paste("input$plume_thresh_", i, sep = "")
-      pnl$PlumeLimEntry[i] <<- eval(parse(text = input_var))
+      csite$ui_attr$plume_thresh[i] <<- eval(parse(text = input_var))
     }
     
+    csite$ui_attr$ground_porosity <<- input$ground_porosity
     
-    pnl$Porosity <- input$ground_porosity
+    # Retrieve image settings .. 
+    # I might only have to use this when saving a session. Right now the 
+    # input$img_* attributes are used directly.
+    #csite$ui_attr$img_jpg_quality <<- input$img_jpg_quality 
     
   })
   
@@ -937,7 +979,7 @@ server <- function(input, output, session) {
   #observeEvent(input$plot_tabs, {
     
     # If there are less than 2 aquifer, hide the selection control.
-  #  if (length(pnl$All.Data$Aq_list) < 2) {
+  #  if (length(csite$All.Data$Aq_list) < 2) {
   #    shinyjs::hide(id = "select_aquifer_timeseries")
   #    shinyjs::hide(id = "select_aquifer_contour")
   #    shinyjs::hide(id = "select_aquifer_traffic")
@@ -972,7 +1014,7 @@ server <- function(input, output, session) {
   #     # ...
   #   } else {
   #     
-  #     ret <- plotWellReport(pnl, selected_solutes, selected_wells, use_log_scale)
+  #     ret <- plotWellReport(csite, selected_solutes, selected_wells, use_log_scale)
   #       
   #     if (class(ret) == "GWSDAT_Warning") {
   #       # toogle warning
@@ -1057,7 +1099,7 @@ ui_analyse_only <- shinyUI(
 
 
 
-if (!pnl$GWSDAT_Options$ExcelMode) {
+if (!csite$GWSDAT_Options$ExcelMode) {
     shinyApp(ui = ui, server = server)
 } else {
     shinyApp(ui = ui_analyse_only, server = server)

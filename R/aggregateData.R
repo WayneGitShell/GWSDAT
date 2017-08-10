@@ -30,7 +30,7 @@ aggregateData <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Co
     
     #! Cont.Data changes, if I call it again, will it change again?
     NAPL.Thickness.Data <- GWSDAT.Create.Agg.Date(NAPL.Thickness.Data, GWSDAT_Options$Aggby, my.seq = my.seq)
-    attr(NAPL.Thickness.Data,"lev.cuts") <- pretty(seq(0,max(NAPL.Thickness.Data$Result.Corr.ND,na.rm = T), l = 13), n = 12)
+    attr(NAPL.Thickness.Data,"lev_cuts") <- pretty(seq(0,max(NAPL.Thickness.Data$Result.Corr.ND,na.rm = T), l = 13), n = 12)
     attr(NAPL.Thickness.Data,"NAPL.Wells") <- sort(unique(as.character(NAPL.Thickness.Data$WellName)))
     
   }

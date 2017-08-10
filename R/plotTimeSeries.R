@@ -4,44 +4,44 @@
 
 
 
-plotTimeSeries <- function(panel, 
+plotTimeSeries <- function(csite, 
                            substance = NULL, 
                            location = NULL,
                            showvline = FALSE
                            ){
   
   
-  Use.LogScale = panel$dlines["Log Conc. Scale"]
+  Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
   
-  Well.Data <- panel$All.Data$Cont.Data[as.character(panel$All.Data$Cont.Data$WellName) == location & panel$All.Data$Cont.Data$Constituent == substance,]
+  Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) == location & csite$All.Data$Cont.Data$Constituent == substance,]
   
   
-  if (panel$rgUnits == "mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
-  if (panel$rgUnits == "ng/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND*1000 }
+  if (csite$ui_attr$conc_unit_selected == "mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
+  if (csite$ui_attr$conc_unit_selected == "ng/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND*1000 }
   
   Num.Data.Pts <- nrow(Well.Data)
-  smThreshSe <- panel$GWSDAT_Options$smThreshSe
+  smThreshSe <- csite$GWSDAT_Options$smThreshSe
   Det.Pts <- Well.Data$ND == FALSE
   ND.Pts <- Well.Data$ND == TRUE
   
-  # Use extra variable because "Overlay NAPL Thickness" might not be defined in dlines
+  # Use extra variable because "Overlay NAPL Thickness" might not be defined in ui_attr$ts_options
   show_napl_thickness <- FALSE
-  if ("Overlay NAPL Thickness" %in% names(panel$dlines)) { show_napl_thickness <- panel$dlines["Overlay NAPL Thickness"] } 
+  if ("Overlay NAPL Thickness" %in% names(csite$ui_attr$ts_options)) { show_napl_thickness <- csite$ui_attr$ts_options["Overlay NAPL Thickness"] } 
  
-  NAPL.Present <- existsNAPL(panel$All.Data, location, substance)
+  NAPL.Present <- existsNAPL(csite$All.Data, location, substance)
   
   
   # Adapt threshold value to different units.
-  Local_Stat.Lim <- panel$Stat.Lim
-  if (panel$rgUnits == "mg/l") { Local_Stat.Lim = Local_Stat.Lim / 1000 }
-  if (panel$rgUnits == "ng/l") { Local_Stat.Lim = Local_Stat.Lim * 1000 }
-  if (panel$rg1 == "Trend") { Local_Stat.Lim = NA }
+  Stat.Lim <- csite$ui_attr$conc_thres[substance]
+  if (csite$ui_attr$conc_unit_selected == "mg/l") { Stat.Lim = Stat.Lim / 1000 }
+  if (csite$ui_attr$conc_unit_selected == "ng/l") { Stat.Lim = Stat.Lim * 1000 }
+  if (csite$ui_attr$trend_thresh_selected == "Trend") { Stat.Lim = NA }
   
   
   
-  GWAxis <- panel$dlines["Overlay GW levels"] && "GWFlows" %in% 
-    names(attributes(panel$Fitted.Data)) && 
-    any(as.character(panel$All.Data$GW.Data$WellName) == location)
+  GWAxis <- csite$ui_attr$ts_options["Overlay GW levels"] && "GWFlows" %in% 
+    names(attributes(csite$Fitted.Data)) && 
+    any(as.character(csite$All.Data$GW.Data$WellName) == location)
   NAPLAxis <- (show_napl_thickness && NAPL.Present)
   
   tempinc <- 0.4
@@ -68,7 +68,7 @@ plotTimeSeries <- function(panel,
   
   
   
-  if(panel$dlines["Scale to Conc. Data"] & nrow(Well.Data) > 0) {
+  if(csite$ui_attr$ts_options["Scale to Conc. Data"] & nrow(Well.Data) > 0) {
     
     my.ylim <- range(Well.Data$Result.Corr.ND,na.rm = T)
     if (!is.finite(my.ylim[2])) {my.ylim[2] <- 100000}
@@ -76,18 +76,18 @@ plotTimeSeries <- function(panel,
     
   } else {
     
-    if (nrow(Well.Data) > 0) {my.ylim <- c(min(Well.Data$Result.Corr.ND, Local_Stat.Lim,na.rm = T),max(Well.Data$Result.Corr.ND,Local_Stat.Lim,na.rm=T))}
+    if (nrow(Well.Data) > 0) {my.ylim <- c(min(Well.Data$Result.Corr.ND, Stat.Lim,na.rm = T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
     else {my.ylim = c(0.01,100)}
-    my.xlim <- range(c(panel$All.Data$Cont.Data$SampleDate, panel$All.Data$GW.Data$SampleDate),na.rm = T) #maybe change to AggDate!
+    my.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T) #maybe change to AggDate!
   
     }
   
   
   sm.fit <- NULL
-  sm.h <- panel$Traffic.Lights$h[location, substance]
+  sm.h <- csite$Traffic.Lights$h[location, substance]
   
   
-  if (panel$dlines["Conc. Trend Smoother"] & !is.na(sm.h)) {
+  if (csite$ui_attr$ts_options["Conc. Trend Smoother"] & !is.na(sm.h)) {
     
     
     my.eval.points<-seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40)
@@ -108,7 +108,7 @@ plotTimeSeries <- function(panel,
       sm.95low     <-exp(sm.fit$estimate-2*sm.fit$se)
       
       
-      if(!panel$dlines["Scale to Conc. Data"]){
+      if(!csite$ui_attr$ts_options["Scale to Conc. Data"]){
         
         my.ylim<-c(min(my.ylim[1],sm.95low,na.rm=T),max(my.ylim[2],sm.95up,na.rm=T))
         if(!is.finite(my.ylim[2])){my.ylim[2]<-100000}
@@ -117,7 +117,7 @@ plotTimeSeries <- function(panel,
   }
   
   
-  if (panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts) > 0 & substance != " ") {
+  if (csite$ui_attr$ts_options["Conc. Linear Trend Fit"] & sum(Det.Pts) > 0 & substance != " ") {
     
     
     lm.fit <- try(lm(log(Result.Corr.ND)~SampleDate,Well.Data))
@@ -127,7 +127,7 @@ plotTimeSeries <- function(panel,
     lm.eval.points$lwr <- exp(lm.pred[,"lwr"])
     lm.eval.points$upr <- exp(lm.pred[,"upr"])
     
-    if (!panel$dlines["Scale to Conc. Data"]) {
+    if (!csite$ui_attr$ts_options["Scale to Conc. Data"]) {
       
       my.ylim <- c(min(my.ylim[1],lm.eval.points$lwr,na.rm = T),max(my.ylim[2],lm.eval.points$upr,na.rm = T))
       if (!is.finite(my.ylim[2])) {my.ylim[2] <- 100000}
@@ -142,7 +142,7 @@ plotTimeSeries <- function(panel,
     
     
     seg.lim <- Well.Data$Result.Corr.ND[ND.Pts]
-    if (length(grep("half",tolower(panel$GWSDAT_Options$NDMethod))) > 0) {seg.lim = 2*seg.lim}	
+    if (length(grep("half",tolower(csite$GWSDAT_Options$NDMethod))) > 0) {seg.lim = 2*seg.lim}	
     try(if (my.ylim[2] < max(seg.lim)) {my.ylim[2] <- max(seg.lim)})
     
   }
@@ -151,13 +151,13 @@ plotTimeSeries <- function(panel,
   
   if (Use.LogScale) {
     
-    if (panel$dlines["Show Legend"]) { 
+    if (csite$ui_attr$ts_options["Show Legend"]) { 
       my.ylim[2] <- 10^(log(my.ylim[1], base = 10) + 1.15 * log(my.ylim[2]/my.ylim[1],base = 10))
     }# make space for Key!
     
     plot(Result.Corr.ND ~ SampleDate, Well.Data, 
          xlab = "Date",
-         ylab = if (substance != " ") {paste(substance, " (", panel$rgUnits, ")", sep = "")} else {""},
+         ylab = if (substance != " ") {paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = "")} else {""},
          ylim = my.ylim, 
          xlim = my.xlim, 
          log  = "y", 
@@ -168,13 +168,13 @@ plotTimeSeries <- function(panel,
     
   }else{
     
-    if (panel$dlines["Show Legend"]) {
+    if (csite$ui_attr$ts_options["Show Legend"]) {
       my.ylim[2] <- my.ylim[2] + diff(range(my.ylim)) * .15
     }# make space for Key!
     
     plot(Result.Corr.ND ~ SampleDate, Well.Data,
          xlab = "Date",
-         ylab = if (substance != " ") {paste(substance," (", panel$rgUnits, ")", sep="")} else {""},
+         ylab = if (substance != " ") {paste(substance," (", csite$ui_attr$conc_unit_selected, ")", sep="")} else {""},
          ylim = my.ylim,
          xlim = my.xlim,
          cex.lab  = 1,
@@ -190,22 +190,22 @@ plotTimeSeries <- function(panel,
   #,format="%b %d")
   
   
-  if(nrow(panel$All.Data$Cont.Data[as.character(panel$All.Data$Cont.Data$Result) != "NAPL" & !is.na(panel$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
+  if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   box()	
-  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (panel$All.Data$Aq.sel != "") {paste(": Aquifer-",panel$All.Data$Aq.sel,sep = "")} else {""}), font.main = 4, cex.main = 1)
+  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$All.Data$Aq.sel != "") {paste(": Aquifer-",csite$All.Data$Aq.sel,sep = "")} else {""}), font.main = 4, cex.main = 1)
   
   
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
   
-  abline(v = as.Date(c(paste(1990:2030,c("-01-01"),sep=""),paste(1990:2030,c("-06-30"),sep=""))),lwd=1,lty=1,col = "lightgray")
-  if (length(grep("Threshold",panel$rg1))>0){if(!is.na(Local_Stat.Lim)){abline(h=Local_Stat.Lim,col="red",lty=2,lwd=3)}}
+  abline(v = as.Date(c(paste(1990:2030,c("-01-01"), sep = ""),paste(1990:2030,c("-06-30"),sep=""))),lwd=1,lty=1,col = "lightgray")
+  if (length(grep("Threshold",csite$ui_attr$trend_thresh_selected)) > 0){if(!is.na(Stat.Lim)){abline(h=Stat.Lim,col="red",lty=2,lwd=3)}}
   
-  if (panel$dlines["Show Legend"]) {
+  if (csite$ui_attr$ts_options["Show Legend"]) {
     
-    choose.vec = c(TRUE,TRUE, NAPL.Present, panel$dlines["Conc. Linear Trend Fit"],
-                   panel$dlines["Conc. Trend Smoother"],
-                   length(grep("Threshold",panel$rg1)) > 0,
-                   panel$dlines["Overlay GW levels"], 
+    choose.vec = c(TRUE,TRUE, NAPL.Present, csite$ui_attr$ts_options["Conc. Linear Trend Fit"],
+                   csite$ui_attr$ts_options["Conc. Trend Smoother"],
+                   length(grep("Threshold",csite$ui_attr$trend_thresh_selected)) > 0,
+                   csite$ui_attr$ts_options["Overlay GW levels"], 
                    show_napl_thickness
                   )
     
@@ -237,13 +237,13 @@ plotTimeSeries <- function(panel,
   
   
   
-  if (showvline) {abline(v = panel$All.Data$All.Agg.Dates[panel$jjj],col = "grey",lwd = 3)}
+  if (showvline) {abline(v = csite$All.Data$All.Agg.Dates[csite$jjj],col = "grey",lwd = 3)}
   points(Result.Corr.ND~SampleDate,Well.Data[Det.Pts,],cex = 1.5,pch = 19,col = "black")
   points(Result.Corr.ND~SampleDate,Well.Data[ND.Pts, ],cex = 1.5,pch = 19,col = "orange")
   if (NAPL.Present) {points(Result.Corr.ND~SampleDate,Well.Data[tolower(as.character(Well.Data$Result)) == "napl", ],cex = 1.5,pch = 19,col = "red")}
   
   
-  if (panel$dlines["Conc. Trend Smoother"] & !inherits(sm.fit, "try-error") & !is.null(sm.fit)) {
+  if (csite$ui_attr$ts_options["Conc. Trend Smoother"] & !inherits(sm.fit, "try-error") & !is.null(sm.fit)) {
     
     try(lines(my.eval.points,sm.est.keep,col = "grey",lwd = 2))#15Sep
     try(lines(my.eval.points,sm.95up.keep,col = "grey",lwd = 2,lty = 2))
@@ -256,7 +256,7 @@ plotTimeSeries <- function(panel,
   }
   
   
-  if (panel$dlines["Conc. Linear Trend Fit"] & sum(Det.Pts) > 1 & !inherits(lm.fit, "try-error") & substance != " ") {
+  if (csite$ui_attr$ts_options["Conc. Linear Trend Fit"] & sum(Det.Pts) > 1 & !inherits(lm.fit, "try-error") & substance != " ") {
     
     
     try(lines(lm.eval.points$SampleDate, lm.eval.points$fit, lwd = 2, col = "green"))
@@ -293,19 +293,19 @@ plotTimeSeries <- function(panel,
   
   GWInc <- FALSE
   
-  if (panel$dlines["Overlay GW levels"]) {
+  if (csite$ui_attr$ts_options["Overlay GW levels"]) {
     
-    Well.GW.Data<-panel$All.Data$GW.Data[as.character(panel$All.Data$GW.Data$WellName)==location,]
+    Well.GW.Data<-csite$All.Data$GW.Data[as.character(csite$All.Data$GW.Data$WellName)==location,]
     Well.GW.Data<-Well.GW.Data[order(Well.GW.Data$SampleDate),]
     
     if(nrow(Well.GW.Data)>0){
       
       par(new=T)
       GW.ylim=range(Well.GW.Data$Result,na.rm=T)
-      if(panel$dlines["Show Legend"]){GW.ylim[2]<-GW.ylim[2]+diff(range(GW.ylim,na.rm=T))*.15}
+      if(csite$ui_attr$ts_options["Show Legend"]){GW.ylim[2]<-GW.ylim[2]+diff(range(GW.ylim,na.rm=T))*.15}
       plot(Result~SampleDate,Well.GW.Data,yaxt='n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=GW.ylim,type="b",col="black")
       axis(4,axTicks(4),cex.axis=.7,padj=-2.2,tcl=-0.3)
-      mtext(paste("Groundwater Elevation (",panel$All.Data$GW.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
+      mtext(paste("Groundwater Elevation (",csite$All.Data$GW.Units,")",sep=""), side=4,line=0.75,cex=.7,col="black")
       GWInc<-TRUE
     }
     
@@ -313,20 +313,20 @@ plotTimeSeries <- function(panel,
   
 
   
-  if (show_napl_thickness & !is.null(panel$All.Data$NAPL.Thickness.Data)) {
+  if (show_napl_thickness & !is.null(csite$All.Data$NAPL.Thickness.Data)) {
     
-    Well.NAPL.Thickness.Data <- panel$All.Data$NAPL.Thickness.Data[as.character(panel$All.Data$NAPL.Thickness.Data$WellName) == location,]
+    Well.NAPL.Thickness.Data <- csite$All.Data$NAPL.Thickness.Data[as.character(csite$All.Data$NAPL.Thickness.Data$WellName) == location,]
     Well.NAPL.Thickness.Data <- Well.NAPL.Thickness.Data[order(Well.NAPL.Thickness.Data$SampleDate),]
     
     if (nrow(Well.NAPL.Thickness.Data) > 0 && GWInc == FALSE) {
       
       par(new = T)
       NAPL.ylim = range(Well.NAPL.Thickness.Data$Result.Corr.ND,na.rm = T)
-      if (panel$dlines["Show Legend"]) {NAPL.ylim[2] <- NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
+      if (csite$ui_attr$ts_options["Show Legend"]) {NAPL.ylim[2] <- NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
       
       plot(Result.Corr.ND~SampleDate,Well.NAPL.Thickness.Data,yaxt = 'n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=NAPL.ylim,type="b",col="red")
       axis(4,axTicks(4),cex.axis = .7,padj = -2.2,tcl=-0.3)
-      mtext(paste("NAPL Thickness (",panel$All.Data$NAPL.Units,")",sep = ""), side=4,line=0.75,cex=.7,col="black")
+      mtext(paste("NAPL Thickness (",csite$All.Data$NAPL.Units,")",sep = ""), side=4,line=0.75,cex=.7,col="black")
       
     }
     
@@ -335,10 +335,10 @@ plotTimeSeries <- function(panel,
       par(new=T)
       NAPL.ylim=range(Well.NAPL.Thickness.Data$Result.Corr.ND,na.rm=T)
       NAPL.ylim[1]=0
-      if(panel$dlines["Show Legend"]){NAPL.ylim[2]<-NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
+      if(csite$ui_attr$ts_options["Show Legend"]){NAPL.ylim[2]<-NAPL.ylim[2]+diff(range(NAPL.ylim,na.rm=T))*.15}
       plot(Result.Corr.ND~SampleDate,Well.NAPL.Thickness.Data,yaxt='n',xaxt='n',xlab="",ylab="",xlim=my.xlim,ylim=NAPL.ylim,type="b",col="red")
       axis(4,axTicks(4),cex.axis=.7,col="red",line=2,padj=-2.2,tcl=-0.3)
-      mtext(paste("NAPL Thickness (",panel$All.Data$NAPL.Units,")",sep=""), side=4,line=2.75,cex=.7,col="black")
+      mtext(paste("NAPL Thickness (",csite$All.Data$NAPL.Units,")",sep=""), side=4,line=2.75,cex=.7,col="black")
       
     }
     
@@ -346,18 +346,18 @@ plotTimeSeries <- function(panel,
   }
   
   par(op)
-  return(panel)
+  return(csite)
   
 }
 
 
-makeTimeSeriesPPT <- function(panel, substance, location, width = 7, height = 5){
+makeTimeSeriesPPT <- function(csite, substance, location, width = 7, height = 5){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
   win.metafile(mytemp, width = width, height = height) 
-  plotTimeSeries(panel, substance, location)
+  plotTimeSeries(csite, substance, location)
   dev.off()
   
   # Put into powerpoint slide.

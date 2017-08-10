@@ -25,7 +25,6 @@ createOptions <- function(HeadlessMode) {
   GWSDAT_Options[['PSplineVars']][['bdeg']] <- 2
   GWSDAT_Options[['PSplineVars']][['Trial.Lambda']] <- 10^seq(-6,0,length = 30)
   GWSDAT_Options[['PSplineVars']][['nseg']] <- 6
-  #GWSDAT_Options[['OutputGraphics']] <- 'wmf'
   GWSDAT_Options[['DefContThresh']] <- 500
   GWSDAT_Options[['DefPlumeThresh']] <- 10
   GWSDAT_Options[['DefPorosity']] <- 0.25
