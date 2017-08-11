@@ -81,10 +81,18 @@ uiAnalyseOptions <- function() {
                   width = '150px'
       )), 
       
+      
+      
       actionButton("save_analyse_options",
                    label = "Save", icon = icon("save"), 
                   # style = "color: #fff; background-color: Coral; border-color: Chocolate; float: right")
-                   style = "float: right")
+                   style = "float: right"),
+      hidden( 
+        div(id = "options_save_msg",
+            column(2, 
+                   textOutput("options_saved"), style = "float: right; color: Green;")
+            )
+      )
       
       
   )

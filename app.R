@@ -28,10 +28,10 @@ if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
   
   GWSDAT_Options <-  createOptions(HeadlessMode)
   
-  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+  #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+  #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
 
 }
 
@@ -105,10 +105,27 @@ server <- function(input, output, session) {
   
   checkPlumeStats <- reactive({
     
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = "Calculating Plume Stats", value = 0)
+    on.exit(progress$close())
+    
+    
+    # Use this closure to update the progress object from an external function.
+    updateProgress <- function(value = NULL, detail = NULL) {
+      if (is.null(value)) {
+        value <- progress$getValue()
+        value <- value + (progress$getMax() - value) / 5
+      }
+      progress$set(value = value, detail = detail)
+    }
+    
     val <- getFullPlumeStats(csite, 
                              input$solute_select_plume_pd, 
                              input$plume_threshold_pd,
-                             input$ground_porosity_pd
+                             input$ground_porosity_pd,
+                             updateProgress = updateProgress,
+                             progressB = progress
                              )
 
     # If there is any plume mass, show the plot and hide the message text, and 
@@ -940,8 +957,6 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_analyse_options, {
     
-    
-    
     # Retrieve the substance concentration thresholds
     num_subst <- length(csite$ui_attr$conc_thresh)
     for (i in 1:num_subst) {
@@ -963,6 +978,9 @@ server <- function(input, output, session) {
     
     csite$ui_attr$ground_porosity <<- input$ground_porosity
     
+    shinyjs::show(id = "options_save_msg", anim = TRUE, animType = "fade")
+    
+    delay(2000, shinyjs::hide(id = "options_save_msg", anim = TRUE, animType = "fade"))
     # Retrieve image settings .. 
     # I might only have to use this when saving a session. Right now the 
     # input$img_* attributes are used directly.
@@ -970,7 +988,7 @@ server <- function(input, output, session) {
     
   })
   
-  
+  output$options_saved <- renderText({ paste("Changes Saved") })
   
   
   #

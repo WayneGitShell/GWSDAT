@@ -1,10 +1,12 @@
 
-getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity) {
+getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
+                              progressUpdate = NULL, progressB = NULL) {
 
   # This will become a data frame containing in each row the plume statistics 
   # of each date.
   full_plume_stats <- NULL 
 
+  
 
   for (i in 1:length(csite$All.Data$All.Agg.Dates)) {
     
