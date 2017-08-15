@@ -2,7 +2,8 @@
 
 #------------------------------------------------------------------------------------------------------------#
 
-aggregateData <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, Well.Coords, NAPL.Thickness.Data) {
+aggregateData <- function(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, 
+                          Well.Coords, NAPL.Thickness.Data) {
   
   if (GWSDAT_Options$Aggby == "All Dates")	{my.seq <- NULL}
   if (GWSDAT_Options$Aggby == "Monthly")	{my.seq <- as.Date(sort(seq.Date(max(as.Date(All.Dates)),min(as.Date(All.Dates))-500,by="-1 months")))}

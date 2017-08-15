@@ -28,10 +28,10 @@ if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
   
   GWSDAT_Options <-  createOptions(HeadlessMode)
   
-  #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-  #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-  #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-  #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
 
 }
 
@@ -107,25 +107,15 @@ server <- function(input, output, session) {
     
     # Create a Progress object
     progress <- shiny::Progress$new()
-    progress$set(message = "Calculating Plume Stats", value = 0)
+    progress$set(message = "Calculating Plume", value = 0)
     on.exit(progress$close())
     
-    
-    # Use this closure to update the progress object from an external function.
-    updateProgress <- function(value = NULL, detail = NULL) {
-      if (is.null(value)) {
-        value <- progress$getValue()
-        value <- value + (progress$getMax() - value) / 5
-      }
-      progress$set(value = value, detail = detail)
-    }
-    
+   
     val <- getFullPlumeStats(csite, 
-                             input$solute_select_plume_pd, 
-                             input$plume_threshold_pd,
-                             input$ground_porosity_pd,
-                             updateProgress = updateProgress,
-                             progressB = progress
+                             substance = input$solute_select_plume_pd, 
+                             plume_thresh = input$plume_threshold_pd,
+                             ground_porosity = input$ground_porosity_pd,
+                             progressBar = progress
                              )
 
     # If there is any plume mass, show the plot and hide the message text, and 
@@ -334,13 +324,13 @@ server <- function(input, output, session) {
     
     
     # Use this closure to update the progress object from an external function.
-    updateProgress <- function(value = NULL, detail = NULL) {
-      if (is.null(value)) {
-        value <- progress$getValue()
-        value <- value + (progress$getMax() - value) / 5
-      }
-      progress$set(value = value, detail = detail)
-    }
+    #updateProgress <- function(value = NULL, detail = NULL) {
+    #  if (is.null(value)) {
+    #    value <- progress$getValue()
+    #    value <- value + (progress$getMax() - value) / 5
+    #  }
+    #  progress$set(value = value, detail = detail)
+    #}
 
     
     csite$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
@@ -361,8 +351,8 @@ server <- function(input, output, session) {
       
     # Fit data. 
     Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options, 
-                          updateProgress = updateProgress,
-                          progressB = progress)
+                          #updateProgress = updateProgress,
+                          progressBar = progress)
       
     if (class(Fitted.Data) != "gwsdat_fit") {
       stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")

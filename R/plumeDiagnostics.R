@@ -1,18 +1,21 @@
 
 getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
-                              progressUpdate = NULL, progressB = NULL) {
+                              progressBar = NULL) {
 
   # This will become a data frame containing in each row the plume statistics 
   # of each date.
   full_plume_stats <- NULL 
 
-  
+  nr_timesteps = length(csite$All.Data$All.Agg.Dates)
 
-  for (i in 1:length(csite$All.Data$All.Agg.Dates)) {
+  for (i in 1:nr_timesteps) {
+    
+    progressBar$set(value = (i/nr_timesteps), detail = paste("time point ", i, " / ", nr_timesteps))
     
     interp.pred <- interpData(csite, substance, i)
     
-    plume_stats <- getPlumeStats(csite, substance, timestep = i, interp.pred$data, plume_thresh, ground_porosity)
+    plume_stats <- getPlumeStats(csite, substance, timestep = i, interp.pred$data, 
+                                 plume_thresh, ground_porosity)
     
     # Add date. 
     plume_stats = cbind(plume_stats, "Agg.Date" = csite$All.Data$All.Agg.Dates[i])

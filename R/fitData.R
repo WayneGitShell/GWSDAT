@@ -2,8 +2,7 @@
 
 fitData <- function(All.Data, GWSDAT_Options, 
                     progressBar = NULL,    # tcltk progress (will be deprecated)
-                    updateProgress = NULL,  # shiny progress fct
-                    progressB = NULL
+                    progress = NULL        # shiny progress bar
                     ) {
 
   
@@ -40,8 +39,8 @@ fitData <- function(All.Data, GWSDAT_Options,
       setTkProgressBar(progressBar, PctDone, NULL, paste("Fitting ", All.Data$All.Conts[i], " Data."))
   
     # Show progress of fitting (shiny).
-    if (is.function(updateProgress)) {
-      updateProgress(value = PctDone, detail = paste("fitting ", All.Data$All.Conts[i]))
+    if (!is.null(progress)) {
+      progress$set(value = PctDone, detail = paste("fitting ", All.Data$All.Conts[i]))
     }
     
     if (tolower(GWSDAT_Options$ModelMethod) == "svm") {
@@ -96,8 +95,8 @@ fitData <- function(All.Data, GWSDAT_Options,
   if (!GWSDAT_Options$HeadlessMode && !is.null(progressBar))
     setTkProgressBar(progressBar, PctDone, NULL, "Calculating Traffic Lights")
   
-  if (is.function(updateProgress)) {
-    updateProgress(value = PctDone, detail = paste("calculating trends"))
+  if (!is.null(progress)) {
+    progress$set(value = PctDone, detail = paste("calculating trends"))
   }
   
   Traffic.Lights <- try(GWSDAT.Traffic.Lights(All.Data,Fitted.Data,GWSDAT_Options))
@@ -116,8 +115,8 @@ fitData <- function(All.Data, GWSDAT_Options,
   if (!GWSDAT_Options$HeadlessMode && !is.null(progressBar))
     setTkProgressBar(progressBar, PctDone, NULL, "Calculating GroundWater Flows")
  
-  if (is.function(updateProgress)) {
-    updateProgress(value = PctDone, detail = paste("calculating groundwater"))
+  if (!is.null(progress)) {
+    progress$set(value = PctDone, detail = paste("calculating groundwater"))
   } 
   
   if (!is.null(All.Data$Agg_GW_Data)) {
