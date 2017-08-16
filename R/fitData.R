@@ -1,10 +1,11 @@
 
 
 fitData <- function(All.Data, GWSDAT_Options, 
-                    progressBar = NULL,    # tcltk progress (will be deprecated)
+                    #progressBar = NULL,    # tcltk progress (will be deprecated)
                     progress = NULL        # shiny progress bar
                     ) {
 
+  progressBar = NULL
   
   ############################# Fit Model to each Contaminant ############################################################
 

@@ -1,72 +1,23 @@
 
 
-source("R/GWSDAT_Setup.R")
+source("R/loadPkgSrc.R")
 
 
 # Print warnings when they happen.
 options(warn = 1)
-
-
- 
-HeadlessMode <- FALSE
-if (.Platform$OS.type == "unix")
-    HeadlessMode <- TRUE
-
-# The progress bar starts here because of lengthy package loading. 
-# All the rest is done inside initSite(). 
-progressBar = NULL
-if (!HeadlessMode) {
-    require(tcltk)
-    progressBar <- tkProgressBar('GWSDAT Progress', 'Loading R packages...',0, 1, 0)
-}
-
-# Loads packages and R sources.
-GWSDAT_Setup()
-
-
-if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
-  
-  GWSDAT_Options <-  createOptions(HeadlessMode)
-  
-  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
-
-}
-
-
-# Set DevMode true on Andrej's computer.
-GWSDAT_Options[['DevMode']] <- FALSE
-if (Sys.info()["nodename"] == "LAPTOP-QU06V978")
-  GWSDAT_Options[['DevMode']] <- TRUE
-
-
-csite = initSite(GWSDAT_Options, progressBar = progressBar)
-
-
-
-if (!GWSDAT_Options$HeadlessMode) {
-    try(close(progressBar))
-}
-
-
-
-  
-# Put into global environment, so the shiny server can see it. 
-.GlobalEnv$csite <- csite
-
+#options(warn = recover)
 
 
 ########################### Server Section ######################################
 
-# Define server logic 
+
 server <- function(input, output, session) {
    
+  dataLoaded <- reactiveVal(0)
   
-  #
-  # Execute once per user:
-  #
+  csite <- NULL
+
+  
   
   #
   # Read GWSDAT instances.
@@ -323,16 +274,6 @@ server <- function(input, output, session) {
     on.exit(progress$close())
     
     
-    # Use this closure to update the progress object from an external function.
-    #updateProgress <- function(value = NULL, detail = NULL) {
-    #  if (is.null(value)) {
-    #    value <- progress$getValue()
-    #    value <- value + (progress$getMax() - value) / 5
-    #  }
-    #  progress$set(value = value, detail = detail)
-    #}
-
-    
     csite$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
     csite$ui_attr$aggregate_selected <<- aggby
     
@@ -351,7 +292,6 @@ server <- function(input, output, session) {
       
     # Fit data. 
     Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options, 
-                          #updateProgress = updateProgress,
                           progressBar = progress)
       
     if (class(Fitted.Data) != "gwsdat_fit") {
@@ -518,7 +458,6 @@ server <- function(input, output, session) {
     if (csite$GWSDAT_Options$Aggby != input$aggregate_data_traffic) {
       reaggregateData(input$aggregate_data_traffic)
     
-      #browser()
       # Update time step slider in this panel.
       updateSliderInput(session, "time_steps_traffic", value = csite$timestep_range[1], 
                         min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
@@ -1033,6 +972,123 @@ server <- function(input, output, session) {
   #   }
   #   
   # })
+  
+  #output$init_data_msg <- renderText({"Loading data"})
+  loadDataSet <- function(Aq_sel = NULL) {
+    
+    HeadlessMode <- FALSE
+    if (.Platform$OS.type == "unix")
+      HeadlessMode <- TRUE
+    
+    
+    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
+      
+      GWSDAT_Options <-  createOptions(HeadlessMode)
+      
+      GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+      GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+      GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+      GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+      
+    }
+    
+    
+    # Set DevMode true on Andrej's computer.
+    GWSDAT_Options[['DevMode']] <- FALSE
+    if (Sys.info()["nodename"] == "LAPTOP-QU06V978")
+      GWSDAT_Options[['DevMode']] <- TRUE
+    
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = "Starting GWSDAT", value = 0)
+    on.exit(progress$close())
+    
+    progress$set(value = 0.1, detail = paste("load data"))
+    
+    # Read Well data and coordinates from file.
+    solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
+    well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
+    
+    pr_dat <- processData(solute_data, well_data, GWSDAT_Options, Aq_sel)
+    
+    if (class(pr_dat) == "Aq_list")
+      return(pr_dat)
+    
+    # Some Error occured
+    if (is.null(pr_dat))
+      return(pr_dat)
+    
+    
+    #
+    # start with progress bar here
+    #
+    
+    
+    Fitted.Data = fitData(pr_dat, GWSDAT_Options, progress)
+    
+    # Create UI attributes
+    ui_attr <- createUIAttr(pr_dat, Fitted.Data, GWSDAT_Options)
+    
+    # Build list with all data.
+    csite <<- list(All.Data       = pr_dat,
+                      Fitted.Data    = Fitted.Data,
+                      GWSDAT_Options = GWSDAT_Options,
+                      Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
+                      ui_attr        = ui_attr
+    )
+    
+    #csite <<- siteinitSite(GWSDAT_Options)
+    dataLoaded(2)
+    
+    return(TRUE)
+  }  
+  
+  aq_btn_pressed <- observeEvent(input$aquifer_btn, {
+    
+    ret <- loadDataSet(input$aquifer)
+    
+    #dataLoaded(1)   
+  })
+  
+  
+  output$rndAnalyse <- renderUI({
+    
+    html_out = NULL
+    
+    data_load_status <- dataLoaded()
+    
+   
+    # Nothing load, start process.
+    if (data_load_status == 0) {
+      
+      # Read Well data and coordinates from file.
+      ret <- loadDataSet()
+      
+      if (class(ret) == "Aq_list" ) {
+        html_out <- tagList(
+          selectInput("aquifer", "Choose a Aquifer:", 
+                      choices = ret),     
+          actionButton("aquifer_btn", "Next")
+        )
+      }
+    }
+    
+    # Partially loaded, Aquifer was selected
+    if (data_load_status == 1) {
+    
+      
+      
+    }
+    
+    # Completely loaded, plot Analyse page
+    if (data_load_status == 2) {
+    
+      html_out <- uiAnalyse(csite)
+      
+    }
+    
+    return(html_out)
+  })
 }
 
 
@@ -1089,7 +1145,7 @@ ui <- dashboardPage(
                  
       
       # Analysis Tab
-      tabItem(tabName = "analysis", uiAnalyse()
+      tabItem(tabName = "analysis", uiOutput("rndAnalyse") # uiAnalyse()
       ) # end tabItem
     ) # end tabItems
  ) # end dashboardBody 
@@ -1097,18 +1153,24 @@ ui <- dashboardPage(
  
 
 ui_analyse_only <- shinyUI(
-  fluidPage(uiAnalyse())
+ 
+    fluidPage(
+      uiOutput("rndAnalyse")
+    )
+  
 )
 
 
-
-
-
-
-
-
-if (!csite$GWSDAT_Options$ExcelMode) {
-    shinyApp(ui = ui, server = server)
-} else {
+if (exists("GWSDAT_Options", envir = .GlobalEnv)) {
+  
+  if (GWSDAT_Options$ExcelMode) {
     shinyApp(ui = ui_analyse_only, server = server)
+  }
+
+} else {
+  #shinyApp(ui = ui, server = server)  # <- right version
+  shinyApp(ui = ui_analyse_only, server = server) # testing!
 }
+
+    
+

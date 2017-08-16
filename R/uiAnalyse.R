@@ -1,7 +1,7 @@
 
 
 
-uiAnalyse <- function() {
+uiAnalyse <- function(csite) {
 
  
   navbarPage(title = csite$ui_attr$site_name, id = "analyse_panel",              
@@ -38,7 +38,7 @@ uiAnalyse <- function() {
                        ),
                        
                        box(width = 7,
-                           plotOutput("time_series"),
+                           withSpinner(plotOutput("time_series")),
                            
                            div(style = "display: inline-block;",
                                selectInput("export_format_ts", label = "Image format", 
@@ -96,7 +96,7 @@ uiAnalyse <- function() {
                        
                        
                        box(width = 7,
-                            plotOutput("image_plot"),
+                            withSpinner(plotOutput("image_plot")),
                            
                             div(style = "display: inline-block;", 
                                 selectInput("export_format_sp", label = "Image format", 
@@ -167,7 +167,7 @@ uiAnalyse <- function() {
                               
                         tabPanel(title = "Trends", 
                                  
-                                plotOutput("traffic_table"),
+                                 withSpinner(plotOutput("traffic_table")),
 
                                 div(style = "display: inline-block;",
                                   selectInput("export_format_tt", label = "Image format",
@@ -213,12 +213,12 @@ uiAnalyse <- function() {
              
               navbarMenu("More",
                   tabPanel("Well Report", fluid = TRUE, 
-                           uiWellReport() ),
+                           uiWellReport(csite) ),
                   tabPanel("Plume Time Series", fluid = TRUE, 
-                           uiPlumeDiagnostics() ),
+                           uiPlumeDiagnostics(csite) ),
                   "----",
                   tabPanel("Options", fluid = TRUE,
-                           uiAnalyseOptions()
+                           uiAnalyseOptions(csite)
                   )
               ) # end navbarMenu
               

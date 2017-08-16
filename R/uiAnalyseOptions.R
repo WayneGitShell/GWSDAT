@@ -1,5 +1,5 @@
 
-uiAnalyseOptions <- function() {
+uiAnalyseOptions <- function(csite) {
   
   box(title = "Options", width = 8, #solidHeader = TRUE,
         

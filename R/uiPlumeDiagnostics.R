@@ -1,7 +1,7 @@
 
 
 
-uiPlumeDiagnostics <- function() {
+uiPlumeDiagnostics <- function(csite) {
   
   fluidRow(
     column(2,

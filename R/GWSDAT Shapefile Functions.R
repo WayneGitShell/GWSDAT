@@ -143,7 +143,7 @@ else{
 
 #################Input Shapefiles ########################
 
-init_shapefiles <- function(GWSDAT_Options) {
+initShapeFiles <- function(GWSDAT_Options) {
 
   ShapeFiles <- NULL
   
@@ -159,28 +159,20 @@ init_shapefiles <- function(GWSDAT_Options) {
       
       if (inherits(tempShapeFile, "try-error")) {
         
-        tkmessageBox(title = "Warning!",message = paste("Error Inputting '",GWSDAT_Options$ShapeFileNames[i],"' shapefile",sep=""),
-                     icon = "warning", type = "ok")
+        msg <- paste("Warning: Error Inputting '", GWSDAT_Options$ShapeFileNames[i],"' shapefile", sep = "")
+        showNotification(msg, type = "warning", duration = 20) 
         
         if (length( grep(".shp",tolower(GWSDAT_Options$ShapeFileNames[i]))) == 0) {
-          
-          tkmessageBox(title = "Warning!",message = paste("Shape Files usually have a .shp file extension"),
-                       icon = "warning",type = "ok")
-          
+        
+          msg <- "Warning: Shape Files usually have a .shp file extension"
+          showNotification(msg, type = "warning", duration = 20) 
         }
         
         
         if (file.exists(GWSDAT_Options$ShapeFileNames[i]) != TRUE) {
-          
-          tkmessageBox(title = "Warning!",message = paste("File: '",GWSDAT_Options$ShapeFileNames[i],"' does not exist.",sep = ""),
-                       icon = "warning",type = "ok")
-          
+          msg <- paste("Warning: File '", GWSDAT_Options$ShapeFileNames[i],"' does not exist.", sep = "")
+          showNotification(msg, type = "warning", duration = 20) 
         }
-        
-        if (as.character(tkmessageBox(message = "Do you wish to continue?",icon="question",type="yesno",default="yes"))!="yes"){
-          stop("Error Inputting ShapeFile")
-        }
-        
         
       } else {
         

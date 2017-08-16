@@ -1,7 +1,7 @@
 
 
 
-uiWellReport <- function() {
+uiWellReport <- function(csite) {
   
   fluidRow(
     box(width = 3, title = "Setting", 
