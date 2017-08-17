@@ -33,11 +33,10 @@ loadPackages <- function(){
   
   if (!Require("sm")) {return(FALSE)}
   if (!Require("zoo")) {return(FALSE)}
-  if (!Require("tkrplot")) {return(FALSE)}
   if (!Require("splancs")) {return(FALSE)}
   if (!Require("Kendall")) {return(FALSE)}
-  if (!Require("animation")) {return(FALSE)}
-  if (!Require("rpanel")) {return(FALSE)}
+  # if (!Require("animation")) {return(FALSE)}
+  # if (!Require("rpanel")) {return(FALSE)}
   if (!Require("deldir")) {return(FALSE)}
   if (!Require("maptools")) {return(FALSE)}
   if (!Require("geometry")) {return(FALSE)}
@@ -77,6 +76,7 @@ if (.Platform$OS.type == "windows") {
   require(shiny)
   require(shinyjs)
   require(shinydashboard)
+  require(shinycssloaders)
     
 }
 
@@ -89,11 +89,9 @@ source(paste(HomeDir, "R/GWSDAT Auto Gamma.R", sep = "/"))
 source(paste(HomeDir, "R/GWSDAT Shapefile Functions.R", sep = "/"))
 
 # added 07/2017
-source(paste(HomeDir, "R/GWSDAT_Msg.R", sep = "/"))
 source(paste(HomeDir, "R/readData.R", sep = "/"))
 source(paste(HomeDir, "R/processData.R", sep = "/"))
 source(paste(HomeDir, "R/fitData.R", sep = "/"))
-source(paste(HomeDir, "R/initSite.R", sep = "/"))
 source(paste(HomeDir, "R/utilities.R", sep = "/"))
 source(paste(HomeDir, "R/aggregateData.R", sep = "/"))
 source(paste(HomeDir, "R/createOptions.R", sep = "/"))
@@ -109,6 +107,7 @@ source(paste(HomeDir, "R/uiWellReport.R", sep = "/"))
 source(paste(HomeDir, "R/uiPlumeDiagnostics.R", sep = "/"))
 source(paste(HomeDir, "R/uiAnalyseOptions.R", sep = "/"))
 source(paste(HomeDir, "R/uiAttr.R", sep = "/"))
+source(paste(HomeDir, "R/uiSession.R", sep = "/"))
 
 # Maybe move this to the other interpolation methods. Where are they? 
 source(paste(HomeDir, "R/interpData.R", sep = "/"))
@@ -116,8 +115,6 @@ source(paste(HomeDir, "R/interpData.R", sep = "/"))
 # For the well report, might change.  
 source(paste(HomeDir, "R/chooserInput.R", sep = "/"))
 
-# Need this as long as I'm not fully dependent on shiny.
-source(paste(HomeDir, "R/GWSDAT_select_list.R", sep = "/"))
 
 
 

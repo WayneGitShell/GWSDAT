@@ -8,8 +8,9 @@ uiAnalyse <- function(csite) {
               
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
                        
-                       column(3,
-                              wellPanel(
+                       box(width = 3, status = "warning", title = "Settings",
+                       #column(3,
+                       #        wellPanel(
                                 #
                                 # Did not decided yet where to put this (here or data manager).
                                 #
@@ -34,10 +35,10 @@ uiAnalyse <- function(csite) {
                                                    selected = names(which(csite$ui_attr$ts_options == TRUE)))
                                 
                                
-                              )
+                       #       )
                        ),
                        
-                       box(width = 7,
+                       box(width = 7, status = "primary",
                            withSpinner(plotOutput("time_series")),
                            
                            div(style = "display: inline-block;",
@@ -62,9 +63,7 @@ uiAnalyse <- function(csite) {
               
               tabPanel("Spatial Plot", id = "contour_tab", fluid = TRUE,
                        
-                       column(3, 
-                              
-                              wellPanel(
+                       box(width = 3, status = "warning", title = "Settings",
                                 #
                                 # Did not decided yet where to put this (here or data manager).
                                 #
@@ -90,12 +89,12 @@ uiAnalyse <- function(csite) {
                                              choices  = csite$ui_attr$gw_options, 
                                              selected = csite$ui_attr$gw_selected)
                                 
-                              )          
+                                
                               
                        ),
                        
                        
-                       box(width = 7,
+                       box(width = 7, status = "primary",
                             withSpinner(plotOutput("image_plot")),
                            
                             div(style = "display: inline-block;", 
@@ -132,18 +131,14 @@ uiAnalyse <- function(csite) {
                                           choices  = csite$ui_attr$aggregate_list,
                                           selected = csite$ui_attr$aggregate_selected , 
                                           width = "100%")
-                              
-                       ) # end column
-                       
+                       )
               ), # end tabPanel
               
               
               
               tabPanel("Trends & Thresholds", fluid = TRUE,
                        
-                       column(3,
-                              
-                              wellPanel(
+                       box(width = 3, status = "warning", title = "Settings",
                                 #
                                 # Did not decided yet where to put this (here or data manager).
                                 #
@@ -157,13 +152,10 @@ uiAnalyse <- function(csite) {
                                 
                                 selectInput("traffic_color", label = "Show color", choices = csite$ui_attr$trend_color_list,
                                             selected = csite$ui_attr$trend_color_selected, width = "80%")
-                                
-                              )
-                              
                        ),
                        
                        
-                       tabBox("Trend Table", width = 7,
+                       tabBox("Trend Table", width = 7, 
                               
                         tabPanel(title = "Trends", 
                                  

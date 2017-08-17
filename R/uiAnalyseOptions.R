@@ -1,10 +1,10 @@
 
 uiAnalyseOptions <- function(csite) {
   
-  box(title = "Options", width = 8, #solidHeader = TRUE,
+  box(title = "Options", width = 8, solidHeader = TRUE, status = "primary",
         
-      "The following options will affect the currently selected data and model. For 
-      global settings visit the _Settings_ page.",
+      "The following options will only affect the currently selected data set.",
+      #For global settings visit the _Settings_ page.",
       
       
       ## Concentration Thresholds ##############################################

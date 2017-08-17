@@ -1,32 +1,24 @@
 
 
-fitData <- function(All.Data, GWSDAT_Options, 
-                    #progressBar = NULL,    # tcltk progress (will be deprecated)
-                    progress = NULL        # shiny progress bar
-                    ) {
+fitData <- function(All.Data, GWSDAT_Options, progress = NULL) {
 
-  progressBar = NULL
-  
-  ############################# Fit Model to each Contaminant ############################################################
+
+
 
   Fitted.Data <- list()
 
   NumConts = length(All.Data$All.Conts)
 
-  # For the progress bar.
+  # Progress bar value indicator.
   PctDone = 1 / (NumConts + 3)
   
   
   if (!tolower(GWSDAT_Options$ModelMethod) %in% c("svm","pspline")) {
     
-    if (!GWSDAT_Options$HeadlessMode) {
-      GWSDAT_Options$ModelMethod <- GWSDAT.select.list(c("pspline","svm"))
-    } else {
-      #
-      # Fixme: model selection in headless mode.
-      #
-      stop("No proper model found. Fix selection procedure in headless mode.")
-    }
+    msg <- "No valid modelling method selected. Assuming pspline. (Choice will be added)"
+    showNotification(msg, duration = 10 )
+    
+    GWSDAT_Options$ModelMethod <- "pspline"
   } 
   
   
@@ -35,11 +27,7 @@ fitData <- function(All.Data, GWSDAT_Options,
   #
   for (i in 1:NumConts) {
     
-    # Show progress of fitting (tcltk).
-    if (!GWSDAT_Options$HeadlessMode && !is.null(progressBar))
-      setTkProgressBar(progressBar, PctDone, NULL, paste("Fitting ", All.Data$All.Conts[i], " Data."))
-  
-    # Show progress of fitting (shiny).
+    # Show progress of fitting.
     if (!is.null(progress)) {
       progress$set(value = PctDone, detail = paste("fitting ", All.Data$All.Conts[i]))
     }
@@ -55,20 +43,13 @@ fitData <- function(All.Data, GWSDAT_Options,
     }
     
     
-    
     if (inherits(temp.fit, 'try-error')) {
-      
-       
-      if (!GWSDAT_Options$HeadlessMode)
-        tkmessageBox(title = "Error!", message = paste("Error in fitting", All.Data$All.Conts[i], "data."), 
-                     icon = "error", type = "ok")
-      
-      Run_status = GWSDAT_Warning(paste("Error in fitting",All.Data$All.Conts[i],"data."))
-      
+    
+      msg <- paste("Fitting", All.Data$All.Conts[i], "data failed, ignoring it.")
+      showNotification(msg, type = "error", duration = 20)
     } else {
       
       Fitted.Data[[All.Data$All.Conts[i]]] <- temp.fit
-      
     }
     
     # Progress the bar.
@@ -76,53 +57,43 @@ fitData <- function(All.Data, GWSDAT_Options,
     
   }
   
-  
-  if (exists('temp.fit')) { try(rm(temp.fit)) }
-  
-  
+  # Abort if none of the substances was fitted.  
   if (length(Fitted.Data) == 0) {
     
-    tkmessageBox(title="Error!", message = paste("Error in fitting data."),icon="error",type="ok")
-    try(close(progressBar))
-    #stop("Error in fitting data.")
-    
-    return(GWSDAT_Error("Error in fitting data: None of the contaminants was fitted."))
+    msg <- "None of the contaminants were fitted. Aborting calculation."
+    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    return(NULL)
   }
-  #----------------------------------------------------------------------------------------------------------------------#
+
   
   
+  ################### Traffic Lights ###########################################
   
-  ################### Traffic Lights #####################################################################################
-  if (!GWSDAT_Options$HeadlessMode && !is.null(progressBar))
-    setTkProgressBar(progressBar, PctDone, NULL, "Calculating Traffic Lights")
   
   if (!is.null(progress)) {
     progress$set(value = PctDone, detail = paste("calculating trends"))
   }
   
-  Traffic.Lights <- try(GWSDAT.Traffic.Lights(All.Data,Fitted.Data,GWSDAT_Options))
-  attr(Fitted.Data,'TrafficLights') <- if (!inherits(Traffic.Lights, 'try-error')) {Traffic.Lights}else{NULL}
-  try(rm(Traffic.Lights))
+  Traffic.Lights <- try(GWSDAT.Traffic.Lights(All.Data, Fitted.Data, GWSDAT_Options))
+  
+  attr(Fitted.Data,'TrafficLights') <- if (!inherits(Traffic.Lights, 'try-error')) {
+    Traffic.Lights
+  } else {NULL}
   
   PctDone = (NumConts + 2) / (NumConts + 3)
 
  
-  #----------------------------------------------------------------------------------------------------------------------#
+  
+  ################### Groundwater Calc##########################################
   
   
-  
-  ################### Groundwater Calc####################################################################################
-  
-  if (!GWSDAT_Options$HeadlessMode && !is.null(progressBar))
-    setTkProgressBar(progressBar, PctDone, NULL, "Calculating GroundWater Flows")
- 
   if (!is.null(progress)) {
     progress$set(value = PctDone, detail = paste("calculating groundwater"))
   } 
   
   if (!is.null(All.Data$Agg_GW_Data)) {
     
-    GW.Flows <- try(do.call('rbind',by(All.Data$Agg_GW_Data,All.Data$Agg_GW_Data$AggDate,GWSDAT.GW.Comp)))
+    GW.Flows <- try(do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, GWSDAT.GW.Comp)))
     
     if (!inherits(GW.Flows, 'try-error')) {
       
@@ -130,9 +101,9 @@ fitData <- function(All.Data, GWSDAT_Options,
       GW.Flows$R[GW.Flows$R > 1] <- 1
       
     } 
+    
     GW.Flows = na.omit(GW.Flows)
     attr(Fitted.Data,'GWFlows') <- if (!inherits(GW.Flows, 'try-error')) {GW.Flows} else {NULL}
-    try(rm(GW.Flows))
     
   }
   

@@ -19,51 +19,33 @@ readConcData <- function(input_file, ...) {
   
   if (inherits(AGALL, 'try-error')) {
     
-    # TK-related:
-    # tkmessageBox(title="Error!",message="Error reading Monitoring data.",icon="error",type="ok")
-    # try(close(pb))
-    
-    return(GWSDAT_Error("Error in inputting and formatting data."))
-    
-    #stop("Error in inputting and formatting data.")
-    
+    msg <- "Reading the concentration data failed. Make sure to set proper column names."
+    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    return(NULL)
+
   }
   
-  AGALL$SampleDate <- GWSDAT.excelDate2Date(floor(as.numeric(as.character(AGALL$SampleDate)))) ##added floor function 28/6/2012
+  AGALL$SampleDate <- GWSDAT.excelDate2Date(floor(as.numeric(as.character(AGALL$SampleDate)))) 
   
   
-  if(any(is.na(AGALL$SampleDate))) {
+  if (any(is.na(AGALL$SampleDate))) {
     
-    AGALL<-AGALL[!is.na(AGALL$SampleDate),]
+    AGALL <- AGALL[!is.na(AGALL$SampleDate),]
     
-    #TK stuff:
-    #tkmessageBox(title="Warning!",message="Incorrect input date value(s) detected.",icon="error",type="ok")
+    msg <- "Warning: Incorrect input date value(s) detected. Ommitting these values."
+    showNotification(msg, type = "warning", duration = 10)
+
     
-    Run_status = GWSDAT_Warning("Incorrect input date value(s) detected.")
-    
-    if(nrow(AGALL)==0 || as.character(tkmessageBox(message="Do you wish to continue?",icon="question",type="yesno",default="yes"))!="yes"){
+    if (nrow(AGALL) == 0) {
       
-      #TK stuff:
-      #try(close(pb))	
-      #stop("Stop due to bad dates")
+      msg <- "Zero entries in concentration data read."
+      showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+      return(NULL)
       
-      return(GWSDAT_Error("Stop tue to bad dates."))
-      
-      
-    } else {
-      
-      #TK stuff:
-      #tkmessageBox(title="Warning!",message="Incorrect date values data will be omitted.",icon="error",type="ok")
-      
-      Run_status = GWSDAT_Warning("Incorrect date values data will be omitted.")
-      
-      
-    }
-    
+    } 
   }
   
   return(AGALL)
-  
   
 }
 
@@ -95,15 +77,10 @@ readWellCoords <- function(input_file, ...) {
   WellCoords <- try(WellCoords[,which(tolower(names(WellCoords)) == "wellname"):which(tolower(names(WellCoords)) == "aquifer")]) 
   
   if (inherits(WellCoords, 'try-error')) {
-    
-    #TK stuff:
-    #tkmessageBox(title="Error!",message="Error reading Well Coordinates data.",icon="error",type="ok")
-    #try(close(pb))
-    
-    #stop("Error in inputting and formatting data.")
-    
-    return(GWSDAT_Error("Error in inputting and formatting data."))
-    
+  
+    msg <- "Reading the well coordinates failed. Make sure to set proper column names."
+    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    return(NULL)
     
   }
   

@@ -1,7 +1,7 @@
 
 
 
-plotTrendTable <- function(csite, timestep = 1, subset = FALSE){
+plotTrendTable <- function(csite, timestep = 1){
   
  
   date.to.print <- format(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
@@ -32,15 +32,15 @@ plotTrendTable <- function(csite, timestep = 1, subset = FALSE){
   }
   
   
-  if (subset == TRUE) {
-    
-    if(length(Cont.Names)==1){Cont.Names<-Cont.Names[1]}else{Cont.Names<-GWSDAT.select.list(Cont.Names,multiple =T,title = "Select Solutes to Plot",preselect=Cont.Names)}
-    if(length(Cont.Names)==0){stop("No Solutes selected!")}
-    
-    Well.Names<-GWSDAT.select.list(Well.Names,multiple =T,title = "Select Wells to Plot",preselect=Well.Names)
-    if(length(Well.Names)==0){stop("No Wells selected!")}
-    
-  }
+  # if (subset == TRUE) {
+  #   
+  #   if(length(Cont.Names)==1){Cont.Names<-Cont.Names[1]}else{Cont.Names<-GWSDAT.select.list(Cont.Names,multiple =T,title = "Select Solutes to Plot",preselect=Cont.Names)}
+  #   if(length(Cont.Names)==0){stop("No Solutes selected!")}
+  #   
+  #   Well.Names<-GWSDAT.select.list(Well.Names,multiple =T,title = "Select Wells to Plot",preselect=Well.Names)
+  #   if(length(Well.Names)==0){stop("No Wells selected!")}
+  #   
+  # }
   
   if(csite$ui_attr$trend_thresh_selected=="Trend"){
     

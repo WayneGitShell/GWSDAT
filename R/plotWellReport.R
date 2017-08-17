@@ -17,7 +17,10 @@ plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   
   Cont.Data <- Cont.Data[as.character(Cont.Data$WellName) %in% Wells.to.Plot,]
   
-  if (nrow(Cont.Data) == 0) return(GWSDAT_Warning("No data to plot."))
+  if (nrow(Cont.Data) == 0) {
+    showNotification("Well Report: No data to plot.", type = "warning", duration = 10)
+    return()
+  }
   
   
   Cont.Data$WellName <- factor(as.character(Cont.Data$WellName), levels = sort(Wells.to.Plot))

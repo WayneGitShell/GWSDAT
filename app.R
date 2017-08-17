@@ -15,6 +15,7 @@ server <- function(input, output, session) {
    
   dataLoaded <- reactiveVal(0)
   
+  csite_list <- NULL
   csite <- NULL
 
   
@@ -68,7 +69,7 @@ server <- function(input, output, session) {
                              ground_porosity = input$ground_porosity_pd,
                              progressBar = progress
                              )
-
+    
     # If there is any plume mass, show the plot and hide the message text, and 
     #  vice versa. 
     if (all(is.na(val$mass))) {
@@ -106,7 +107,7 @@ server <- function(input, output, session) {
     # Isolate the inputs (so a change in the sidebar does not trigger this fct.)
     isolate(
     paste(input$solute_select_plume_pd, ": Unable to calculate plume statistics for threshold value = ", 
-          input$plume_threshold_pd, " ug/l.", sep = "")
+          input$plume_threshold_pd, " ug/l. Select a different threshold and retry.", sep = "")
     )
           #"\nUse the 'Estimate Plume Boundary' function for assistance in selecting a suitable plume threshold concentration value.")
     
@@ -685,6 +686,20 @@ server <- function(input, output, session) {
     }
   )
   
+  
+  output$save_session_btn <- downloadHandler(
+    
+    filename <- input$session_filename,
+    
+    content <- function(file) {
+      if (!is.null(csite)) {
+        save(file = file, "csite_list")
+      }
+    }
+    
+  )
+  
+  
   # Generate PPT with spatial animation.
   observeEvent(input$generate_spatial_anim_ppt, {
     makeSpatialAnimation(csite, input$solute_select_contour,
@@ -827,12 +842,13 @@ server <- function(input, output, session) {
   })
   
   
+  
   #
   # Display the "Generate PPT Animation" Button only when in ExcelMode.
   #
   observeEvent(input$analyse_panel, {
     if (input$analyse_panel == "Spatial Plot" || input$analyse_panel == "Trends & Thresholds") {
-      if ( (.Platform$OS.type == "windows") || csite$GWSDAT_Options$ExcelMode) {
+      if ( (.Platform$OS.type == "windows") || ExcelMode) {
         shinyjs::show(id = "save_spatial_ppt_anim")
         shinyjs::show(id = "save_trendtable_ppt_anim")
       }
@@ -974,36 +990,59 @@ server <- function(input, output, session) {
   # })
   
   #output$init_data_msg <- renderText({"Loading data"})
+  
+  
+  observeEvent(input$sidebar_menu, {
+    
+    if (input$sidebar_menu == "analysis") {
+      shinyjs::hide("analyse_page")
+      shinyjs::show("data_select_page")
+      
+    }
+  })
+    
+  
+  
+  observeEvent(input$aquifer_btn, {
+    dataLoaded(1)
+  })
+  
+  
+  #
+  # Maybe move this fct. to a separate file. 
+  #
   loadDataSet <- function(Aq_sel = NULL) {
+
     
-    HeadlessMode <- FALSE
-    if (.Platform$OS.type == "unix")
-      HeadlessMode <- TRUE
-    
-    
+    # Create Options if they don't exist already.
     if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
-      
-      GWSDAT_Options <-  createOptions(HeadlessMode)
-      
-      GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-      GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-      GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-      GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
-      
+      GWSDAT_Options <-  createOptions()
     }
     
     
-    # Set DevMode true on Andrej's computer.
-    GWSDAT_Options[['DevMode']] <- FALSE
-    if (Sys.info()["nodename"] == "LAPTOP-QU06V978")
-      GWSDAT_Options[['DevMode']] <- TRUE
+    # Load a data set from a .Rdata file.  
+    if ("RDataSet" %in% names(GWSDAT_Options)) {
+
+      load(GWSDAT_Options$RDataSet)
+      
+      csite_list <<- csite_list
+      csite <<- csite_list[[1]]
+     
+      dataLoaded(2)
+      return(TRUE)
+    } 
+
     
-    # Create a Progress object
+    #
+    # Otherwise load the data from the .csv files.
+    #
+    
+    # Create the progress bar.
     progress <- shiny::Progress$new()
-    progress$set(message = "Starting GWSDAT", value = 0)
+    progress$set(message = "Loading data", value = 0)
     on.exit(progress$close())
     
-    progress$set(value = 0.1, detail = paste("load data"))
+    progress$set(value = 0.1, detail = paste("reading data"))
     
     # Read Well data and coordinates from file.
     solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
@@ -1011,20 +1050,18 @@ server <- function(input, output, session) {
     
     pr_dat <- processData(solute_data, well_data, GWSDAT_Options, Aq_sel)
     
+    # Require Aquifer selection.
     if (class(pr_dat) == "Aq_list")
       return(pr_dat)
     
-    # Some Error occured
+    # Some Error occured.
     if (is.null(pr_dat))
-      return(pr_dat)
-    
-    
-    #
-    # start with progress bar here
-    #
-    
+      return(NULL)
     
     Fitted.Data = fitData(pr_dat, GWSDAT_Options, progress)
+    
+    if (is.null(Fitted.Data))
+      return(NULL)
     
     # Create UI attributes
     ui_attr <- createUIAttr(pr_dat, Fitted.Data, GWSDAT_Options)
@@ -1037,59 +1074,179 @@ server <- function(input, output, session) {
                       ui_attr        = ui_attr
     )
     
-    #csite <<- siteinitSite(GWSDAT_Options)
+    csite_list[[1]] <<- csite 
+    
+    # Flag that data was fully loaded.
     dataLoaded(2)
     
     return(TRUE)
   }  
   
-  aq_btn_pressed <- observeEvent(input$aquifer_btn, {
     
-    ret <- loadDataSet(input$aquifer)
+  
+  # List of observers for Analyse buttons, one for each data set.
+  obsAnayseBtnList <- list()
+  
+  
+  
+  output$data_overview <- renderUI({
     
-    #dataLoaded(1)   
+    if (dataLoaded() == 0) 
+      loadDataSet()
+   
+    
+    htmlOut <- h3("Select Data Set")
+    
+    if (length(csite_list) == 0) {
+      htmlOut <- tagList(htmlOut,
+                         box(width = 5, title = "Data Manager", status = "primary",
+                             "No data is present."
+                         )
+      )
+      
+    } else {
+      
+      
+      databoxes <- as.list(1:length(csite_list))
+      
+      databoxes <- lapply(databoxes, function(i) {
+        
+          btName <- paste0("analyse_btn", i)
+        
+          # creates an observer only if it doesn't already exists
+          if (is.null(obsAnayseBtnList[[btName]])) {
+            
+            obsAnayseBtnList[[btName]] <<- observeEvent(input[[btName]], {
+              browser()
+              # Make selected data set active.
+              csite <<- csite_list[[i]]
+              #dataLoaded(3)
+              
+              shinyjs::hide("data_select_page")
+              shinyjs::show("analyse_page")
+            })
+          }
+      })
+      
+      # Need to create the buttons separately because they won't show up in htmlOut
+      # when created inside lapply()
+      for (i in 1:length(csite_list)) {
+        
+        btName <- paste0("analyse_btn", i)
+        
+        # Create the box with buttons.
+        htmlOut <- tagList(htmlOut, fluidRow(
+                          box(width = 5, title = csite_list[[i]]$GWSDAT_Options$SiteName, status = "primary",
+                            paste("Data set", i),
+                            div(style = "float : right", actionButton(btName, "Analyse"))
+                          )))
+      }
+                      
+     
+
+      
+      
+      # or do something like this:
+      # lapply(1:num_subst, function(i) {
+      #   div(style = "display: inline-block;", 
+      #       numericInput(paste("plume_thresh_", i, sep = ""), 
+      #                    label = names(csite$ui_attr$plume_thresh)[i], 
+      #                    value = csite$ui_attr$plume_thresh[i], 
+      #                    width = "100px")
+      #   )
+      # })
+    }
+    
+    return(htmlOut)
+    
   })
+
+    
+  output$data_manager_ov <- renderUI({
+  
+    if (dataLoaded() == 0) 
+      loadDataSet()
+   
+    
+    htmlOut <- h1("Data Manager")
+    
+    if (length(csite_list) == 0) {
+      htmlOut <- tagList(htmlOut,
+        box(width = 5, title = "Data Manager", status = "primary",
+          "No data is present."
+          )
+      )
+      
+    } else {
+     
+      # Create a box for each data set.
+      for (i in 1:length(csite_list)) {
+      htmlOut <- tagList(htmlOut, 
+                         box(width = 5, title = csite_list[[i]]$GWSDAT_Options$SiteName, status = "primary",
+                             paste("Data set", i))
+                 )
+      }
+     }
+
+    return(htmlOut)
+    
+  })
+  
   
   
   output$rndAnalyse <- renderUI({
     
     html_out = NULL
     
+    # Observe load status of data.
     data_load_status <- dataLoaded()
     
+    #browser()
    
-    # Nothing load, start process.
-    if (data_load_status == 0) {
+    # Nothing loaded yet, start process.
+    if (data_load_status == 0) { # && ExcelMode) {
       
-      # Read Well data and coordinates from file.
       ret <- loadDataSet()
       
       if (class(ret) == "Aq_list" ) {
-        html_out <- tagList(
-          selectInput("aquifer", "Choose a Aquifer:", 
-                      choices = ret),     
-          actionButton("aquifer_btn", "Next")
+        html_out <- div(style = "width: 50%; margin: 0 auto",
+          box(
+            selectInput("aquifer", "Choose from list", choices = ret),     
+            div(style = "float: right", actionButton("aquifer_btn", "Next")),#,
+            status = "primary", 
+            solidHeader = TRUE, 
+            collapsible = FALSE, 
+            width = 6, 
+            title = "Select an Aquifer"
+          )
         )
       }
     }
+
     
-    # Partially loaded, Aquifer was selected
+    # Nothing loaded yet, present user with a choice of available datasets.
+    #if (data_load_status == 0 && !ExcelMode) {
+      
+    #  loadDataSet()
+    #  html_out <- box(width = 5, title = "Nothing")
+       
+      
+    #}
+    
+    # Data partially loaded, continue with selected Aquifer.
     if (data_load_status == 1) {
-    
-      
-      
+      ret <- loadDataSet(Aq_sel = input$aquifer)
     }
     
-    # Completely loaded, plot Analyse page
+    # Completely loaded, display the Analyse UI.
     if (data_load_status == 2) {
-    
       html_out <- uiAnalyse(csite)
-      
     }
     
     return(html_out)
   })
-}
+  
+} # end server section
 
 
 
@@ -1118,59 +1275,70 @@ dbHeader <- dashboardHeader(title = "GWSDAT",
 
 
 
-ui <- dashboardPage(
+ui <- dashboardPage(skin = "black",
   
   dbHeader, 
-  dashboardSidebar(sidebarMenu(
+  dashboardSidebar(sidebarMenu(id = "sidebar_menu",
     menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
     menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
   )),
   
-  dashboardBody(
+  dashboardBody(useShinyjs(), 
 
     tabItems(
-     
-      tabItem(tabName = "input_data", 
-        # Init the shiny JS framework
-        useShinyjs(), 
-        
-        # Data Manager main panel.
-        div(id = "data_manager", uiDataManager()),
-        
-        # Data Import panel
-        shinyjs::hidden(
-          div(id = "data_import", uiDataImport())
-        )
-      ),
-                 
+     tabItem(tabName = "input_data", 
       
-      # Analysis Tab
-      tabItem(tabName = "analysis", uiOutput("rndAnalyse") # uiAnalyse()
-      ) # end tabItem
+        div(id = "data_manager", uiOutput("data_manager_ov")),
+        shinyjs::hidden( div(id = "data_import", uiDataImport()))
+      ),
+      
+      tabItem(tabName = "analysis", 
+              div(id = "data_select_page",
+                  uiOutput("data_overview")
+              ),
+              hidden(div(id = "analyse_page",
+                     uiOutput("rndAnalyse"))
+              )
+      )
+      
     ) # end tabItems
  ) # end dashboardBody 
 ) # end ui
  
 
-ui_analyse_only <- shinyUI(
- 
-    fluidPage(
-      uiOutput("rndAnalyse")
+
+ui_analysis_only <- dashboardPage(skin = "black",
+  
+  dbHeader, 
+  dashboardSidebar(sidebarMenu(
+    menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
+    menuItem("Save Session", tabName = "session", icon = icon("save"))
     )
+  ),
   
-)
+  dashboardBody(useShinyjs(),
+    tabItems(
+      tabItem(tabName = "analysis", uiOutput("rndAnalyse")), 
+      tabItem(tabName = "session",  uiSession())         
+    ) # end tabItems
+  ) # end dashboardBody 
+) # end ui
 
 
-if (exists("GWSDAT_Options", envir = .GlobalEnv)) {
-  
-  if (GWSDAT_Options$ExcelMode) {
-    shinyApp(ui = ui_analyse_only, server = server)
-  }
 
+
+
+ExcelMode <- TRUE
+
+if (exists("GWSDAT_Options", envir = .GlobalEnv))
+  if ("ExcelMode" %in% names(GWSDAT_Options))
+    ExcelMode <- GWSDAT_Options$ExcelMode
+
+
+if (ExcelMode) {
+    shinyApp(ui = ui_analysis_only, server = server)
 } else {
-  #shinyApp(ui = ui, server = server)  # <- right version
-  shinyApp(ui = ui_analyse_only, server = server) # testing!
+    shinyApp(ui = ui, server = server)
 }
 
-    
 

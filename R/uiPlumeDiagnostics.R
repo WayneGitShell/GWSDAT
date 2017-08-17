@@ -4,8 +4,7 @@
 uiPlumeDiagnostics <- function(csite) {
   
   fluidRow(
-    column(2,
-           wellPanel(solidHeader = T,
+    box(width = 3, status = "warning", title = "Settings",
             selectInput("solute_select_plume_pd", label = "Substance", 
                         choices  = csite$ui_attr$substance_names,
                         selected = csite$ui_attr$substance_selected, width = '100%'),
@@ -19,17 +18,16 @@ uiPlumeDiagnostics <- function(csite) {
                         value = csite$ui_attr$ground_porosity,
                         width = '150px'
             ),
-            
-            actionButton("update_plume_ts",
-                         label = "Update", icon = icon("cogs") 
-                         )
-            
-           )
-      ), # end column
+            div(style = "float: right",
+              actionButton("update_plume_ts", label = "Update", icon = icon("cogs"))
+            )
+                         
+    ), # end box
     
-    box(width = 10, title = "Plume Diagnostic", 
-        div(id = "plume_diagn_plot_div",
-          plotOutput("plume_diagn_plot"),
+    div(id = "plume_diagn_plot_div",
+      box(width = 9, title = "Plume Diagnostic", status = "primary",
+        
+          withSpinner(plotOutput("plume_diagn_plot")),
 
           div(style = "display: inline-block;",
               selectInput("export_format_pd", label = "Image format", 
@@ -46,14 +44,15 @@ uiPlumeDiagnostics <- function(csite) {
               downloadButton("save_plumestats_csv", label = "Save as .CSV")
           )
           
-        ),
-        
-        hidden(
-          div(id = "plume_diagn_msg_div",
-              textOutput("plume_diagn_msg")
-              )
         )
-
+    ),
+        
+    hidden(
+      div(id = "plume_diagn_msg_div",
+          box(width = 5, status = "warning", solidHeader = TRUE, title = "Plume calculation failed",
+            textOutput("plume_diagn_msg")
+          )
+      )
     )
   )
 }

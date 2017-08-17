@@ -53,7 +53,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   # Extract unique Aquifer group names.
   Aq_list <- unique(well_tmp_data$Aquifer)
 
-  # Only show the tk selection choice for Aquifer if not in headless mode.
+  # If no Aquifer was specified and there are more than 1 present, return list.
   if (is.null(Aq_sel) && length(Aq_list) > 1) {
     
     # Returning this list will notify caller that a selection has to be made.
@@ -92,7 +92,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   if (nrow(unique(well_tmp_data[,c("XCoord","YCoord")])) < nrow(well_tmp_data)) {
 
     msg = "Warning: Non-Unique Well Coordinates in Well Coords Table. Groundwater elevations for non-unique well coordinates will be substituted by their mean value."
-    showNotification(msg, type = "warning", duration = 20)
+    showNotification(msg, type = "warning", duration = 10)
     
   }
   
@@ -153,7 +153,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   if (length(unique(as.character(AG.ALL$Constituent))) != length(unique(toupper(as.character(AG.ALL$Constituent))))) {
 
     msg = "Warning: Constituent types have different letter cases (e.g. 'MTBE v mtbe'). GWSDAT will modify all constituent types to upper case."
-    showNotification(msg, type = "warning", duration = 20)
+    showNotification(msg, type = "warning", duration = 10)
     
     AG.ALL$Constituent <- factor(toupper(as.character(AG.ALL$Constituent)))
   }
@@ -222,7 +222,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   
   if (any(grep("nd",temp.hold,ignore.case = T))) {
     msg <- "Warning: '<ND' detected. Non-Detect limits must be specified. Omitting unspecified Non Detect Data."
-    showNotification(msg, type = "warning", duration = 20)    
+    showNotification(msg, type = "warning", duration = 10)    
   }
   
   Cont.Data$Result.Corr.ND[Cont.Data$ND] <- as.numeric(temp.hold)
@@ -303,7 +303,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
     subst_napl_vals <- "yes"
     msg <- "NAPL values are substituted with maximum observed solute concentrations (Yes/No choice will soon be supported). \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
     #showModal(modalDialog(title = "Notification", msg, easyClose = FALSE, footer = modalButton("Ok")))
-    showNotification(msg, type = "warning", duration = 20)  
+    showNotification(msg, type = "warning", duration = 10)  
     
     
     if (ContTypeData == "NoConcData" || subst_napl_vals == "yes") {
@@ -334,7 +334,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
           # "NAPL Data Conflict"        
           # msg <- "Concentration data reported in presence of NAPL. Do you wish to use concentration data (Yes) or substitue these NAPL values with maximum observed solute concentrations (No)?\nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
           msg <- "Concentration data reported in presence of NAPL. Use it? (Yes/No choice will soon be supported)"
-          showNotification(msg, type = "warning", duration = 20)  
+          showNotification(msg, type = "warning", duration = 10)  
         }
         
         if (myans == "no") {

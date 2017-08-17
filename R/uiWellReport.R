@@ -4,8 +4,8 @@
 uiWellReport <- function(csite) {
   
   fluidRow(
-    box(width = 3, title = "Setting", 
-        solidHeader = T,
+    box(width = 3, title = "Settings", 
+        status = "warning", 
       "Exclude solutes by moving them to the right.",
       chooserInput("solute_chooser", 
                  leftLabel = "Include in Report", 
@@ -28,15 +28,10 @@ uiWellReport <- function(csite) {
                  choices = list("Yes", "No"), 
                  selected = "Yes")
     
-      # Took this one out because report is generated on the fly.
-      #actionButton("actionBtn_wellreport", label = "Generate Report", 
-      #             icon = icon("line-chart"), 
-      #             style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-    
     ), # end box
 
-    box(width = 9, title = "Well Report", # height = 600 
-          plotOutput("well_report_plot"),  # , width = "120%")
+    box(width = 9, status = "primary", 
+          plotOutput("well_report_plot"),  
           
           div(style = "display: inline-block;",
               selectInput("export_format_wr", label = "Image format", 
