@@ -5,47 +5,74 @@
 readConcData <- function(input_file, ...) {
 
   
- 
-  
   if (length(list(...)) == 0)
-    AGALL = try(read.csv(input_file))
+    DF = try(read.csv(input_file))
   else
-    AGALL = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
+    DF = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
   
  
 
-  if (!"flags" %in% tolower(names(AGALL))){AGALL$Flags <- rep(NA,nrow(AGALL))}
-  AGALL <- try(AGALL[,which(tolower(names(AGALL)) == "wellname"):which(tolower(names(AGALL)) == "flags")])
+  if (!"flags" %in% tolower(names(DF))){DF$Flags <- rep(NA,nrow(DF))}
   
-  if (inherits(AGALL, 'try-error')) {
+  # AGALL <- try(AGALL[,which(tolower(names(AGALL)) == "wellname"):which(tolower(names(AGALL)) == "flags")])
+  # 
+  # if (inherits(AGALL, 'try-error')) {
+  #   
+  #   msg <- "Reading the concentration data failed. Make sure to set proper column names."
+  #   showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+  #   return(NULL)
+  # 
+  # }
+  # 
+  
+  
+  valid_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+  
+  DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
+  head_not_found <- ""
+  
+  # Filter input data frame for valid headers.    
+  for (vh in valid_header) {
     
-    msg <- "Reading the concentration data failed. Make sure to set proper column names."
-    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
-    return(NULL)
-
+    if (vh %in% colnames(DF)) {
+      
+      DF_extract <- cbind(DF_extract, DF[,vh])
+      colnames(DF_extract)[ncol(DF_extract)] <- vh
+    } else
+      head_not_found = paste(head_not_found, vh)
+    
   }
   
-  AGALL$SampleDate <- GWSDAT.excelDate2Date(floor(as.numeric(as.character(AGALL$SampleDate)))) 
+  
+  if (head_not_found != "") {
+    msg <- paste0("Reading well coordinates failed. Missing following columns: ", paste(head_not_found, collapse = ", "), "." )
+    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    return(NULL)
+  }
+   
+  #if (input$excel_date) 
+  #  DF_extract$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(DF_extract$SampleDate))))) 
+  
+  DF$SampleDate <- GWSDAT.excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
   
   
-  if (any(is.na(AGALL$SampleDate))) {
+  if (any(is.na(DF$SampleDate))) {
     
-    AGALL <- AGALL[!is.na(AGALL$SampleDate),]
+    DF <- DF[!is.na(DF$SampleDate),]
     
     msg <- "Warning: Incorrect input date value(s) detected. Ommitting these values."
     showNotification(msg, type = "warning", duration = 10)
 
     
-    if (nrow(AGALL) == 0) {
+    if (nrow(DF) == 0) {
       
       msg <- "Zero entries in concentration data read."
       showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
       return(NULL)
-      
     } 
   }
   
-  return(AGALL)
+  return(DF)
   
 }
 
@@ -58,33 +85,44 @@ readWellCoords <- function(input_file, ...) {
 
   
   if (length(list(...)) == 0)
-    WellCoords = try(read.csv(input_file))
+    DF = try(read.csv(input_file))
   else
-    WellCoords = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
+    DF = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
   
   
   
-  coord_unit <- as.character(WellCoords$CoordUnits[1])
+  coord_unit <- as.character(DF$CoordUnits[1])
   
   if (length(coord_unit) == 0 || is.na(coord_unit)) {
     coord_unit <- NULL
   }
   
-  if (!"aquifer" %in% tolower(names(WellCoords))) {
-    WellCoords$Aquifer <- rep(NA,nrow(WellCoords))
+  if (!"aquifer" %in% tolower(names(DF))) {
+    DF$Aquifer <- rep(NA,nrow(DF))
   }
   
-  WellCoords <- try(WellCoords[,which(tolower(names(WellCoords)) == "wellname"):which(tolower(names(WellCoords)) == "aquifer")]) 
+  valid_header <- list("WellName", "XCoord", "YCoord", "Aquifer", "CoordUnits")
   
-  if (inherits(WellCoords, 'try-error')) {
+  DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
+  head_not_found <- ""
   
-    msg <- "Reading the well coordinates failed. Make sure to set proper column names."
+  # Filter input data frame for valid headers.    
+  for (vh in valid_header) {
+    
+    if (vh %in% colnames(DF)) {
+      
+      DF_extract <- cbind(DF_extract, DF[,vh])
+      colnames(DF_extract)[ncol(DF_extract)] <- vh
+    } else head_not_found = paste(head_not_found, vh)
+  }
+  
+  if (head_not_found != "") {
+    msg <- paste0("Reading well coordinates failed. Missing the following columns: ", head_not_found, "." )
     showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
     return(NULL)
-    
-  }
+  } 
   
-  return(list(data = WellCoords, unit = coord_unit ))
+  return(list(data = DF_extract, unit = coord_unit ))
   
 }
 

@@ -7,7 +7,7 @@
 #' @export 
 #'
 #' @examples
-createOptions <- function() {
+createOptions <- function(site_name = NULL) {
   
   GWSDAT_Options <- list()
   GWSDAT_Options[['Aggby']] <- 'Monthly'
@@ -49,21 +49,24 @@ createOptions <- function() {
   if (exists('YtempScreenExp')) {rm(YtempScreenExp)}
   if (exists('XtempScreenExp')) {rm(XtempScreenExp)}
   
-  GWSDAT_Options[['SiteName']] <- 'Basic Example'
-  GWSDAT_Options[['WellDataFilename']] <- 'data/BasicExample_WellData.csv'
-  GWSDAT_Options[['WellCoordsFilename']] <- 'data/BasicExample_WellCoords.csv'
-  GWSDAT_Options[['ShapeFileNames']] <- NULL
+  #GWSDAT_Options[['SiteName']] <- 'Basic Example'
+  #GWSDAT_Options[['WellDataFilename']] <- 'data/BasicExample_WellData.csv'
+  #GWSDAT_Options[['WellCoordsFilename']] <- 'data/BasicExample_WellCoords.csv'
+  #GWSDAT_Options[['ShapeFileNames']] <- NULL
   
-  GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-  GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
-  GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
-  GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+  #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+  #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
+  #GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
+  #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
+  
   
   
   #GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_BasicExample.Rdata'
   #GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_ComprExample.Rdata'
   GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_Examples.Rdata'
   
+  if (!is.null(site_name))
+    GWSDAT_Options[['SiteName']] <- site_name
   
   return(GWSDAT_Options)
 }

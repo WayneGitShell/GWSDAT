@@ -20,12 +20,7 @@ server <- function(input, output, session) {
   csite_list <- NULL
   csite <- NULL
 
-  
-  # This goes into a GWSDAT_instance
-  # Fixme:
-  well_data_file <- NULL   
-  well_coord_file <- NULL
-  
+  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL)
   
   # 
   # Some usefull session objects:
@@ -710,113 +705,56 @@ server <- function(input, output, session) {
   
 
   
-  
-  output$table_conc_data <- renderRHandsontable({
+  observeEvent(input$well_data_file, {
     
     inFile <- input$well_data_file
-       
+    
     if (is.null(inFile))
       return(NULL)
     
-    DF <- data.frame(read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote))
+    DF <- readConcData(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
     
-    valid_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
-
-    DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
-    head_not_found <- ""
-
-    # Filter input data frame for valid headers.    
-    for (vh in valid_header) {
-      
-      if (vh %in% colnames(DF)) {
-       
-        DF_extract <- cbind(DF_extract, DF[,vh])
-        colnames(DF_extract)[ncol(DF_extract)] <- vh
-      } else
-        head_not_found = paste(head_not_found, vh)
-      
-    }
-   
-    if (input$excel_date) 
-      DF_extract$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(DF_extract$SampleDate))))) 
+    # If there was an error reading the data, empty the fileInput control.
+    # ...
     
-    if (head_not_found != "")
-      showNotification(type = "error", paste0("The following columns were not found: ", head_not_found),
-                       duration = 10)
+    # Save to reactive variable.
+    import_tables[["DF_conc"]] <<- DF 
     
-   
+  })
+  
+  output$table_conc_data <- renderRHandsontable({
+    
+    if (is.null(import_tables[["DF_conc"]]))
+      return(NULL)
+    
     useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable(DF_extract, useTypes = useTypes, stretchH = "all")
+    rhandsontable(import_tables[["DF_conc"]], useTypes = useTypes, stretchH = "all")
     
     
   })
   
-  #
-  # Table showing the well data.
-  #
-  # output$table_well_data <- renderTable({
-  #   
-  #   # input$file1 will be NULL initially. After the user selects
-  #   # and uploads a file, it will be a data frame with 'name',
-  #   # 'size', 'type', and 'datapath' columns. The 'datapath'
-  #   # column will contain the local filenames where the data can
-  #   # be found.
-  #   
-  #   inFile <- input$well_data_file
-  #   
-  #   if (is.null(inFile))
-  #     return(NULL)
-  #   
-  #   well_data_file <<- inFile$datapath
-  #   
-  #   # Load the data.
-  #   well_data_tmp <- read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
-  #   
-  #   #
-  #   # Check if Excel date transform checkbox is active
-  #   #
-  #   if (input$excel_date && ("SampleDate" %in% names(well_data_tmp)) ) 
-  #     well_data_tmp$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(well_data_tmp$SampleDate))))) 
-  #     
-  #  
-  #   return(well_data_tmp)
-  # })
-  
-  
-  
-  output$table_well_coord <- renderRHandsontable({
+  observeEvent(input$well_coord_file, {
     
     inFile <- input$well_coord_file
     
     if (is.null(inFile))
       return(NULL)
+   
+    DF <- readWellCoords(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote) 
     
-    DF <- data.frame(read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote))
+    # Save to reactive variable.
+    import_tables$DF_well <<- DF
     
-    valid_header <- list("WellName", "XCoord", "YCoord", "Aquifer", "CoordUnits")
+  })
+  
+  output$table_well_coord <- renderRHandsontable({
     
-    DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
-    head_not_found <- ""
-    
-    # Filter input data frame for valid headers.    
-    for (vh in valid_header) {
-      
-      if (vh %in% colnames(DF)) {
-        
-        DF_extract <- cbind(DF_extract, DF[,vh])
-        colnames(DF_extract)[ncol(DF_extract)] <- vh
-      } else
-        head_not_found = paste(head_not_found, vh)
-      
-    }
-    
-    if (head_not_found != "")
-      showNotification(type = "error", paste0("The following columns were not found: ", head_not_found),
-                       duration = 10)
+    if (is.null(import_tables$DF_well))
+      return(NULL)
     
     
     useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable(DF_extract, useTypes = useTypes, stretchH = "all")
+    rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
     
   })
   
@@ -827,7 +765,7 @@ server <- function(input, output, session) {
   #  Thats a little more complicated, not working right now.
   # hint: user renderUI() that waits for the reset input
   #
-  #observeEvent(input$reset_button,  {
+  #observeEvent(input$reset_import,  {
     
     #browser()
     #value = input$reset_button
@@ -840,29 +778,59 @@ server <- function(input, output, session) {
   
   observeEvent(input$import_button,  {
    
-    browser()
     
-    site_name <- isolate(input$new_data_name)
-    #
-    # Read the well data.
-    #
-    if (is.null(well_coord_file) || is.null(well_data_file))
+   
+    
+    if (is.null(import_tables[["DF_conc"]])) {
+      showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
+      return(NULL)
+    }
+    
+    if (is.null(import_tables[["DF_well"]])) {
+      showNotification("Well coordinate table was not loaded properly. Aborted.", type = "error")
+      return(NULL)
+    }
+    
+    
+    # Create the progress bar.
+    progress <- shiny::Progress$new()
+    progress$set(message = "Loading data", value = 0)
+    on.exit(progress$close())
+    
+    progress$set(value = 0.1, detail = paste("reading data"))
+    
+    GWSDAT_Options <- createOptions(isolate(input$new_data_name))
+    
+    pr_dat <- processData(import_tables[["DF_conc"]], import_tables[["DF_well"]], GWSDAT_Options)
+   
+    # Require Aquifer selection.
+    if (class(pr_dat) == "Aq_list")
+      return(pr_dat)
+    
+    # Some Error occured.
+    if (is.null(pr_dat))
       return(NULL)
     
+    Fitted.Data = fitData(pr_dat, GWSDAT_Options, progress)
     
-    AGALL <- readConcData(well_data_file, header = input$header, sep = input$sep, quote = input$quote)
+    if (is.null(Fitted.Data))
+      return(NULL)
     
+    # Create UI attributes
+    ui_attr <- createUIAttr(pr_dat, Fitted.Data, GWSDAT_Options)
     
-    #
-    # Read the well coordinates.
-    #
-    sample_loc <- readWellCoords(well_coord_file, header = input$header, sep = input$sep, quote = input$quote)
-
-    #
-    # Do remaining data processing ... 
-    #
-    # .. 
+    # Build list with all data.
+    csite <<- list(All.Data       = pr_dat,
+                   Fitted.Data    = Fitted.Data,
+                   GWSDAT_Options = GWSDAT_Options,
+                   Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
+                   ui_attr        = ui_attr
+    )
     
+    csite_list[[length(csite_list) + 1]] <<- csite 
+    
+    # Flag that data was loaded.
+    dataLoaded(dataLoaded() + 1)
     
     #
     # Go back to Data Manager.
@@ -873,30 +841,34 @@ server <- function(input, output, session) {
   })
   
   
-  #
+  
   # Go to Data Import (Button click).
-  #
-  observeEvent(input$add_new_data,  {
+  observeEvent(input$add_csv_data,  {
     shinyjs::show(id = "data_import", anim = TRUE)
     shinyjs::hide(id = "data_manager", anim = TRUE)
   })
   
   
-  #
   # Go to Data Import (Link).
-  #
   shinyjs::onclick("toggleDataImport", {
     shinyjs::show(id = "data_import", anim = TRUE);
     shinyjs::hide(id = "data_manager", anim = TRUE)
+   
   })
   
   
-  #
   # Go to Data Manager.
-  #
   shinyjs::onclick("toggleDataManager", {
     shinyjs::show(id = "data_manager", anim = TRUE);
-    shinyjs::hide(id = "data_import", anim = TRUE)
+    shinyjs::hide(id = "data_import", anim = TRUE);
+    shinyjs::hide(id = "data_add", anim = TRUE)
+  })
+  
+  
+  # Go to Add New Data (Button click).
+  observeEvent(input$add_new_data,  {
+    shinyjs::show(id = "data_add", anim = TRUE)
+    shinyjs::hide(id = "data_manager", anim = TRUE)
   })
   
   
@@ -1249,15 +1221,151 @@ server <- function(input, output, session) {
     
   })
 
+  output$uiDataAdd <- renderUI({
     
-  output$data_manager_ov <- renderUI({
+    input$add_new_data
+    
+    conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+    well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+    
+    isolate({
+      import_tables$DF_conc <- data.frame(matrix(0, nrow = 20, ncol = length(conc_header)))
+      colnames(import_tables$DF_conc) <- conc_header
+      
+      well_tmp <- data.frame(matrix(0, nrow = 20, ncol = length(well_header)))
+      colnames(well_tmp) <- well_header
+      
+      import_tables$DF_well <- list(data = well_tmp, unit = "metres")
+      
+    })
+    
+
+    fluidPage(
+      
+      div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
+      
+      box(width = 3, solidHeader = TRUE, status = "primary", 
+          
+          
+          h3("Add New Data"),
+          "Enter the data directly or copy/paste into the tables.",
+          hr(),
+          
+          textInput("new_data_name", label = "Data Name", value = "Area 1"),
+          #actionButton("reset_import", label = "Reset"),
+          actionButton("add_new_button", label = "Add Data", icon("arrow-down"), 
+                       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+      ),
+      
+      tabBox("Data", width = 9, 
+           tabPanel(title = "Contaminant data", 
+                    rHandsontableOutput("table_conc_data")
+           ), 
+           tabPanel(title = "Well Coordinates",
+                    rHandsontableOutput("table_well_coord")
+           )
+      )
+    )
+  })
+    
+    
+  output$uiDataImport <- renderUI({
+    
+    
+    
+    import_tables$DF_well <- NULL
+    import_tables$DF_conc <- NULL
+    
+    # React to add and reset events.
+    input$add_csv_data
+    input$reset_import
+    
+    fluidPage(
+      
+      div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
+      
+      box(width = 3, solidHeader = TRUE, status = "primary", 
+          
+          
+          h3("Import .csv Data"),
+          "Select the contaminant data and well coordinate files in .csv format. The tables on the right allow you to edit individual values.",
+          hr(),
+          
+          textInput("new_data_name", label = "Data Name", value = "Area 1"),
+          fileInput('well_data_file', 'Well Data File',
+                    accept = c('text/csv', 
+                               'text/comma-separated-values,text/plain', 
+                               '.csv')),
+          
+          fileInput('well_coord_file', 'Well Coordinates File',
+                    accept = c('text/csv', 
+                               'text/comma-separated-values,text/plain', 
+                               '.csv')),
+          
+          hr(),
+          
+          checkboxInput('header', 'Header', TRUE),
+          checkboxInput('excel_date', 'Transform Excel Date', TRUE),
+          radioButtons('sep', 'Separator',
+                       c(Comma = ',',
+                         Semicolon = ';',
+                         Tab = '\t'),
+                       ','),
+          radioButtons('quote', 'Quote',
+                       c(None = '',
+                         'Double Quote' = '"',
+                         'Single Quote' = "'"),
+                       '"'),
+          hr(),
+          actionButton("reset_import", label = "Reset"),
+          actionButton("import_button", label = "Import Data", icon("arrow-down"), 
+                       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+          )
+          
+          
+      ), # end box
+      
+      tabBox("Data", width = 9, 
+             tabPanel(title = "Contaminant data", 
+                      rHandsontableOutput("table_conc_data")
+             ), 
+             tabPanel(title = "Well Coordinates",
+                      rHandsontableOutput("table_well_coord")
+             )
+      )
+      
+    ) # end fluidPage
+  })
+  
+  
+  
+  output$uiDataManager <- renderUI({
     
     # Observe load status of data.
     if (dataLoaded() == 0) {
       loadRDataSet()
     }
     
-    html_out <- h2("Data Manager")
+    html_out <- tagList(h2("Data Manager"),
+                        #box(width = 3, 
+                        div(style = "float : right; margin-bottom: 5px",
+                           actionButton("add_csv_data", label = "Import .csv Data", icon = icon("plus"), 
+                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                           actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
+                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                        )
+    )
+                        
+                        
+    # html_out <- tagList(html_out, 
+    #                     
+    #                     box(width = 7, 
+    #                         div(style = "float : right",
+    #                             actionButton("add_csv_data", label = " Import .csv Data", icon = icon("plus"), 
+    #                                          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    #                         )
+    #                     )
+    # )
     
     
     if (length(csite_list) == 0) {
@@ -1288,18 +1396,13 @@ server <- function(input, output, session) {
       
     }
     
-    html_out <- tagList(html_out, 
-                        box(width = 7, 
-                            div(style = "float : right",
-                            actionButton("add_new_data", label = " Import .csv Data", icon = icon("plus"), 
-                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-                            )
-                        )
-    )
+   
     
     return(html_out)
     
   })
+  
+    
   
   
   
@@ -1388,8 +1491,9 @@ ui <- dashboardPage(skin = "black",
     tabItems(
      tabItem(tabName = "input_data", 
       
-        div(id = "data_manager", uiOutput("data_manager_ov")),
-        shinyjs::hidden( div(id = "data_import", uiDataImport()))
+        div(id = "data_manager", uiOutput("uiDataManager")),
+        shinyjs::hidden( div(id = "data_import", uiOutput("uiDataImport"))),
+        shinyjs::hidden( div(id = "data_add", uiOutput("uiDataAdd")))
       ),
       
       tabItem(tabName = "analysis", 
@@ -1428,7 +1532,7 @@ ui_analysis_only <- dashboardPage(skin = "black",
 
 
 
-ExcelMode <- TRUE
+ExcelMode <- FALSE
 
 if (exists("GWSDAT_Options", envir = .GlobalEnv))
   if ("ExcelMode" %in% names(GWSDAT_Options))

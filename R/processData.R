@@ -13,7 +13,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   ################ Input Date field and format #################################
   
   
-  if (class(AG.ALL$SampleDate)[1] %in% c("POSIXct","POSIXt","Date")) {
+  if (class(AG.ALL$SampleDate)[1] %in% c("POSIXct", "POSIXt", "Date")) {
   
     if (class(AG.ALL$SampleDate)[1] %in% c("POSIXct","POSIXt")) {
     
