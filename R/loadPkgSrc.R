@@ -45,6 +45,7 @@ loadPackages <- function(){
   if (!Require("shinyjs")) {return(FALSE)}
   if (!Require("shinydashboard")) {return(FALSE)}
   if (!Require("shinycssloaders")) {return(FALSE)}
+  if (!Require("rhandsontable")) {return(FALSE)}
   if (!Require("RDCOMClient")) {return(FALSE)}  
   
   return(TRUE)

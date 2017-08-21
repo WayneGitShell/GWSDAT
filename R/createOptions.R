@@ -62,7 +62,7 @@ createOptions <- function() {
   
   #GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_BasicExample.Rdata'
   #GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_ComprExample.Rdata'
-  #GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_Examples.Rdata'
+  GWSDAT_Options[['RDataSet']] <- 'data/GWSDAT_Examples.Rdata'
   
   
   return(GWSDAT_Options)

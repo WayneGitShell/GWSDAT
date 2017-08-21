@@ -12,24 +12,17 @@ options(warn = 1)
 
 
 server <- function(input, output, session) {
-   
+  
+  # Flag that indicates whether data was loaded or not.  
   dataLoaded <- reactiveVal(0)
   
+  # List of site data and currently selected site.
   csite_list <- NULL
   csite <- NULL
 
   
-  
-  #
-  # Read GWSDAT instances.
-  # E.g. GWSDAT_inst_lst = load_GWSDAT_inst(user_id)  # return array of GWSDAT_instance
-  #      GWSDAT_inst_lst[[1]]     # access first GWSDAT_instance, holds data, fit, etc.
-  #
-  #GWSDAT_inst_lst = list(csite)
-  #GWSDAT_inst <- GWSDAT_inst_lst[[1]] # How to access this in ui space?
-  
-  
   # This goes into a GWSDAT_instance
+  # Fixme:
   well_data_file <- NULL   
   well_coord_file <- NULL
   
@@ -716,56 +709,118 @@ server <- function(input, output, session) {
   })
   
 
-  #
-  # Table showing the well data.
-  #
-  output$table_well_data <- renderTable({
-    
-    # input$file1 will be NULL initially. After the user selects
-    # and uploads a file, it will be a data frame with 'name',
-    # 'size', 'type', and 'datapath' columns. The 'datapath'
-    # column will contain the local filenames where the data can
-    # be found.
+  
+  
+  output$table_conc_data <- renderRHandsontable({
     
     inFile <- input$well_data_file
-    
+       
     if (is.null(inFile))
       return(NULL)
     
-    well_data_file <<- inFile$datapath
+    DF <- data.frame(read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote))
     
-    # Load the data.
-    well_data_tmp <- read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
-    
-    #
-    # Check if Excel date transform checkbox is active
-    #
-    if (input$excel_date && ("SampleDate" %in% names(well_data_tmp)) ) 
-      well_data_tmp$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(well_data_tmp$SampleDate))))) 
+    valid_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+
+    DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
+    head_not_found <- ""
+
+    # Filter input data frame for valid headers.    
+    for (vh in valid_header) {
       
+      if (vh %in% colnames(DF)) {
+       
+        DF_extract <- cbind(DF_extract, DF[,vh])
+        colnames(DF_extract)[ncol(DF_extract)] <- vh
+      } else
+        head_not_found = paste(head_not_found, vh)
+      
+    }
    
-    return(well_data_tmp)
+    if (input$excel_date) 
+      DF_extract$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(DF_extract$SampleDate))))) 
+    
+    if (head_not_found != "")
+      showNotification(type = "error", paste0("The following columns were not found: ", head_not_found),
+                       duration = 10)
+    
+   
+    useTypes = FALSE  # as.logical(input$useType)
+    rhandsontable(DF_extract, useTypes = useTypes, stretchH = "all")
+    
+    
   })
   
+  #
+  # Table showing the well data.
+  #
+  # output$table_well_data <- renderTable({
+  #   
+  #   # input$file1 will be NULL initially. After the user selects
+  #   # and uploads a file, it will be a data frame with 'name',
+  #   # 'size', 'type', and 'datapath' columns. The 'datapath'
+  #   # column will contain the local filenames where the data can
+  #   # be found.
+  #   
+  #   inFile <- input$well_data_file
+  #   
+  #   if (is.null(inFile))
+  #     return(NULL)
+  #   
+  #   well_data_file <<- inFile$datapath
+  #   
+  #   # Load the data.
+  #   well_data_tmp <- read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
+  #   
+  #   #
+  #   # Check if Excel date transform checkbox is active
+  #   #
+  #   if (input$excel_date && ("SampleDate" %in% names(well_data_tmp)) ) 
+  #     well_data_tmp$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(well_data_tmp$SampleDate))))) 
+  #     
+  #  
+  #   return(well_data_tmp)
+  # })
   
-  #
-  # Table showing the well coordinates.
-  #
-  output$table_well_coord <- renderTable({
+  
+  
+  output$table_well_coord <- renderRHandsontable({
     
     inFile <- input$well_coord_file
     
     if (is.null(inFile))
       return(NULL)
     
-    # Save this for the Import button.
-    well_coord_file <<- inFile$datapath 
+    DF <- data.frame(read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote))
     
-    well_coord_tmp <- read.csv(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
+    valid_header <- list("WellName", "XCoord", "YCoord", "Aquifer", "CoordUnits")
     
-    return(well_coord_tmp)
+    DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
+    head_not_found <- ""
+    
+    # Filter input data frame for valid headers.    
+    for (vh in valid_header) {
+      
+      if (vh %in% colnames(DF)) {
+        
+        DF_extract <- cbind(DF_extract, DF[,vh])
+        colnames(DF_extract)[ncol(DF_extract)] <- vh
+      } else
+        head_not_found = paste(head_not_found, vh)
+      
+    }
+    
+    if (head_not_found != "")
+      showNotification(type = "error", paste0("The following columns were not found: ", head_not_found),
+                       duration = 10)
+    
+    
+    useTypes = FALSE  # as.logical(input$useType)
+    rhandsontable(DF_extract, useTypes = useTypes, stretchH = "all")
+    
   })
-
+  
+  
   
   #
   # Supposed to clear everything in the Import Data panel
@@ -785,6 +840,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$import_button,  {
    
+    browser()
+    
+    site_name <- isolate(input$new_data_name)
     #
     # Read the well data.
     #
@@ -1008,6 +1066,29 @@ server <- function(input, output, session) {
   })
   
   
+  loadRDataSet <- function() {
+    
+    # Create Options if they don't exist already.
+    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
+      GWSDAT_Options <-  createOptions()
+    }
+    
+    
+    # Load a data set from a .Rdata file.  
+    if ("RDataSet" %in% names(GWSDAT_Options)) {
+      
+      load(GWSDAT_Options$RDataSet)
+      
+      csite_list <<- csite_list
+      csite <<- csite_list[[1]]
+      
+      dataLoaded(2)
+      
+    } 
+    
+  }
+  
+  
   #
   # Maybe move this fct. to a separate file. 
   #
@@ -1099,8 +1180,8 @@ server <- function(input, output, session) {
     
     if (length(csite_list) == 0) {
       htmlOut <- tagList(htmlOut,
-                         box(width = 5, title = "Data Manager", status = "primary",
-                             "No data is present."
+                         box(width = 7, title = "Data Missing", status = "primary",
+                             "Load session data (add link) or import data (add link)."
                          )
       )
       
@@ -1117,10 +1198,12 @@ server <- function(input, output, session) {
           if (is.null(obsAnayseBtnList[[btName]])) {
             
             obsAnayseBtnList[[btName]] <<- observeEvent(input[[btName]], {
-              browser()
+              
               # Make selected data set active.
               csite <<- csite_list[[i]]
-              #dataLoaded(3)
+              
+              # Triggers renderUI() of Analyse panel
+              dataLoaded(dataLoaded() + 1)
               
               shinyjs::hide("data_select_page")
               shinyjs::show("analyse_page")
@@ -1136,9 +1219,14 @@ server <- function(input, output, session) {
         
         # Create the box with buttons.
         htmlOut <- tagList(htmlOut, fluidRow(
-                          box(width = 5, title = csite_list[[i]]$GWSDAT_Options$SiteName, status = "primary",
-                            paste("Data set", i),
-                            div(style = "float : right", actionButton(btName, "Analyse"))
+                          box(width = 7, status = "primary", collapsible = TRUE,
+                              title = csite_list[[i]]$GWSDAT_Options$SiteName, 
+                              
+                              p(paste("Contaminants: ", paste(names(csite_list[[i]]$Fitted.Data), collapse = ", "))),
+                              p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
+                              p(paste0("Aquifer: ", csite_list[[i]]$GWSDAT_Options$Aggby)),
+                              p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod)),
+                              div(style = "float : right", actionButton(btName, "Select"))
                           )))
       }
                       
@@ -1163,34 +1251,56 @@ server <- function(input, output, session) {
 
     
   output$data_manager_ov <- renderUI({
-  
-    if (dataLoaded() == 0) 
-      loadDataSet()
-   
     
-    htmlOut <- h1("Data Manager")
+    # Observe load status of data.
+    if (dataLoaded() == 0) {
+      loadRDataSet()
+    }
+    
+    html_out <- h2("Data Manager")
+    
     
     if (length(csite_list) == 0) {
-      htmlOut <- tagList(htmlOut,
-        box(width = 5, title = "Data Manager", status = "primary",
-          "No data is present."
-          )
-      )
       
+      # No data exists
+      html_out <- tagList(html_out,
+                          box(width = 7, title = "No Data Present", status = "warning", "Import and or add to analyse."))
     } else {
-     
-      # Create a box for each data set.
+      
+      # Need to create the buttons separately because they won't show up in htmlOut
+      # when created inside lapply()
       for (i in 1:length(csite_list)) {
-      htmlOut <- tagList(htmlOut, 
-                         box(width = 5, title = csite_list[[i]]$GWSDAT_Options$SiteName, status = "primary",
-                             paste("Data set", i))
-                 )
+        
+        # btName <- paste0("analyse_btn", i)
+        
+        # Create the box with buttons.
+        html_out <- tagList(html_out, fluidRow(
+          box(width = 7, status = "primary", collapsible = TRUE,
+              title = csite_list[[i]]$GWSDAT_Options$SiteName, 
+              
+              p(paste("Contaminants: ", paste(names(csite_list[[i]]$Fitted.Data), collapse = ", "))),
+              p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
+              p(paste0("Aquifer: ", csite_list[[i]]$GWSDAT_Options$Aggby)),
+              p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
+              # div(style = "float : right", actionButton(btName, "Select"))
+          )))
       }
-     }
-
-    return(htmlOut)
+      
+    }
+    
+    html_out <- tagList(html_out, 
+                        box(width = 7, 
+                            div(style = "float : right",
+                            actionButton("add_new_data", label = " Import .csv Data", icon = icon("plus"), 
+                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                            )
+                        )
+    )
+    
+    return(html_out)
     
   })
+  
   
   
   
@@ -1201,7 +1311,6 @@ server <- function(input, output, session) {
     # Observe load status of data.
     data_load_status <- dataLoaded()
     
-    #browser()
    
     # Nothing loaded yet, start process.
     if (data_load_status == 0) { # && ExcelMode) {
@@ -1224,22 +1333,13 @@ server <- function(input, output, session) {
     }
 
     
-    # Nothing loaded yet, present user with a choice of available datasets.
-    #if (data_load_status == 0 && !ExcelMode) {
-      
-    #  loadDataSet()
-    #  html_out <- box(width = 5, title = "Nothing")
-       
-      
-    #}
-    
     # Data partially loaded, continue with selected Aquifer.
     if (data_load_status == 1) {
       ret <- loadDataSet(Aq_sel = input$aquifer)
     }
     
     # Completely loaded, display the Analyse UI.
-    if (data_load_status == 2) {
+    if (data_load_status >= 2) {
       html_out <- uiAnalyse(csite)
     }
     

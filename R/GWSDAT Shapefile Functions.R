@@ -1,25 +1,29 @@
-"GWSDAT.readShapeFile"<-function (fn, proj4string = CRS(as.character(NA)), verbose = FALSE, 
-    repair = FALSE, IDvar = NULL, force_ring = FALSE, delete_null_obj = TRUE,
-    retrieve_ABS_null = FALSE){
 
-    shinfo <- getinfo.shape(fn)
-    if (verbose){print(shinfo)}
-    type <- shinfo[[2]]
-    types <- c("Point", NA, "PolyLine", NA, "Polygon", NA, NA, 
+
+"GWSDAT.readShapeFile" <- function(fn, proj4string = CRS(as.character(NA)), 
+                                   verbose = FALSE, repair = FALSE, 
+                                   IDvar = NULL, force_ring = FALSE, 
+                                   delete_null_obj = TRUE,
+                                   retrieve_ABS_null = FALSE) {
+  
+  shinfo <- getinfo.shape(fn)
+  
+  if (verbose){print(shinfo)}
+  
+  type <- shinfo[[2]]
+  types <- c("Point", NA, "PolyLine", NA, "Polygon", NA, NA, 
         "MultiPoint", NA, NA, "PointZ", NA, "PolyLineZ", NA, 
         "PolygonZ", NA, NA, "MultiPointZ", NA, NA, "PointM", 
         NA, "PolyLineM", NA, "PolygonM", NA, NA, "MultiPointM", 
         NA, NA, "MultiPatch")
-    typeSh <- types[type]
-    
+  
+  typeSh <- types[type]
+  
 
-
-    if (typeSh == "Point" || typeSh == "PointZ" || typeSh == 
-        "MultiPoint") {
-        res <- readShapePoints(fn = fn, proj4string = proj4string, 
-            verbose = verbose, repair = repair)
-    }
-    else if (typeSh == "PolyLine" || typeSh == "PolyLineZ") {
+  if (typeSh == "Point" || typeSh == "PointZ" || typeSh == "MultiPoint") {
+        res <- readShapePoints(fn = fn, proj4string = proj4string,
+                               verbose = verbose, repair = repair)
+  } else if (typeSh == "PolyLine" || typeSh == "PolyLineZ") {
         
 	if(!is.null(formals(readShapeLines)$delete_null_obj)){
 	res <- readShapeLines(fn = fn, proj4string = proj4string,verbose = verbose, repair = repair,delete_null_obj=delete_null_obj)
@@ -140,8 +144,6 @@ else{
 }
 
 
-
-#################Input Shapefiles ########################
 
 initShapeFiles <- function(GWSDAT_Options) {
 

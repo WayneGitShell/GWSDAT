@@ -1,0 +1,17 @@
+rhandsontable-package	rhandsontable-package
+%>%	rhandsontable-exports
+editAddin	editAddin
+hot_cell	hot_cell
+hot_col	hot_col
+hot_cols	hot_cols
+hot_context_menu	hot_context_menu
+hot_heatmap	hot_heatmap
+hot_rows	hot_rows
+hot_table	hot_table
+hot_to_r	hot_to_r
+hot_validate_character	hot_validate_character
+hot_validate_numeric	hot_validate_numeric
+renderRHandsontable	renderRHandsontable
+rhandsontable	rhandsontable
+rhandsontable-exports	rhandsontable-exports
+rHandsontableOutput	rHandsontableOutput

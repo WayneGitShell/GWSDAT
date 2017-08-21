@@ -1,0 +1,125 @@
+rhandsontable 0.3.4
+-------------------------
+
+* Added the ability to pass custom parameters to the table.  A good example of their use can be found in the row Custom Renderer Using an R Parameter example (http://jrowen.github.io/rhandsontable/#custom_renderer) and rhandsontable_highlight shiny app.
+
+* Updated to handsontable 0.28.4 (see https://github.com/handsontable/handsontable/releases).
+
+* Fixed an issue with the auto column width (#109)
+
+* Fixed an issues with row.names (#112)
+
+* Fixed an issue with update event order (#111, #113)
+
+* Fixed an issue with the rhandsontable_datafile example (#117)
+
+rhandsontable 0.3.3
+-------------------------
+
+* POSSIBLE BREAKING CHANGE: Updated shiny logic to fire an afterChange event when the table is first populated.  This should not initialize the table input when first loaded and simplify shiny logic.
+
+* Updated to handsontable 0.26.1 (see https://github.com/handsontable/handsontable/releases).  Note the the number formatting library has switched to numbro.js (http://numbrojs.com/languages.html), and the format for the language parameter has changed slightly (e.g. en-US, de-DE, ja-JP, etc.)
+
+* Updated toR parser to support data.table.
+
+* Fixed bug with toR when table column names differ from data column names (#100)
+
+rhandsontable 0.3.2
+-------------------------
+
+* Updates to handsontable 0.25.1 (see https://github.com/handsontable/handsontable/releases).
+
+* Added Edit a Data Frame addin for RStudio
+
+* Added a language parameter to hot_col that supports changing the column formatting locale
+
+* Added rowHeaderWidth to hot_table to allow specifying the rowHeader column width
+
+* Added digits to rhandsontable, which is passed to jsonlite::toJSON
+
+* Fixed shiny bug with mixed numeric and character column names (#77)
+
+rhandsontable 0.3.1
+-------------------------
+
+* Fixed bug with comments (#66)
+
+* Fixed bug with single column table (#69)
+
+* Added overflow parameter to hot_table
+
+* Updates to handsontable 0.23.0 (see https://github.com/handsontable/handsontable/releases).
+
+rhandsontable 0.3
+-------------------------
+
+* Updated to handsontable 0.20.1 (see https://github.com/handsontable/handsontable/releases).  Row and column grouping no longer supported in open source version.
+
+* Fixed a bug that didn't return the changed column and row index when the table is sorted (#56)
+
+* Fixed a bug that didn't allow column formatting when the column headers were NULL (#57)
+
+rhandsontable 0.2.2
+-------------------------
+
+* Added support in shiny for default column values when new row added (#33)
+
+* Fixed bug that jumbled columns when some column names were numeric (#47, #52)
+
+* Fixed a bug in the validation logic that was preventing the call background from changing to red for invalid entries when allowInvalid = TRUE (#48)
+
+rhandsontable 0.2.1
+-------------------------
+
+* Added a new function, hot_context_menu, to better control right-click menu. The option to export to csv has been removed for now, but a new context_menu example has been added that shows how to enable the option. The example also shows how to enable the table search functionality (#38, #41).
+
+* Added a new comments parameter to rhandsontable to allow bulk comment specification.
+
+* Added a new shiny _comment callback to track changes to table comments. See the new rhandsontable_comment example for more details.
+
+* Added dateFormat to hot_col and allow passing additional column parameters. Future updates should hopefully allow more control over date formatting.
+
+* Fixed a table resize bug (#26)
+
+* Fixed hot_to_r to preserve original data classes when useTypes = FALSE (#39). See the rhandsontable_output example for more details.
+
+* Fixed shiny select callback to use 1-based indices (instead of JavaScripts 0-based indices).
+
+rhandsontable 0.2
+-------------------------
+
+* Added a project page at http://jrowen.github.io/rhandsontable
+
+* Upgraded to handsontable 0.16.1
+
+* Improved mapping between R classes and handsontable column types.  Numeric columns
+  in R are now mapped to numeric columns in the table, and factors are now
+  mapped as dropdown columns (#30).
+
+* Numeric columns are now formatted as '0' for integers and '0.00' for all other
+  numeric columns.  See http://http://numeraljs.com/ for more details on
+  formatting options.
+
+* Sparkline charts (http://omnipotent.net/jquery.sparkline/) can now be added to the
+  table.  See the project page for examples, and thanks to the sparkline package and
+  Ramnath Vaidyanathan for inspiration.  The sparkline chart width will be
+  set to fit within the specified column width.  The feature is still evolving, so
+  please pass along feedback.
+
+* Display NA values as blank cells in the table.  This requires changing colums with NA
+  values to character when displaying in handsontable and may require special handling
+  for Date and factor columns.  See the examples on the project page for more details.
+  Thanks to Melanie Bacou for the suggestion.
+
+* Added stretchH parameter to hot_table.
+
+* Fixed a bug where the table was not updated when resized.
+
+* Fixed a bug with row indices when sorting rows (#34)
+
+* Set overflow: auto and specified a default height = 400 in shiny (#21).
+
+rhandsontable 0.1
+-------------------------
+
+* Initial version.

@@ -1,0 +1,17 @@
+editAddin               Edit a Data Frame.
+hot_cell                Handsontable widget
+hot_col                 Handsontable widget
+hot_cols                Handsontable widget
+hot_context_menu        Handsontable widget
+hot_heatmap             Handsontable widget
+hot_rows                Handsontable widget
+hot_table               Handsontable widget
+hot_to_r                Handsontable widget
+hot_validate_character
+                        Handsontable widget
+hot_validate_numeric    Handsontable widget
+rHandsontableOutput     Handsontable widget
+renderRHandsontable     Handsontable widget
+rhandsontable           Handsontable widget
+rhandsontable-exports   rhandsontable exported operators
+rhandsontable-package   rhandsontable
