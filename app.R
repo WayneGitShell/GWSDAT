@@ -703,7 +703,43 @@ server <- function(input, output, session) {
     makeTrendTableAnimation(csite)
   })
   
+  
+  
+  observeEvent(input$excel_import_file, {
+    
+    conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+    well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+    
 
+    # Fixme read .ending from $name and append to newfile
+    newfile <- paste0(input$excel_import_file$datapath, ".xlsx")
+    file.rename(input$excel_import_file$datapath, newfile)
+    
+    # Fixme: Loop over sheets and detect sheets with valid entries
+    # ls_sheets <- excel_sheets(newfile)
+    
+    ret <- readExcelData(newfile, sheet = 2, header = conc_header)
+
+    if (class(ret) != "data.frame")
+      showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), 
+                       type = "error", duration = 10)
+    else {
+      ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
+      import_tables$DF_conc <<- as.data.frame(ret)
+    }
+
+    
+    ret <- readExcelData(newfile, sheet = 2, header = well_header, 
+                            ign_first_head = "WellName")
+    
+    if (class(ret) != "data.frame") 
+      showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), 
+                       type = "error", duration = 10)
+    else 
+      import_tables$DF_well <<- list(data = as.data.frame(ret), unit = "metres") # input$coords_unit)
+    
+  }) 
+  
   
   observeEvent(input$well_data_file, {
     
@@ -714,21 +750,44 @@ server <- function(input, output, session) {
     
     DF <- readConcData(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
     
-    # If there was an error reading the data, empty the fileInput control.
-    # ...
+    if (is.null(DF)) {
+      # If there was an error reading the data, empty the fileInput control.
+      # Fixme: ...
+      return(NULL)
+    }
+        
+    
+    # isolate(
+    #   if (input$excel_date) 
+    DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
+    #)
     
     # Save to reactive variable.
-    import_tables[["DF_conc"]] <<- DF 
+    import_tables$DF_conc <<- DF 
     
   })
+  
+  
+  # observeEvent(input$excel_date, {
+  #   browser()           
+  #   if (!is.null(input$import_tables$DF_conc)) 
+  #     input$import_tables$DF_conc$SampleDate <<- excelDate2Date(floor(as.numeric(as.character(input$import_tables$DF_conc$SampleDate)))) 
+  #   else 
+  #     input$import_tables$DF_conc$SampleDate <<- Date2ExcelDate(input$import_tables$DF_conc$SampleDate) 
+  # 
+  # })
+  # 
   
   output$table_conc_data <- renderRHandsontable({
     
     if (is.null(import_tables[["DF_conc"]]))
       return(NULL)
-    
+
     useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable(import_tables[["DF_conc"]], useTypes = useTypes, stretchH = "all")
+    if (nrow(import_tables$DF_conc) > 100)
+      rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
+    else
+      rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
     
     
   })
@@ -739,7 +798,8 @@ server <- function(input, output, session) {
     
     if (is.null(inFile))
       return(NULL)
-   
+ 
+
     DF <- readWellCoords(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote) 
     
     # Save to reactive variable.
@@ -750,6 +810,9 @@ server <- function(input, output, session) {
   output$table_well_coord <- renderRHandsontable({
     
     if (is.null(import_tables$DF_well))
+      return(NULL)
+
+    if (is.null(import_tables$DF_well$data))
       return(NULL)
     
     
@@ -778,7 +841,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$import_button,  {
    
-    
+    browser()
    
     
     if (is.null(import_tables[["DF_conc"]])) {
@@ -835,8 +898,9 @@ server <- function(input, output, session) {
     #
     # Go back to Data Manager.
     #
-    shinyjs::show(id = "data_manager", anim = TRUE);
-    shinyjs::hide(id = "data_import", anim = TRUE)
+    shinyjs::show(id = "data_manager", anim = TRUE)
+    shinyjs::hide(id = "data_add_csv", anim = TRUE)
+    
     
   })
   
@@ -844,14 +908,14 @@ server <- function(input, output, session) {
   
   # Go to Data Import (Button click).
   observeEvent(input$add_csv_data,  {
-    shinyjs::show(id = "data_import", anim = TRUE)
+    shinyjs::show(id = "data_add_csv", anim = TRUE)
     shinyjs::hide(id = "data_manager", anim = TRUE)
   })
   
   
   # Go to Data Import (Link).
   shinyjs::onclick("toggleDataImport", {
-    shinyjs::show(id = "data_import", anim = TRUE);
+    shinyjs::show(id = "data_add_csv", anim = TRUE);
     shinyjs::hide(id = "data_manager", anim = TRUE)
    
   })
@@ -859,18 +923,24 @@ server <- function(input, output, session) {
   
   # Go to Data Manager.
   shinyjs::onclick("toggleDataManager", {
-    shinyjs::show(id = "data_manager", anim = TRUE);
-    shinyjs::hide(id = "data_import", anim = TRUE);
-    shinyjs::hide(id = "data_add", anim = TRUE)
+    shinyjs::show(id = "data_manager", anim = TRUE)
+    shinyjs::hide(id = "data_add_csv", anim = TRUE)
+    shinyjs::hide(id = "data_add_new", anim = TRUE)
+    shinyjs::hide(id = "data_add_excel", anim = TRUE)
   })
   
   
   # Go to Add New Data (Button click).
   observeEvent(input$add_new_data,  {
-    shinyjs::show(id = "data_add", anim = TRUE)
+    shinyjs::show(id = "data_add_new", anim = TRUE)
     shinyjs::hide(id = "data_manager", anim = TRUE)
   })
   
+  # Go to Add New Data (Button click).
+  observeEvent(input$add_excel_data,  {
+    shinyjs::show(id = "data_add_excel", anim = TRUE)
+    shinyjs::hide(id = "data_manager", anim = TRUE)
+  })
   
   
   #
@@ -1221,7 +1291,7 @@ server <- function(input, output, session) {
     
   })
 
-  output$uiDataAdd <- renderUI({
+  output$uiDataAddNew <- renderUI({
     
     input$add_new_data
     
@@ -1235,7 +1305,7 @@ server <- function(input, output, session) {
       well_tmp <- data.frame(matrix(0, nrow = 20, ncol = length(well_header)))
       colnames(well_tmp) <- well_header
       
-      import_tables$DF_well <- list(data = well_tmp, unit = "metres")
+      import_tables$DF_well <- list(data = well_tmp, unit = input$coords_unit)
       
     })
     
@@ -1268,8 +1338,64 @@ server <- function(input, output, session) {
     )
   })
     
+  
+  output$uiDataAddExcel <- renderUI({
     
-  output$uiDataImport <- renderUI({
+    import_tables$DF_well <- NULL
+    import_tables$DF_conc <- NULL
+    
+    input$add_excel_data
+    
+    conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+    well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+    
+    # isolate({
+    #   import_tables$DF_conc <- data.frame(matrix(0, nrow = 1, ncol = length(conc_header)))
+    #   colnames(import_tables$DF_conc) <- conc_header
+    #   
+    #   well_tmp <- data.frame(matrix(0, nrow = 1, ncol = length(well_header)))
+    #   colnames(well_tmp) <- well_header
+    #   
+    #   import_tables$DF_well <- list(data = well_tmp, unit = "metres")
+    #   
+    # })
+    
+    
+    fluidPage(
+      
+      div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
+      
+      box(width = 3, solidHeader = TRUE, status = "primary", 
+          
+          
+          h3("Import Excel Data"),
+          "Select the Excel file containing the GWSDAT data.",
+          hr(),
+          textInput("new_data_name", label = "Data Name", value = "Area 1"),
+          fileInput('excel_import_file', 'Excel File',
+                    accept = c('.xls', '.xlsx')),
+          #actionButton("reset_import", label = "Reset"),
+          actionButton("import_button", label = "Import Data", icon("arrow-down"), 
+                       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                       
+          
+          
+      ),
+      
+      tabBox("Data", width = 9, 
+             tabPanel(title = "Contaminant data", 
+                      rHandsontableOutput("table_conc_data")
+             ), 
+             tabPanel(title = "Well Coordinates",
+                      rHandsontableOutput("table_well_coord")
+             )
+      )
+    )
+  })
+  
+  
+  
+  output$uiDataAddCSV <- renderUI({
     
     
     
@@ -1305,7 +1431,7 @@ server <- function(input, output, session) {
           hr(),
           
           checkboxInput('header', 'Header', TRUE),
-          checkboxInput('excel_date', 'Transform Excel Date', TRUE),
+          #checkboxInput('excel_date', 'Transform Excel Date', TRUE),
           radioButtons('sep', 'Separator',
                        c(Comma = ',',
                          Semicolon = ';',
@@ -1349,24 +1475,17 @@ server <- function(input, output, session) {
     html_out <- tagList(h2("Data Manager"),
                         #box(width = 3, 
                         div(style = "float : right; margin-bottom: 5px",
-                           actionButton("add_csv_data", label = "Import .csv Data", icon = icon("plus"), 
+                            actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
                                          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                           actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
-                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                            actionButton("add_csv_data", label = "Import .csv Data", icon = icon("plus"), 
+                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            actionButton("add_excel_data", label = "Import Excel File", icon = icon("plus"), 
+                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                           
                         )
     )
                         
                         
-    # html_out <- tagList(html_out, 
-    #                     
-    #                     box(width = 7, 
-    #                         div(style = "float : right",
-    #                             actionButton("add_csv_data", label = " Import .csv Data", icon = icon("plus"), 
-    #                                          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-    #                         )
-    #                     )
-    # )
-    
     
     if (length(csite_list) == 0) {
       
@@ -1492,8 +1611,10 @@ ui <- dashboardPage(skin = "black",
      tabItem(tabName = "input_data", 
       
         div(id = "data_manager", uiOutput("uiDataManager")),
-        shinyjs::hidden( div(id = "data_import", uiOutput("uiDataImport"))),
-        shinyjs::hidden( div(id = "data_add", uiOutput("uiDataAdd")))
+        shinyjs::hidden( div(id = "data_add_csv", uiOutput("uiDataAddCSV"))),
+        shinyjs::hidden( div(id = "data_add_new", uiOutput("uiDataAddNew"))),
+        shinyjs::hidden( div(id = "data_add_excel", uiOutput("uiDataAddExcel")))
+        
       ),
       
       tabItem(tabName = "analysis", 

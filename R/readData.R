@@ -12,7 +12,7 @@ readConcData <- function(input_file, ...) {
   
  
 
-  if (!"flags" %in% tolower(names(DF))){DF$Flags <- rep(NA,nrow(DF))}
+  if (!"flags" %in% tolower(names(DF))){ DF$Flags <- rep(NA,nrow(DF))}
   
   # AGALL <- try(AGALL[,which(tolower(names(AGALL)) == "wellname"):which(tolower(names(AGALL)) == "flags")])
   # 
@@ -45,15 +45,11 @@ readConcData <- function(input_file, ...) {
   
   
   if (head_not_found != "") {
-    msg <- paste0("Reading well coordinates failed. Missing following columns: ", paste(head_not_found, collapse = ", "), "." )
-    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    msg <- paste0("Reading well coordinates failed. Headers missing: ", paste(head_not_found, collapse = ", "), "." )
+    showNotification(msg, type = "error")
     return(NULL)
   }
    
-  #if (input$excel_date) 
-  #  DF_extract$SampleDate <- as.character(GWSDAT.excelDate2Date(floor(as.numeric(as.character(DF_extract$SampleDate))))) 
-  
-  DF$SampleDate <- GWSDAT.excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
   
   
   if (any(is.na(DF$SampleDate))) {
@@ -126,4 +122,74 @@ readWellCoords <- function(input_file, ...) {
   
 }
 
+
+
+readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {
+  
+  excl <- read_excel(filein, sheet = sheet)
+  
+  # Find the headers in the sheet
+  dftmp <- NULL
+  head_err = ""
+  end_row = 0
+  
+  
+  for (headj in header) {
+    
+    found_head <- FALSE
+    
+    # Look into each column
+    for (i in 1:ncol(excl)) {
+      
+      # Get row offset of header
+      if (length(rowpos <- which(excl[,i] == headj)) == 1) {
+        
+        if (ign_first_head == headj) {
+          ign_first_head = ""
+          next
+        }
+        
+        found_head <- TRUE
+        
+        if (get_subset) {
+          
+          if (end_row == 0) {
+            end_row <- which(is.na(excl[ (rowpos + 1):nrow(excl) , i]))[1]
+            
+            if (!is.na(end_row))
+              end_row <- end_row + rowpos - 1
+            else 
+              end_row <- nrow(excl)
+            
+          }
+          
+          # Extract the data for this header
+          ctmp <- excl[(rowpos + 1):end_row, i]
+          
+          colnames(ctmp) <- headj
+          
+          if (is.null(dftmp))
+            dftmp <- ctmp
+          else
+            dftmp <- cbind(dftmp, ctmp)
+        }
+        
+        break
+      }
+      
+    }
+    
+    if (!found_head)
+      head_err = paste0(head_err, headj) 
+    
+  }
+  
+  if (head_err != "") {
+    return(head_err)
+  }
+  
+  
+  return(dftmp)
+  
+}
 

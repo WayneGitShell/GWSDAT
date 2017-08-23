@@ -35,8 +35,6 @@ loadPackages <- function(){
   if (!Require("zoo")) {return(FALSE)}
   if (!Require("splancs")) {return(FALSE)}
   if (!Require("Kendall")) {return(FALSE)}
-  # if (!Require("animation")) {return(FALSE)}
-  # if (!Require("rpanel")) {return(FALSE)}
   if (!Require("deldir")) {return(FALSE)}
   if (!Require("maptools")) {return(FALSE)}
   if (!Require("geometry")) {return(FALSE)}
@@ -46,6 +44,7 @@ loadPackages <- function(){
   if (!Require("shinydashboard")) {return(FALSE)}
   if (!Require("shinycssloaders")) {return(FALSE)}
   if (!Require("rhandsontable")) {return(FALSE)}
+  if (!Require("readxl")) {return(FALSE)}
   if (!Require("RDCOMClient")) {return(FALSE)}  
   
   return(TRUE)
@@ -78,6 +77,8 @@ if (.Platform$OS.type == "windows") {
   require(shinyjs)
   require(shinydashboard)
   require(shinycssloaders)
+  require(rhandsontable)
+  require(readxl)
     
 }
 
@@ -103,7 +104,7 @@ source(paste(HomeDir, "R/plotTrendTable.R", sep = "/"))
 source(paste(HomeDir, "R/plotPlumeTimeSeries.R", sep = "/"))
 source(paste(HomeDir, "R/plumeDiagnostics.R", sep = "/"))
 source(paste(HomeDir, "R/uiAnalyse.R", sep = "/"))
-source(paste(HomeDir, "R/uiDataManager.R", sep = "/"))
+#source(paste(HomeDir, "R/uiDataManager.R", sep = "/"))
 source(paste(HomeDir, "R/uiWellReport.R", sep = "/"))
 source(paste(HomeDir, "R/uiPlumeDiagnostics.R", sep = "/"))
 source(paste(HomeDir, "R/uiAnalyseOptions.R", sep = "/"))

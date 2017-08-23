@@ -1,9 +1,8 @@
 
 
 
-
-GWSDAT.excelDate2Date <- function(excelDate) 
-{
+excelDate2Date <- function(excelDate) {
+ 
   Date <- excelDate + as.Date("1900-01-01") - 2
   return(Date)
 }
