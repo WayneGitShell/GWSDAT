@@ -298,7 +298,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
                     if (csite$ui_attr$contour_selected == "NAPL-Circles" & substance != " ") {paste("(",csite$ui_attr$conc_unit_selected,")", sep = "")} else {""},
                     if (substance != " ") {":"} else {""},
                     date.to.print,
-                    if (csite$All.Data$Aq.sel != "") {paste(": Aquifer-",csite$All.Data$Aq.sel,sep = "")} else {""}
+                    if (csite$Aquifer != "") {paste(": Aquifer-",csite$Aquifer, sep = "")} else {""}
               )
     
     
@@ -374,8 +374,8 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
                           xlim=Contour.xlim,
                           ylim=Contour.ylim,
                           color.palette=col.palette,
-                          plot.title = title(main = paste(substance,":",date.to.print,if(csite$All.Data$Aq.sel!=""){paste(": Aquifer-",csite$All.Data$Aq.sel,sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=csite$ui_attr$conc_unit_selected),
-                          plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02);  
+                          plot.title = title(main = paste(substance,":",date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=csite$ui_attr$conc_unit_selected),
+                          plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
                             

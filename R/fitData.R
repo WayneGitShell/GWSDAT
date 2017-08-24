@@ -1,18 +1,19 @@
 
 
-fitData <- function(All.Data, GWSDAT_Options, progress = NULL) {
+fitData <- function(All.Data, GWSDAT_Options) {
 
-
-
+  progress <- shiny::Progress$new()
+  progress$set(message = "Fitting data", value = 0)
+  on.exit(progress$close())
 
   Fitted.Data <- list()
 
-  NumConts = length(All.Data$All.Conts)
+  NumConts = length(All.Data$cont_names)
 
   # Progress bar value indicator.
   PctDone = 1 / (NumConts + 3)
   
-  
+ 
   if (!tolower(GWSDAT_Options$ModelMethod) %in% c("svm","pspline")) {
     
     msg <- "No valid modelling method selected. Assuming pspline. (Choice will be added)"
@@ -29,27 +30,27 @@ fitData <- function(All.Data, GWSDAT_Options, progress = NULL) {
     
     # Show progress of fitting.
     if (!is.null(progress)) {
-      progress$set(value = PctDone, detail = paste("fitting ", All.Data$All.Conts[i]))
+      progress$set(value = PctDone, detail = paste("contaminant ", All.Data$cont_names[i]))
     }
     
     if (tolower(GWSDAT_Options$ModelMethod) == "svm") {
       
-      temp.fit <- try(GWSDAT.svmfit(All.Data, All.Data$All.Conts[i], GWSDAT_Options))
+      temp.fit <- try(GWSDAT.svmfit(All.Data, All.Data$cont_names[i], GWSDAT_Options))
       
     } else {
       
-      temp.fit <- GWSDAT.PSplinefit(All.Data,All.Data$All.Conts[i],GWSDAT_Options)
+      temp.fit <- GWSDAT.PSplinefit(All.Data,All.Data$cont_names[i],GWSDAT_Options)
       
     }
     
     
     if (inherits(temp.fit, 'try-error')) {
     
-      msg <- paste("Fitting", All.Data$All.Conts[i], "data failed, ignoring it.")
+      msg <- paste("Fitting", All.Data$cont_names[i], "data failed, ignoring it.")
       showNotification(msg, type = "error", duration = 20)
     } else {
       
-      Fitted.Data[[All.Data$All.Conts[i]]] <- temp.fit
+      Fitted.Data[[All.Data$cont_names[i]]] <- temp.fit
     }
     
     # Progress the bar.
@@ -93,7 +94,7 @@ fitData <- function(All.Data, GWSDAT_Options, progress = NULL) {
   
   if (!is.null(All.Data$Agg_GW_Data)) {
     
-    GW.Flows <- try(do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, GWSDAT.GW.Comp)))
+    GW.Flows <- try(do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, computeGroundwater)))
     
     if (!inherits(GW.Flows, 'try-error')) {
       

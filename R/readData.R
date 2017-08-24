@@ -1,5 +1,87 @@
 
 
+readExcel <- function(filein) {
+ 
+  conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+  well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+  
+  # Fixme: read .ending from $name and append to newfile
+  newfile <- paste0(filein$datapath, ".xlsx")
+  file.rename(filein$datapath, newfile)
+  
+  conc_data <- NULL
+  well_data <- NULL
+  
+  ls_sheets <- excel_sheets(newfile)
+  
+  # Attempt to find valid tables in sheets
+  for (sheet in ls_sheets) {
+  
+    
+    ## Read Excel contaminant data #############################################
+    ret <- readExcelData(newfile, sheet = sheet, header = conc_header)
+  
+    if (class(ret) != "data.frame") {
+      #  showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), type = "error", duration = 10)
+      showNotification(paste0("Sheet ", sheet, ": No valid contaminant table found, skipping."), duration = 10)
+      next
+    }
+    
+    
+    if (any(is.na(ret$SampleDate))) {
+      
+      ret <- ret[!is.na(ret$SampleDate),]
+      
+      msg <- paste0("Sheet ", sheet, ": Incorrect input date value(s) detected. Ommitting values.")
+      showNotification(msg, type = "warning", duration = 10)
+    
+      if (nrow(ret) == 0) {
+        showNotification(paste0("Sheet ", sheet, ": Zero entries in concentration data read, skipping."), type = "error", duration = 10)
+        next
+      } 
+    }
+    
+    if (!"flags" %in% tolower(names(ret))) { ret$Flags <- rep("",nrow(ret))}
+    ret$Flags[is.na(ret$Flags)] <- ""
+    ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
+    
+    conc_data <- ret
+  
+  
+    ## Read Excel well data ####################################################
+    ret <- readExcelData(newfile, sheet = 2, header = well_header, 
+                       ign_first_head = "WellName")
+  
+    if (class(ret) != "data.frame") {
+      # showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), type = "error", duration = 10)
+      showNotification(paste0("Sheet ", sheet, ": No valid well table found, skipping."), duration = 10)
+      next
+    }
+    
+    
+    coord_unit <- as.character(ret$CoordUnits[1])
+    if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- "metres"
+    ret$Aquifer[is.na(ret$Aquifer)] <- ""
+    
+    well_data <- list(data = ret, unit = coord_unit)
+    
+    showNotification(paste0("Sheet ", sheet, ": Found valid tables."), type = "message", duration = 10)
+    break
+  }
+  
+  if (is.null(conc_data) || is.null(well_data))
+    return(NULL)
+  
+  
+  return(list(conc_data = conc_data, well_data = well_data))
+  
+  
+  
+}
+
+
+
+
 
 
 readConcData <- function(input_file, ...) {
@@ -11,21 +93,10 @@ readConcData <- function(input_file, ...) {
     DF = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
   
  
+  # Create Flags column or replace NA values with "" if exist.
+  if (!"flags" %in% tolower(names(DF))) { DF$Flags <- rep("",nrow(DF))}
+  DF$Flags[is.na(DF$Flags)] <- ""
 
-  if (!"flags" %in% tolower(names(DF))){ DF$Flags <- rep(NA,nrow(DF))}
-  
-  # AGALL <- try(AGALL[,which(tolower(names(AGALL)) == "wellname"):which(tolower(names(AGALL)) == "flags")])
-  # 
-  # if (inherits(AGALL, 'try-error')) {
-  #   
-  #   msg <- "Reading the concentration data failed. Make sure to set proper column names."
-  #   showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
-  #   return(NULL)
-  # 
-  # }
-  # 
-  
-  
   valid_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
   
   DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
@@ -67,7 +138,7 @@ readConcData <- function(input_file, ...) {
       return(NULL)
     } 
   }
-  
+
   return(DF)
   
 }
@@ -133,6 +204,9 @@ readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_f
   head_err = ""
   end_row = 0
   
+  # Detect empty table.
+  if (ncol(excl) == 0)
+    return(NULL)
   
   for (headj in header) {
     

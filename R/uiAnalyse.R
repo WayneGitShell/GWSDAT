@@ -9,15 +9,7 @@ uiAnalyse <- function(csite) {
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
                        
                        box(width = 3, status = "warning", title = "Settings",
-                       #column(3,
-                       #        wellPanel(
-                                #
-                                # Did not decided yet where to put this (here or data manager).
-                                #
-                                #div(id = "select_aquifer_timeseries", 
-                                #    selectInput("aquifer_timeseries", label = "Aquifer Group", choices = csite$All.Data$Aq_list,
-                                #                selected = csite$All.Data$Aq.sel, width = '80%') ),
-                                
+                       
                                 selectInput("well_select", label = "Select Monitoring Well", choices = csite$ui_attr$sample_loc_names,
                                             selected = csite$ui_attr$sample_loc_selected, width = "80%"),
                                 
@@ -39,7 +31,7 @@ uiAnalyse <- function(csite) {
                        ),
                        
                        box(width = 7, status = "primary",
-                           withSpinner(plotOutput("time_series")),
+                           plotOutput("time_series"),
                            
                            div(style = "display: inline-block;",
                                selectInput("export_format_ts", label = "Image format", 
@@ -95,7 +87,7 @@ uiAnalyse <- function(csite) {
                        
                        
                        box(width = 7, status = "primary",
-                            withSpinner(plotOutput("image_plot")),
+                            plotOutput("image_plot"),
                            
                             div(style = "display: inline-block;", 
                                 selectInput("export_format_sp", label = "Image format", 
@@ -159,7 +151,7 @@ uiAnalyse <- function(csite) {
                               
                         tabPanel(title = "Trends", 
                                  
-                                 withSpinner(plotOutput("traffic_table")),
+                                plotOutput("traffic_table"),
 
                                 div(style = "display: inline-block;",
                                   selectInput("export_format_tt", label = "Image format",

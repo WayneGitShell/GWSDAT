@@ -45,7 +45,12 @@ interpData <- function(csite, substance, timestep) {
     my.area <- as.matrix(Well.Coords[as.character(Well.Coords$WellName) %in% as.character(Good.Wells),c("XCoord","YCoord")])
   }
   
-  if ((areapl(my.area[chull(my.area),]) / csite$All.Data$sample_loc$area) < 0.01) {
+  tmp_my.area <- my.area[chull(my.area),,drop = FALSE]
+  
+  if (nrow(tmp_my.area) < 3) {
+    Do.Image = FALSE
+    my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
+  } else if ((areapl(tmp_my.area) / csite$All.Data$sample_loc$area) < 0.01) {
     Do.Image = FALSE
     my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
   }

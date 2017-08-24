@@ -1,6 +1,6 @@
 
 
-createUIAttr <- function(All.Data, Fitted.Data, GWSDAT_Options) {
+createUIAttr <- function(All.Data, GWSDAT_Options) {
   
 
   ui_attr <- list()
@@ -9,7 +9,7 @@ createUIAttr <- function(All.Data, Fitted.Data, GWSDAT_Options) {
   
   ui_attr$sample_loc_names    <- All.Data$sample_loc$names 
   ui_attr$sample_loc_selected <- All.Data$sample_loc$names[1]  
-  ui_attr$substance_names     <- as.character(names(Fitted.Data))
+  ui_attr$substance_names     <- All.Data$cont_names
   ui_attr$substance_selected  <- ui_attr$substance_names[1]
   ui_attr$conc_unit_list      <- list("ng/l","ug/l","mg/l")
   ui_attr$conc_unit_selected  <- ui_attr$conc_unit_list[2]

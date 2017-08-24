@@ -5,7 +5,7 @@ source("R/loadPkgSrc.R")
 
 # Print warnings when they happen.
 options(warn = 1)
-#options(warn = recover)
+#options(error = recover)
 
 
 ########################### Server Section ######################################
@@ -15,6 +15,7 @@ server <- function(input, output, session) {
   
   # Flag that indicates whether data was loaded or not.  
   dataLoaded <- reactiveVal(0)
+  #renderData <- reactiveVal(0)
   
   # List of site data and currently selected site.
   csite_list <- NULL
@@ -257,12 +258,6 @@ server <- function(input, output, session) {
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- function(aggby) {
 
-    # Create a Progress object
-    progress <- shiny::Progress$new()
-    progress$set(message = "Reaggregating data", value = 0)
-    on.exit(progress$close())
-    
-    
     csite$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
     csite$ui_attr$aggregate_selected <<- aggby
     
@@ -280,8 +275,7 @@ server <- function(input, output, session) {
     csite$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
       
     # Fit data. 
-    Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options, 
-                          progressBar = progress)
+    Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options)
       
     if (class(Fitted.Data) != "gwsdat_fit") {
       stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")
@@ -707,36 +701,14 @@ server <- function(input, output, session) {
   
   observeEvent(input$excel_import_file, {
     
-    conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
-    well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+    dtmp <- readExcel(input$excel_import_file)
     
-
-    # Fixme read .ending from $name and append to newfile
-    newfile <- paste0(input$excel_import_file$datapath, ".xlsx")
-    file.rename(input$excel_import_file$datapath, newfile)
-    
-    # Fixme: Loop over sheets and detect sheets with valid entries
-    # ls_sheets <- excel_sheets(newfile)
-    
-    ret <- readExcelData(newfile, sheet = 2, header = conc_header)
-
-    if (class(ret) != "data.frame")
-      showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), 
-                       type = "error", duration = 10)
-    else {
-      ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
-      import_tables$DF_conc <<- as.data.frame(ret)
+    if (!is.null(dtmp)) {
+      import_tables$DF_conc <<- dtmp$conc_data
+      import_tables$DF_well <<- dtmp$well_data
+    } else {
+      showNotification("Failed to load data from Excel file.", type = "error")
     }
-
-    
-    ret <- readExcelData(newfile, sheet = 2, header = well_header, 
-                            ign_first_head = "WellName")
-    
-    if (class(ret) != "data.frame") 
-      showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), 
-                       type = "error", duration = 10)
-    else 
-      import_tables$DF_well <<- list(data = as.data.frame(ret), unit = "metres") # input$coords_unit)
     
   }) 
   
@@ -768,15 +740,6 @@ server <- function(input, output, session) {
   })
   
   
-  # observeEvent(input$excel_date, {
-  #   browser()           
-  #   if (!is.null(input$import_tables$DF_conc)) 
-  #     input$import_tables$DF_conc$SampleDate <<- excelDate2Date(floor(as.numeric(as.character(input$import_tables$DF_conc$SampleDate)))) 
-  #   else 
-  #     input$import_tables$DF_conc$SampleDate <<- Date2ExcelDate(input$import_tables$DF_conc$SampleDate) 
-  # 
-  # })
-  # 
   
   output$table_conc_data <- renderRHandsontable({
     
@@ -841,8 +804,6 @@ server <- function(input, output, session) {
   
   observeEvent(input$import_button,  {
    
-    browser()
-   
     
     if (is.null(import_tables[["DF_conc"]])) {
       showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
@@ -864,56 +825,48 @@ server <- function(input, output, session) {
     
     GWSDAT_Options <- createOptions(isolate(input$new_data_name))
     
-    pr_dat <- processData(import_tables[["DF_conc"]], import_tables[["DF_well"]], GWSDAT_Options)
-   
-    # Require Aquifer selection.
-    if (class(pr_dat) == "Aq_list")
-      return(pr_dat)
+    all_data <- formatData(import_tables[["DF_conc"]], import_tables[["DF_well"]])
+
+
+    for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
     
-    # Some Error occured.
-    if (is.null(pr_dat))
-      return(NULL)
+      if (is.null(pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel))) next
+      
+      ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
     
-    Fitted.Data = fitData(pr_dat, GWSDAT_Options, progress)
+      # Build list with all data.
+      csite <<- list(All.Data       = pr_dat,
+                     Fitted.Data    = NULL,
+                     GWSDAT_Options = GWSDAT_Options,
+                     Traffic.Lights = NULL,
+                     ui_attr        = ui_attr,
+                     Aquifer        = Aq_sel
+      )
     
-    if (is.null(Fitted.Data))
-      return(NULL)
-    
-    # Create UI attributes
-    ui_attr <- createUIAttr(pr_dat, Fitted.Data, GWSDAT_Options)
-    
-    # Build list with all data.
-    csite <<- list(All.Data       = pr_dat,
-                   Fitted.Data    = Fitted.Data,
-                   GWSDAT_Options = GWSDAT_Options,
-                   Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
-                   ui_attr        = ui_attr
-    )
-    
-    csite_list[[length(csite_list) + 1]] <<- csite 
-    
+      csite_list[[length(csite_list) + 1]] <<- csite 
+      
+    }
+
     # Flag that data was loaded.
     dataLoaded(dataLoaded() + 1)
     
-    #
     # Go back to Data Manager.
-    #
     shinyjs::show(id = "data_manager", anim = TRUE)
     shinyjs::hide(id = "data_add_csv", anim = TRUE)
-    
+    shinyjs::hide(id = "data_add_excel", anim = TRUE)
     
   })
   
   
   
-  # Go to Data Import (Button click).
+  # Go to .CSV Data Import (Button click).
   observeEvent(input$add_csv_data,  {
     shinyjs::show(id = "data_add_csv", anim = TRUE)
     shinyjs::hide(id = "data_manager", anim = TRUE)
   })
   
   
-  # Go to Data Import (Link).
+  # Go to .CSV Data Import (Link).
   shinyjs::onclick("toggleDataImport", {
     shinyjs::show(id = "data_add_csv", anim = TRUE);
     shinyjs::hide(id = "data_manager", anim = TRUE)
@@ -936,7 +889,7 @@ server <- function(input, output, session) {
     shinyjs::hide(id = "data_manager", anim = TRUE)
   })
   
-  # Go to Add New Data (Button click).
+  # Go to Excel Data Import (Button click).
   observeEvent(input$add_excel_data,  {
     shinyjs::show(id = "data_add_excel", anim = TRUE)
     shinyjs::hide(id = "data_manager", anim = TRUE)
@@ -1033,27 +986,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$options_saved <- renderText({ paste("Changes Saved") })
-  
-  
-  #
-  # Decide whether to display the Aquifer Group selection when entering an Analyse tab.
-  #
-  #observeEvent(input$plot_tabs, {
-    
-    # If there are less than 2 aquifer, hide the selection control.
-  #  if (length(csite$All.Data$Aq_list) < 2) {
-  #    shinyjs::hide(id = "select_aquifer_timeseries")
-  #    shinyjs::hide(id = "select_aquifer_contour")
-  #    shinyjs::hide(id = "select_aquifer_traffic")
-  #    
-  #  }
-  #})
-  #observeEvent(input$solute_chooser, {
-  #  
-  #  browser()
-  #  val = input$mychooser
-  #}) 
+  output$options_saved <- renderText({paste("Changes Saved") })
   
     
     
@@ -1160,44 +1093,48 @@ server <- function(input, output, session) {
     # Otherwise load the data from the .csv files.
     #
     
-    # Create the progress bar.
-    progress <- shiny::Progress$new()
-    progress$set(message = "Loading data", value = 0)
-    on.exit(progress$close())
-    
-    progress$set(value = 0.1, detail = paste("reading data"))
-    
     # Read Well data and coordinates from file.
     solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
     well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
     
-    pr_dat <- processData(solute_data, well_data, GWSDAT_Options, Aq_sel)
     
-    # Require Aquifer selection.
-    if (class(pr_dat) == "Aq_list")
-      return(pr_dat)
+    all_data <- formatData(solute_data, well_data)
     
+    # Extract list of Aquifer. If there is more than one, return the list.
+    Aq_list <- unique(all_data$sample_loc$data$Aquifer)
+    
+    if ((length(Aq_list) > 1) && is.null(Aq_sel)) {
+      class(Aq_list) <- "Aq_list"
+      return(Aq_list)
+    }
+    
+    if (is.null(Aq_sel))
+      Aq_sel <- Aq_list[[1]]
+    
+    pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel)
+        
     # Some Error occured.
     if (is.null(pr_dat))
       return(NULL)
     
-    Fitted.Data = fitData(pr_dat, GWSDAT_Options, progress)
+    Fitted.Data = fitData(pr_dat, GWSDAT_Options)
     
     if (is.null(Fitted.Data))
       return(NULL)
     
     # Create UI attributes
-    ui_attr <- createUIAttr(pr_dat, Fitted.Data, GWSDAT_Options)
+    ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
     
     # Build list with all data.
     csite <<- list(All.Data       = pr_dat,
-                      Fitted.Data    = Fitted.Data,
-                      GWSDAT_Options = GWSDAT_Options,
-                      Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
-                      ui_attr        = ui_attr
+                   Fitted.Data    = Fitted.Data,
+                   GWSDAT_Options = GWSDAT_Options,
+                   Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
+                   ui_attr        = ui_attr,
+		               Aquifer        = Aq_sel
     )
     
-    csite_list[[1]] <<- csite 
+    csite_list[[length(csite_list) + 1]] <<- csite 
     
     # Flag that data was fully loaded.
     dataLoaded(2)
@@ -1213,15 +1150,14 @@ server <- function(input, output, session) {
   
   
   output$data_overview <- renderUI({
-    
-    if (dataLoaded() == 0) 
-      loadDataSet()
    
+     if (dataLoaded() == 0) 
+      loadDataSet()
     
-    htmlOut <- h3("Select Data Set")
+    html_out <- h3("Select Data Set")
     
     if (length(csite_list) == 0) {
-      htmlOut <- tagList(htmlOut,
+      html_out <- tagList(html_out,
                          box(width = 7, title = "Data Missing", status = "primary",
                              "Load session data (add link) or import data (add link)."
                          )
@@ -1229,8 +1165,9 @@ server <- function(input, output, session) {
       
     } else {
       
-      
-      databoxes <- as.list(1:length(csite_list))
+      data_sets <- getDataInfo(csite_list)
+
+      databoxes <- as.list(1:length(data_sets))
       
       databoxes <- lapply(databoxes, function(i) {
         
@@ -1241,53 +1178,73 @@ server <- function(input, output, session) {
             
             obsAnayseBtnList[[btName]] <<- observeEvent(input[[btName]], {
               
-              # Make selected data set active.
-              csite <<- csite_list[[i]]
+              # Retrieve the aquifer select input value.
+              aquifer <- eval(parse(text = paste0("input$aquifer_select_", i)))
               
-              # Triggers renderUI() of Analyse panel
-              dataLoaded(dataLoaded() + 1)
+              # Get list index of selected data and aquifer.
+              j <- data_sets[[i]]$csite_idx[which(data_sets[[i]]$Aquifer == aquifer)]
+              
+              # If it was not fitted before, do it now.
+              if (is.null(csite_list[[j]]$Fitted.Data)) {
+               
+                Fitted.Data <- fitData(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
+                
+                if (class(Fitted.Data) != "gwsdat_fit") {
+                  showNotification("Fitting data failed. Aborting.", type = "error", duration = 10)
+                }
+                
+                csite_list[[j]]$Fitted.Data <<- Fitted.Data
+                csite_list[[j]]$Traffic.Lights <<- attr(Fitted.Data,"TrafficLights")
+                
+                
+              }
+              
+                 
+              # Make selected data set active.
+              csite <<- csite_list[[j]]
               
               shinyjs::hide("data_select_page")
               shinyjs::show("analyse_page")
+              
+              # Triggers renderUI() of Analyse panel
+              # Fixme: Also triggers observer. I tried a separate reactive variable 
+              #        that is only observed by output$rndAnalyse, but it will also 
+              #        trigger here again. 
+              dataLoaded(dataLoaded() + 1)
+              
+              
             })
           }
       })
       
-      # Need to create the buttons separately because they won't show up in htmlOut
-      # when created inside lapply()
-      for (i in 1:length(csite_list)) {
+      
+      for (i in 1:length(data_sets)) {
         
-        btName <- paste0("analyse_btn", i)
+        set_name <- names(data_sets)[i]
         
-        # Create the box with buttons.
-        htmlOut <- tagList(htmlOut, fluidRow(
-                          box(width = 7, status = "primary", collapsible = TRUE,
-                              title = csite_list[[i]]$GWSDAT_Options$SiteName, 
-                              
-                              p(paste("Contaminants: ", paste(names(csite_list[[i]]$Fitted.Data), collapse = ", "))),
-                              p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
-                              p(paste0("Aquifer: ", csite_list[[i]]$GWSDAT_Options$Aggby)),
-                              p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod)),
-                              div(style = "float : right", actionButton(btName, "Select"))
-                          )))
+        html_out <- tagList(html_out, fluidRow(
+          box(width = 7, status = "primary", collapsible = TRUE,
+              title = set_name, 
+              #p(paste("Contaminants: ", paste(csite_list[[i]]$All.Data$cont_names, collapse = ", "))),
+              #p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
+              #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
+              
+              div(style = "display: inline-block", 
+                  selectInput(paste0("aquifer_select_", i), label = "Select Aquifer",
+                          choices  = data_sets[[set_name]]$Aquifer,
+                          selected = data_sets[[set_name]]$Aquifer[1], 
+                          width = '150px')
+              ),
+              div(style = "display: inline-block; float : right", 
+                  actionButton(paste0("analyse_btn", i), "Select")
+              )
+        )))
+        
       }
-                      
-     
-
       
-      
-      # or do something like this:
-      # lapply(1:num_subst, function(i) {
-      #   div(style = "display: inline-block;", 
-      #       numericInput(paste("plume_thresh_", i, sep = ""), 
-      #                    label = names(csite$ui_attr$plume_thresh)[i], 
-      #                    value = csite$ui_attr$plume_thresh[i], 
-      #                    width = "100px")
-      #   )
-      # })
     }
     
-    return(htmlOut)
+    return(html_out)
     
   })
 
@@ -1321,7 +1278,7 @@ server <- function(input, output, session) {
           "Enter the data directly or copy/paste into the tables.",
           hr(),
           
-          textInput("new_data_name", label = "Data Name", value = "Area 1"),
+          textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
           #actionButton("reset_import", label = "Reset"),
           actionButton("add_new_button", label = "Add Data", icon("arrow-down"), 
                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
@@ -1349,18 +1306,7 @@ server <- function(input, output, session) {
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
     
-    # isolate({
-    #   import_tables$DF_conc <- data.frame(matrix(0, nrow = 1, ncol = length(conc_header)))
-    #   colnames(import_tables$DF_conc) <- conc_header
-    #   
-    #   well_tmp <- data.frame(matrix(0, nrow = 1, ncol = length(well_header)))
-    #   colnames(well_tmp) <- well_header
-    #   
-    #   import_tables$DF_well <- list(data = well_tmp, unit = "metres")
-    #   
-    # })
-    
-    
+   
     fluidPage(
       
       div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
@@ -1371,9 +1317,8 @@ server <- function(input, output, session) {
           h3("Import Excel Data"),
           "Select the Excel file containing the GWSDAT data.",
           hr(),
-          textInput("new_data_name", label = "Data Name", value = "Area 1"),
-          fileInput('excel_import_file', 'Excel File',
-                    accept = c('.xls', '.xlsx')),
+          textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
+          fileInput('excel_import_file', 'Excel File', accept = c('.xls', '.xlsx')),
           #actionButton("reset_import", label = "Reset"),
           actionButton("import_button", label = "Import Data", icon("arrow-down"), 
                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
@@ -1417,7 +1362,7 @@ server <- function(input, output, session) {
           "Select the contaminant data and well coordinate files in .csv format. The tables on the right allow you to edit individual values.",
           hr(),
           
-          textInput("new_data_name", label = "Data Name", value = "Area 1"),
+          textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
           fileInput('well_data_file', 'Well Data File',
                     accept = c('text/csv', 
                                'text/comma-separated-values,text/plain', 
@@ -1472,45 +1417,42 @@ server <- function(input, output, session) {
       loadRDataSet()
     }
     
-    html_out <- tagList(h2("Data Manager"),
+    html_out <- tagList(
                         #box(width = 3, 
                         div(style = "float : right; margin-bottom: 5px",
                             actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
                                          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("add_csv_data", label = "Import .csv Data", icon = icon("plus"), 
+                            actionButton("add_csv_data", label = "Import .csv Data", icon = icon("arrow-down"), 
                                          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("add_excel_data", label = "Import Excel File", icon = icon("plus"), 
+                            actionButton("add_excel_data", label = "Import Excel File", icon = icon("arrow-down"), 
                                          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
                            
-                        )
+                        ),
+                        h2("Data Manager")
     )
                         
                         
     
     if (length(csite_list) == 0) {
-      
-      # No data exists
+      # No data exists.
       html_out <- tagList(html_out,
                           box(width = 7, title = "No Data Present", status = "warning", "Import and or add to analyse."))
     } else {
-      
-      # Need to create the buttons separately because they won't show up in htmlOut
-      # when created inside lapply()
-      for (i in 1:length(csite_list)) {
+     
+      data_sets <- getDataInfo(csite_list)
+     
+      for (set_name in names(data_sets)) {
         
-        # btName <- paste0("analyse_btn", i)
-        
-        # Create the box with buttons.
         html_out <- tagList(html_out, fluidRow(
           box(width = 7, status = "primary", collapsible = TRUE,
-              title = csite_list[[i]]$GWSDAT_Options$SiteName, 
-              
-              p(paste("Contaminants: ", paste(names(csite_list[[i]]$Fitted.Data), collapse = ", "))),
-              p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
-              p(paste0("Aquifer: ", csite_list[[i]]$GWSDAT_Options$Aggby)),
-              p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
+              title = set_name, 
+              #p(paste("Contaminants: ", paste(csite_list[[i]]$All.Data$cont_names, collapse = ", "))),
+              #p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
+              p(paste0("Aquifer: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", ")))
+              #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
               # div(style = "float : right", actionButton(btName, "Select"))
           )))
+        
       }
       
     }
@@ -1527,15 +1469,16 @@ server <- function(input, output, session) {
   
   
   output$rndAnalyse <- renderUI({
-    
+   
     html_out = NULL
     
     # Observe load status of data.
     data_load_status <- dataLoaded()
     
+    
    
     # Nothing loaded yet, start process.
-    if (data_load_status == 0) { # && ExcelMode) {
+    if (data_load_status == 0) { 
       
       ret <- loadDataSet()
       
@@ -1543,7 +1486,7 @@ server <- function(input, output, session) {
         html_out <- div(style = "width: 50%; margin: 0 auto",
           box(
             selectInput("aquifer", "Choose from list", choices = ret),     
-            div(style = "float: right", actionButton("aquifer_btn", "Next")),#,
+            div(style = "float: right", actionButton("aquifer_btn", "Next")),
             status = "primary", 
             solidHeader = TRUE, 
             collapsible = FALSE, 

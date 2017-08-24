@@ -68,7 +68,7 @@ plotTimeSeries <- function(csite,
   
   
   
-  if(csite$ui_attr$ts_options["Scale to Conc. Data"] & nrow(Well.Data) > 0) {
+  if (csite$ui_attr$ts_options["Scale to Conc. Data"] & nrow(Well.Data) > 0) {
     
     my.ylim <- range(Well.Data$Result.Corr.ND,na.rm = T)
     if (!is.finite(my.ylim[2])) {my.ylim[2] <- 100000}
@@ -192,7 +192,7 @@ plotTimeSeries <- function(csite,
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   box()	
-  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$All.Data$Aq.sel != "") {paste(": Aquifer-",csite$All.Data$Aq.sel,sep = "")} else {""}), font.main = 4, cex.main = 1)
+  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""}), font.main = 4, cex.main = 1)
   
   
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)

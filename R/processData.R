@@ -1,191 +1,141 @@
 
 
-
-
-
-
-processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
-
+formatData <- function(solute_data, sample_loc) {
   
-  well_tmp_data <- sample_loc$data
+  ## Format solute concentration data ##########################################
   
+  # Replace NA flags and delete rows that have the flag "omit".
+  solute_data$Flags[is.na(solute_data$Flags)] = ""
+  solute_data <- solute_data[tolower(as.character(solute_data$Flags)) != "omit",]
   
-  ################ Input Date field and format #################################
-  
-  
-  if (class(AG.ALL$SampleDate)[1] %in% c("POSIXct", "POSIXt", "Date")) {
-  
-    if (class(AG.ALL$SampleDate)[1] %in% c("POSIXct","POSIXt")) {
+  if (class(solute_data$SampleDate) == "integer") {
     
-    	AG.ALL$SampleDate <- format(AG.ALL$SampleDate + 12*60*60,"%Y-%m-%d") #Watch for time zone differences here!
-    	AG.ALL$SampleDate <- as.Date(AG.ALL$SampleDate,"%Y-%m-%d")
+    solute_data$SampleDate <- excelDate2Date(solute_data$SampleDate) 
     
-    }
+  #} else if (class(solute_data$SampleDate)[1] %in% c("POSIXct", "POSIXt")) {
+  } else if (class(solute_data$SampleDate) %in% c("POSIXct", "POSIXt")) {
+      # Watch for time zone differences here!
+      solute_data$SampleDate <- format(solute_data$SampleDate + 12*60*60,"%Y-%m-%d") 
+      solute_data$SampleDate <- as.Date(solute_data$SampleDate,"%Y-%m-%d")
+    
+  } 
+  # else {
+  #   msg = "Trouble reading Date Format, Please convert Input Excel Data to Date format."
+  #   showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+  #   return(NULL)
+  # }
   
-  } else {
-    msg = "Trouble reading Date Format, Please convert Input Excel Data to Date format."
-    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+  solute_data$WellName <- factor(rm_spaces(as.character(solute_data$WellName)))
+  solute_data$Result <- factor(rm_spaces(as.character(solute_data$Result)))
+  solute_data$Units <- factor(rm_spaces(as.character(solute_data$Units)))
+  solute_data$Constituent <- factor(rm_spaces(as.character(solute_data$Constituent)))
+  
+  if (length(unique(as.character(solute_data$Constituent))) != 
+      length(unique(toupper(as.character(solute_data$Constituent))))) {
+    
+    msg = "Warning: Constituent types have different letter cases (e.g. 'MTBE v mtbe'). All names are transformed to upper case."
+    showNotification(msg, type = "warning", duration = 10)
+    
+    solute_data$Constituent <- factor(toupper(as.character(solute_data$Constituent)))
+  }
+  
+  
+  ##  Tranform Aquifer #########################################################
+  
+  sample_loc$data$Aquifer <- as.character(sample_loc$data$Aquifer)  
+  sample_loc$data$Aquifer[sample_loc$data$Aquifer == ""] <- "Blank"
+  sample_loc$data$Aquifer[is.na(sample_loc$data$Aquifer)] <- "Blank"
+
+  sample_loc$data$WellName <- factor(rm_spaces(as.character(sample_loc$data$WellName)))
+    
+  sample_loc$data$XCoord <- as.numeric(rm_spaces(as.character(sample_loc$data$XCoord)))
+  sample_loc$data$YCoord <- as.numeric(rm_spaces(as.character(sample_loc$data$YCoord)))
+  sample_loc$data <- na.omit(sample_loc$data)
+  sample_loc$data <- unique(sample_loc$data)
+  
+  
+  return(list(solute_data = solute_data, sample_loc = sample_loc))
+}
+
+
+
+processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank") {
+
+
+  #Pick up Electron Acceptors before deleting non-aquifer wells. 
+  ElecAccepts <- unique(as.character(solute_data[ tolower(as.character(solute_data$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
+ 
+  well_tmp_data <- sample_loc$data[sample_loc$data$Aquifer == Aq_sel,]
+ 
+  if (nrow(well_tmp_data) == 0) {
+    showNotification(paste0("No wells selected with Aquifer ", Aq_sel), type = "error")
     return(NULL)
   }
   
-  
-  #Pick up Electron Acceptors before deleting non-aquifer wells. 
-  ElecAccepts <- unique(as.character(AG.ALL[ tolower(as.character(AG.ALL$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
-  
-  
-  ############ Well Data Sort  #################################################
-  
-  AG.ALL$WellName <- factor(rm_spaces(as.character(AG.ALL$WellName)))
-  well_tmp_data$WellName <- factor(rm_spaces(as.character(well_tmp_data$WellName)))
-  
-  
-  #### Aquifer Selection #######################################################
-  
-  # Tranform Aquifer column into characters for easier handling.
-  well_tmp_data$Aquifer <- as.character(well_tmp_data$Aquifer)  
-  
-  
-  # Replace empty "" or <NA> elements with "Blank" keyword. 
-  well_tmp_data$Aquifer[well_tmp_data$Aquifer == ""] <- "Blank"
-  well_tmp_data$Aquifer[is.na(well_tmp_data$Aquifer)] <- "Blank"
-
-  
-  # Extract unique Aquifer group names.
-  Aq_list <- unique(well_tmp_data$Aquifer)
-
-  # If no Aquifer was specified and there are more than 1 present, return list.
-  if (is.null(Aq_sel) && length(Aq_list) > 1) {
-    
-    # Returning this list will notify caller that a selection has to be made.
-    class(Aq_list) = "Aq_list"
-    return(Aq_list)
-  }
-  
-  # Define the first Aquifer to be the one we display as default.	
-  if (is.null(Aq_sel))
-    Aq_sel <- Aq_list[[1]]
-  
-  
-  ######## Modify well coordinate table #########################################
-  
-  # Extract the Wells flagged with the Aquifer 'Aq_sel'. 	
-  well_tmp_data <- well_tmp_data[well_tmp_data$Aquifer == Aq_sel,]
- 
   # Keep only the following columns in the well_tmp_data table.
   well_tmp_data <- well_tmp_data[,c("WellName","XCoord","YCoord")]
   
-  well_tmp_data$XCoord <- as.numeric(rm_spaces(as.character(well_tmp_data$XCoord)))
-  well_tmp_data$YCoord <- as.numeric(rm_spaces(as.character(well_tmp_data$YCoord)))
-  well_tmp_data <- na.omit(well_tmp_data)
-  well_tmp_data <- unique(well_tmp_data)
-  
   
   if (any(table(well_tmp_data$WellName) > 1)) {
-
-    msg = "Non-Unique Well Names in Well Coords Table."
+    msg = "Found non-unique well names in well coordinate table."
     showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
     return(NULL)
-    
   }
   
   
   if (nrow(unique(well_tmp_data[,c("XCoord","YCoord")])) < nrow(well_tmp_data)) {
-
     msg = "Warning: Non-Unique Well Coordinates in Well Coords Table. Groundwater elevations for non-unique well coordinates will be substituted by their mean value."
     showNotification(msg, type = "warning", duration = 10)
-    
   }
   
-
-
+ 
+  
   # Keep concentration data that also exists in the well coordinate table.
-  AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% as.character(well_tmp_data$WellName),]
+  solute_data <- solute_data[solute_data$WellName %in% well_tmp_data$WellName,]
   
   # Extract the unique well names from concentration data table.
-  sample_loc_names <- sort(unique(as.character(AG.ALL$WellName)))
+  sample_loc_names <- sort(unique(as.character(solute_data$WellName)))
   
   # Lookup well coordinates for the extracted concentrations.
   well_tmp_data <- well_tmp_data[as.character(well_tmp_data$WellName) %in% sample_loc_names,]
   
-  # Check if all wells exist in the well coordinate data table.
-  # Delete Code?
-  #        This code could be redundant because everything in sample_loc_names
-  #        was previously extracted from well_tmp_data$WellName, thus, there is 
-  #        no point in checking for missing well coordinates. Concentrations with
-  #        corresponding wells that do not appear in the well coord. table are 
-  #        simply ignored (although a statistics could be made, how many 
-  #        concentration measurements were ignored).
-  # 
-  # non_existing_coords <- setdiff(sample_loc_names, as.character(well_tmp_data$WellName))
-  # if (length(non_existing_coords) != 0) {
-  # 
-  #     msg = paste("Missing Well Coordinates for: ", paste(non_existing_coords, collapse = ", "))
-  #     msg = paste(msg, "Do you wish to continue?", sep = "")
-  #     showModal(modalDialog(title = "Warning", msg, easyClose = TRUE,
-  #                           footer = modalButton("Ok")))
-  #     
-  #     # Extract only concentrations with      
-  #     AG.ALL <- AG.ALL[as.character(AG.ALL$WellName) %in% sample_loc_names,]
-  #     AG.ALL$WellName <- factor(as.character(AG.ALL$WellName))
-  # }
   
-   
-
-  
-  ################ Flags Handling ##############################################
-  if (!all(is.na(AG.ALL$Flags))) {  
-  
-  	AG.ALL <- AG.ALL[tolower(as.character(AG.ALL$Flags)) != "omit",]
-  
-  
-  } else {
-  
-  	AG.ALL$Flags <- rep("",nrow(AG.ALL))
-  
-  }
-  
-  
-  AG.ALL$Constituent <- factor(rm_spaces(as.character(AG.ALL$Constituent)))
-  
-  
-  ############# Case Sensitivity of Constituents ###############################
-  
-  if (length(unique(as.character(AG.ALL$Constituent))) != length(unique(toupper(as.character(AG.ALL$Constituent))))) {
-
-    msg = "Warning: Constituent types have different letter cases (e.g. 'MTBE v mtbe'). GWSDAT will modify all constituent types to upper case."
-    showNotification(msg, type = "warning", duration = 10)
-    
-    AG.ALL$Constituent <- factor(toupper(as.character(AG.ALL$Constituent)))
-  }
-  
-  
-  
-  AG.ALL$Result <- factor(rm_spaces(as.character(AG.ALL$Result)))
-  AG.ALL$Units <- factor(rm_spaces(as.character(AG.ALL$Units)))
-  Cont.Data <- AG.ALL[tolower(as.character(AG.ALL$Constituent))!="gw",]
+  Cont.Data <- solute_data[tolower(as.character(solute_data$Constituent)) != "gw",]
   
   
   ############### Contaminant Data Type Processing #############################
   ContTypeData = "Default"
   
-  if(nrow(Cont.Data) == 0) { #GW only type data. 
+  # GW only type data. 
+  if (nrow(Cont.Data) == 0) { 
   
   	ContTypeData <- "NoConcData"
-  	Cont.Data <- rbind(Cont.Data,data.frame(WellName = as.character(sample_loc_names[1]),Constituent=" ",#Constituent="Dummy", 
-  	SampleDate <- max(AG.ALL$SampleDate), Result = NA, Units="ug/l", Flags=""))
-  	
+  	Cont.Data    <- rbind(Cont.Data,
+  	                      data.frame(WellName    = as.character(sample_loc_names[1]),
+  	                                 Constituent = " ",
+  	                                 SampleDate  = max(solute_data$SampleDate), 
+  	                                 Result      = NA, 
+  	                                 Units       = "ug/l", 
+  	                                 Flags       = ""))
   }
   
-  if(nrow(Cont.Data[tolower(as.character(Cont.Data$Constituent))!="napl",])==0){ #NAPL Only type data
+  # NAPL Only type data
+  if (nrow(Cont.Data[tolower(as.character(Cont.Data$Constituent)) != "napl",]) == 0) { 
   
-  	ContTypeData <-"NoConcData"
-  	Cont.Data<-rbind(Cont.Data,data.frame(WellName=as.character(sample_loc_names[1]),Constituent=" ",#Constituent="Dummy", 
-  	SampleDate=max(AG.ALL$SampleDate),Result=NA,Units="ug/l",Flags=""))
+  	ContTypeData <- "NoConcData"
+  	Cont.Data    <- rbind(Cont.Data, 
+  	                      data.frame(WellName    = as.character(sample_loc_names[1]),
+  	                                 Constituent = " ",
+  	                                 SampleDate  = max(solute_data$SampleDate), 
+  	                                 Result      = NA, 
+  	                                 Units       = "ug/l", 
+  	                                 Flags       = "")
+  	                      )
   }
   
   
-  Cont.Data$Constituent<-factor(as.character(Cont.Data$Constituent))
-  All.Conts<-unique(as.character(Cont.Data$Constituent))
+  Cont.Data$Constituent <- factor(as.character(Cont.Data$Constituent))
+  cont_names <- unique(as.character(Cont.Data$Constituent))
   
   
   ########################## Units Checking ####################################
@@ -288,8 +238,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
       }
     }
     
-    #-----------------------------------------------------------------#
-    
+   
     
     NAPL.Thickness.Data <- try(NAPL.Thickness.Data[order(NAPL.Thickness.Data$SampleDate),])
     NAPL.Thickness.Data[,c("XCoord","YCoord")] <- well_tmp_data[match(as.character(NAPL.Thickness.Data$WellName),as.character(well_tmp_data$WellName)),c("XCoord","YCoord")]
@@ -300,9 +249,9 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
     
     #msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations? \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
     #msg <- paste(msg, "\n(Currently only Yes choice is possible, changing to Yes/No soon.", sep = "")
+    
     subst_napl_vals <- "yes"
     msg <- "NAPL values are substituted with maximum observed solute concentrations (Yes/No choice will soon be supported). \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
-    #showModal(modalDialog(title = "Notification", msg, easyClose = FALSE, footer = modalButton("Ok")))
     showNotification(msg, type = "warning", duration = 10)  
     
     
@@ -310,8 +259,8 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
       
       
       
-      All.Conts.No.NAPL <- All.Conts[tolower(All.Conts)!="napl"]
-      All.Conts.No.NAPL <- setdiff(All.Conts.No.NAPL,ElecAccepts) #omit e-acc constituent from NAPL set
+      cont_names.No.NAPL <- cont_names[tolower(cont_names)!="napl"]
+      cont_names.No.NAPL <- setdiff(cont_names.No.NAPL,ElecAccepts) #omit e-acc constituent from NAPL set
       
       
       ############################# NAPL and dissolved conflict resolution ##########################################
@@ -363,9 +312,9 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
       
       
       New.NAPL.Data <- data.frame(WellName = 
-                                  rep(NAPL.Data$WellName, length(All.Conts.No.NAPL)),
-                                  Constituent = rep(All.Conts.No.NAPL,each=nrow(NAPL.Data)),
-  	                              SampleDate = rep(NAPL.Data$SampleDate,length(All.Conts.No.NAPL))
+                                  rep(NAPL.Data$WellName, length(cont_names.No.NAPL)),
+                                  Constituent = rep(cont_names.No.NAPL,each=nrow(NAPL.Data)),
+  	                              SampleDate = rep(NAPL.Data$SampleDate,length(cont_names.No.NAPL))
                         )
       
       New.NAPL.Data$Result=rep("NAPL",nrow(New.NAPL.Data))
@@ -375,18 +324,18 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
       
       
       Cont.Data <- rbind(No.NAPL.Data,New.NAPL.Data)
-      All.Conts <- unique(as.character(Cont.Data$Constituent))
+      cont_names <- unique(as.character(Cont.Data$Constituent))
       
       
     } else {
   
-      All.Conts.No.NAPL <- All.Conts[tolower(All.Conts) != "napl"]
+      cont_names.No.NAPL <- cont_names[tolower(cont_names) != "napl"]
       NAPL.Data <- Cont.Data[tolower(as.character(Cont.Data$Constituent)) == "napl",]
       No.NAPL.Data <- Cont.Data[tolower(as.character(Cont.Data$Constituent)) != "napl",]
       No.NAPL.Data$Constituent <- factor(as.character(No.NAPL.Data$Constituent))
       
       Cont.Data <- No.NAPL.Data
-      All.Conts <- unique(as.character(Cont.Data$Constituent))
+      cont_names <- unique(as.character(Cont.Data$Constituent))
       
     }
   }
@@ -401,7 +350,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   
   ####################### Groundwater Data ###############################################################
   
-  GW.Data <- AG.ALL[tolower(as.character(AG.ALL$Constituent)) == "gw",]
+  GW.Data <- solute_data[tolower(as.character(solute_data$Constituent)) == "gw",]
   GW.Units <- unique(tolower(as.character(GW.Data$Units)))
 
   
@@ -430,7 +379,7 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   
   
   ####################### Aggregate Cont, GW and NAPL Data ######################################################
-  All.Dates <- sort(unique(c(GW.Data$SampleDate,AG.ALL$SampleDate)))
+  All.Dates <- sort(unique(c(GW.Data$SampleDate, solute_data$SampleDate)))
   
   if (exists("NAPL.Thickness.Data")) { 
     All.Dates <- sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))
@@ -459,16 +408,13 @@ processData <- function(AG.ALL, sample_loc, GWSDAT_Options, Aq_sel = NULL){
   All.Data <- list(GW.Data = GW.Data,
                  Agg_GW_Data = agg_data$Agg_GW_Data,
                  NAPL.Thickness.Data = agg_data$NAPL.Thickness.Data,
-                 Cont.Data = agg_data$Cont.Data,
-                 All.Conts = All.Conts,
-                 All.Dates = All.Dates,
+                 Cont.Data  = agg_data$Cont.Data,
+                 cont_names = cont_names,
+                 All.Dates  = All.Dates,
                  All.Agg.Dates = agg_data$All.Agg.Dates,
-                 Aq.sel = Aq_sel,
-                 Aq_list = Aq_list,
                  GW.Units = GW.Units,
                  NAPL.Units = if (exists("NAPL.Units")) { NAPL.Units } else {NULL}, 
                  ElecAccepts = ElecAccepts,
-                 solute_data = AG.ALL,
                  ShapeFiles = ShapeFiles,
                  sample_loc = sample_loc
                  )

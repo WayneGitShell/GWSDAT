@@ -8,13 +8,9 @@ plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   require(lattice)
   
   Cont.Data <- csite$All.Data$Cont.Data
-  All.Conts <- csite$All.Data$All.Conts
   SiteName <- csite$GWSDAT_Options$SiteName
-  
-     
+       
   Cont.Data <- Cont.Data[as.character(Cont.Data$Constituent) %in% Conts.to.plot,]
-  Cont.Data$Constituent <- factor(as.character(Cont.Data$Constituent))
-  
   Cont.Data <- Cont.Data[as.character(Cont.Data$WellName) %in% Wells.to.Plot,]
   
   if (nrow(Cont.Data) == 0) {
@@ -153,8 +149,8 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
                   ylab = list(paste("Solute concentration"," (", csite$ui_attr$conc_unit_selected,")", sep = ""),cex=1.5),
                   layout = if(length(levels(Cont.Data$Well))>30){c(4,4)}else{NULL},
                   xlim = my.xlim,
-                  main = if (csite$All.Data$Aq.sel == "") {paste(Cont,"at",SiteName)} else { 
-                    paste(Cont," at ",SiteName,": Aquifer-", csite$All.Data$Aq.sel, sep = "")},
+                  main = if (csite$Aquifer == "") {paste(Cont,"at",SiteName)} else { 
+                    paste(Cont," at ",SiteName,": Aquifer-", csite$Aquifer, sep = "")},
                   drop.unused.levels = FALSE, key = my.key) 
   
   return(my.plot)
@@ -213,7 +209,7 @@ GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogSca
                  key    = my.key,
                  xlab   = list("Sampling Date",cex = 1.5),
                  ylab   = list(paste("Solute concentration"," (", csite$ui_attr$conc_unit_selected, ")",sep = ""),cex = 1.5),
-                 main   = if (csite$All.Data$Aq.sel == "") {SiteName} else {paste(SiteName,": Aquifer-",csite$All.Data$Aq.sel,sep = "")},
+                 main   = if (csite$Aquifer == "") {SiteName} else {paste(SiteName,": Aquifer-",csite$Aquifer, sep = "")},
                  drop.unused.levels = FALSE,
                  xlim   = my.xlim
   )
