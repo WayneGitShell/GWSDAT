@@ -1,25 +1,24 @@
 
 
-# GWSDAT Shiny Implementation
+# GWSDAT (shiny)
 
-GWSDAT can be started in Server mode or Excel mode. 
+R package of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
 
-The Server mode provides an extended interface with a data manager and analysis tab. It can run on Shiny Server (tested on Ubuntu 16.04 LTS, 64bit). Authentification is not yet implemented. 
+## Usage 
 
-The Excel mode is limited to the analysis tab and a single site that has to be specified prior to starting the app. 
+* Run directly from github inside an R session: shiny::runGitHub('Shiny_GWSDAT', 'andrejadd')
+* Download/clone the directory from github, unpack and run inside an R session: shiny::runApp()
 
-## Usage Server Mode
 
-* Download/clone the directory to the Shiny Server app directory (e.g. in /srv/shiny-server/).
-* Navigate to website, e.g. 127.0.0.1:3838/Shiny_GWSDAT, to start the app.
+## Usage ExcelMode
 
-## Usage Excel Mode
+The 'ExcelMode' provides a slim version of the UI for exploring the data from the GWSDAT Excel AddOn. 
 
 * Download/clone the directory and save the path (GWSDATHome).
 * Create a list 'GWSDAT_Options' and populate with options, then
 
 ```R
-setwd(GWSDATHome)
+setwd('path_to_gwsdat_folder')
 source("R/startExcelMode.R")
 startExcelMode(GWSDAT_Options)                                
 ```
@@ -36,7 +35,4 @@ source("R/startExcelMode.R")
 startExcelMode(GWSDAT_Options)                                
 ```
 
-## Notes on Server Mode
-
-When the server executes the app the GWSDAT_Options$HeadlessMode flag is set to TRUE. This will load the required R packages from the systems R library. Since the current version is not an R package, the user needs to install.packages() all dependencies. However, this will change in the near future. Linux R package binaries are not provided (as for Windows) because of the differences in Linux Server distributions. 
 

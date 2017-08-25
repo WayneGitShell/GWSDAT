@@ -1,12 +1,15 @@
 
 
 
+#
+# Might delete, from old version 2.12 but not used here.
+#
 
-GWSDAT.sigest <- function(x, data = NULL, frac = 0.6, na.action = na.omit, scaled = TRUE){
-  
+estSig <- function(x, data = NULL, frac = 0.6, na.action = na.omit, scaled = TRUE){
+
         call <- match.call()
         m <- match.call(expand.dots = FALSE)
-        if (is.matrix(eval(m$data, parent.frame()))) 
+        if (is.matrix(eval(m$data, parent.frame())))
             m$data <- as.data.frame(data)
         m$formula <- m$x
         m$x <- NULL
@@ -17,31 +20,31 @@ GWSDAT.sigest <- function(x, data = NULL, frac = 0.6, na.action = na.omit, scale
         Terms <- attr(m, "terms")
         attr(Terms, "intercept") <- 0
         x <- model.matrix(Terms, m)
-        if (length(scaled) == 1) 
+        if (length(scaled) == 1)
             scaled <- rep(scaled, ncol(x))
         if (any(scaled)) {
-            remove <- unique(c(which(labels(Terms) %in% names(attr(x, 
+            remove <- unique(c(which(labels(Terms) %in% names(attr(x,
                 "contrasts"))), which(!scaled)))
             scaled <- !attr(x, "assign") %in% remove
         }
-	
-        ret <- GWSDAT.sigest.mat(x, scaled = scaled, frac = frac, na.action = na.action)
+
+        ret <- estSigMat(x, scaled = scaled, frac = frac, na.action = na.action)
         return(ret)
-    }
+}
 
 
 
-GWSDAT.sigest.mat <- function(x, frac = 0.25, scaled = TRUE, na.action = na.omit){
+estSigMat <- function(x, frac = 0.25, scaled = TRUE, na.action = na.omit){
 	set.seed(1)
         x <- na.action(x)
-        if (length(scaled) == 1) 
+        if (length(scaled) == 1)
             scaled <- rep(scaled, ncol(x))
         if (any(scaled)) {
             co <- !apply(x[, scaled, drop = FALSE], 2, var)
             if (any(co)) {
                 scaled <- rep(FALSE, ncol(x))
-                warning(paste("Variable(s)", paste("`", colnames(x[, 
-                  scaled, drop = FALSE])[co], "'", sep = "", 
+                warning(paste("Variable(s)", paste("`", colnames(x[,
+                  scaled, drop = FALSE])[co], "'", sep = "",
                   collapse = " and "), "constant. Cannot scale data."))
             }
             else {
@@ -63,22 +66,24 @@ GWSDAT.sigest.mat <- function(x, frac = 0.25, scaled = TRUE, na.action = na.omit
         return(srange)
 }
 
-GWSDAT.Auto.Select.gamma <- function(temp.Cont.Data,gamma){
-
-if(gamma[1] != 0) { return(gamma) }
 
 
-tempgamma <- matrix(nrow=50,ncol=2)
+selectGamma <- function(temp.Cont.Data,gamma){
+
+if (gamma[1] != 0) { return(gamma) }
+
+
+tempgamma <- matrix(nrow = 50,ncol=2)
 
 	for (i in 1:nrow(tempgamma)) {
 
-	tempgamma[i,] <- GWSDAT.sigest(log(Result.Corr.ND)~AggDate+XCoord+YCoord,temp.Cont.Data)
+	tempgamma[i,] <- estSig(log(Result.Corr.ND)~AggDate+XCoord+YCoord,temp.Cont.Data)
 
 	}
 
 	if (length(gamma) == 1) {
 
-		gamma<-mean(0.5*(tempgamma[,1]+tempgamma[,2]))
+		gamma <- mean(0.5*(tempgamma[,1]+tempgamma[,2]))
 		#gamma<-median(1/apply(tempgamma,1,mean)) #Wayne 26th June 2009
 
 	}else{
@@ -88,7 +93,7 @@ tempgamma <- matrix(nrow=50,ncol=2)
 		#gamma<-c(quantile(tempgamma[,2],p=0.95))
 		#gamma<-sort(apply(tempgamma,2,mean))[1]+c(.3,.5,.7)*diff(sort(apply(tempgamma,2,mean)))
 		#gamma<-quantile(1/apply(tempgamma,1,mean),p=c(.1,.5,.9)) #Wayne 26th June 2009
-		gamma<-sort(apply(tempgamma,2,mean))[1]+c(.3,.5,.7)*diff(sort(apply(tempgamma,2,mean)))
+		gamma < -sort(apply(tempgamma,2,mean))[1]+c(.3,.5,.7)*diff(sort(apply(tempgamma,2,mean)))
 		
 		
 

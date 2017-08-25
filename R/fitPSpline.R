@@ -252,7 +252,7 @@ return(Model.tune)
 
 ########################################################################################################################
 
-GWSDAT.PSplinefit<-function(All.Data,Cont.Name,GWSDAT_Options){
+fitPSpline <- function(All.Data,Cont.Name,GWSDAT_Options){
 
 
 Time.Eval <- sort(All.Data$All.Agg.Dates)

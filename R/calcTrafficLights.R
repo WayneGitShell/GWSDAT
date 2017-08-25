@@ -1,42 +1,43 @@
 
-GWSDAT.Traffic.Lights<-function(All.Data,Fitted.Data,GWSDAT_Options){
+
+calcTrafficLights <- function(All.Data,Fitted.Data,GWSDAT_Options) {
 
 
 
 
-###################  ND.Check###########################################
-
-ND.Beta.Check<-function(Cont.Data,All.Time.Evals){
-
-if(nrow(Cont.Data)<=1){return(rep(NA,length(All.Time.Evals)))}
-Cont.Data<-Cont.Data[order(Cont.Data$SampleDate),]
-Cont.Data$SampleDate[which(Cont.Data$SampleDate==max(Cont.Data$SampleDate))]<-
-Cont.Data$AggDate[which(Cont.Data$SampleDate==max(Cont.Data$SampleDate))]
-#print(Cont.Data$ND)
-ind.minus1<-approx(Cont.Data$SampleDate,as.numeric(Cont.Data$ND),xout=All.Time.Evals-1)$y
-ind<-approx(Cont.Data$SampleDate,as.numeric(Cont.Data$ND),xout=All.Time.Evals)$y
-ind.plus1<-approx(Cont.Data$SampleDate,as.numeric(Cont.Data$ND),xout=All.Time.Evals+1)$y
-cl<-cbind(ind.minus1,ind,ind.plus1)
-lookup<-apply(cl,1,mean,na.rm=T)
-lookup[is.nan(lookup)]<-NA
-
-return(floor(lookup))
-
-}
-
-
-Wrap.ND.Beta.Check<-function(Cont.Data,All.Time.Evals){
-
-out<-try(ND.Beta.Check(Cont.Data,All.Time.Evals),silent=FALSE)
-
-if(!inherits(out, "try-error")){
-	return(out)
-}else{
-	return(rep(NA,length(All.Time.Evals)))
-}
-
-}
-
+  ###################  ND.Check#################################################
+  
+  ND.Beta.Check<-function(Cont.Data,All.Time.Evals){
+  
+    if(nrow(Cont.Data)<=1){return(rep(NA,length(All.Time.Evals)))}
+    Cont.Data<-Cont.Data[order(Cont.Data$SampleDate),]
+    Cont.Data$SampleDate[which(Cont.Data$SampleDate==max(Cont.Data$SampleDate))]<-
+    Cont.Data$AggDate[which(Cont.Data$SampleDate==max(Cont.Data$SampleDate))]
+    #print(Cont.Data$ND)
+    ind.minus1<-approx(Cont.Data$SampleDate,as.numeric(Cont.Data$ND),xout=All.Time.Evals-1)$y
+    ind<-approx(Cont.Data$SampleDate,as.numeric(Cont.Data$ND),xout=All.Time.Evals)$y
+    ind.plus1<-approx(Cont.Data$SampleDate,as.numeric(Cont.Data$ND),xout=All.Time.Evals+1)$y
+    cl<-cbind(ind.minus1,ind,ind.plus1)
+    lookup<-apply(cl,1,mean,na.rm=T)
+    lookup[is.nan(lookup)]<-NA
+    
+    return(floor(lookup))
+  
+  }
+  
+  
+  Wrap.ND.Beta.Check<-function(Cont.Data,All.Time.Evals){
+  
+    out<-try(ND.Beta.Check(Cont.Data,All.Time.Evals),silent=FALSE)
+    
+    if(!inherits(out, "try-error")){
+    	return(out)
+    }else{
+    	return(rep(NA,length(All.Time.Evals)))
+    }
+  
+  }
+  
 
 ################### End ND.Check###########################################
 

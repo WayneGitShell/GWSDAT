@@ -3,7 +3,6 @@
 loadPackages <- function(){
   
   
-  
   Require <- function(pkg) {
     
     if (data.class(result <- try(find.package(pkg, lib.loc = .libPaths()), TRUE)) == "try-error") {
@@ -51,7 +50,7 @@ loadPackages <- function(){
 }
 
 
-HomeDir = "."
+ HomeDir = "."
 
 
 # Use the method below to load packages if not on a Linux system.
@@ -82,15 +81,11 @@ if (.Platform$OS.type == "windows") {
     
 }
 
-source(paste(HomeDir, "R/GWSDAT Traffic Lights.R", sep = "/"))
-source(paste(HomeDir, "R/GWSDAT GWFlow.R", sep = "/"))
-source(paste(HomeDir, "R/GWSDAT.filled.contour.R", sep = "/"))
-source(paste(HomeDir, "R/GWSDAT SVM.R", sep = "/"))
-source(paste(HomeDir, "R/GWSDAT PSpline Utils.R", sep = "/"))
-source(paste(HomeDir, "R/GWSDAT Auto Gamma.R", sep = "/"))
-source(paste(HomeDir, "R/GWSDAT Shapefile Functions.R", sep = "/"))
-
-# added 07/2017
+source(paste(HomeDir, "R/calcTrafficLights.R", sep = "/"))
+source(paste(HomeDir, "R/calcGWFlow.R", sep = "/"))
+source(paste(HomeDir, "R/fitPSpline.R", sep = "/"))
+source(paste(HomeDir, "R/selectGamma.R", sep = "/"))
+source(paste(HomeDir, "R/readShapeFile.R", sep = "/"))
 source(paste(HomeDir, "R/readData.R", sep = "/"))
 source(paste(HomeDir, "R/processData.R", sep = "/"))
 source(paste(HomeDir, "R/fitData.R", sep = "/"))
@@ -104,17 +99,12 @@ source(paste(HomeDir, "R/plotTrendTable.R", sep = "/"))
 source(paste(HomeDir, "R/plotPlumeTimeSeries.R", sep = "/"))
 source(paste(HomeDir, "R/plumeDiagnostics.R", sep = "/"))
 source(paste(HomeDir, "R/uiAnalyse.R", sep = "/"))
-#source(paste(HomeDir, "R/uiDataManager.R", sep = "/"))
 source(paste(HomeDir, "R/uiWellReport.R", sep = "/"))
 source(paste(HomeDir, "R/uiPlumeDiagnostics.R", sep = "/"))
 source(paste(HomeDir, "R/uiAnalyseOptions.R", sep = "/"))
 source(paste(HomeDir, "R/uiAttr.R", sep = "/"))
 source(paste(HomeDir, "R/uiSession.R", sep = "/"))
-
-# Maybe move this to the other interpolation methods. Where are they? 
 source(paste(HomeDir, "R/interpData.R", sep = "/"))
-
-# For the well report, might change.  
 source(paste(HomeDir, "R/chooserInput.R", sep = "/"))
 
 

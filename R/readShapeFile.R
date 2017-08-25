@@ -1,6 +1,6 @@
 
 
-"GWSDAT.readShapeFile" <- function(fn, proj4string = CRS(as.character(NA)), 
+readShapeFile <- function(fn, proj4string = CRS(as.character(NA)), 
                                    verbose = FALSE, repair = FALSE, 
                                    IDvar = NULL, force_ring = FALSE, 
                                    delete_null_obj = TRUE,
@@ -40,7 +40,7 @@
     res
 }
 
-GWSDAT.readShapeLines<-function (fn, proj4string = CRS(as.character(NA)), verbose = FALSE, repair = FALSE){
+GWSDAT.readShapeLines <- function(fn, proj4string = CRS(as.character(NA)), verbose = FALSE, repair = FALSE){
 
     suppressWarnings(Map <- read.shape(filen = fn, verbose = verbose,repair = repair))
     suppressWarnings(GWSDAT.shp2LinesDF(Map, proj4string = proj4string))
@@ -48,7 +48,7 @@ GWSDAT.readShapeLines<-function (fn, proj4string = CRS(as.character(NA)), verbos
 
 
 
-GWSDAT.shapes2LinesList<-function (shape, ID) 
+GWSDAT.shapes2LinesList <- function(shape, ID) 
 {
     nParts <- attr(shape, "nParts")
     Pstart <- shape$Pstart
@@ -75,7 +75,7 @@ GWSDAT.shapes2LinesList<-function (shape, ID)
 
 
 
-GWSDAT.shp2LinesDF<-function (shp, proj4string = CRS(as.character(NA)), IDs, delete_null_obj = TRUE) 
+GWSDAT.shp2LinesDF <- function (shp, proj4string = CRS(as.character(NA)), IDs, delete_null_obj = TRUE) 
 {
     if (class(shp) != "Map") 
         stop("shp not a Map object")
@@ -120,7 +120,7 @@ GWSDAT.shp2LinesDF<-function (shp, proj4string = CRS(as.character(NA)), IDs, del
 
 
 
-GWSDAT.PlotShapeFile<-function(shpfile,add=TRUE,col="lightblue"){
+GWSDAT.PlotShapeFile <- function(shpfile,add=TRUE,col="lightblue"){
 
 
 if(length(grep("poly",tolower(class(shpfile))))>0){
@@ -155,7 +155,7 @@ initShapeFiles <- function(GWSDAT_Options) {
     
     for (i in 1:length(GWSDAT_Options$ShapeFileNames)) {
       
-      tempShapeFile <- try(GWSDAT.readShapeFile(GWSDAT_Options$ShapeFileNames[i]))
+      tempShapeFile <- try(readShapeFile(GWSDAT_Options$ShapeFileNames[i]))
       
       
       

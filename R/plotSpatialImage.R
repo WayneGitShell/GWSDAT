@@ -303,7 +303,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
     
     
     
-    GWSDAT.filled.contour(interp.pred, asp = 1, 
+    plotFilledContour(interp.pred, asp = 1, 
                           ShapeFiles = if (Show.ShapeFile) {csite$All.Data$ShapeFiles} else {NULL},
                           fixedConcScale = if (csite$ui_attr$contour_selected == "NAPL-Circles") {FALSE} else {TRUE},
                           xlim   = Contour.xlim,
@@ -369,7 +369,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
   } else {
     
     
-    GWSDAT.filled.contour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){csite$All.Data$ShapeFiles}else{NULL},
+    plotFilledContour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){csite$All.Data$ShapeFiles}else{NULL},
                           
                           xlim=Contour.xlim,
                           ylim=Contour.ylim,
@@ -542,4 +542,126 @@ GWSDAT.GrayScale <- function(n){
   rev(grey(seq(0,1,length = n + 3)))[c(-1,-2,-(n+3))]
   
 }
+
+
+
+
+
+plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = ncol(z)), 
+                              z, xlim = range(x, finite = TRUE), ylim = range(y, finite = TRUE),
+                              zlim = range(z, finite = TRUE), levels = pretty(zlim, nlevels),
+                              nlevels = 20, color.palette = cm.colors, col = color.palette(length(levels) - 1),
+                              plot.title, plot.axes, key.title, key.axes, asp = NA,
+                              xaxs = "i", yaxs = "i", las = 1, axes = TRUE, frame.plot = axes, 
+                              ShapeFiles = NULL, fixedConcScale = FALSE, PlumeDetails=NULL, ...) {
+  
+  
+  if (missing(z)) {
+    if (!missing(x)) {
+      if (is.list(x)) {
+        z <- x$z
+        y <- x$y
+        x <- x$x
+      }
+      else {
+        z <- x
+        x <- seq(0, 1, len = nrow(z))
+      }
+    }
+    else stop("no 'z' matrix specified")
+  }
+  else if (is.list(x)) {
+    y <- x$y
+    x <- x$x
+  }
+  
+  
+  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
+    stop("increasing 'x' and 'y' values expected")
+  mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
+  on.exit(par(par.orig))
+  w <- (3 + mar.orig[2]) * par("csi") * 2.54
+  layout(matrix(c(2, 1), nc = 2), widths = c(1, lcm(w)))
+  par(las = las)
+  mar <- mar.orig
+  mar[4] <- mar[2]
+  mar[2] <- 1
+  par(mar = mar)
+  plot.new()
+  
+  plot.window(xlim = c(0, 1), ylim = range(levels), xaxs = "i", yaxs = "i")
+  #rect(0, levels[-length(levels)], 1, levels[-1], col = col)
+  equal.cuts<-seq(range(levels)[1],range(levels)[2],length=length(levels))#GWSDAT Change!
+  rect(0, equal.cuts[-length(equal.cuts)],1,equal.cuts[-1],col = col) #GWSDAT Change!
+  
+  if(fixedConcScale){#GWSDAT Change
+    
+    my.at<-equal.cuts[-length(equal.cuts)]
+    my.at<-c(my.at,0.4*equal.cuts[length(equal.cuts)-1]+.6*equal.cuts[length(equal.cuts)])
+    my.labs<-paste(" ",levels[-length(levels)],sep="")
+    my.labs<-c(my.labs,paste(">",levels[length(levels)-1],sep=""))
+    #my.labs<-c(my.labs,paste(levels[length(levels)-1],"+",sep=""))
+    
+  } else {
+    
+    my.at = equal.cuts
+    my.labs <- as.numeric(levels)
+    
+  }
+  
+  
+  axis(side = 4, at = my.at, labels = my.labs)
+  
+  
+  if (missing(key.axes)) {
+    if (axes) 
+      NULL 
+  }
+  else key.axes
+  box()
+  if (!missing(key.title)) 
+    key.title
+  mar <- mar.orig
+  mar[4] <- 1
+  par(mar = mar)
+  plot.new()
+  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+  if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
+    stop("no proper 'z' matrix specified")
+  if (!is.double(z)) 
+    storage.mode(z) <- "double"
+  
+  if ( R.Version()$major == "2") {
+    .Internal(filledcontour(as.double(x), as.double(y), z, as.double(levels),col = col))
+  }else{
+    .filled.contour(x, y, z, levels, col)
+  }
+  
+  ################## ShapeFile Plotting ########################################
+  
+  if (!is.null(ShapeFiles)) {
+    for (i in 1:length(ShapeFiles)) {
+      try(GWSDAT.PlotShapeFile(ShapeFiles[[i]]))
+    }
+  }
+  
+  
+  if (missing(plot.axes)) {
+    if (axes) {
+      title(main = "", xlab = "", ylab = "")
+      Axis(x, side = 1)
+      Axis(y, side = 2)
+    }
+  } else plot.axes
+  
+  if (frame.plot) 
+    box()
+  
+  if (missing(plot.title)) 
+    title(...)
+  else plot.title
+  
+  invisible()
+}
+
 
