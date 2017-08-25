@@ -84,7 +84,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
   
   
   if (nrow(unique(well_tmp_data[,c("XCoord","YCoord")])) < nrow(well_tmp_data)) {
-    msg = "Warning: Non-Unique Well Coordinates in Well Coords Table. Groundwater elevations for non-unique well coordinates will be substituted by their mean value."
+    msg <- paste0("Aquifer \'", Aq_sel, "\': Non-Unique Well Coordinates found. Corresponding Groundwater elevations will be substituted by their mean value.")
     showNotification(msg, type = "warning", duration = 10)
   }
   
@@ -151,19 +151,33 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
   
   
   Cont.Data$ND <- rep(FALSE,nrow(Cont.Data))
-  Cont.Data$ND[grep("<",as.character(Cont.Data$Result))]<-TRUE
+  Cont.Data$ND[grep("<", as.character(Cont.Data$Result))] <- TRUE
   Cont.Data$Result.Corr.ND <- rep(NA,nrow(Cont.Data))
   Cont.Data$Result.Corr.ND[!Cont.Data$ND] <- as.numeric(as.character(Cont.Data$Result[!Cont.Data$ND]))
   
   
   ############# Checking for 0 conc concentration data #########################
-  if (any(Cont.Data$Result.Corr.ND[tolower(as.character(Cont.Data$Constituent))!="napl"]==0,na.rm=TRUE)){
-
-    msg = "Zero solute concentration data detected in input data - this is not permissible. Please correct and re-run GWSDAT analysis."
-    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
-    return(NULL)
-    
+  zero_conc <- which(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"] == 0)
+  non_zero  <- which(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"] != 0)
+  
+  if (length(zero_conc) > 0) {
+    Cont.Data <- Cont.Data[-zero_conc,] 
+    showNotification(paste0("Ignoring ", length(zero_conc), "/", length(non_zero), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),
+                     duration = 10)
   }
+  
+  if (nrow(Cont.Data) == 0)  {
+    showNotification(paste0("No concentration data (valid and ND) present for Aquifer ", Aq_sel, ", skipping."),
+                     type = "warning", duration = 10)
+  }
+  
+  # if (any(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"] == 0,na.rm = TRUE)) {
+  # 
+  #   msg = "Zero solute concentration data detected in input data - this is not permissible. Please correct and re-run GWSDAT analysis."
+  #   showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+  #   return(NULL)
+  #   
+  # }
   
   
   

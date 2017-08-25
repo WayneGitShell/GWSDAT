@@ -1308,7 +1308,12 @@ server <- function(input, output, session) {
     
    
     fluidPage(
-      
+      #tags$head(
+      #  tags$style(
+      #    HTML(".shiny-notification { 
+      #          width : 300px;
+      #          left  : -200px; } ")
+      #)),
       div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
       
       box(width = 3, solidHeader = TRUE, status = "primary", 

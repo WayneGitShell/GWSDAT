@@ -23,7 +23,7 @@ readExcel <- function(filein) {
   
     if (class(ret) != "data.frame") {
       #  showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), type = "error", duration = 10)
-      showNotification(paste0("Sheet ", sheet, ": No valid contaminant table found, skipping."), duration = 10)
+      showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found, skipping."), duration = 10)
       next
     }
     
@@ -32,17 +32,18 @@ readExcel <- function(filein) {
       
       ret <- ret[!is.na(ret$SampleDate),]
       
-      msg <- paste0("Sheet ", sheet, ": Incorrect input date value(s) detected. Ommitting values.")
+      msg <- paste0("Sheet \'", sheet, "\': Incorrect input date value(s) detected. Ommitting values.")
       showNotification(msg, type = "warning", duration = 10)
     
       if (nrow(ret) == 0) {
-        showNotification(paste0("Sheet ", sheet, ": Zero entries in concentration data read, skipping."), type = "error", duration = 10)
+        showNotification(paste0("Sheet \'", sheet, "\': Zero entries in concentration data read, skipping."), type = "error", duration = 10)
         next
       } 
     }
     
     if (!"flags" %in% tolower(names(ret))) { ret$Flags <- rep("",nrow(ret))}
     ret$Flags[is.na(ret$Flags)] <- ""
+    ret$Result[is.na(ret$Result)] <- 0
     ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
     
     conc_data <- ret
@@ -54,7 +55,7 @@ readExcel <- function(filein) {
   
     if (class(ret) != "data.frame") {
       # showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), type = "error", duration = 10)
-      showNotification(paste0("Sheet ", sheet, ": No valid well table found, skipping."), duration = 10)
+      showNotification(paste0("Sheet \'", sheet, "\': No valid well table found, skipping."), duration = 10)
       next
     }
     
@@ -65,7 +66,7 @@ readExcel <- function(filein) {
     
     well_data <- list(data = ret, unit = coord_unit)
     
-    showNotification(paste0("Sheet ", sheet, ": Found valid tables."), type = "message", duration = 10)
+    showNotification(paste0("Sheet \'", sheet, "\': Found valid tables."), type = "message", duration = 10)
     break
   }
   
@@ -197,7 +198,10 @@ readWellCoords <- function(input_file, ...) {
 
 readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {
   
-  excl <- read_excel(filein, sheet = sheet)
+  # Avoid reading column header (in first row) in order to have conform input
+  # if table is located somewhere inside the sheet. 'col_names = TRUE' would detect
+  # types and which(excl[,i] == headj)) would fail if not character. 
+  excl <- read_excel(filein, sheet = sheet, col_names = FALSE)
   
   # Find the headers in the sheet
   dftmp <- NULL
@@ -214,7 +218,9 @@ readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_f
     
     # Look into each column
     for (i in 1:ncol(excl)) {
-      
+      #cat("sheet: ", sheet, ", header: ", headj, ", column: ", i, "\n")
+    
+
       # Get row offset of header
       if (length(rowpos <- which(excl[,i] == headj)) == 1) {
         
