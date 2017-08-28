@@ -1,6 +1,6 @@
 
-
-readShapeFile <- function(fn, proj4string = CRS(as.character(NA)), 
+#' @importFrom sp CRS
+readShapeFile <- function(fn, proj4string = sp::CRS(as.character(NA)), 
                                    verbose = FALSE, repair = FALSE, 
                                    IDvar = NULL, force_ring = FALSE, 
                                    delete_null_obj = TRUE,
@@ -26,10 +26,12 @@ readShapeFile <- function(fn, proj4string = CRS(as.character(NA)),
   } else if (typeSh == "PolyLine" || typeSh == "PolyLineZ") {
         
 	if(!is.null(formals(readShapeLines)$delete_null_obj)){
-	res <- readShapeLines(fn = fn, proj4string = proj4string,verbose = verbose, repair = repair,delete_null_obj=delete_null_obj)
-	}else{
-	res <- GWSDAT.readShapeLines(fn = fn, proj4string = proj4string,verbose = verbose, repair = repair)
+	  res <- readShapeLines(fn = fn, proj4string = proj4string,verbose = verbose, repair = repair, delete_null_obj = delete_null_obj)
 	}
+        # Commented this out, because read.shape() inside this function does not resolve.
+        #else{
+	#res <- GWSDAT.readShapeLines(fn = fn, proj4string = proj4string,verbose = verbose, repair = repair)
+	#}
     }
     else if (typeSh == "Polygon" || typeSh == "PolygonZ") {
         res <- readShapePoly(fn = fn, IDvar = IDvar, proj4string = proj4string, 
@@ -40,14 +42,14 @@ readShapeFile <- function(fn, proj4string = CRS(as.character(NA)),
     res
 }
 
-GWSDAT.readShapeLines <- function(fn, proj4string = CRS(as.character(NA)), verbose = FALSE, repair = FALSE){
+#GWSDAT.readShapeLines <- function(fn, proj4string = sp::CRS(as.character(NA)), verbose = FALSE, repair = FALSE){
+#
+#    suppressWarnings(Map <- read.shape(filen = fn, verbose = verbose,repair = repair))
+#    suppressWarnings(GWSDAT.shp2LinesDF(Map, proj4string = proj4string))
+#}
 
-    suppressWarnings(Map <- read.shape(filen = fn, verbose = verbose,repair = repair))
-    suppressWarnings(GWSDAT.shp2LinesDF(Map, proj4string = proj4string))
-}
 
-
-
+#' @importFrom sp Line Lines
 GWSDAT.shapes2LinesList <- function(shape, ID) 
 {
     nParts <- attr(shape, "nParts")
@@ -66,16 +68,16 @@ GWSDAT.shapes2LinesList <- function(shape, ID)
     }
     res <- vector(mode = "list", length = nParts)
     for (i in 1:nParts) {
-        res[[i]] <- Line(coords = shape$verts[from[i]:to[i], 
+        res[[i]] <- sp::Line(coords = shape$verts[from[i]:to[i], 
             , drop = FALSE])
     }
-    Lines <- Lines(res, ID = ID)
+    Lines <- sp::Lines(res, ID = ID)
     Lines
 }
 
 
-
-GWSDAT.shp2LinesDF <- function (shp, proj4string = CRS(as.character(NA)), IDs, delete_null_obj = TRUE) 
+#' @importFrom sp CRS SpatialLines SpatialLinesDataFrame
+GWSDAT.shp2LinesDF <- function (shp, proj4string = sp::CRS(as.character(NA)), IDs, delete_null_obj = TRUE) 
 {
     if (class(shp) != "Map") 
         stop("shp not a Map object")
@@ -112,8 +114,8 @@ GWSDAT.shp2LinesDF <- function (shp, proj4string = CRS(as.character(NA)), IDs, d
     for (i in 1:n) {
         LinesList[[i]] <- GWSDAT.shapes2LinesList(shapes[[i]], ID = IDs[i])
     }
-    SL <- SpatialLines(LinesList, proj4string = proj4string)
-    res <- SpatialLinesDataFrame(SL, data = df)
+    SL <- sp::SpatialLines(LinesList, proj4string = proj4string)
+    res <- sp::SpatialLinesDataFrame(SL, data = df)
     res
 }
 

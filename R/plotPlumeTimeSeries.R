@@ -1,13 +1,11 @@
 
 
-#' Title
+#' Display the time-series data of a plume. 
 #'
-#' @param plume_stats 
-#'
-#' @return
+#' @param plume_stats Plume statistics data frame.
+#' 
 #' @export
-#'
-#' @examples plume_stats <- getFullPlumeStats(...)
+#' @importFrom Kendall Kendall
 plotPlumeTimeSeries <- function(plume_stats) {
   
   if (is.null(plume_stats))
@@ -82,7 +80,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
     
   }
   
-  Mann.testPlumeMass <- try(Kendall(plume_stats$Agg.Date,plume_stats$mass))
+  Mann.testPlumeMass <- try(Kendall::Kendall(plume_stats$Agg.Date,plume_stats$mass))
   
   if(!inherits(Mann.testPlumeMass,"try-error")){
     
@@ -144,7 +142,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
     
   }
   
-  Mann.testPlumeArea <- try(Kendall(plume_stats$Agg.Date, plume_stats$area))
+  Mann.testPlumeArea <- try(Kendall::Kendall(plume_stats$Agg.Date, plume_stats$area))
   
   if (!inherits(Mann.testPlumeArea,"try-error")) {
     
@@ -201,7 +199,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
     
   }
   
-  Mann.testPlumeAverageConc <- try(Kendall(plume_stats$Agg.Date, plume_stats$avg_conc))
+  Mann.testPlumeAverageConc <- try(Kendall::Kendall(plume_stats$Agg.Date, plume_stats$avg_conc))
   
   if(!inherits(Mann.testPlumeAverageConc,"try-error")){
     

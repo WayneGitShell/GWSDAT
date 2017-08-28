@@ -4,7 +4,7 @@ uiSession <- function() {
   
   fluidPage(
     
-    box(width = 5, title = "Save Session", solidHeader = TRUE, status = "primary",
+    shinydashboard::box(width = 5, title = "Save Session", solidHeader = TRUE, status = "primary",
         
       "Save and download the current Analysis session to a .Rdata file.",
       

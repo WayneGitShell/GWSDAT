@@ -1,8 +1,6 @@
 
 
-calcTrafficLights <- function(All.Data,Fitted.Data,GWSDAT_Options) {
-
-
+calcTrafficLights <- function(All.Data, Fitted.Data, GWSDAT_Options) {
 
 
   ###################  ND.Check#################################################
@@ -39,9 +37,6 @@ calcTrafficLights <- function(All.Data,Fitted.Data,GWSDAT_Options) {
   }
   
 
-################### End ND.Check###########################################
-
-
 
 #######################  New Beta Est #########################################
 
@@ -76,9 +71,8 @@ GWSDAT.sm.derivative <- function(x, y, h, eval.points=seq(min(x),max(x),length=5
 
 
 
-############################################## sm.func ############################################
-
-sm.func<-function(x,All.Time.Evals,smThreshSe,smMethod){
+#' @importFrom sm sm.regression
+sm.func <- function(x,All.Time.Evals,smThreshSe,smMethod) {
 
 
 
@@ -93,7 +87,7 @@ out.index<-range(out.index,na.rm=T)[1]:range(out.index,na.rm=T)[2]
 if(length(x.obs)<3){return(list(Betas=out.Betas,trend.upper.lim=out.upper,h=NA))}
 if(sum(!x$ND)<2){return(list(Betas=out.Betas,trend.upper.lim=out.upper,h=NA))}
 
-sm.fit<-try(sm.regression(x.obs,y.obs,display = "none",method=smMethod,verbose=0),silent=TRUE)
+sm.fit <- try(sm::sm.regression(x.obs,y.obs,display = "none",method=smMethod,verbose=0),silent=TRUE)
 
 
 if(inherits(sm.fit, "try-error")){
@@ -108,7 +102,7 @@ if(any(is.nan(sm.fit$estimate)) || any(is.na(sm.fit$estimate)) || any(is.nan(sm.
 }
 
 
-sm.fit<-sm.regression(x.obs,y.obs,display = "none",eval.points = All.Time.Evals,h=sm.fit$h,verbose=0)
+sm.fit <- sm::sm.regression(x.obs,y.obs,display = "none",eval.points = All.Time.Evals,h=sm.fit$h,verbose=0)
 sm.fit$estimate[sm.fit$se>smThreshSe]<-NA
 sm.est<-exp(sm.fit$estimate)
 sm.95up<-exp(sm.fit$estimate+2*sm.fit$se)

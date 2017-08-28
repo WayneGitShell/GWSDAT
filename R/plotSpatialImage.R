@@ -72,11 +72,11 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
     
     if (csite$GWSDAT_Options$Aggby == "Monthly") {
       
-      date.range.to.print <- seq.Date(as.Date(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-1 month", length=2)
+      date.range.to.print <- seq.Date(as.Date(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-1 month", length.out = 2)
       
     } else {
       
-      date.range.to.print <- seq.Date(as.Date(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-3 month", length=2)
+      date.range.to.print <- seq.Date(as.Date(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-3 month", length.out = 2)
       
     }	
     
@@ -529,9 +529,9 @@ GWSDAT.GW.Contour <- function(temp.GW.Flows){
   yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
   my.df<-expand.grid(XCoord=xo,YCoord=yo)
   
-  lo.pred<-predict(my.lo,my.df)
-  my.hull<-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
-  temp.pip<-point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
+  lo.pred  <-predict(my.lo,my.df)
+  my.hull  <-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
+  temp.pip <- sp::point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
   lo.pred[matrix(temp.pip,nrow=length(xo))]<-NA
   return(list(x=xo,y=yo,z=lo.pred))
   
@@ -581,7 +581,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
   mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
   on.exit(par(par.orig))
   w <- (3 + mar.orig[2]) * par("csi") * 2.54
-  layout(matrix(c(2, 1), nc = 2), widths = c(1, lcm(w)))
+  layout(matrix(c(2, 1), ncol = 2), widths = c(1, lcm(w)))
   par(las = las)
   mar <- mar.orig
   mar[4] <- mar[2]
@@ -618,7 +618,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
       NULL 
   }
   else key.axes
-  box()
+  graphics::box()
   if (!missing(key.title)) 
     key.title
   mar <- mar.orig
@@ -631,11 +631,8 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
   if (!is.double(z)) 
     storage.mode(z) <- "double"
   
-  if ( R.Version()$major == "2") {
-    .Internal(filledcontour(as.double(x), as.double(y), z, as.double(levels),col = col))
-  }else{
-    .filled.contour(x, y, z, levels, col)
-  }
+  .filled.contour(x, y, z, levels, col)
+
   
   ################## ShapeFile Plotting ########################################
   
@@ -655,7 +652,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
   } else plot.axes
   
   if (frame.plot) 
-    box()
+    graphics::box()
   
   if (missing(plot.title)) 
     title(...)

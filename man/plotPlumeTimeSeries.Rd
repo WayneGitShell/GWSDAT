@@ -2,16 +2,13 @@
 % Please edit documentation in R/plotPlumeTimeSeries.R
 \name{plotPlumeTimeSeries}
 \alias{plotPlumeTimeSeries}
-\title{Title}
+\title{Display the time-series data of a plume.}
 \usage{
 plotPlumeTimeSeries(plume_stats)
 }
 \arguments{
-\item{plume_stats}{}
+\item{plume_stats}{Plume statistics data frame.}
 }
 \description{
-Title
-}
-\examples{
-plume_stats <- getFullPlumeStats(...)
+Display the time-series data of a plume.
 }

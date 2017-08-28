@@ -8,7 +8,7 @@ uiAnalyse <- function(csite) {
               
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
                        
-                       box(width = 3, status = "warning", title = "Settings",
+                       shinydashboard::box(width = 3, status = "warning", title = "Settings",
                        
                                 selectInput("well_select", label = "Select Monitoring Well", choices = csite$ui_attr$sample_loc_names,
                                             selected = csite$ui_attr$sample_loc_selected, width = "80%"),
@@ -30,7 +30,7 @@ uiAnalyse <- function(csite) {
                        #       )
                        ),
                        
-                       box(width = 7, status = "primary",
+                       shinydashboard::box(width = 7, status = "primary",
                            plotOutput("time_series"),
                            
                            div(style = "display: inline-block;",
@@ -55,7 +55,7 @@ uiAnalyse <- function(csite) {
               
               tabPanel("Spatial Plot", id = "contour_tab", fluid = TRUE,
                        
-                       box(width = 3, status = "warning", title = "Settings",
+                       shinydashboard::box(width = 3, status = "warning", title = "Settings",
                                 #
                                 # Did not decided yet where to put this (here or data manager).
                                 #
@@ -86,7 +86,7 @@ uiAnalyse <- function(csite) {
                        ),
                        
                        
-                       box(width = 7, status = "primary",
+                       shinydashboard::box(width = 7, status = "primary",
                             plotOutput("image_plot"),
                            
                             div(style = "display: inline-block;", 
@@ -130,7 +130,7 @@ uiAnalyse <- function(csite) {
               
               tabPanel("Trends & Thresholds", fluid = TRUE,
                        
-                       box(width = 3, status = "warning", title = "Settings",
+                       shinydashboard::box(width = 3, status = "warning", title = "Settings",
                                 #
                                 # Did not decided yet where to put this (here or data manager).
                                 #

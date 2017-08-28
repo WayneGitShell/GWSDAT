@@ -4,7 +4,7 @@
 uiPlumeDiagnostics <- function(csite) {
   
   fluidRow(
-    box(width = 3, status = "warning", title = "Settings",
+    shinydashboard::box(width = 3, status = "warning", title = "Settings",
             selectInput("solute_select_plume_pd", label = "Substance", 
                         choices  = csite$ui_attr$substance_names,
                         selected = csite$ui_attr$substance_selected, width = '100%'),
@@ -25,7 +25,7 @@ uiPlumeDiagnostics <- function(csite) {
     ), # end box
     
     div(id = "plume_diagn_plot_div",
-      box(width = 9, title = "Plume Diagnostic", status = "primary",
+      shinydashboard::box(width = 9, title = "Plume Diagnostic", status = "primary",
         
           withSpinner(plotOutput("plume_diagn_plot")),
 
@@ -49,7 +49,7 @@ uiPlumeDiagnostics <- function(csite) {
         
     hidden(
       div(id = "plume_diagn_msg_div",
-          box(width = 5, status = "warning", solidHeader = TRUE, title = "Plume calculation failed",
+          shinydashboard::box(width = 5, status = "warning", solidHeader = TRUE, title = "Plume calculation failed",
             textOutput("plume_diagn_msg")
           )
       )

@@ -5,10 +5,7 @@
 #'
 #' @param GWSDAT_Options A list of GWSDAT Options.
 #'
-#' @return
 #' @export
-#'
-#' @examples
 startExcelMode <- function(GWSDAT_Options = NULL) {
 
   if (is.null(GWSDAT_Options))
@@ -20,7 +17,7 @@ startExcelMode <- function(GWSDAT_Options = NULL) {
   # Put into global environment, so the shiny server can see it. 
   .GlobalEnv$GWSDAT_Options <- GWSDAT_Options
  
-  require(shiny)
+
   runApp(launch.browser = TRUE )
   
 }

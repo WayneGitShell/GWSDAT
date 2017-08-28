@@ -1,6 +1,6 @@
 
 
-deldirNeighbours <- function(tempDelDir){
+delDirNeighbours <- function(tempDelDir){
 
   tr <- tempDelDir$delsgs
   my.list <- list()

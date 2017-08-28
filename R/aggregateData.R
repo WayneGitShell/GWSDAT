@@ -91,7 +91,6 @@ GWSDAT.Create.Agg.Date <- function(x,type = c("All Dates","Monthly","Quarterly")
 
 GWSDAT.Create.Agg <- function(x,Well.Coords,type=c("mean","median","min","max")){
   
-  require(zoo)
   type <- match.arg(type)
   
   out <- aggregate(x$Result.Corr.ND, by = list(AggDate=x$AggDate,WellName=x$WellName,Constituent=x$Constituent),type)
@@ -119,7 +118,6 @@ GWSDAT.Create.Agg <- function(x,Well.Coords,type=c("mean","median","min","max"))
 
 GWSDAT.Create.Agg.GW <- function(x,Well.Coords,type=c("mean","median","min","max")){
   
-  #require(zoo)
   type <- match.arg(type)
   
   

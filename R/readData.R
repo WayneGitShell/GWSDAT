@@ -84,7 +84,7 @@ readExcel <- function(filein) {
 
 
 
-
+#' @importFrom utils read.csv
 readConcData <- function(input_file, ...) {
 
   
@@ -148,7 +148,7 @@ readConcData <- function(input_file, ...) {
 
 ############################# Read Well Coordinates Data Table #########################################################
 
-
+#' @importFrom utils read.csv
 readWellCoords <- function(input_file, ...) {
 
   

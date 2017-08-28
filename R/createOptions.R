@@ -1,12 +1,14 @@
  
  
 
-#' Create a GWSDAT instance.
+#' Create a start options list.
 #'
-#' @return GWSDAT_Options List with essential GWSDAT options. 
+#' @return List containing essential model parameters and start options.
+#' @param site_name The name of the monitoring site. 
+#'
 #' @export 
 #'
-#' @examples
+#' @examples opt <- createOptions("New Site 1")
 createOptions <- function(site_name = NULL) {
   
   GWSDAT_Options <- list()

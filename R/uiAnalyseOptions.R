@@ -1,7 +1,7 @@
 
 uiAnalyseOptions <- function(csite) {
   
-  box(title = "Options", width = 8, solidHeader = TRUE, status = "primary",
+  shinydashboard::box(title = "Options", width = 8, solidHeader = TRUE, status = "primary",
         
       "The following options will only affect the currently selected data set.",
       #For global settings visit the _Settings_ page.",

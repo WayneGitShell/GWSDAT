@@ -3,7 +3,16 @@
 
 
 
-
+#' Display concentration time-series for contaminant at specific well.
+#'
+#' @param csite monitoring site object.
+#' @param substance contaminant name
+#' @param location  well name
+#' @param showvline show position in time (not used)
+#' 
+#' @export
+#'
+#' @importFrom sm sm.regression
 plotTimeSeries <- function(csite, 
                            substance = NULL, 
                            location = NULL,
@@ -91,7 +100,7 @@ plotTimeSeries <- function(csite,
     
     
     my.eval.points<-seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40)
-    sm.fit <- try(sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points))
+    sm.fit <- sm::sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points)
     
     if(!inherits(sm.fit, "try-error")){
       
@@ -191,7 +200,7 @@ plotTimeSeries <- function(csite,
   
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
-  box()	
+  graphics::box()	
   title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""}), font.main = 4, cex.main = 1)
   
   
@@ -346,7 +355,6 @@ plotTimeSeries <- function(csite,
   }
   
   par(op)
-  return(csite)
   
 }
 

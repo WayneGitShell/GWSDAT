@@ -2,16 +2,27 @@
 % Please edit documentation in R/plumeDiagnostics.R
 \name{getPlumeStats}
 \alias{getPlumeStats}
-\title{Calculate the plume statistics including mass, area, center, and average concentration.}
+\title{Calculate the plume statistics including mass, area, center, and average concentration for a specific time point.}
 \usage{
 getPlumeStats(csite, substance, timestep, predicted_val, plume_thresh,
   ground_porosity)
 }
 \arguments{
-\item{substance}{}
+\item{csite}{GWSDAT data object.}
 
-\item{predicted_val}{}
+\item{substance}{Name of the contaminant.}
+
+\item{timestep}{Time point for which to calculate the plume.}
+
+\item{predicted_val}{Predicted concentration values of the contaminant.}
+
+\item{plume_thresh}{Concentration limit defining the plume.}
+
+\item{ground_porosity}{Porosity of the ground in percent.}
+}
+\value{
+A data frame containing the plume statistics.
 }
 \description{
-Calculate the plume statistics including mass, area, center, and average concentration.
+Calculate the plume statistics including mass, area, center, and average concentration for a specific time point.
 }

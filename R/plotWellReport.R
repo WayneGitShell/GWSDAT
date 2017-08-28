@@ -5,8 +5,6 @@ plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   
   on.exit(palette("default"))
   
-  require(lattice)
-  
   Cont.Data <- csite$All.Data$Cont.Data
   SiteName <- csite$GWSDAT_Options$SiteName
        
@@ -45,10 +43,9 @@ plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,
 
 
 
-
+#' @importFrom sm sm.regression
+#' @importFrom lattice xyplot panel.xyplot
 GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, UseLogScale=FALSE){
-  
-  require(lattice)
   
   NAPL.Present <- any(tolower(as.character(na.omit(Cont.Data$Result))) == "napl")
   
@@ -100,11 +97,11 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
   # There is too much going on in the function arguments. Untangle this..
   #
   
-  my.plot <- xyplot(Result.Corr.ND ~ as.Date(SampleDate) | WellName,
+  my.plot <- lattice::xyplot(Result.Corr.ND ~ as.Date(SampleDate) | WellName,
                     data = Cont.Data,
                     groups = as.character(Cont.Data$ND),
                     panel = function(x, y,groups,subscripts) {
-                      try(csite.grid(h = -1, v = 2))
+                      # try(csite.grid(h = -1, v = 2))
                       groupNDx <- x[groups[subscripts] == "TRUE"]
                       groupNDy <- y[groups[subscripts] == "TRUE"]
                       panel.xyplot(groupNDx,groupNDy,col = "orange", pch = 19, cex = 1.0)
@@ -123,10 +120,9 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
                         h = try(csite$Traffic.Lights$h[as.character(unique(Cont.Data[subscripts,"WellName"])),as.character(Cont)])
                         try(eval.points<-seq(min(x,na.rm=T),max(x,na.rm=T),l=40))
                         try(if(UseLogScale){y=log(10^y)}else{y=log(y)})
-                        try(sr<-sm.regression(x,y,h=h,display="none",eval.points=eval.points))
+                        try(sr <- sm::sm.regression(x,y,h=h,display="none",eval.points=eval.points))
                       
                         try(sr.keep<-sr$estimate)
-                        #try(sm.est.keep  <- sm.fit$estimate)
                         try(sr.keep      <- if(UseLogScale){log(exp(sr$estimate),base=10)}else{exp(sr$estimate)})
                         try(sr.95up.keep <- if(UseLogScale){log(exp(sr$estimate+2*sr$se),base=10)}else{exp(sr$estimate+2*sr$se)})
                         try(sr.95low.keep<- if(UseLogScale){log(exp(sr$estimate-2*sr$se),base=10)}else{exp(sr$estimate-2*sr$se)})
@@ -162,7 +158,7 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
 
 ################### All Wells all Conts #########################################
 
-
+#' @importFrom lattice xyplot
 GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogScale=FALSE) {
   
   my.xlim <- c(min(Cont.Data$SampleDate,na.rm = T),max(Cont.Data$AggDate,na.rm = T)) 
@@ -196,8 +192,8 @@ GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogSca
   
   
   
-  myplot <- xyplot(Result.Corr.ND ~ SampleDate | WellName,
-                 groups = Constituent,
+  myplot <- lattice::xyplot(Result.Corr.ND ~ SampleDate | WellName,
+                 groups = Cont.Data$Constituent,
                  data   = Cont.Data,
                  scales = list( y = list(log = UseLogScale)),
                  layout = if (length(unique(Cont.Data$WellName)) > 30) { c(4,4)} else {NULL},

@@ -2,13 +2,19 @@
 % Please edit documentation in R/createOptions.R
 \name{createOptions}
 \alias{createOptions}
-\title{Create a GWSDAT instance.}
+\title{Create a start options list.}
 \usage{
 createOptions(site_name = NULL)
 }
+\arguments{
+\item{site_name}{The name of the monitoring site.}
+}
 \value{
-GWSDAT_Options List with essential GWSDAT options.
+List containing essential model parameters and start options.
 }
 \description{
-Create a GWSDAT instance.
+Create a start options list.
+}
+\examples{
+opt <- createOptions("New Site 1")
 }

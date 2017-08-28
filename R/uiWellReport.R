@@ -4,7 +4,7 @@
 uiWellReport <- function(csite) {
   
   fluidRow(
-    box(width = 3, title = "Settings", 
+    shinydashboard::box(width = 3, title = "Settings", 
         status = "warning", 
       "Exclude solutes by moving them to the right.",
       chooserInput("solute_chooser", 
@@ -30,7 +30,7 @@ uiWellReport <- function(csite) {
     
     ), # end box
 
-    box(width = 9, status = "primary", 
+    shinydashboard::box(width = 9, status = "primary", 
           plotOutput("well_report_plot"),  
           
           div(style = "display: inline-block;",

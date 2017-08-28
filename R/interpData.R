@@ -1,5 +1,5 @@
 
-
+#' @importFrom splancs gridpts areapl
 interpData <- function(csite, substance, timestep) {
   
   
@@ -50,7 +50,7 @@ interpData <- function(csite, substance, timestep) {
   if (nrow(tmp_my.area) < 3) {
     Do.Image = FALSE
     my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
-  } else if ((areapl(tmp_my.area) / csite$All.Data$sample_loc$area) < 0.01) {
+  } else if ((splancs::areapl(tmp_my.area) / csite$All.Data$sample_loc$area) < 0.01) {
     Do.Image = FALSE
     my.area <- as.matrix(Well.Coords[,c("XCoord","YCoord")])
   }
@@ -73,8 +73,8 @@ interpData <- function(csite, substance, timestep) {
   # Prepare area for interpolation.
   #
   my.area <- my.area[chull(my.area),, drop = F]
-  my.exp.area <- expandpoly(my.area,fac=1.05)
-  eval.df <- gridpts(my.exp.area,350)
+  my.exp.area <- expandpoly(my.area, fact = 1.05)
+  eval.df <- splancs::gridpts(my.exp.area,350)
   eval.df <- rbind(eval.df,my.exp.area)
   colnames(eval.df)[1:2] <- c("XCoord","YCoord")
   try(rownames(eval.df) <- NULL)
@@ -161,24 +161,15 @@ interpData <- function(csite, substance, timestep) {
 
 interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","Upper 95% CI","% sd","IQR/2")) {
   
-  require(geometry) 
-  require(Matrix) 
   
-  type=match.arg(type)
+  type <- match.arg(type)
   if(length(AggDate)!=1){stop("Agg Date must be length 1")}
   
-  expandpoly<-function (mypol, fact) {
-    
-    m1 <- mean(mypol[, 1])
-    m2 <- mean(mypol[, 2])
-    cbind((mypol[, 1] - m1) * fact + m1, (mypol[, 2] - m2) * fact + m2)
-    
-  }
   
-  my.area<-my.area[chull(my.area),,drop=F]
-  my.exp.area<-expandpoly(my.area,fac=1.15)
-  my.area<-expandpoly(my.area,fac=1.05)
-  colnames(my.area)<-c("XCoord","YCoord")
+  my.area <- my.area[chull(my.area),,drop=F]
+  my.exp.area <- expandpoly(my.area, fact = 1.15)
+  my.area <- expandpoly(my.area, fact = 1.05)
+  colnames(my.area) <- c("XCoord", "YCoord")
   
   
   
@@ -222,7 +213,7 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     
     ####################### pred.df ####################################
     
-    pred.df$InOut<-!point.in.polygon(pred.df$XCoord,pred.df$YCoord,my.area[,1],my.area[,2])==0
+    pred.df$InOut<-!sp::point.in.polygon(pred.df$XCoord,pred.df$YCoord,my.area[,1],my.area[,2])==0
     
     predred.df<-pred.df[pred.df$InOut,]
     dn <- delaunayn(eval.df[,c("XCoord","YCoord")])
@@ -261,7 +252,7 @@ interp <- function(model,AggDate,eval.df,type=c("predicted","lower","upper","sd"
   if(!is.null(model)){
     
     my.df$AggDate=as.numeric(AggDate)
-    my.df$InOut<-!point.in.polygon(my.df$XCoord,my.df$YCoord,eval.df[chull(eval.df[,1:2]),1],eval.df[chull(eval.df[,1:2]),2])==0
+    my.df$InOut<-!sp::point.in.polygon(my.df$XCoord,my.df$YCoord,eval.df[chull(eval.df[,1:2]),1],eval.df[chull(eval.df[,1:2]),2])==0
     my.df$pred<-rep(NA,nrow(my.df))
     
     temppred<-predict(model,newdata=my.df[my.df$InOut, c("XCoord","YCoord","AggDate")],se=type!="predicted")

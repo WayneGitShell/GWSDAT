@@ -33,17 +33,18 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
 }
 
 
-#' Calculate the plume statistics including mass, area, center, and average concentration.
+#' Calculate the plume statistics including mass, area, center, and average concentration for a specific time point.
 #'
-#' @param csite
-#' @param substance  
-#' @param timestep
-#' @param predicted_val
+#' @param csite         GWSDAT data object.
+#' @param substance     Name of the contaminant.
+#' @param timestep      Time point for which to calculate the plume.
+#' @param predicted_val Predicted concentration values of the contaminant. 
+#' @param plume_thresh  Concentration limit defining the plume. 
+#' @param ground_porosity Porosity of the ground in percent. 
+#' 
+#' @return A data frame containing the plume statistics. 
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @importFrom splancs areapl
 getPlumeStats <- function(csite, 
                           substance, 
                           timestep, 
@@ -72,7 +73,7 @@ getPlumeStats <- function(csite,
       
       if (cL[[i]]$Closed) {
         
-        cL[[i]]$area <- areapl(cbind(cL[[i]]$x,cL[[i]]$y))
+        cL[[i]]$area <- splancs::areapl(cbind(cL[[i]]$x,cL[[i]]$y))
         tempPlumeQuant <- CalcPlumeStats(model.tune$best.mod,
                                          AggDate = temp.time.eval,
                                          cL[[i]],
@@ -132,11 +133,12 @@ getPlumeStats <- function(csite,
   
 }
 
-
+#' @importFrom deldir deldir triang.list
+#' @importFrom splancs gridpts
 CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
   
-  temppts <- cbind(cL$x,cL$y)
-  temppts <- gridpts(temppts,100)
+  temppts <- cbind(cL$x, cL$y)
+  temppts <- splancs::gridpts(temppts, 100)
   Plume.Tri.Points <- data.frame(XCoord = temppts[,1],YCoord = temppts[,2])
   Plume.Tri.Points$AggDate = as.numeric(AggDate)
   
@@ -153,15 +155,15 @@ CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
   
   
   
-  cL.Tri.Points<-data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(plume_thresh,length(cL$x)))
-  Vol.Tri.Points<-unique(rbind(Plume.Tri.Points[,c("XCoord","YCoord","z")],cL.Tri.Points))
+  cL.Tri.Points  <- data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(plume_thresh,length(cL$x)))
+  Vol.Tri.Points <- unique(rbind(Plume.Tri.Points[,c("XCoord","YCoord","z")],cL.Tri.Points))
   
-  mydeldir<-deldir(x=Vol.Tri.Points$XCoord,y=Vol.Tri.Points$YCoord,z=Vol.Tri.Points$z)
-  mytriangs<-triang.list(mydeldir)
-  PlumeVol<-sum(unlist(lapply(mytriangs,VolIndTri)))
-  xPlumeVol<-sum(unlist(lapply(mytriangs,xVolIndTri)))
-  yPlumeVol<-sum(unlist(lapply(mytriangs,yVolIndTri)))
-  PlumeCentreofMass<-c(xPlumeVol,yPlumeVol)/PlumeVol
+  mydeldir  <- deldir::deldir(x=Vol.Tri.Points$XCoord, y = Vol.Tri.Points$YCoord, z = Vol.Tri.Points$z)
+  mytriangs <- deldir::triang.list(mydeldir)
+  PlumeVol  <- sum(unlist(lapply(mytriangs, VolIndTri)))
+  xPlumeVol <- sum(unlist(lapply(mytriangs, xVolIndTri)))
+  yPlumeVol <- sum(unlist(lapply(mytriangs, yVolIndTri)))
+  PlumeCentreofMass <- c(xPlumeVol, yPlumeVol) / PlumeVol
   
   
   return(list(PlumeVol=PlumeVol,PlumeCentreofMass=PlumeCentreofMass))
@@ -221,15 +223,6 @@ PlumeUnitHandlingFunc <- function(LengthUnit, rgUnits, PlumeMass, PlumeArea){
               PlumeMassUnits = PlumeMassUnits, 
               PlumeAreaUnits = PlumeAreaUnits,
               PlumeAverageUnits = PlumeAverageUnits))
-  
-}
-
-
-expandpoly <- function(mypol, fact) {
-  
-  m1 <- mean(mypol[, 1])
-  m2 <- mean(mypol[, 2])
-  cbind((mypol[, 1] - m1) * fact + m1, (mypol[, 2] - m2) * fact + m2)
   
 }
 

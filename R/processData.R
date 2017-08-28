@@ -58,7 +58,7 @@ formatData <- function(solute_data, sample_loc) {
 }
 
 
-
+#' @importFrom splancs areapl
 processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank") {
 
 
@@ -407,7 +407,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
 
   sample_loc$data  <- well_tmp_data
   sample_loc$names <- sample_loc_names
-  sample_loc$area  <- areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
+  sample_loc$area  <- splancs::areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
 
   
   # Read the shape files.

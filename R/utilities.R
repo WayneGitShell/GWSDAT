@@ -1,4 +1,13 @@
 
+expandpoly <- function(mypol, fact) {
+  
+  m1 <- mean(mypol[, 1])
+  m2 <- mean(mypol[, 2])
+  cbind((mypol[, 1] - m1) * fact + m1, (mypol[, 2] - m2) * fact + m2)
+  
+}
+
+
 getDataInfo <- function(csite_list) {
   
   data_list <- list()
@@ -58,12 +67,6 @@ excelDate2Date <- function(excelDate) {
 
 
 
-.my.tkdev <- function(hscale = 1, vscale = 1){
-  win.metafile(width = 4 * hscale, height = 4 * vscale, restoreConsole = FALSE)
-}
-
-
-
 rm_spaces <- function(x){
   
   #Function to remove trailing and leading spaces!
@@ -93,12 +96,9 @@ existsNAPL <- function(All.Data, well, solute) {
 
 
 
-
 setupPPV2 <- function(){
   
-  require(RDCOMClient)
-  
-  ppt <<- COMCreate("PowerPoint.Application")
+  ppt <<- CCOMCreate("PowerPoint.Application")
   ppt[["Visible"]] <<- TRUE
   myPres <<- ppt[["Presentations"]]$add()
   mySlides <<- myPres[["Slides"]]
@@ -113,7 +113,7 @@ AddPlotPPV2 <- function(wmf_file, width, height){
 
   calledsetupPP <- FALSE
   
-  CheckPPT <- exists('ppt',envir = globalenv())
+  CheckPPT <- exists('ppt', envir = globalenv())
   
   if (CheckPPT == FALSE) {
     setupPPV2() 
