@@ -1,4 +1,4 @@
-
+#' @importFrom shinyjs hidden disabled
 uiAnalyseOptions <- function(csite) {
   
   shinydashboard::box(title = "Options", width = 8, solidHeader = TRUE, status = "primary",
@@ -45,7 +45,7 @@ uiAnalyseOptions <- function(csite) {
       ),
       
       # Disabled because it does not work, yet.
-      disabled(div(style = "display: inline-block;", 
+      shinyjs::disabled(div(style = "display: inline-block;", 
           checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
       )),
       
@@ -65,7 +65,7 @@ uiAnalyseOptions <- function(csite) {
       ),
       
       # Disabled because it does not work, yet.
-      disabled(div(style = "display: inline-block;", 
+      shinyjs::disabled(div(style = "display: inline-block;", 
                    checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
       )),
       
@@ -87,7 +87,7 @@ uiAnalyseOptions <- function(csite) {
                    label = "Save", icon = icon("save"), 
                   # style = "color: #fff; background-color: Coral; border-color: Chocolate; float: right")
                    style = "float: right"),
-      hidden( 
+      shinyjs::hidden( 
         div(id = "options_save_msg",
             column(2, 
                    textOutput("options_saved"), style = "float: right; color: Green;")

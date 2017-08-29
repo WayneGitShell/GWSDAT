@@ -1284,7 +1284,7 @@ server <- function(input, output, session) {
                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
       ),
       
-      tabBox("Data", width = 9, 
+      shinydashboard::tabBox("Data", width = 9, 
            tabPanel(title = "Contaminant data", 
                     rHandsontableOutput("table_conc_data")
            ), 
@@ -1332,7 +1332,7 @@ server <- function(input, output, session) {
           
       ),
       
-      tabBox("Data", width = 9, 
+      shinydashboard::tabBox("Data", width = 9, 
              tabPanel(title = "Contaminant data", 
                       rHandsontableOutput("table_conc_data")
              ), 
@@ -1401,7 +1401,7 @@ server <- function(input, output, session) {
           
       ), # end box
       
-      tabBox("Data", width = 9, 
+      shinydashboard::tabBox("Data", width = 9, 
              tabPanel(title = "Contaminant data", 
                       rHandsontableOutput("table_conc_data")
              ), 
@@ -1537,7 +1537,7 @@ dbHeader <- dashboardHeader(title = "GWSDAT",
                             tags$li(class = "dropdown", 
                                     tags$a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
                                       target = '_blank',
-                                      tags$img(src = 'Final_GWSDAT_Logo.png',
+                                      tags$img(src = system.file("Final_GWSDAT_Logo.png", package = "gwsdat"), 
                                           title = "GWSDAT Homepage", height = "40px"),
                                       style = "padding-top:5px; padding-bottom:5px;")
                                     ))

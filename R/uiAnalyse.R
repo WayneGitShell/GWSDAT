@@ -1,6 +1,7 @@
 
 
-
+#' @importFrom shinyjs hidden
+# #' @importFrom shinydashboard box 
 uiAnalyse <- function(csite) {
 
  
@@ -101,7 +102,7 @@ uiAnalyse <- function(csite) {
                             ),
                            
                            
-                            hidden( 
+                            shinyjs::hidden( 
                               div(id = "save_spatial_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
                                   
                                      actionButton("generate_spatial_anim_ppt", 
@@ -147,7 +148,7 @@ uiAnalyse <- function(csite) {
                        ),
                        
                        
-                       tabBox("Trend Table", width = 7, 
+                       shinydashboard::tabBox("Trend Table", width = 7, 
                               
                         tabPanel(title = "Trends", 
                                  
@@ -164,7 +165,7 @@ uiAnalyse <- function(csite) {
                                   downloadButton("save_trend_table", label = "Save Plot")
                                 ),
 
-                                hidden(
+                                shinyjs::hidden(
                                   div(id = "save_trendtable_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
                                     actionButton("generate_trendtable_anim_ppt",
                                                  label = "Generate PPT Animation", icon = icon("file-movie-o"))

@@ -5,7 +5,7 @@
 #  require(deldir)
 #  require(maptools)
 #  require(geometry)
-#  require(Matrix)
+#  require(Matrix), only sparseMatrix
 #  require(shiny)
 #  require(shinyjs)
 #  require(shinydashboard)
@@ -14,7 +14,7 @@
 #  require(readxl)
 
 #' @import stats grDevices graphics
-#' @import MASS shiny shinyjs shinydashboard shinycssloaders geometry zoo readxl Matrix maptools
+#' @import MASS shiny shinycssloaders geometry zoo readxl maptools
 launchApp <- function(x, ...) {
   shiny::runApp(appDir = system.file("application", package = "gwsdat"), ...)
 }

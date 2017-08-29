@@ -12,7 +12,7 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
     
     progressBar$set(value = (i/nr_timesteps), detail = paste("time point ", i, " / ", nr_timesteps))
     
-    interp.pred <- interpData(csite, substance, i)
+    interp.pred <- interpConc(csite, substance, i)
     
     plume_stats <- getPlumeStats(csite, substance, timestep = i, interp.pred$data, 
                                  plume_thresh, ground_porosity)

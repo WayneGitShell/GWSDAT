@@ -3,3 +3,4 @@
 .git
 Readme.md
 R/fitSVM.R
+data/*

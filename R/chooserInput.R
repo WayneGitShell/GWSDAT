@@ -13,12 +13,15 @@
 # contents of www would be moved to inst, and chooserInput would call shiny::addResourcePath 
 # to make them available at a URL prefix like "chooser". See shiny-incubator for one example.
 #
-
+#
+                                        # access file: system.file("chooserInput", package="gwsdat", script="chooser-binding.js")
+                                        #
 
 
 chooserInput <- function(inputId, leftLabel, rightLabel, leftChoices, rightChoices,
                          size = 5, multiple = FALSE) {
-  
+    shiny::addResourcePath(prefix='chooserInput', directoryPath = system.file('chooserInput', package = 'gwsdat'))
+    
   leftChoices <- lapply(leftChoices, shiny::tags$option)
   rightChoices <- lapply(rightChoices, shiny::tags$option)
   
@@ -28,7 +31,8 @@ chooserInput <- function(inputId, leftLabel, rightLabel, leftChoices, rightChoic
     multiple <- NULL
   
   tagList(
-    singleton(shiny::tags$head(
+      singleton(shiny::tags$head(
+      #shiny::tags$script(src = system.file("chooserInput", package="gwsdat", script="chooser-binding.js"))
       shiny::tags$script(src="chooser-binding.js"),
       shiny::tags$style(type="text/css",
                  HTML(".chooser-container { display: inline-block; }")

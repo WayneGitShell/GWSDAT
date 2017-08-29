@@ -4,7 +4,7 @@
 plotSpatialImage <- function(csite, substance, timestep = 1) {
   
   # make interpolation
-  interp.pred <- interpData(csite, substance, timestep)
+  interp.pred <- interpConc(csite, substance, timestep)
   
   
   
@@ -26,12 +26,12 @@ plotSpatialImage <- function(csite, substance, timestep = 1) {
 
 
 plotSpatialImage_main <- function(csite, substance = " ", timestep = 1, 
-                                  interp = NULL, plume_stats = NULL) { 
+                                  pred = NULL, plume_stats = NULL) { 
   
-  interp.pred  <- interp$data
-  Do.Image     <- interp$Do.Image
-  Contour.xlim <- interp$Contour.xlim
-  Contour.ylim <- interp$Contour.ylim
+  interp.pred  <- pred$data
+  Do.Image     <- pred$Do.Image
+  Contour.xlim <- pred$Contour.xlim
+  Contour.ylim <- pred$Contour.ylim
   
   if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
     op <- par(mar = c(3,4.1,2,2.1))
@@ -453,14 +453,14 @@ makeSpatialAnimation <- function(csite, substance,
   for (i in csite$ui_attr$timestep_range[1]:csite$ui_attr$timestep_range[2]) {
  
     # Do the interpolation.
-    interp.pred <- interpData(csite, substance, i)
+    interp.pred <- interpConc(csite, substance, i)
     
     # Create plume statistics if needed.
     #
-    # Note: This is a dupliate from function getFullPlumeStats(). It could be called 
+    # Note: This is a duplicate from function getFullPlumeStats(). It could be called 
     #       separately and before plotSpatialImage_main(). However, both functions
-    #       depend on interpData() and I don't like to call it twice.
-    #       Fixme: Call interpData() separately, and pass results for each timestep 
+    #       depend on interpConc() and I don't like to call it twice.
+    #       Fixme: Call interpConc() separately, and pass results for each timestep 
     #              to getPlumeStats() and plotSpatialImage_main().
     #
     plume_stats <- NULL

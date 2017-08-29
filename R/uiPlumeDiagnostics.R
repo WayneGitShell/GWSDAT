@@ -1,6 +1,6 @@
 
 
-
+#' @importFrom shinyjs hidden
 uiPlumeDiagnostics <- function(csite) {
   
   fluidRow(
@@ -47,7 +47,7 @@ uiPlumeDiagnostics <- function(csite) {
         )
     ),
         
-    hidden(
+    shinyjs::hidden(
       div(id = "plume_diagn_msg_div",
           shinydashboard::box(width = 5, status = "warning", solidHeader = TRUE, title = "Plume calculation failed",
             textOutput("plume_diagn_msg")
