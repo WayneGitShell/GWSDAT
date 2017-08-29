@@ -148,9 +148,9 @@ uiAnalyse <- function(csite) {
                        ),
                        
                        
-                       shinydashboard::tabBox("Trend Table", width = 7, 
+                       shinydashboard::tabBox(title = "Trends & Thresholds", width = 7, 
                               
-                        tabPanel(title = "Trends", 
+                        tabPanel("Indicator Table", 
                                  
                                 plotOutput("traffic_table"),
 
@@ -173,7 +173,7 @@ uiAnalyse <- function(csite) {
                                 )
                         ),
                         
-                        tabPanel(title = "Legend", 
+                        tabPanel("Legend", 
                                  
                                  plotOutput("plot_legend_traffic") 
                                  

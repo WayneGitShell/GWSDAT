@@ -1,6 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-.git
+.git*
 Readme.md
 R/fitSVM.R
 data/*
+^app.R

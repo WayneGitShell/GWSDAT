@@ -1,5 +1,5 @@
 
-
+#' @import shiny
 uiSession <- function() {
   
   fluidPage(

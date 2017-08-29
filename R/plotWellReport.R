@@ -51,7 +51,7 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
   
   
   Cont <- unique(Cont.Data$Constituent)
-  browser() ### csite$Cont.Data should not exist
+  
   my.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate)) 
   
   my.xlim.orig = my.xlim
