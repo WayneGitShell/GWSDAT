@@ -1,3 +1,4 @@
 
 devtools::load_all()
-launchApp()
+GWSDAT::launchApp()
+

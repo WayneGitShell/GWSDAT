@@ -4,8 +4,10 @@
 # #' @importFrom shinydashboard box 
 uiAnalyse <- function(csite) {
 
- 
-  navbarPage(title = csite$ui_attr$site_name, id = "analyse_panel",              
+ #browser()
+ #corner_element = HTML(paste0(tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
+  corner_element = HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name)) # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
+  navbarPage(corner_element, windowTitle = csite$ui_attr$site_name, id = "analyse_panel",              
               
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
                        
@@ -40,7 +42,7 @@ uiAnalyse <- function(csite) {
                                            selected = csite$ui_attr$img_formats[[1]]
                                )
                            ),
-                           
+                          
                            div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
                                downloadButton("save_timeseries_plot", label = "Save Plot")
                            )
@@ -199,9 +201,11 @@ uiAnalyse <- function(csite) {
               navbarMenu("More",
                   tabPanel("Well Report", fluid = TRUE, 
                            uiWellReport(csite) ),
-                  tabPanel("Plume Time Series", fluid = TRUE, 
+                  tabPanel("Plume Diagnostic", fluid = TRUE, 
                            uiPlumeDiagnostics(csite) ),
                   "----",
+                  tabPanel("Save Session", fluid = TRUE,
+                           uiSession() ),  
                   tabPanel("Options", fluid = TRUE,
                            uiAnalyseOptions(csite)
                   )

@@ -168,7 +168,7 @@ plotTrendTable <- function(csite, timestep = 1){
   if (csite$ui_attr$trend_thresh_selected == "Trend")                   {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},       labels=rep("Trend",Num.Conts),     las=1,cex.axis = 1)}
   
   
-  mtext(paste(csite$ui_attr$trend_thresh_selected, ": ", date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-", csite$Aquifer, sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
+  mtext(paste(csite$ui_attr$trend_thresh_selected, ": ", date.to.print, if(csite$Aquifer != ""){paste(": Aquifer-", csite$Aquifer, sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
   
   par(op)
   

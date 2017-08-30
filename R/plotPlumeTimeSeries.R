@@ -67,7 +67,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
        cex = 1.5,
        ylab = my.ylab)
   
-  mtext(paste("Plume Threshold = ", plume_thresh, "ug/l, Ground Porosity = ", ground_porosity, "%", sep = ""),
+  mtext(paste("Plume Threshold = ", plume_thresh, "ug/l, Ground Porosity = ", (ground_porosity * 100), "%", sep = ""),
             side = 3, line = -1, cex = 0.75)
   
   
@@ -261,4 +261,82 @@ printPlumeStatsCSV <- function(plume_stats) {
   
   return(stats_tbl)
   
+}
+
+#' @importFrom splancs gridpts
+plotPlumeEst <- function(csite, substance, plume_thresh){
+  
+  
+  #### Get Hull data points function ########
+  getHullDataPoints <- function(myhull){
+    
+    myhull <- rbind(myhull, myhull[1, , drop = FALSE])
+   
+    Perimeters <- sqrt(apply((apply(myhull,2,diff)^2),1,sum))
+    Npts <- 250
+    Ptsperunitlength <- Npts/sum(Perimeters)
+    Perimeter.Npts <- round(Ptsperunitlength*Perimeters,0)
+    chullseglist <- list()
+    
+    for (i in 1:(nrow(myhull) - 1)) {
+      chullseglist[[i]] <- as.data.frame(approx(myhull[i:(i + 1),], n = max(Perimeter.Npts[i],3)))
+    }
+    
+    return(do.call("rbind",chullseglist))
+  }
+  
+  # Time.Eval <- csite$Fitted.Data[[substance]]$Time.Eval
+  temp.df <- data.frame(Time.Eval = csite$Fitted.Data[[substance]]$Time.Eval)
+  temp.df$MaxConc <- rep(NA,nrow(temp.df))
+  temp.df$MaxInteriorConc <- rep(NA,nrow(temp.df))
+  
+  model <- csite$Fitted.Data[[substance]][["Model.tune"]]$best.model
+  
+  
+  
+  for (i in 1:length(csite$Fitted.Data[[substance]]$Time.Eval)) {
+    
+    temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[i]
+    Good.Wells <- as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+    Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+    
+    
+    if (length(Good.Wells) > 2) {
+     
+      ### Calculate Max Conc on hull boundary
+      my.area <- csite$All.Data$sample_loc$data[csite$All.Data$sample_loc$names %in% Good.Wells, c("XCoord","YCoord") ]
+     
+      myhull  <- my.area[chull(my.area),]
+      
+      hulldatapoints <- getHullDataPoints(myhull)
+      
+      my.df <- data.frame(XCoord = hulldatapoints$x,YCoord = hulldatapoints$y, AggDate = temp.time.eval)
+      temp.df$MaxConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
+      
+      ### Calculate Max Conc on interior points of hull. 
+      InteriorPoints <- splancs::gridpts(as.matrix(myhull), 200)
+      my.df <- data.frame(XCoord = InteriorPoints[,1], YCoord = InteriorPoints[,2], AggDate = temp.time.eval)
+      temp.df$MaxInteriorConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
+      
+    }
+  }
+  
+  
+  temp.df$MaxInteriorConc[temp.df$MaxInteriorConc < temp.df$MaxConc] <- temp.df$MaxConc[temp.df$MaxInteriorConc < temp.df$MaxConc]
+  
+  my.ylim = c(min(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T), max(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T))
+  
+  plot(MaxInteriorConc ~ Time.Eval, data = temp.df,
+       log  = "y", type = "b", ylim = my.ylim, xlab = "Date", 
+       ylab = "Concentration(ug/l)",
+       main = paste0(substance, ": Estimated Plume Delineation Concentration Region"), 
+       pch  = 19, cex.main = .85)
+  
+  lines(MaxConc ~ Time.Eval, data = temp.df, type = "b", pch = 19, col = "black")
+  
+  try(polygon(c(temp.df$Time.Eval, rev(temp.df$Time.Eval)), 
+              c(temp.df$MaxInteriorConc, rev(temp.df$MaxConc)),col = "grey", border = NA))
+  grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
+  abline(h = plume_thresh, col = "red", lwd = 2, lty = 2)
+ 
 }

@@ -1,6 +1,6 @@
 
 
-########################### Server Section ######################################
+
 
 #' @import shiny
 server <- function(input, output, session) {
@@ -24,15 +24,9 @@ server <- function(input, output, session) {
   #
   
   
-  #
   # Clean-up user session.
-  #
   session$onSessionEnded(function() {
-    
-    # Shuts down the server, O.K. for single user mode. 
-    #   Change this when running on server?
     stopApp()
-   
   })
   
   
@@ -47,20 +41,21 @@ server <- function(input, output, session) {
     val <- getFullPlumeStats(csite, 
                              substance = input$solute_select_plume_pd, 
                              plume_thresh = input$plume_threshold_pd,
-                             ground_porosity = input$ground_porosity_pd,
+                             ground_porosity = (input$ground_porosity_pd / 100),
                              progressBar = progress
                              )
     
-    # If there is any plume mass, show the plot and hide the message text, and 
-    #  vice versa. 
+    # If there is any plume mass, show the plot and hide the message text, and vice versa. 
     if (all(is.na(val$mass))) {
-      shinyjs::hide("plume_diagn_plot_div")
       shinyjs::show("plume_diagn_msg_div")
+      shinyjs::hide("plume_diagn_plot_div")
+      shinyjs::hide("plume_save_btn_div")
     } else {
       shinyjs::show("plume_diagn_plot_div")
+      shinyjs::show("plume_save_btn_div")
       shinyjs::hide("plume_diagn_msg_div")
     }
-    
+
     return(val)
   })
   
@@ -73,7 +68,7 @@ server <- function(input, output, session) {
     
     })
   
-  output$plume_diagn_msg <- renderText({
+  output$plume_diagn_msg <- renderUI({
     
     # Detect press of update button
     updatePlumeTS()
@@ -87,11 +82,25 @@ server <- function(input, output, session) {
     
     # Isolate the inputs (so a change in the sidebar does not trigger this fct.)
     isolate(
-    paste(input$solute_select_plume_pd, ": Unable to calculate plume statistics for threshold value = ", 
-          input$plume_threshold_pd, " ug/l. Select a different threshold and retry.", sep = "")
+     HTML(paste0(tags$b(input$solute_select_plume_pd), 
+                 ": Unable to calculate plume statistics for a threshold value of ",
+                 "<b>", input$plume_threshold_pd, " ug/l</b>. ",
+                 # "Select a different plume threshold and retry.",
+                 tags$p(),
+                 tags$p("Use the ", tags$a(id = "togglePlumeBoundary", "Estimate Boundary", href = "#"), "tab for assistance in selecting a suitable plume threshold value.")
+     ))
     )
-          #"\nUse the 'Estimate Plume Boundary' function for assistance in selecting a suitable plume threshold concentration value.")
+  
+  })
+  
+  
+  output$plume_estimate_plot <- renderPlot({
     
+    # Detect press of update button
+    updatePlumeTS()
+    
+    isolate(plotPlumeEst(csite, input$solute_select_plume_pd, input$plume_threshold_pd))
+
   })
   
   
@@ -101,14 +110,14 @@ server <- function(input, output, session) {
     updatePlumeTS()
     
     # Detect changes in the Options.
-    optionsSaved()
-
+    # optionsSaved()
+    
     # Re-evaluate plume statistics if any reactive expression changes. 
     # The return value is the full plume statistics (for all timesteps). 
     isolate(plume_stats <- checkPlumeStats())
-
+    
     plotPlumeTimeSeries(plume_stats)
-
+    
     
   })
   
@@ -666,7 +675,13 @@ server <- function(input, output, session) {
     filename <- input$session_filename,
     
     content <- function(file) {
+    
       if (!is.null(csite)) {
+        
+        # Create temporary csite_list, that includes the current active data session.
+        # This will not overwrite the server csite_list.
+        csite_list <- list(csite = csite)
+        
         save(file = file, "csite_list")
       }
     }
@@ -865,6 +880,11 @@ server <- function(input, output, session) {
    
   })
   
+  # Follow link to 'Boundary Estimate' tabPanel.
+  shinyjs::onclick("togglePlumeBoundary", {
+    updateTabsetPanel(session, "plume_tab_box", selected = "plume_pnl_2")
+  })
+  
   
   # Go to Data Manager.
   shinyjs::onclick("toggleDataManager", {
@@ -1016,6 +1036,10 @@ server <- function(input, output, session) {
   
   #output$init_data_msg <- renderText({"Loading data"})
   
+  shinyjs::onclick("GoToDataSelect", {
+    shinyjs::hide("analyse_page")
+    shinyjs::show("data_select_page")
+  })
   
   observeEvent(input$sidebar_menu, {
     
@@ -1261,7 +1285,7 @@ server <- function(input, output, session) {
 
     fluidPage(
       
-      div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
+      div(style = "margin-bottom: 10px", tags$a(id = "toggleDataManager", "<- Go back.", href = "#")),
       
       shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
           
