@@ -3,6 +3,7 @@
 
 
 #' @import shiny
+#' @importFrom utils sessionInfo write.csv
 server <- function(input, output, session) {
   
 
@@ -1003,7 +1004,7 @@ server <- function(input, output, session) {
     
     shinyjs::show(id = "options_save_msg", anim = TRUE, animType = "fade")
     
-    delay(2000, shinyjs::hide(id = "options_save_msg", anim = TRUE, animType = "fade"))
+    shinyjs::delay(2000, shinyjs::hide(id = "options_save_msg", anim = TRUE, animType = "fade"))
     # Retrieve image settings .. 
     # I might only have to use this when saving a session. Right now the 
     # input$img_* attributes are used directly.
@@ -1098,7 +1099,18 @@ server <- function(input, output, session) {
   #
   loadDataSet <- function(Aq_sel = NULL) {
 
-
+    
+    # Create Options if they don't exist already.
+    if (exists("session_file", envir = .GlobalEnv)) {
+      load(session_file)
+    
+      csite_list <<- csite_list
+      csite <<- csite_list[[1]]
+      
+      dataLoaded(2)
+      return(TRUE)  
+    }
+    
     # Create Options if they don't exist already.
     if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
       GWSDAT_Options <-  createOptions()
@@ -1107,7 +1119,8 @@ server <- function(input, output, session) {
     
     # Load a data set from a .Rdata file.  
     if ("RDataSet" %in% names(GWSDAT_Options)) {
-
+      
+      #load(GWSDAT_Options$RDataSet)
       load(system.file("extdata", GWSDAT_Options$RDataSet, package = "GWSDAT"))
       
       csite_list <<- csite_list

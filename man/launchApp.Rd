@@ -4,10 +4,12 @@
 \alias{launchApp}
 \title{Launch GWSDAT into server or ExcelMode.}
 \usage{
-launchApp(GWSDAT_Options = NULL)
+launchApp(GWSDAT_Options = NULL, session_file = NULL)
 }
 \arguments{
-\item{GWSDAT_Options}{A list of options.}
+\item{GWSDAT_Options}{A list of start options (see createOptions).}
+
+\item{session_file}{A .RData file with a GWSDAT analysis session.}
 }
 \description{
 Launch GWSDAT into server or ExcelMode.

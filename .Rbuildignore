@@ -1,7 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 .git*
-Readme.md
-R/fitSVM.R
+^Readme.md
+^R/fitSVM.R
+^R/check_pkg_availability.R
 ^data/*
 ^app.R

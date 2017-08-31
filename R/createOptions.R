@@ -67,5 +67,7 @@ createOptions <- function(site_name = NULL) {
   if (!is.null(site_name))
     GWSDAT_Options[['SiteName']] <- site_name
   
+  
+  
   return(GWSDAT_Options)
 }

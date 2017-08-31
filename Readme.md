@@ -4,35 +4,47 @@
 
 R package of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
 
-## Usage 
+This app can operate in server mode supporting multiple data set, and Excel Mode supporting a single data set.
 
-* Run directly from github inside an R session: shiny::runGitHub('Shiny_GWSDAT', 'andrejadd')
-* Download/clone the directory from github, unpack and run inside an R session: shiny::runApp()
+## Install and Run
 
+Open an R session (requires devtools):
 
-## Usage ExcelMode
-
-The 'ExcelMode' provides a slim version of the UI for exploring the data from the GWSDAT Excel AddOn. 
-
-* Download/clone the directory and save the path (GWSDATHome).
-* Create a list 'GWSDAT_Options' and populate with options, then
-
-```R
-setwd('path_to_gwsdat_folder')
-source("R/startExcelMode.R")
-startExcelMode(GWSDAT_Options)                                
+```r
+devtools::install_github("andrejadd/GWSDAT")
+library(GWSDAT)
+launchApp()
 ```
 
-* As an alternative, create a template of GWSDAT_Options:
+As an alternative, download/clone the folder and change into it:
 
-```R
-setwd(GWSDATHome)
-source("R/createOptionsR")
-GWSDAT_Options <- createOptions()
-# make any changes to GWSDAT_Options 
-# ...
-source("R/startExcelMode.R")
-startExcelMode(GWSDAT_Options)                                
+```r
+devtools::load_all()
+launchApp()
 ```
+
+
+## Run in Excel Mode
+
+The Excel Mode provides a slim version of the UI for exploring a single data set. Install the package as above and pass a GWSDAT_Options list to launchApp(). 
+
+```r
+library(GWSDAT)
+launchApp(GWSDAT_Options)
+```
+
+
+## Save & Load Session File
+
+A session can be saved in the Analysis panel, in the top navigation bar under _More_ -> _Save Session_.
+
+To load the session start GWSDAT with
+
+```r
+library(GWSDAT)
+launchApp(session_file = "path_to_file.RData")
+``` 
+
+
 
 

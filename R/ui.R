@@ -62,16 +62,14 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
   
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
-    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
-    shinydashboard::menuItem("Save Session", tabName = "session", icon = icon("save"))
+    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
     )
   ),
   
   shinydashboard::dashboardBody(
                       shinyjs::useShinyjs(),
     shinydashboard::tabItems(
-      shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse"))# , 
-      #shinydashboard::tabItem(tabName = "session",  uiSession())         
+      shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse"))
     ) # end tabItems
   ) # end dashboardBody 
 ) # end ui
