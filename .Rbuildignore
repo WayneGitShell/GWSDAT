@@ -3,5 +3,5 @@
 .git*
 Readme.md
 R/fitSVM.R
-data/*
+^data/*
 ^app.R

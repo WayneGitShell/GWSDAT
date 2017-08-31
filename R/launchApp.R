@@ -1,7 +1,7 @@
 
 #' Launch GWSDAT into server or ExcelMode.
 #'
-#' @param GWSDAT_Options A list of options. 
+#' @param GWSDAT_Options If this is specified, ExcelMode is executed. 
 #' 
 #' @export
 #' 
@@ -11,6 +11,12 @@
 # #' @example launchApp(createOptions("Site Name"))
 launchApp <- function(GWSDAT_Options = NULL) {
 
+    # Need this here or shinyjs breaks if operating as package.
+    # As a standard, this call goes into the ui but when building the package this
+    # probably comes too late (have shinyjs call inside server()).
+    shinyjs::useShinyjs()
+
+    
     # shiny::runApp(appDir = system.file("application", package = "GWSDAT"), ...)
     # GWSDAT_Options <- createOptions("a site")
     

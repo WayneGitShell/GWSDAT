@@ -5,6 +5,9 @@
 #' @import shiny
 server <- function(input, output, session) {
   
+
+  
+  
   # Flag that indicates whether data was loaded or not.  
   dataLoaded <- reactiveVal(0)
   #renderData <- reactiveVal(0)
@@ -23,7 +26,16 @@ server <- function(input, output, session) {
   # isClosed()  - function that return TRUE if client has disconnected  
   #
   
-  
+  output$debug <- renderPrint({
+      print(sessionInfo())
+
+      cat("\n\n** Path to image logo: ", system.file("logo.gif", package = "GWSDAT"), "\n")
+
+      cat("\n\n** Content of .libPaths():\n\n")
+      sapply(.libPaths(), list.files)
+
+  })
+    
   # Clean-up user session.
   session$onSessionEnded(function() {
     stopApp()
@@ -356,7 +368,6 @@ server <- function(input, output, session) {
   # 
   # observeEvent(input$img_width_px, {
   #   cat("in observeEvent - img_width_px\n")
-  #   browser()
   #   
   #   keep_asp = input$img_asp_px
   #   
@@ -378,7 +389,6 @@ server <- function(input, output, session) {
   # 
   # observeEvent(input$img_height_px, {
   #   cat("in observeEvent - img_height_px\n")
-  #   browser()
   #   
   #   keep_asp = input$img_asp_px
   #   
@@ -413,7 +423,6 @@ server <- function(input, output, session) {
   # })
   # 
   # observeEvent(input$time_steps, {
-  #   browser()
   #   updateSliderInput(session, "time_steps_traffic", value = input$time_steps) 
   # })
   # 
@@ -424,7 +433,6 @@ server <- function(input, output, session) {
     if (csite$GWSDAT_Options$Aggby != input$aggregate_data) {
       reaggregateData(input$aggregate_data)
       
-      #browser()
       # Update time step slider in this panel.
       updateSliderInput(session, "time_steps", value = csite$timestep_range[1], 
                         min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
@@ -800,7 +808,6 @@ server <- function(input, output, session) {
   #
   #observeEvent(input$reset_import,  {
     
-    #browser()
     #value = input$reset_button
     #gg = 9
     
@@ -858,9 +865,9 @@ server <- function(input, output, session) {
     dataLoaded(dataLoaded() + 1)
     
     # Go back to Data Manager.
-    shinyjs::show(id = "data_manager", anim = TRUE)
-    shinyjs::hide(id = "data_add_csv", anim = TRUE)
-    shinyjs::hide(id = "data_add_excel", anim = TRUE)
+    shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddCSV")
+    shinyjs::hide(id = "uiDataAddExcel")
     
   })
   
@@ -868,46 +875,52 @@ server <- function(input, output, session) {
   
   # Go to .CSV Data Import (Button click).
   observeEvent(input$add_csv_data,  {
-    shinyjs::show(id = "data_add_csv", anim = TRUE)
-    shinyjs::hide(id = "data_manager", anim = TRUE)
+    shinyjs::hide("uiDataManager")
+    shinyjs::show("uiDataAddCSV")
   })
-  
-  
+
   # Go to .CSV Data Import (Link).
   shinyjs::onclick("toggleDataImport", {
-    shinyjs::show(id = "data_add_csv", anim = TRUE);
-    shinyjs::hide(id = "data_manager", anim = TRUE)
+        browser()
+    shinyjs::show(id = "uiDataAddCSV");
+    shinyjs::hide(id = "uiDataManager")
    
+  })
+
+    
+  # Go (back) to Data Manager.
+  shinyjs::onclick("gotoDataManager_a", showDataMng())
+  shinyjs::onclick("gotoDataManager_b", showDataMng())
+  shinyjs::onclick("gotoDataManager_c", showDataMng())
+
+  showDataMng <- function() {
+    shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddCSV")
+    shinyjs::hide(id = "uiDataAddNew")
+    shinyjs::hide(id = "uiDataAddExcel")
+  }
+  
+  
+  # Go to Add New Data (Button click).
+  observeEvent(input$add_new_data,  {
+    shinyjs::show(id = "uiDataAddNew")
+    shinyjs::hide(id = "uiDataManager")
+  })
+  
+  # Go to Excel Data Import (Button click).
+  observeEvent(input$add_excel_data,  {
+    shinyjs::show(id = "uiDataAddExcel")
+    shinyjs::hide(id = "uiDataManager")
   })
   
   # Follow link to 'Boundary Estimate' tabPanel.
   shinyjs::onclick("togglePlumeBoundary", {
     updateTabsetPanel(session, "plume_tab_box", selected = "plume_pnl_2")
   })
-  
-  
-  # Go to Data Manager.
-  shinyjs::onclick("toggleDataManager", {
-    shinyjs::show(id = "data_manager", anim = TRUE)
-    shinyjs::hide(id = "data_add_csv", anim = TRUE)
-    shinyjs::hide(id = "data_add_new", anim = TRUE)
-    shinyjs::hide(id = "data_add_excel", anim = TRUE)
-  })
-  
-  
-  # Go to Add New Data (Button click).
-  observeEvent(input$add_new_data,  {
-    shinyjs::show(id = "data_add_new", anim = TRUE)
-    shinyjs::hide(id = "data_manager", anim = TRUE)
-  })
-  
-  # Go to Excel Data Import (Button click).
-  observeEvent(input$add_excel_data,  {
-    shinyjs::show(id = "data_add_excel", anim = TRUE)
-    shinyjs::hide(id = "data_manager", anim = TRUE)
-  })
-  
-  
+
+
+
+    
   #
   # Display the "Generate PPT Animation" button when in windows.
   #
@@ -1284,8 +1297,7 @@ server <- function(input, output, session) {
     
 
     fluidPage(
-      
-      div(style = "margin-bottom: 10px", tags$a(id = "toggleDataManager", "<- Go back.", href = "#")),
+      div(style = "margin-bottom: 10px", actionButton("gotoDataManager_a", label = "", icon = icon("arrow-left"))),
       
       shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
           
@@ -1329,8 +1341,8 @@ server <- function(input, output, session) {
       #    HTML(".shiny-notification { 
       #          width : 300px;
       #          left  : -200px; } ")
-      #)),
-      div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
+                                        #)),
+      div(style = "margin-bottom: 10px", actionButton("gotoDataManager_b", label = "", icon = icon("arrow-left"))),
       
       shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
           
@@ -1371,8 +1383,7 @@ server <- function(input, output, session) {
     input$reset_import
     
     fluidPage(
-      
-      div(style = "margin-bottom: 10px", a(id = "toggleDataManager", "<- Go back.", href = "#")),
+      div(style = "margin-bottom: 10px", actionButton("gotoDataManager_c", label = "", icon = icon("arrow-left"))),
       
       shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
           

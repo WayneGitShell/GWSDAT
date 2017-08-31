@@ -11,15 +11,10 @@ dbHeader <- shinydashboard::dashboardHeader(title = "GWSDAT",
                             tags$li(class = "dropdown", 
                                     tags$a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
                                       target = '_blank',
-                                      tags$img(src = system.file("extdata", "gwsdat_logo.png", package = "GWSDAT"), 
-                                          title = "GWSDAT Homepage", height = "40px"),
-                                      style = "padding-top:5px; padding-bottom:5px;")
+                                      tags$img(src = "extdata/gwsdat_logo.png", 
+                                               title = "GWSDAT Homepage", height = "40px"),
+                                               style = "padding-top:5px; padding-bottom:5px;")
                                     ))
-
-
-
-
- 
 
 
 
@@ -29,18 +24,20 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
     shinydashboard::menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
-    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
+    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
+    shinydashboard::menuItem("Debug", tabName = "debug_it")
   )),
   
-  shinydashboard::dashboardBody(shinyjs::useShinyjs(), 
+  shinydashboard::dashboardBody(
+                      shinyjs::useShinyjs(), 
 
     shinydashboard::tabItems(
      shinydashboard::tabItem(tabName = "input_data", 
       
-        div(id = "data_manager", uiOutput("uiDataManager")),
-        shinyjs::hidden( div(id = "data_add_csv", uiOutput("uiDataAddCSV"))),
-        shinyjs::hidden( div(id = "data_add_new", uiOutput("uiDataAddNew"))),
-        shinyjs::hidden( div(id = "data_add_excel", uiOutput("uiDataAddExcel")))
+        uiOutput("uiDataManager"),                     
+        shinyjs::hidden( uiOutput("uiDataAddNew")),
+        shinyjs::hidden( uiOutput("uiDataAddCSV")),
+        shinyjs::hidden( uiOutput("uiDataAddExcel"))
         
       ),
       
@@ -51,10 +48,13 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
               shinyjs::hidden(div(id = "analyse_page",
                      uiOutput("rndAnalyse"))
               )
-      )
+              ),
+     shinydashboard::tabItem(tabName = "debug_it",
+                             verbatimTextOutput("debug")
+                             )
       
     ) # end tabItems
- ) # end dashboardBody 
+    ), # end dashboardBody
 ) # end ui
 
 
@@ -67,7 +67,8 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
     )
   ),
   
-  shinydashboard::dashboardBody(shinyjs::useShinyjs(),
+  shinydashboard::dashboardBody(
+                      shinyjs::useShinyjs(),
     shinydashboard::tabItems(
       shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse"))# , 
       #shinydashboard::tabItem(tabName = "session",  uiSession())         
