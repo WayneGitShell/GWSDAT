@@ -1,6 +1,6 @@
 Package: GWSDAT
 Title: GroundWater Spatiotemporal Data Analysis Tool (GWSDAT)
-Version: 3.0.0.9003
+Version: 3.0.0.9004
 Author: Wayne W Jones <wayne.w.jones@shell.com>, Andrej Aderhold <andrej.aderhold@protonmail.com>
 Maintainer: Andrej Aderhold <andrej.aderhold@protonmail.com>
 Description: Analysis of groundwater monitoring data, designed to work with simple time-series data for solute concentration and ground water elevation, but can also plot non-aqueous phase liquid (NAPL) thickness if required. Also provides the import of a site basemap in GIS shapefile format.

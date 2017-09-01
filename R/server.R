@@ -3,6 +3,7 @@
 
 
 #' @import shiny
+#' @importFrom shinyjs show hide delay onclick
 #' @importFrom utils sessionInfo write.csv
 server <- function(input, output, session) {
   
