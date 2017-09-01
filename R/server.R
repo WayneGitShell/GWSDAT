@@ -17,6 +17,9 @@ server <- function(input, output, session) {
   csite_list <- NULL
   csite <- NULL
 
+  # This will become the default for new users.
+  default_session_file <- "GWSDAT_Examples.RData"
+  
   import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL)
   
   # 
@@ -1071,39 +1074,46 @@ server <- function(input, output, session) {
   })
   
   
-  loadRDataSet <- function() {
+  loadDefaultSessions <- function() {
+   
+    infile <- system.file("extdata", default_session_file, package = "GWSDAT")
     
-    # Create Options if they don't exist already.
-    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
-      GWSDAT_Options <-  createOptions()
-    }
+    csite_list <- NULL
     
-    
-    # Load a data set from a .Rdata file.  
-    if ("RDataSet" %in% names(GWSDAT_Options)) {
+    # This should never trigger a warning, since I am putting the file there (only if package is broken).
+    tryCatch( load(infile),
+              warning = function(w) showNotification(paste0("Failed to load default_session_file \'", default_session_file, "\' from package GWSDAT."), type = "error", duration = 7))
 
-      load(system.file("extdata", GWSDAT_Options$RDataSet, package = "GWSDAT"))
-
-      csite_list <<- csite_list
-      csite <<- csite_list[[1]]
+    if (is.null(csite_list))
+      return(NULL)
+    
+    csite_list <<- csite_list
+    csite <<- csite_list[[1]]
       
-      dataLoaded(2)
-      
-    } 
+    dataLoaded(2)
     
   }
   
   
   #
-  # Maybe move this fct. to a separate file. 
+  # Would like to move this fct to another file, however,
+  #   it uses the reactive variabled dataLoaded. How to fix this?
   #
   loadDataSet <- function(Aq_sel = NULL) {
 
     
-    # Create Options if they don't exist already.
+    # Load 'session_file' if specified in launchApp().
     if (exists("session_file", envir = .GlobalEnv)) {
-      load(session_file)
-    
+      
+      csite_list <- NULL
+      
+      tryCatch( load(session_file), warning = function(w) 
+        showModal(modalDialog(title = "Error", w$message, easyClose = FALSE))
+      )
+      
+      if (is.null(csite_list))
+        return(FALSE)
+      
       csite_list <<- csite_list
       csite <<- csite_list[[1]]
       
@@ -1111,35 +1121,25 @@ server <- function(input, output, session) {
       return(TRUE)  
     }
     
-    # Create Options if they don't exist already.
-    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) {
+    # Create Options in case they don't exist.
+    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) 
       GWSDAT_Options <-  createOptions()
-    }
     
     
-    # Load a data set from a .Rdata file.  
-    if ("RDataSet" %in% names(GWSDAT_Options)) {
-      
-      #load(GWSDAT_Options$RDataSet)
-      load(system.file("extdata", GWSDAT_Options$RDataSet, package = "GWSDAT"))
-      
-      csite_list <<- csite_list
-      csite <<- csite_list[[1]]
-     
-      dataLoaded(2)
-      return(TRUE)
-    } 
-
     
-    #
-    # Otherwise load the data from the .csv files.
-    #
+    # Load the data from the .csv files.
+    
+    solute_data <- well_data <- NULL
     
     # Read Well data and coordinates from file.
-    solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
-    well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
+    tryCatch({
+      solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
+      well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
+    }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
     
-    
+    if (is.null(solute_data) || is.null(well_data))
+      return(NULL)
+
     all_data <- formatData(solute_data, well_data)
     
     # Extract list of Aquifer. If there is more than one, return the list.
@@ -1455,7 +1455,7 @@ server <- function(input, output, session) {
     
     # Observe load status of data.
     if (dataLoaded() == 0) {
-      loadRDataSet()
+      loadDefaultSessions()
     }
     
     html_out <- tagList(

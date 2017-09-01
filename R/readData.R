@@ -89,11 +89,11 @@ readConcData <- function(input_file, ...) {
 
   
   if (length(list(...)) == 0)
-    DF = try(read.csv(input_file))
+    DF = read.csv(input_file)
   else
-    DF = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
+    DF = read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote)
   
- 
+  
   # Create Flags column or replace NA values with "" if exist.
   if (!"flags" %in% tolower(names(DF))) { DF$Flags <- rep("",nrow(DF))}
   DF$Flags[is.na(DF$Flags)] <- ""
@@ -153,9 +153,9 @@ readWellCoords <- function(input_file, ...) {
 
   
   if (length(list(...)) == 0)
-    DF = try(read.csv(input_file))
+    DF = read.csv(input_file)
   else
-    DF = try(read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote))
+    DF = read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote)
   
   
   

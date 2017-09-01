@@ -61,7 +61,6 @@ createOptions <- function(site_name = NULL) {
   GWSDAT_Options[['WellCoordsFilename']] <- 'data/ComprehensiveExample_WellCoords.csv'
   GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
   
-  GWSDAT_Options[['RDataSet']] <- 'GWSDAT_Examples.RData'
   
         
   if (!is.null(site_name))

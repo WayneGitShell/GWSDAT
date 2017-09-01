@@ -6,3 +6,5 @@
 ^R/check_pkg_availability.R
 ^data/*
 ^app.R
+^test_excelmode.bat
+^ExcelStartup_ComprExample.R

@@ -4,16 +4,17 @@
 
 R package of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
 
-This app can operate in server mode supporting multiple data set, and Excel Mode supporting a single data set.
+This app can be deployed on a Shiny Server supporting multiple data sets and users, and a stand-alone mode (Excel Mode) that allows to explore a single data set.
 
 ## Install and Run
 
-Open an R session (requires devtools):
+Open an R session (requires R package `devtools`):
 
 ```r
-devtools::install_github("andrejadd/GWSDAT")
-library(GWSDAT)
-launchApp()
+if (!require(GWSDAT))
+  devtools::install_github("andrejadd/GWSDAT")
+
+GWSDAT::launchApp()
 ```
 
 As an alternative, download/clone the folder and change into it:
@@ -24,15 +25,25 @@ launchApp()
 ```
 
 
-## Run in Excel Mode
+## Run in Stand-Alone Mode (ExcelMode)
 
-The Excel Mode provides a slim version of the UI for exploring a single data set. Install the package as above and pass a GWSDAT_Options list to launchApp(). 
+The Stand-Alone Mode provides a slim version of the UI for exploring a single data set. Install the package as above and pass a `GWSDAT_Options` list to `launchApp()`. 
+
+```r
+# Define GWSDAT_Options
+# ..
+GWSDAT::launchApp(GWSDAT_Options)
+```
+
+The `GWSDAT_Options` list must define the elements `WellDataFilename` and `WellCoordsFilename`. A short-cut to creating `GWSDAT_Options` and these elements would be: 
 
 ```r
 library(GWSDAT)
-launchApp(GWSDAT_Options)
-```
-
+opt <- createOptions("Site Name")
+opt$WellDataFilename <- 'path_to_concentration_file'
+opt$WellCoordsFilename <- 'path_to_well_coordinate_file'
+launchApp(opt)
+``` 
 
 ## Save & Load Session File
 
@@ -41,8 +52,7 @@ A session can be saved in the Analysis panel, in the top navigation bar under _M
 To load the session start GWSDAT with
 
 ```r
-library(GWSDAT)
-launchApp(session_file = "path_to_file.RData")
+GWSDAT::launchApp(session_file = "path_to_file.RData")
 ``` 
 
 
