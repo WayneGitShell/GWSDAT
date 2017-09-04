@@ -3,27 +3,17 @@
 
 uiWellReport <- function(csite) {
   
-  fluidRow(
-    shinydashboard::box(width = 3, title = "Settings", 
+    fluidRow(
+      shinydashboard::box(width = 3, title = "Settings", 
         status = "warning", 
-      "Exclude solutes by moving them to the right.",
-      chooserInput("solute_chooser", 
-                 leftLabel = "Include in Report", 
-                 rightLabel = "Exclude from Report", 
-                 leftChoices = csite$ui_attr$substance_names, 
-                 rightChoices = c(), 
-                 size = min(10, length(csite$ui_attr$substance_names) + 3), multiple = TRUE 
-                ),
-    
-      "Exclude wells by moving them to the right.",
-      chooserInput("well_chooser", 
-                 leftLabel = "Include in Report", 
-                 rightLabel = "Exclude from Report", 
-                 leftChoices = csite$ui_attr$sample_loc_names, 
-                 rightChoices = c(), 
-                 size = min(15, length(csite$ui_attr$sample_loc_names) + 3), multiple = TRUE 
-                ),
-      
+        div(style = "margin-bottom:30px",
+            "Exclude contaminants and wells by selecting and pressing the Delete key. Use Strg and Shift to select multiple elements."),
+        
+      selectInput("solute_mult_select", 'Contaminant', choices = csite$ui_attr$substance_names,
+                  selected = csite$ui_attr$substance_names, multiple = TRUE, selectize = TRUE),
+      selectInput("well_mult_select", 'Wells', choices = csite$ui_attr$sample_loc_names,
+                   selected = csite$ui_attr$sample_loc_names, multiple = TRUE, selectize = TRUE),
+            
       radioButtons("well_report_logscale", label = "Use Log-Scale",
                  choices = list("Yes", "No"), 
                  selected = "Yes")

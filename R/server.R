@@ -266,8 +266,7 @@ server <- function(input, output, session) {
     
     use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
     
-    plotWellReport(csite, input$solute_chooser$left, 
-                     input$well_chooser$left, use_log_scale)
+    plotWellReport(csite, input$solute_mult_select, input$well_mult_select, use_log_scale)
     
   })
   
@@ -612,11 +611,9 @@ server <- function(input, output, session) {
       
       if (input$export_format_wr == "ppt") {
         
-        plotWellReportPPT(csite, input$solute_chooser$left, 
-                          input$well_chooser$left, use_log_scale,
-                          width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
-                          height = input$img_height_px_wide / csite$ui_attr$img_ppi)
-        
+        plotWellReport(csite, input$solute_mult_select, input$well_mult_select, use_log_scale,
+                       width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
+                       height = input$img_height_px_wide / csite$ui_attr$img_ppi)
       } else {
         
         if (input$export_format_wr == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
@@ -624,9 +621,9 @@ server <- function(input, output, session) {
         if (input$export_format_wr == "ps") postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_wr == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
         if (input$export_format_wr == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
-        
-        plotWellReport(csite, input$solute_chooser$left, input$well_chooser$left, use_log_scale)
-        
+
+        plotWellReport(csite, input$solute_mult_select, input$well_mult_select, use_log_scale)
+
         
         dev.off()
       }
@@ -1017,43 +1014,8 @@ server <- function(input, output, session) {
   })
   
   output$options_saved <- renderText({paste("Changes Saved") })
-  
+      
     
-    
-    
-   # Note: If the well_report_box is hidden, the output$well_report_plot will not trigger.
-   #       Thus, on the push of the "Generate Report" button, first the "well_report_box"
-  #        is shown, afterwards renderPlot() for the contained 'well_report_plot' is triggered.
-  #observeEvent(input$actionBtn_wellreport, {
-  #  
-  #   shinyjs::show(id = "well_report_box", anim = TRUE)
-  # 
-  #  })
-   
-  #   
-  #   selected_solutes <- input$solute_chooser$left
-  #   selected_wells   <- input$well_chooser$left
-  #   use_log_scale    <- if (input$well_report_logscale == "Yes") {TRUE} else {FALSE}
-  #   
-  #   if (length(selected_solutes == 0) && length(selected_wells) == 0) {
-  #     # toogle warning
-  #     # ...
-  #   } else {
-  #     
-  #     ret <- plotWellReport(csite, selected_solutes, selected_wells, use_log_scale)
-  #       
-  #     if (class(ret) == "GWSDAT_Warning") {
-  #       # toogle warning
-  #       shinyjs::toggle("")
-  #       #..
-  #       stop("Fixme: Include warning message, e.g. toogle red text.")
-  #     }
-  #   }
-  #   
-  # })
-  
-  #output$init_data_msg <- renderText({"Loading data"})
-  
   shinyjs::onclick("GoToDataSelect", {
     shinyjs::hide("analyse_page")
     shinyjs::show("data_select_page")
