@@ -11,10 +11,8 @@ This app can be deployed on a Shiny Server supporting multiple data sets and use
 Open an R session (requires R package `devtools`):
 
 ```r
-if (!require(GWSDAT))
-  devtools::install_github("andrejadd/GWSDAT")
-
-GWSDAT::launchApp()
+devtools::install_github("andrejadd/GWSDAT")
+launchApp()
 ```
 
 As an alternative, download/clone the folder and change into it:
@@ -25,14 +23,25 @@ launchApp()
 ```
 
 
+## Deploy on Shiny Server
+
+On the server, install the package with `devtools::install_github("andrejadd/GWSDAT")`. Create a directory `GWSDAT` inside the shiny app folder defined in `/etc/shiny-server/shiny-server.conf`. Create the file `GWSDAT/app.R` with the following content:
+
+```r
+library(GWSDAT)
+launchApp()
+```
+
+
 ## Run in Stand-Alone Mode (ExcelMode)
 
 The Stand-Alone Mode provides a slim version of the UI for exploring a single data set. Install the package as above and pass a `GWSDAT_Options` list to `launchApp()`. 
 
 ```r
+library(GWSDAT)
 # Define GWSDAT_Options
 # ..
-GWSDAT::launchApp(GWSDAT_Options)
+launchApp(GWSDAT_Options)
 ```
 
 The `GWSDAT_Options` list must define the elements `WellDataFilename` and `WellCoordsFilename`. A short-cut to creating `GWSDAT_Options` and these elements would be: 

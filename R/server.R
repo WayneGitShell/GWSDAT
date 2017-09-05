@@ -744,12 +744,7 @@ server <- function(input, output, session) {
       # Fixme: ...
       return(NULL)
     }
-        
     
-    # isolate(
-    #   if (input$excel_date) 
-    DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
-    #)
     
     # Save to reactive variable.
     import_tables$DF_conc <<- DF 

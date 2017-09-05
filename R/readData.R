@@ -54,7 +54,6 @@ readExcel <- function(filein) {
                        ign_first_head = "WellName")
   
     if (class(ret) != "data.frame") {
-      # showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), type = "error", duration = 10)
       showNotification(paste0("Sheet \'", sheet, "\': No valid well table found, skipping."), duration = 10)
       next
     }
@@ -96,7 +95,7 @@ readConcData <- function(input_file, ...) {
   
   # Create Flags column or replace NA values with "" if exist.
   if (!"flags" %in% tolower(names(DF))) { DF$Flags <- rep("",nrow(DF))}
-  DF$Flags[is.na(DF$Flags)] <- ""
+  
 
   valid_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
   
@@ -123,7 +122,7 @@ readConcData <- function(input_file, ...) {
   }
    
   
-  
+  # Check the dates
   if (any(is.na(DF$SampleDate))) {
     
     DF <- DF[!is.na(DF$SampleDate),]
@@ -139,7 +138,16 @@ readConcData <- function(input_file, ...) {
       return(NULL)
     } 
   }
-
+  
+ 
+  # Make some basic modifications, maybe move these to the format function.
+  # However, these mods are made before showing up in the import table, but
+  # the format function is called only when the import button is pressed.
+  DF$Flags[is.na(DF$Flags)] <- ""
+  DF$Result[is.na(DF$Result)] <- 0
+  
+  DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
+  
   return(DF)
   
 }
@@ -158,18 +166,18 @@ readWellCoords <- function(input_file, ...) {
     DF = read.csv(input_file, header = list(...)$header, sep = list(...)$sep, quote = list(...)$quote)
   
   
-  
   coord_unit <- as.character(DF$CoordUnits[1])
   
   if (length(coord_unit) == 0 || is.na(coord_unit)) {
-    coord_unit <- NULL
+    coord_unit <- "metres"
   }
   
+  # If no Aquifer field was found, add one with blank strings.
   if (!"aquifer" %in% tolower(names(DF))) {
-    DF$Aquifer <- rep(NA,nrow(DF))
+    DF$Aquifer <- rep("",nrow(DF))
   }
   
-  valid_header <- list("WellName", "XCoord", "YCoord", "Aquifer", "CoordUnits")
+  valid_header <- list("WellName", "XCoord", "YCoord", "Aquifer") # , "CoordUnits")
   
   DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
   head_not_found <- ""
@@ -189,6 +197,9 @@ readWellCoords <- function(input_file, ...) {
     showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
     return(NULL)
   } 
+  
+  
+  DF_extract$Aquifer[is.na(DF_extract$Aquifer)] <- ""
   
   return(list(data = DF_extract, unit = coord_unit ))
   

@@ -21,7 +21,7 @@ GWSDAT_Options[['DefPorosity']]<-0.25
 GWSDAT_Options[['smThreshSe']]<-1.1512
 GWSDAT_Options[['smThreshSe']]<-as.numeric(GWSDAT_Options[['smThreshSe']])
 GWSDAT_Options[['smMethod']]<-'aicc'
-GWSDAT_Options[['SiteName']]<-'GWSDAT Example'
+GWSDAT_Options[['SiteName']]<-'Site 25 Chem data'
 GWSDAT_Options[['Version']]<-'2.11'
 GWSDAT_Options[['Version']]<-as.numeric(GWSDAT_Options[['Version']])
 XtempScreenExp<-as.character('1,6')
@@ -32,22 +32,34 @@ XtempScreenExp<-as.numeric(XtempScreenExp)
 YtempScreenExp<-as.numeric(YtempScreenExp)
 if(is.na(XtempScreenExp)){XtempScreenExp<-1}
 if(is.na(YtempScreenExp)){YtempScreenExp<-1}
-GWSDAT_Options[['Scale.panelImage']]<-list(hscale=as.numeric(XtempScreenExp),vscale=as.numeric(YtempScreenExp))
+GWSDAT_Options[['Scale.panelImage']] <- list(hscale = as.numeric(XtempScreenExp),vscale=as.numeric(YtempScreenExp))
 if(exists('YtempScreenExp')){rm(YtempScreenExp)}
 if(exists('XtempScreenExp')){rm(XtempScreenExp)}
 
-GWSDAT_Options[['WellDataFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellCoords.csv'
-GWSDAT_Options[['ShapeFileNames']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/GIS_Files/GWSDATex2.shp'
+
+GWSDAT_Options[['ShapeFileNames']] <- NULL
+
+#
+# Plume Areas (different Aquifer)
+#
+
+GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_concdata.csv'
+GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_wellcoords.csv'
 
 
-devtools::install_github("andrejadd/GWSDAT")
+#
+# Site wide (no Aquifer groups)
+#
 
-# only Debugging inside GWSDAT directoy:
-# devtools::load_all()
+#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_sitewide_concdata.csv'
+#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_sitewide_wellcoords.csv'
+#GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Railroads.shp')
+#GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Roads.shp')
+#GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Boundary.shp')
+#GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Buildings.shp')
 
-library(GWSDAT)
-options(shiny.launch.browser = TRUE)
+
+#devtools::install_github("andrejadd/GWSDAT")
+#library(GWSDAT)
+devtools::load_all()
 launchApp(GWSDAT_Options)
-
-
