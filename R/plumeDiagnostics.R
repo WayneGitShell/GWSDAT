@@ -10,15 +10,17 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
 
   for (i in 1:nr_timesteps) {
     
+    datetmp <- csite$All.Data$All.Agg.Dates[i]
+    
     progressBar$set(value = (i/nr_timesteps), detail = paste("time point ", i, " / ", nr_timesteps))
     
-    interp.pred <- interpConc(csite, substance, i)
+    interp.pred <- interpConc(csite, substance, datetmp)
     
-    plume_stats <- getPlumeStats(csite, substance, timestep = i, interp.pred$data, 
-                                 plume_thresh, ground_porosity)
+    plume_stats <- getPlumeStats(csite, substance, datetmp, 
+                                 interp.pred$data, plume_thresh, ground_porosity)
     
     # Add date. 
-    plume_stats = cbind(plume_stats, "Agg.Date" = csite$All.Data$All.Agg.Dates[i])
+    plume_stats = cbind(plume_stats, "Agg.Date" = datetmp)
     
     
     # Append to full plume stats table.
@@ -37,7 +39,7 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
 #'
 #' @param csite         GWSDAT data object.
 #' @param substance     Name of the contaminant.
-#' @param timestep      Time point for which to calculate the plume.
+#' @param timepoint     Time point (Date) for which to calculate the plume.
 #' @param predicted_val Predicted concentration values of the contaminant. 
 #' @param plume_thresh  Concentration limit defining the plume. 
 #' @param ground_porosity Porosity of the ground in percent. 
@@ -47,7 +49,7 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
 #' @importFrom splancs areapl
 getPlumeStats <- function(csite, 
                           substance, 
-                          timestep, 
+                          timepoint, 
                           predicted_val, 
                           plume_thresh, 
                           ground_porosity ) {
@@ -58,9 +60,6 @@ getPlumeStats <- function(csite,
   cL <- contourLines(predicted_val, levels = plume_thresh)
   
   model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
-  temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[timestep]
-  
-  
   
   PlumeDetails = list()
   
@@ -75,7 +74,7 @@ getPlumeStats <- function(csite,
         
         cL[[i]]$area <- splancs::areapl(cbind(cL[[i]]$x,cL[[i]]$y))
         tempPlumeQuant <- CalcPlumeStats(model.tune$best.mod,
-                                         AggDate = temp.time.eval,
+                                         AggDate = timepoint,
                                          cL[[i]],
                                          plume_thresh = plume_thresh,
                                          type  = csite$ui_attr$pred_interval,

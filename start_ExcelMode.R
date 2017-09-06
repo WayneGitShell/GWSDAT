@@ -21,7 +21,6 @@ GWSDAT_Options[['DefPorosity']]<-0.25
 GWSDAT_Options[['smThreshSe']]<-1.1512
 GWSDAT_Options[['smThreshSe']]<-as.numeric(GWSDAT_Options[['smThreshSe']])
 GWSDAT_Options[['smMethod']]<-'aicc'
-GWSDAT_Options[['SiteName']]<-'Site 25 Chem data'
 GWSDAT_Options[['Version']]<-'2.11'
 GWSDAT_Options[['Version']]<-as.numeric(GWSDAT_Options[['Version']])
 XtempScreenExp<-as.character('1,6')
@@ -39,12 +38,20 @@ if(exists('XtempScreenExp')){rm(XtempScreenExp)}
 
 GWSDAT_Options[['ShapeFileNames']] <- NULL
 
+#GWSDAT_Options[['SiteName']] <- 'Basic Example'
+#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellData.csv'
+#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellCoords.csv'
+
+GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
+GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellCoords.csv'
+
 #
 # Plume Areas (different Aquifer)
 #
 
-GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_concdata.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_wellcoords.csv'
+#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_concdata.csv'
+#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_wellcoords.csv'
 
 
 #

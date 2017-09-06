@@ -47,6 +47,11 @@ server <- function(input, output, session) {
   })
   
   
+  # Reactive element that will trigger inside an observer when Options are saved.
+  optionsSaved <- reactive({ 
+    input$save_analyse_options 
+  })
+  
   checkPlumeStats <- reactive({
     
     # Create a Progress object
@@ -139,6 +144,7 @@ server <- function(input, output, session) {
   })
   
   
+  
   # Plot time-series window
   output$time_series <- renderPlot({
     
@@ -168,12 +174,6 @@ server <- function(input, output, session) {
     
   })
   
-  
-  # Reactive element that will trigger inside an observer when Options are saved.
-  optionsSaved <- reactive({ 
-    input$save_analyse_options 
-  })
-
   
   #
   # Plot ImagePlot
@@ -205,7 +205,7 @@ server <- function(input, output, session) {
     ##       I have them here to have renderPlot() called whenever they change.
     ##       I don't know yet how to trigger this renderPlot from observeEvents().
     ##  + I've got two places where I store aggr., need to clean this mess up. 
-    csite$GWSDAT_Options$Aggby <<- input$aggregate_data
+    #csite$GWSDAT_Options$Aggby <<- input$aggregate_data
     csite$ui_attr$aggregate_selected <<- input$aggregate_data
     
     
@@ -219,7 +219,14 @@ server <- function(input, output, session) {
     
     #Rprof("Rprof_plotSpatialImage.out")
     #replicate(n = 30, plotSpatialImage(csite, input$solute_select_contour, input$time_steps))
-    plotSpatialImage(csite, input$solute_select_contour, input$time_steps)
+    
+    #
+    # On first execution input$timepoint_sp is "", fix this - see sliderValues.R.
+    #
+    if (input$timepoint_sp == "")
+      plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%b-%Y"))
+    else
+      plotSpatialImage(csite, input$solute_select_contour, as.Date(input$timepoint_sp, "%d-%b-%Y"))
     #Rprof(NULL)
     
     #png("tprofile.png")
@@ -233,30 +240,19 @@ server <- function(input, output, session) {
   # Plot Traffic Lights Table
   #
   output$traffic_table <- renderPlot({
-    
-    #
-    # Update control attributes from reactive variables. 
-    #
-    
-    csite$ui_attr$trend_thresh_selected <<-  input$trend_or_threshold
-    csite$ui_attr$trend_color_selected  <<- input$traffic_color
-    
-    
-    ##
-    ## Note: There are separate observeEvents() for the following variables. 
-    ##       I have them here to have renderPlot() called whenever they change.
-    ##       I don't know yet how to trigger this renderPlot from observeEvents().
-    ##
-    csite$GWSDAT_Options$Aggby <<- input$aggregate_data_traffic
-    csite$ui_attr$aggregate_selected <<- input$aggregate_data
-    
-    plotTrendTable(csite, input$time_steps_traffic)
+
+    if (input$timepoint_tt == "")
+      plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"),
+                     input$trend_or_threshold, input$traffic_color)
+    else
+      plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%b-%Y"),
+                     input$trend_or_threshold, input$traffic_color)
     
   })
   
   
   # Plot the legend for the traffic lights table.
-  output$plot_legend_traffic <- renderPlot({ plotTrendTableLegend()  })
+  output$plot_legend_traffic <- renderPlot({plotTrendTableLegend()  })
   
   
   #
@@ -300,8 +296,12 @@ server <- function(input, output, session) {
       
     csite$Fitted.Data <<- Fitted.Data
       
-    # Update time step range.
-    csite$ui_attr$timestep_range <<- c(1, length(csite$All.Data$All.Agg.Dates))
+    # Update UI time points of slider.
+    dates_tmp <- format(csite$All.Data$All.Agg.Dates, "%d-%b-%Y")
+    csite$ui_attr$timepoints   <<- dates_tmp
+    csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
+    csite$ui_attr$timepoint_tt <<- csite$ui_attr$timepoint_sp
+    
     
   }
   
@@ -417,53 +417,42 @@ server <- function(input, output, session) {
   #
   
   
-  #
-  # These two observers are likely to be the cause for github issue #48.
-  #  Time steps of sliders are not mirrored right now. Maybe something for later.
-  #
-  # Mirror time step selection in different tabs.
-  # observeEvent(input$time_steps_traffic, {
-  #   updateSliderInput(session, "time_steps", value = input$time_steps_traffic) 
-  # })
-  # 
-  # observeEvent(input$time_steps, {
-  #   updateSliderInput(session, "time_steps_traffic", value = input$time_steps) 
-  # })
-  # 
   
   # Re-aggregate the data and mirror the controls in the 'Traffic Lights' tab.
-  observeEvent(input$aggregate_data, {
-    
-    if (csite$GWSDAT_Options$Aggby != input$aggregate_data) {
-      reaggregateData(input$aggregate_data)
-      
-      # Update time step slider in this panel.
-      updateSliderInput(session, "time_steps", value = csite$timestep_range[1], 
-                        min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
-      
-      # Mirror aggregation type to trend table.
-      updateSelectInput(session, "aggregate_data_traffic", selected = input$aggregate_data ) 
-      
-    }
-  })
+  #observeEvent(input$aggregate_data, {
+  #  
+  #  if (csite$GWSDAT_Options$Aggby != input$aggregate_data) {
+  #    reaggregateData(input$aggregate_data)
+  #    
+  #    # Update time step slider in this panel.
+  #    updateSliderInput(session, "time_steps", value = csite$timestep_range[1], 
+  #                      min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
+  #    
+  #    # Mirror aggregation type to trend table.
+  #    updateSelectInput(session, "aggregate_data_traffic", selected = input$aggregate_data ) 
+  #    
+  #  }
+  #})
   
   
   # Re-aggregate the data and mirror the controls in the 'Spatial Plot' tab.
-  observeEvent(input$aggregate_data_traffic, {
-    
-    if (csite$GWSDAT_Options$Aggby != input$aggregate_data_traffic) {
-      reaggregateData(input$aggregate_data_traffic)
-    
-      # Update time step slider in this panel.
-      updateSliderInput(session, "time_steps_traffic", value = csite$timestep_range[1], 
-                        min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
-      
-      # Mirror aggregation type to spatial plot.
-      updateSelectInput(session, "aggregate_data", selected = input$aggregate_data_traffic ) 
-      
-    }
-  })
-  
+  # observeEvent(input$aggregate_data_traffic, {
+  #   
+  #   if (csite$GWSDAT_Options$Aggby != input$aggregate_data_traffic) {
+  #     reaggregateData(input$aggregate_data_traffic)
+  #   
+  #     # Update time step slider in this panel.
+  #     updateSliderInput(session, "timepoint_tt", 
+  #                       min = csite$All.Data$All.Agg.Dates[1], 
+  #                       max = csite$All.Data$All.Agg.Dates[length(csite$All.Data$All.Agg.Dates)],
+  #                       value = csite$All.Data$All.Agg.Dates[length(csite$All.Data$All.Agg.Dates)],
+  #     
+  #     # Mirror aggregation type to spatial plot.
+  #     updateSelectInput(session, "aggregate_data", selected = input$aggregate_data_traffic ) 
+  #     
+  #   }
+  # })
+  # 
   #
   # Triggers when the 'Aquifer Group' input selection is changed.
   #  Not in use right now: need to decide where to put the Aquifer decision:
@@ -551,7 +540,7 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "ppt") {
         
-        plotSpatialImagePPT(csite, input$solute_select_contour, input$time_steps,
+        plotSpatialImagePPT(csite, input$solute_select_contour, input$timepoint_sp,
                        width  = input$img_width_px  / csite$ui_attr$img_ppi,
                        height = input$img_height_px / csite$ui_attr$img_ppi)
       
@@ -563,7 +552,7 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
           if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           
-          plotSpatialImage(csite, input$solute_select_contour, input$time_steps)
+          plotSpatialImage(csite, input$solute_select_contour, input$timepoint_sp)
           dev.off()
       }
       
@@ -581,7 +570,11 @@ server <- function(input, output, session) {
       
       if (input$export_format_tt == "ppt") {
         
-        plotTrendTablePPT(csite, input$time_steps_traffic, 
+        if (input$timepoint_tt == "")
+          plotTrendTablePPT(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"),  input$trend_or_threshold, input$traffic_color,  
+                            width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
+        else
+          plotTrendTablePPT(csite, as.Date(input$timepoint_tt, "%d-%b-%Y"),  input$trend_or_threshold, input$traffic_color,  
                           width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
         
       } else {
@@ -592,7 +585,11 @@ server <- function(input, output, session) {
         if (input$export_format_tt == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
         if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         
-        plotTrendTable(csite, input$time_steps_traffic)
+        if (input$timepoint_tt == "")
+          plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"), input$trend_or_threshold, input$traffic_color) 
+        else        
+          plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%b-%Y"),  input$trend_or_threshold, input$traffic_color)
+        
         dev.off()
       }
       
@@ -711,7 +708,7 @@ server <- function(input, output, session) {
   
   # Generate PPT with trend table animation.
   observeEvent(input$generate_trendtable_anim_ppt, {
-    makeTrendTableAnimation(csite)
+    makeTrendTableAnimation(csite, input$trend_or_threshold, input$traffic_color)
   })
   
   
@@ -923,10 +920,17 @@ server <- function(input, output, session) {
   #
   observeEvent(input$analyse_panel, {
     if (input$analyse_panel == "Spatial Plot" || input$analyse_panel == "Trends & Thresholds") {
-      if ( (.Platform$OS.type == "windows")) {
-        shinyjs::show(id = "save_spatial_ppt_anim")
-        shinyjs::show(id = "save_trendtable_ppt_anim")
-      }
+      
+      #
+      # Check here if RDCOMClient is available (requireNames(), see Suggests: in
+      #  DESCRIPTION).
+      #
+      # Disable for now because RDCOMClient:COMCreate() is not working (github #170)
+      
+      #if ( (.Platform$OS.type == "windows")) {
+      #  shinyjs::show(id = "save_spatial_ppt_anim")
+      #  shinyjs::show(id = "save_trendtable_ppt_anim")
+      #}
     }
   })
   
@@ -1469,7 +1473,8 @@ server <- function(input, output, session) {
   
   output$rndAnalyse <- renderUI({
    
-    html_out = NULL
+    html_out <- NULL
+    
     
     # Observe load status of data.
     data_load_status <- dataLoaded()

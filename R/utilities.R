@@ -95,11 +95,12 @@ existsNAPL <- function(All.Data, well, solute) {
 }
 
 
-
+#' @import RDCOMClient
 setupPPV2 <- function(){
   
-  ppt <<- CCOMCreate("PowerPoint.Application")
+  ppt <<- COMCreate("PowerPoint.Application")
   ppt[["Visible"]] <<- TRUE
+  
   myPres <<- ppt[["Presentations"]]$add()
   mySlides <<- myPres[["Slides"]]
   
@@ -113,16 +114,22 @@ AddPlotPPV2 <- function(wmf_file, width, height){
 
   calledsetupPP <- FALSE
   
-  CheckPPT <- exists('ppt', envir = globalenv())
-  
-  if (CheckPPT == FALSE) {
+  if (is.null(ppt)) {
     setupPPV2() 
-    calledsetupPP = TRUE 
-    CheckPPT = TRUE
+    calledsetupPP <- TRUE 
+    CheckPPT <- TRUE
   }
   
+  # CheckPPT <- exists('ppt', envir = globalenv())
   
-  CheckPPT2 <- try(as.logical(ppt[['Visible']]),silent = TRUE)
+  #if (CheckPPT == FALSE) {
+  #  setupPPV2() 
+  #  calledsetupPP = TRUE 
+  #  CheckPPT = TRUE
+  #}
+  
+  
+  CheckPPT2 <- try(as.logical(ppt[['Visible']]), silent = TRUE)
   if (inherits(CheckPPT2, "try-error")) {CheckPPT2 <- FALSE}
   
   

@@ -1,11 +1,9 @@
 
 #' @importFrom splancs gridpts areapl
-interpConc <- function(csite, substance, timestep) {
-  
+interpConc <- function(csite, substance, timepoint) {
   
   model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
   Well.Coords    <- csite$All.Data$sample_loc$data
-  temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[timestep]
   Col.Option     <- csite$ui_attr$spatial_options["Scale colours to Data"]
   
   #
@@ -13,8 +11,8 @@ interpConc <- function(csite, substance, timestep) {
   #
   tmp_cont <- csite$Fitted.Data[[substance]]$Cont.Data
   
-  tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= temp.time.eval,]$WellName)
-  tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= temp.time.eval,]$WellName)
+  tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= timepoint,]$WellName)
+  tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= timepoint,]$WellName)
   
   Good.Wells <- intersect(as.character(tmp_wells_earlier), as.character(tmp_wells_later))
   
@@ -79,7 +77,7 @@ interpConc <- function(csite, substance, timestep) {
   colnames(eval.df)[1:2] <- c("XCoord","YCoord")
   try(rownames(eval.df) <- NULL)
   eval.df <- as.data.frame(eval.df)
-  eval.df$AggDate = rep(temp.time.eval,nrow(eval.df))
+  eval.df$AggDate = rep(timepoint,nrow(eval.df))
   
   
   #

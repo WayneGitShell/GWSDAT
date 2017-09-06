@@ -1,11 +1,11 @@
 Package: GWSDAT
 Title: GroundWater Spatiotemporal Data Analysis Tool (GWSDAT)
-Version: 3.0.0.9006
+Version: 3.0.0.9007
 Author: Wayne W Jones <wayne.w.jones@shell.com>, Andrej Aderhold <andrej.aderhold@protonmail.com>
 Maintainer: Andrej Aderhold <andrej.aderhold@protonmail.com>
 Description: Analysis of groundwater monitoring data, designed to work with simple time-series data for solute concentration and ground water elevation, but can also plot non-aqueous phase liquid (NAPL) thickness if required. Also provides the import of a site basemap in GIS shapefile format.
 Depends: R (>= 3.4.1)
-Imports: shiny, shinyjs, shinydashboard, shinycssloaders, sm, zoo, splancs, Kendall, deldir, maptools, geometry, Matrix, readxl, MASS, lattice, sp, rhandsontable
+Imports: shiny, shinyjs, shinydashboard, shinycssloaders, sm, zoo, splancs, Kendall, deldir, maptools, geometry, Matrix, readxl, MASS, lattice, sp, rhandsontable, RDCOMClient
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

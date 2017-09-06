@@ -25,9 +25,10 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$ts_options <- ts_options
   ui_attr$napl_present <- FALSE
   
-  ui_attr$timestep_range <- c(1, length(All.Data$All.Agg.Dates))
-  ui_attr$spatial_timestep_selected <- ui_attr$timestep_range[2]
-  ui_attr$trend_timestep_selected   <- ui_attr$timestep_range[2]
+  ui_attr$timepoints <- format(All.Data$All.Agg.Dates, "%d-%b-%Y")
+  ui_attr$timepoint_sp <- ui_attr$timepoints[length(ui_attr$timepoints)]
+  ui_attr$timepoint_tt <- ui_attr$timepoints[length(ui_attr$timepoints)]
+
   ui_attr$contour_types <- c("Conc-Terrain", "Conc-Topo","Conc-GreyScale","Conc-Terrain-Circles","Conc-Topo-Circles","Conc-GreyScale-Circles", if (!is.null(All.Data$NAPL.Thickness.Data)) {"NAPL-Circles"})  
   ui_attr$contour_selected <- ui_attr$contour_types[1]
   

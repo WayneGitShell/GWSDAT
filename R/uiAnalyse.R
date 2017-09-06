@@ -3,10 +3,37 @@
 #' @importFrom shinyjs hidden
 # #' @importFrom shinydashboard box 
 uiAnalyse <- function(csite) {
+  
+  #
+  # This code is from the Superzip Shiny Gallery App.
+  #  It is supposed to change the CSS style of a panel (the dragable time control).
+  #  Unfortunately, it does not work here.. maybe move it somewhere else or load
+  #  from .css file.
+  #
+  #   shiny::tags$head(
+  #     shiny::tags$style(HTML("
+  #                             
+  #                            #timecontrol_sp {
+  #                            /* Appearance */
+  #                            background-color: white;
+  #                            padding: 0 20px 20px 20px;
+  #                            cursor: move;
+  #                            /* Fade out while not hovering */
+  #                            opacity: 0.65;
+  #                            zoom: 0.9;
+  #                            transition: opacity 500ms 1s;
+  # }
+  # 
+  # #timecontrol_sp {
+  # /* Fade in while hovering */
+  # opacity: 0.95;
+  # transition-delay: 0;
+  # }"
+  #   )))
+  #   
 
- #browser()
  #corner_element = HTML(paste0(tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
-  corner_element = HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name)) # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
+  corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name)) # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
   navbarPage(corner_element, windowTitle = csite$ui_attr$site_name, id = "analyse_panel",              
               
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
@@ -29,11 +56,9 @@ uiAnalyse <- function(csite) {
                                                    choices = names(csite$ui_attr$ts_options),
                                                    selected = names(which(csite$ui_attr$ts_options == TRUE)))
                                 
-                               
-                       #       )
                        ),
                        
-                       shinydashboard::box(width = 7, status = "primary",
+                       shinydashboard::box(width = 9, status = "primary",
                            plotOutput("time_series"),
                            
                            div(style = "display: inline-block;",
@@ -59,12 +84,7 @@ uiAnalyse <- function(csite) {
               tabPanel("Spatial Plot", id = "contour_tab", fluid = TRUE,
                        
                        shinydashboard::box(width = 3, status = "warning", title = "Settings",
-                                #
-                                # Did not decided yet where to put this (here or data manager).
-                                #
-                                #div(id = "select_aquifer_contour", 
-                                #    selectInput("aquifer_contour", label = "Aquifer Group", choices = csite$All.Data$Aq_list,
-                                #                                       selected = csite$All.Data$Aq.sel, width = '80%') ),
+                               
                                 selectInput("solute_select_contour", label = "Substance", choices = csite$ui_attr$substance_names,
                                             selected = csite$ui_attr$substance_selected, width = '80%'),
                                 
@@ -89,7 +109,7 @@ uiAnalyse <- function(csite) {
                        ),
                        
                        
-                       shinydashboard::box(width = 7, status = "primary",
+                       shinydashboard::box(width = 9, status = "primary",
                             plotOutput("image_plot"),
                            
                             div(style = "display: inline-block;", 
@@ -114,18 +134,31 @@ uiAnalyse <- function(csite) {
                             )
                             
                        ),
+                       absolutePanel(id = "timecontrol_sp", class = "panel panel-default", 
+                                     fixed = TRUE, draggable = TRUE, top = "auto", 
+                                     left = "auto", right = 20, bottom = 20,
+                                     width = 330, height = 110,
                        
-                       column(2, 
-                              sliderInput("time_steps", "Time Step",
-                                          min = csite$ui_attr$timestep_range[1], 
-                                          max = csite$ui_attr$timestep_range[2], 
-                                          value = csite$ui_attr$spatial_timestep_selected, 
-                                          step = 1,
-                                          animate = animationOptions(loop = TRUE)),
-                              selectInput("aggregate_data", label = "Aggregate Data", 
-                                          choices  = csite$ui_attr$aggregate_list,
-                                          selected = csite$ui_attr$aggregate_selected , 
-                                          width = "100%")
+                              div(style = "margin-left: 15px; margin-top: 5px",
+                              sliderValues(
+                                inputId = "timepoint_sp", label = "Time Point", width = "95%",
+                                values = csite$ui_attr$timepoints, 
+                                from = csite$ui_attr$timepoint_sp,
+                                #to = csite$ui_attr$choices_month[6],
+                                grid = TRUE, animate = animationOptions(interval = 1500, loop = TRUE)
+                              ))
+                              #sliderInput("timepoint_sp", "Time Point",
+                              #            min = csite$ui_attr$timepoint_range[1],
+                              #            max = csite$ui_attr$timepoint_range[2],
+                              #            value = csite$ui_attr$timepoint_spatial_selected,
+                              #            timeFormat = "%d-%m-%Y",
+                              #            animate = animationOptions(loop = TRUE)
+                              #            ) # ,
+                              
+                              # selectInput("aggregate_data", label = "Aggregate Data", 
+                              #             choices  = csite$ui_attr$aggregate_list,
+                              #             selected = csite$ui_attr$aggregate_selected , 
+                              #             width = "100%")
                        )
               ), # end tabPanel
               
@@ -134,12 +167,6 @@ uiAnalyse <- function(csite) {
               tabPanel("Trends & Thresholds", fluid = TRUE,
                        
                        shinydashboard::box(width = 3, status = "warning", title = "Settings",
-                                #
-                                # Did not decided yet where to put this (here or data manager).
-                                #
-                                #div(id = "select_aquifer_traffic", 
-                                #    selectInput("aquifer_traffic", label = "Aquifer Group", choices = csite$All.Data$Aq_list,
-                                #                selected = csite$All.Data$Aq.sel, width = '80%') ),
                                 
                                 radioButtons("trend_or_threshold", label = "Display Table",
                                              choices  = csite$ui_attr$trend_thresh_list, 
@@ -150,7 +177,7 @@ uiAnalyse <- function(csite) {
                        ),
                        
                        
-                       shinydashboard::tabBox(title = "Trends & Thresholds", width = 7, 
+                       shinydashboard::tabBox(title = "Trends & Thresholds", width = 9, 
                               
                         tabPanel("Indicator Table", 
                                  
@@ -181,23 +208,37 @@ uiAnalyse <- function(csite) {
                                  
                                  )
                        ),
+                       absolutePanel(id = "timecontrol_tt", class = "panel panel-default", 
+                                     fixed = TRUE, draggable = TRUE, top = "auto", 
+                                     left = "auto", right = 20, bottom = 20,
+                                     width = 330, height = 110,
+                                     
+                                     div(style = "margin-left: 15px; margin-top: 5px",
+                                         sliderValues(
+                                           inputId = "timepoint_tt", label = "Time Point", width = "95%",
+                                           values = csite$ui_attr$timepoints, 
+                                           from = csite$ui_attr$timepoint_tt,
+                                           #to = csite$ui_attr$choices_month[6],
+                                           grid = TRUE, animate = animationOptions(interval = 1500, loop = TRUE)
+                                         ))
+                       )
+                       # column(2,
+                       #        sliderInput("timepoint_tt", "Time Point",
+                       #                    min = csite$ui_attr$timepoint_range[1],
+                       #                    max = csite$ui_attr$timepoint_range[2],
+                       #                    value = csite$ui_attr$timepoint_spatial_selected,
+                       #                    timeFormat = "%d-%m-%Y",
+                       #                    animate = animationOptions(loop = TRUE)
+                       #        )#,
+                       #        
+                       #        # selectInput("aggregate_data_traffic", label = "Aggregate Data", 
+                       #        #             choices  = csite$ui_attr$aggregate_list,
+                       #        #             selected = csite$ui_attr$aggregate_selected, 
+                       #        #             width = "100%")
+                       # ) 
                        
-                       column(2,
-                              sliderInput("time_steps_traffic", "Time Step",
-                                          min   = csite$ui_attr$timestep_range[1], 
-                                          max   = csite$ui_attr$timestep_range[2], 
-                                          value = csite$ui_attr$trend_timestep_selected, 
-                                          step = 1,
-                                          animate = animationOptions(loop = TRUE)),
-                              selectInput("aggregate_data_traffic", label = "Aggregate Data", 
-                                          choices  = csite$ui_attr$aggregate_list,
-                                          selected = csite$ui_attr$aggregate_selected, 
-                                          width = "100%")
-                       ) 
-                       
-              ),
-              #, # end tabPanel
-             
+              ), # end tabPanel
+
               navbarMenu("More",
                   tabPanel("Well Report", fluid = TRUE, 
                            uiWellReport(csite) ),

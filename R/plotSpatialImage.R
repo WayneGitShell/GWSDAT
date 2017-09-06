@@ -1,10 +1,13 @@
 
 
 
-plotSpatialImage <- function(csite, substance, timestep = 1) {
+plotSpatialImage <- function(csite, substance, timepoint = NULL) {
+  
+  if (is.null(timepoint) || class(timepoint) != "Date")
+    stop("Need to specify valid timepoint of class \"Date\".")
   
   # make interpolation
-  interp.pred <- interpConc(csite, substance, timestep)
+  interp.pred <- interpConc(csite, substance, timepoint)
   
   
   
@@ -12,12 +15,12 @@ plotSpatialImage <- function(csite, substance, timestep = 1) {
   plume_stats <- NULL
   if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
 
-    plume_stats <- getPlumeStats(csite, substance, timestep, interp.pred$data, 
+    plume_stats <- getPlumeStats(csite, substance, timepoint, interp.pred$data, 
                                 csite$ui_attr$plume_thresh[substance], 
                                 csite$ui_attr$ground_porosity)
   }
   
-  plotSpatialImage_main(csite, substance, timestep, interp.pred, plume_stats)
+  plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
 
 }
   
@@ -25,7 +28,7 @@ plotSpatialImage <- function(csite, substance, timestep = 1) {
 
 
 
-plotSpatialImage_main <- function(csite, substance = " ", timestep = 1, 
+plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL, 
                                   pred = NULL, plume_stats = NULL) { 
   
   interp.pred  <- pred$data
@@ -56,9 +59,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
  
   Well.Coords <- csite$All.Data$sample_loc$data
   
-  
-  temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[timestep]
-  temp.time.frac <- as.numeric(temp.time.eval - min(csite$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval)))
+  temp.time.frac <- as.numeric(timepoint - min(csite$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval)))
   
   try(if (temp.time.frac == 1) {temp.time.frac = .999}) # to avoid plot issue with wmf format!
   try(if (temp.time.frac == 0) {temp.time.frac = .001})
@@ -66,17 +67,17 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
   
 
   
-  date.to.print <-  format(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
+  date.to.print <-  format(timepoint, "%d-%b-%Y")
   
   if (csite$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")) {
     
     if (csite$GWSDAT_Options$Aggby == "Monthly") {
       
-      date.range.to.print <- seq.Date(as.Date(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-1 month", length.out = 2)
+      date.range.to.print <- seq.Date(timepoint, by = "-1 month", length.out = 2)
       
     } else {
       
-      date.range.to.print <- seq.Date(as.Date(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep])), by = "-3 month", length.out = 2)
+      date.range.to.print <- seq.Date(timepoint, by = "-3 month", length.out = 2)
       
     }	
     
@@ -91,7 +92,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
   
   model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
   temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
-  temp.Cont.Data <- temp.Cont.Data[temp.Cont.Data$AggDate == temp.time.eval,]
+  temp.Cont.Data <- temp.Cont.Data[temp.Cont.Data$AggDate == timepoint,]
   temp.Cont.Data$log.Resid <- log(temp.Cont.Data$Result.Corr.ND) - log(temp.Cont.Data$ModelPred)
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") {
@@ -143,7 +144,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
   if (!inherits(GWFlows, "try-error")) {
     
     
-    temp.GW.Flows <- GWFlows[as.numeric(GWFlows$AggDate) == temp.time.eval,]
+    temp.GW.Flows <- GWFlows[as.numeric(GWFlows$AggDate) == timepoint,]
     
     if (!is.null(csite$ui_attr$gw_selected) && csite$ui_attr$gw_selected != "None") {
       
@@ -278,7 +279,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
     Do.Image <- FALSE
     interp.pred$z[,] <- NA
     NAPL.Thickness.Data <- csite$All.Data$NAPL.Thickness.Data
-    temp.NAPL.Data <- NAPL.Thickness.Data[NAPL.Thickness.Data$AggDate == temp.time.eval,]
+    temp.NAPL.Data <- NAPL.Thickness.Data[NAPL.Thickness.Data$AggDate == timepoint,]
     
     lev_cut <- attributes(NAPL.Thickness.Data)$lev_cuts
     NAPL.Wells <- attributes(NAPL.Thickness.Data)$NAPL.Wells
@@ -421,14 +422,14 @@ plotSpatialImage_main <- function(csite, substance = " ", timestep = 1,
 }
 
 
-plotSpatialImagePPT <- function(csite, substance, timestep,
+plotSpatialImagePPT <- function(csite, substance, timepoint,
                            width = 7, height = 5){
  
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
   win.metafile(mytemp, width = width, height = height) 
-  plotSpatialImage(csite, substance, timestep = timestep)
+  plotSpatialImage(csite, substance, timepoint)
   dev.off()
    
   # Put into powerpoint slide.
@@ -450,29 +451,28 @@ makeSpatialAnimation <- function(csite, substance,
   full_plume_stats <- NULL 
  
   # Loop over each time step.. 
-  for (i in csite$ui_attr$timestep_range[1]:csite$ui_attr$timestep_range[2]) {
+  for (timepoint in csite$All.Data$All.Agg.Dates) {
  
     # Do the interpolation.
-    interp.pred <- interpConc(csite, substance, i)
+    interp.pred <- interpConc(csite, substance, timepoint)
     
     # Create plume statistics if needed.
     #
     # Note: This is a duplicate from function getFullPlumeStats(). It could be called 
     #       separately and before plotSpatialImage_main(). However, both functions
     #       depend on interpConc() and I don't like to call it twice.
-    #       Fixme: Call interpConc() separately, and pass results for each timestep 
+    #       Fixme: Call interpConc() separately, and pass results for each timepoint
     #              to getPlumeStats() and plotSpatialImage_main().
     #
     plume_stats <- NULL
     if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
       
-      plume_stats <- getPlumeStats(csite, substance, timestep = i, interp.pred$data, 
+      plume_stats <- getPlumeStats(csite, substance, timepoint, interp.pred$data, 
                                    csite$ui_attr$plume_thresh[substance], 
                                    csite$ui_attr$ground_porosity)
     
       # Add date. 
-      plume_stats = cbind(plume_stats, "Agg.Date" = csite$All.Data$All.Agg.Dates[i])
-      
+      plume_stats = cbind(plume_stats, "Agg.Date" = timepoint)
       
       # Append to full plume stats table.
       if (is.null(full_plume_stats))
@@ -486,7 +486,7 @@ makeSpatialAnimation <- function(csite, substance,
     mytemp <- tempfile(fileext = ".wmf")
   
     win.metafile(mytemp, width = width, height = height) 
-    plotSpatialImage_main(csite, substance, timestep = i, interp.pred, plume_stats)
+    plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
     dev.off()
     
     AddPlotPPV2(mytemp, width, height) 
@@ -523,8 +523,8 @@ GWSDAT.GW.Contour <- function(temp.GW.Flows){
                      control = loess.control(surface = c("interpolate", "direct")[1])),
                silent = T)
   
-  if (inherits(my.lo, "try-error")) {options(warn=0); stop("Unable to fit loess")}
-  options(warn=0)
+  if (inherits(my.lo, "try-error")) {options(warn = 0); stop("Unable to fit loess")}
+  options(warn = 0)
   xo=seq(min(temp.GW.Flows$XCoord),max(temp.GW.Flows$XCoord),l=40)
   yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
   my.df<-expand.grid(XCoord=xo,YCoord=yo)

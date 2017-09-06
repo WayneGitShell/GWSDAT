@@ -144,7 +144,11 @@ readConcData <- function(input_file, ...) {
   # However, these mods are made before showing up in the import table, but
   # the format function is called only when the import button is pressed.
   DF$Flags[is.na(DF$Flags)] <- ""
-  DF$Result[is.na(DF$Result)] <- 0
+  
+  # Converting it to character (from numeric or factor) makes it possible to replace
+  # NA values (if factor). formatData() will later convert it to numeric values.
+  DF$Result <- as.character(DF$Result) 
+  DF$Result[is.na(DF$Result)] <- "0"
   
   DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
   

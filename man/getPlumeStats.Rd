@@ -4,7 +4,7 @@
 \alias{getPlumeStats}
 \title{Calculate the plume statistics including mass, area, center, and average concentration for a specific time point.}
 \usage{
-getPlumeStats(csite, substance, timestep, predicted_val, plume_thresh,
+getPlumeStats(csite, substance, timepoint, predicted_val, plume_thresh,
   ground_porosity)
 }
 \arguments{
@@ -12,7 +12,7 @@ getPlumeStats(csite, substance, timestep, predicted_val, plume_thresh,
 
 \item{substance}{Name of the contaminant.}
 
-\item{timestep}{Time point for which to calculate the plume.}
+\item{timepoint}{Time point (Date) for which to calculate the plume.}
 
 \item{predicted_val}{Predicted concentration values of the contaminant.}
 

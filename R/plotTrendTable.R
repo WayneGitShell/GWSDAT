@@ -1,37 +1,38 @@
 
 
 
-plotTrendTable <- function(csite, timestep = 1){
+plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend", 
+                           color_type = "All") {
   
- 
-  date.to.print <- format(as.Date(csite$Fitted.Data[[1]]$Time.Eval[timestep]),"%d-%b-%Y")
+  if (is.null(timepoint) || class(timepoint) != "Date")
+    stop("Need to specify valid timepoint of class \"Date\".")
   
   
-  if (csite$ui_attr$trend_thresh_selected == "Trend") {
+  if (display_type == "Trend") {
     
-    temp.traffic.Beta.ND.Check <- csite$Traffic.Lights$Beta.ND.Check[,,timestep,drop = F]
-    temp.traffic.Betas <- csite$Traffic.Lights$Betas[,,timestep,drop = F]
+    temp.traffic.Beta.ND.Check <- csite$Traffic.Lights$Beta.ND.Check[,, as.character(timepoint), drop = F]
+    temp.traffic.Betas <- csite$Traffic.Lights$Betas[,,as.character(timepoint), drop = F]
     Well.Names <- dimnames(temp.traffic.Betas)[[1]]
     Cont.Names <- dimnames(temp.traffic.Betas)[[2]]
   }
   
-  if (csite$ui_attr$trend_thresh_selected == "Threshold - Statistical") {
+  if (display_type == "Threshold - Statistical") {
     
-    temp.traffic.Beta.ND.Check <- csite$Traffic.Lights$Beta.ND.Check[,,timestep, drop = F]
-    temp.traffic.Ulims <- csite$Traffic.Lights$Smooth.Upper.lims[,,timestep,drop=F]
+    temp.traffic.Beta.ND.Check <- csite$Traffic.Lights$Beta.ND.Check[,,as.character(timepoint), drop = F]
+    temp.traffic.Ulims <- csite$Traffic.Lights$Smooth.Upper.lims[,, as.character(timepoint), drop = F]
     Well.Names <- dimnames(temp.traffic.Ulims)[[1]]
     Cont.Names <- dimnames(temp.traffic.Ulims)[[2]]
     
   }
   
-  if (csite$ui_attr$trend_thresh_selected == "Threshold - Absolute") {
+  if (display_type == "Threshold - Absolute") {
     
-    temp.traffic.Abs.Thresh.Check <- csite$Traffic.Lights$Abs.Thresh.Check[,,timestep,drop=F]
+    temp.traffic.Abs.Thresh.Check <- csite$Traffic.Lights$Abs.Thresh.Check[,, as.character(timepoint), drop = F]
     Well.Names <- dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
     Cont.Names <- dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
   }
   
-  
+  # DON'T USE SUBSET! ITS A BASE PCK FCT.
   # if (subset == TRUE) {
   #   
   #   if(length(Cont.Names)==1){Cont.Names<-Cont.Names[1]}else{Cont.Names<-GWSDAT.select.list(Cont.Names,multiple =T,title = "Select Solutes to Plot",preselect=Cont.Names)}
@@ -42,17 +43,17 @@ plotTrendTable <- function(csite, timestep = 1){
   #   
   # }
   
-  if(csite$ui_attr$trend_thresh_selected=="Trend"){
+  if (display_type == "Trend") {
     
-    temp.traffic.Beta.ND.Check<-csite$Traffic.Lights$Beta.ND.Check[Well.Names,Cont.Names,timestep,drop=F]
-    temp.traffic.Betas<-csite$Traffic.Lights$Betas[Well.Names,Cont.Names,timestep,drop=F]
-    temp.traffic.Betas[!is.finite(temp.traffic.Betas)]<-NA
-    temp.traffic.Betas<-zapsmall(temp.traffic.Betas)
+    temp.traffic.Beta.ND.Check <- csite$Traffic.Lights$Beta.ND.Check[Well.Names, Cont.Names, as.character(timepoint), drop = F]
+    temp.traffic.Betas <- csite$Traffic.Lights$Betas[Well.Names, Cont.Names, as.character(timepoint), drop = F]
+    temp.traffic.Betas[!is.finite(temp.traffic.Betas)] <- NA
+    temp.traffic.Betas <- zapsmall(temp.traffic.Betas)
     
-    Well.Names<-dimnames(temp.traffic.Betas)[[1]]
-    Cont.Names<-dimnames(temp.traffic.Betas)[[2]]
-    Num.Conts<-length(Cont.Names)
-    Num.Wells<-length(Well.Names)
+    Well.Names <- dimnames(temp.traffic.Betas)[[1]]
+    Cont.Names <- dimnames(temp.traffic.Betas)[[2]]
+    Num.Conts <- length(Cont.Names)
+    Num.Wells <- length(Well.Names)
     
     my.palette<-c("#1A9641","#A6D96A","White","#FDAE61","#D7191C")
     my.breaks<-c(-Inf, -0.0019,  -0.000949, 0.000949,0.0019 ,Inf) # 
@@ -66,13 +67,13 @@ plotTrendTable <- function(csite, timestep = 1){
     
   }
   
-  if(csite$ui_attr$trend_thresh_selected=="Threshold - Statistical"){
+  if(display_type=="Threshold - Statistical"){
     
-    temp.traffic.Beta.ND.Check<-csite$Traffic.Lights$Beta.ND.Check[Well.Names,Cont.Names,timestep,drop=F]
-    temp.traffic.Ulims<-csite$Traffic.Lights$Smooth.Upper.lims[Well.Names,Cont.Names,timestep,drop=F]
-    Well.Names<-dimnames(temp.traffic.Ulims)[[1]]
-    Cont.Names<-dimnames(temp.traffic.Ulims)[[2]]
-    Num.Conts<-length(Cont.Names)
+    temp.traffic.Beta.ND.Check<-csite$Traffic.Lights$Beta.ND.Check[Well.Names, Cont.Names, as.character(timepoint), drop = F]
+    temp.traffic.Ulims<-csite$Traffic.Lights$Smooth.Upper.lims[Well.Names, Cont.Names, as.character(timepoint), drop = F]
+    Well.Names <- dimnames(temp.traffic.Ulims)[[1]]
+    Cont.Names <- dimnames(temp.traffic.Ulims)[[2]]
+    Num.Conts <- length(Cont.Names)
     Num.Wells<-length(Well.Names)
     temp.traffic.Ulims<-as.numeric(temp.traffic.Ulims)
     
@@ -88,14 +89,14 @@ plotTrendTable <- function(csite, timestep = 1){
   }
   
   
-  if(csite$ui_attr$trend_thresh_selected=="Threshold - Absolute"){
+  if (display_type == "Threshold - Absolute") {
     
     
-    temp.traffic.Abs.Thresh.Check<-csite$Traffic.Lights$Abs.Thresh.Check[Well.Names,Cont.Names,timestep,drop=F]
-    Well.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
-    Cont.Names<-dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
-    Num.Conts<-length(Cont.Names)
-    Num.Wells<-length(Well.Names)
+    temp.traffic.Abs.Thresh.Check <- csite$Traffic.Lights$Abs.Thresh.Check[Well.Names,Cont.Names, as.character(timepoint), drop = F]
+    Well.Names <- dimnames(temp.traffic.Abs.Thresh.Check)[[1]]
+    Cont.Names <- dimnames(temp.traffic.Abs.Thresh.Check)[[2]]
+    Num.Conts <- length(Cont.Names)
+    Num.Wells <- length(Well.Names)
     temp.traffic.Abs.Thresh.Check <- as.numeric(temp.traffic.Abs.Thresh.Check)
     
     
@@ -114,43 +115,45 @@ plotTrendTable <- function(csite, timestep = 1){
   
   
   
-  if(!is.null(csite$ColTrafficListbox)){
+  if (color_type != "All") {
+      
+    if (color_type == "White")  {my.temp.col <- "White"}
+    if (color_type == "Reds")   {my.temp.col <- c("#FDAE61","#D7191C")}
+    if (color_type == "Greens") {my.temp.col <- c("#1A9641","#A6D96A")}
+    if (color_type == "Non-Detects") {my.temp.col <- "blue"}
+    if (color_type == "Greys")  {my.temp.col <- "grey"}
     
-    if(csite$ColTrafficListbox!="All" & subset==FALSE){
-      
-      if(csite$ColTrafficListbox=="White"){my.temp.col<-"White"}
-      if(csite$ColTrafficListbox=="Reds"){my.temp.col<-c("#FDAE61","#D7191C")}
-      if(csite$ColTrafficListbox=="Greens"){my.temp.col<-c("#1A9641","#A6D96A")}
-      if(csite$ColTrafficListbox=="Non-Detects"){my.temp.col<-"blue"}
-      if(csite$ColTrafficListbox=="Greys"){my.temp.col<-"grey"}
-      
-      Traffic.col.mat<-matrix(temp.traffic.light,ncol=Num.Conts,nrow=Num.Wells)
-      rownames(Traffic.col.mat)<-Well.Names
-      colnames(Traffic.col.mat)<-Cont.Names
-      Traffic.col.mat<-Traffic.col.mat[apply(Traffic.col.mat,1,function(x){any(my.temp.col %in% x)}),apply(Traffic.col.mat,2,function(x){any(my.temp.col %in% x)}),drop=FALSE]
-      Well.Names<-rownames(Traffic.col.mat)
-      Cont.Names<-colnames(Traffic.col.mat)
-      Num.Wells<-length(Well.Names)
-      Num.Conts<-length(Cont.Names)
-      temp.traffic.light<-as.character(Traffic.col.mat)
-      
-      
-      if(length(temp.traffic.light)==0){Well.Names<-"Not Available";Cont.Names<-"Not Available";Num.Wells<-Num.Conts<-1; temp.traffic.light="grey"}
+    Traffic.col.mat <- matrix(temp.traffic.light, ncol = Num.Conts, nrow = Num.Wells)
+    rownames(Traffic.col.mat) <- Well.Names
+    colnames(Traffic.col.mat) <- Cont.Names
+    Traffic.col.mat <- Traffic.col.mat[apply(Traffic.col.mat, 1, function(x) {any(my.temp.col %in% x)}),
+                                       apply(Traffic.col.mat, 2, function(x) {any(my.temp.col %in% x)}),drop = FALSE]
+    Well.Names <- rownames(Traffic.col.mat)
+    Cont.Names <- colnames(Traffic.col.mat)
+    Num.Wells  <- length(Well.Names)
+    Num.Conts  <- length(Cont.Names)
+    temp.traffic.light <- as.character(Traffic.col.mat)
+    
+    
+    if (length(temp.traffic.light) == 0) {
+      Well.Names <- "Not Available"
+      Cont.Names <- "Not Available"
+      Num.Wells  <- Num.Conts <- 1
+      temp.traffic.light <- "grey"
     }
   }
   
   
   
-  #op<-par(xaxs="i", yaxs="i",mai=c(0.3,1,1,0.39375),mgp = c(1.5, 0.5,0)) 
-  op<-par(xaxs="i", yaxs="i",mai=c(0.3,1,1,0.3),mgp = c(1.5, 0.5,0)) 
+  op <- par(xaxs = "i", yaxs = "i", mai = c(0.3,1,1,0.3), mgp = c(1.5, 0.5,0)) 
   
-  plot(0:1,0:1,type="n",axes=F,xlab="",ylab="")
-  x1<-seq(0,1,l=(Num.Conts+1))[1:Num.Conts]
-  y1=seq(0,1,l=(Num.Wells+1))[1:Num.Wells]
-  xleft<-expand.grid(x1,y1)[,1]
-  yleft=expand.grid(x1,y1)[,2]
-  xright=xleft+1/Num.Conts
-  yright=yleft+1/Num.Wells
+  plot(0:1,0:1,type="n", axes = F, xlab = "", ylab = "")
+  x1 <- seq(0,1,l=(Num.Conts + 1))[1:Num.Conts]
+  y1 <- seq(0,1,l=(Num.Wells + 1))[1:Num.Wells]
+  xleft <- expand.grid(x1,y1)[,1]
+  yleft <- expand.grid(x1,y1)[,2]
+  xright <- xleft + 1 / Num.Conts
+  yright <- yleft + 1 / Num.Wells
   
   rect(xleft,yleft,xright,yright,col = t(matrix(temp.traffic.light,ncol=Num.Conts)))
   
@@ -163,26 +166,23 @@ plotTrendTable <- function(csite, timestep = 1){
   if (csite$ui_attr$conc_unit_selected == "ng/l") {Threshxlabs <- paste("<",as.numeric(csite$ui_attr$conc_thresh[Cont.Names])*1000," ng/l",sep="")}
   
   
-  if (csite$ui_attr$trend_thresh_selected == "Threshold - Statistical") {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},las=2, labels=Threshxlabs,las=1,cex.axis = 0.85,padj=-0.1)}
-  if (csite$ui_attr$trend_thresh_selected == "Threshold - Absolute")    {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},las=2, labels=Threshxlabs,las=1,cex.axis = 0.85,padj=-0.1)}
-  if (csite$ui_attr$trend_thresh_selected == "Trend")                   {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},       labels=rep("Trend",Num.Conts),     las=1,cex.axis = 1)}
+  if (display_type == "Threshold - Statistical") {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},las=2, labels=Threshxlabs,las=1,cex.axis = 0.85,padj=-0.1)}
+  if (display_type == "Threshold - Absolute")    {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},las=2, labels=Threshxlabs,las=1,cex.axis = 0.85,padj=-0.1)}
+  if (display_type == "Trend")                   {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},       labels=rep("Trend",Num.Conts),     las=1,cex.axis = 1)}
   
+  mtext(paste(display_type, ": ", format(timepoint, "%d-%b-%Y"), if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
   
-  mtext(paste(csite$ui_attr$trend_thresh_selected, ": ", date.to.print, if(csite$Aquifer != ""){paste(": Aquifer-", csite$Aquifer, sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
-  
-  par(op)
-  
-  return(csite)
 }
 
 
-plotTrendTablePPT <- function(csite, timestep, subset = FALSE, width = 7, height = 5){
+plotTrendTablePPT <- function(csite, timepoint, display_type, color_type,
+                              subset = FALSE, width = 7, height = 5){
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".wmf")
   
   win.metafile(mytemp, width = width, height = height) 
-  plotTrendTable(csite, timestep)
+  plotTrendTable(csite, timepoint, display_type, color_type)
   dev.off()
   
   # Put into powerpoint slide.
@@ -193,16 +193,17 @@ plotTrendTablePPT <- function(csite, timestep, subset = FALSE, width = 7, height
   
 }
 
-makeTrendTableAnimation <- function(csite, width = 7, height = 5){
+makeTrendTableAnimation <- function(csite, display_type, color_type, width = 7, height = 5){
   
-  
-  for (i in csite$ui_attr$timestep_range[1]:csite$ui_attr$timestep_range[2]) {
-    
+  # Loop over each time point. 
+  for (i in 1:length(csite$All.Data$All.Agg.Dates)) {
+
+    timepoint <- csite$All.Data$All.Agg.Dates[i]
     # Create temporary wmf file. 
     mytemp <- tempfile(fileext = ".wmf")
     
     win.metafile(mytemp, width = width, height = height) 
-    plotTrendTable(csite, timestep = i)
+    plotTrendTable(csite, timepoint, display_type, color_type)
     dev.off()
     
     AddPlotPPV2(mytemp, width, height) 

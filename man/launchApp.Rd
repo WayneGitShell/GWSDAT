@@ -4,7 +4,7 @@
 \alias{launchApp}
 \title{Launch GWSDAT into server or ExcelMode.}
 \usage{
-launchApp(GWSDAT_Options = NULL, session_file = NULL)
+launchApp(GWSDAT_Options, session_file)
 }
 \arguments{
 \item{GWSDAT_Options}{A list of start options (see createOptions).}
