@@ -56,9 +56,9 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   Show.ShapeFile <- FALSE
   if ("Overlay ShapeFiles" %in% names(csite$ui_attr$spatial_options))
     Show.ShapeFile <- csite$ui_attr$spatial_options["Overlay ShapeFiles"]
- 
+
   Well.Coords <- csite$All.Data$sample_loc$data
-  
+
   temp.time.frac <- as.numeric(timepoint - min(csite$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval)))
   
   try(if (temp.time.frac == 1) {temp.time.frac = .999}) # to avoid plot issue with wmf format!
@@ -72,13 +72,9 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   if (csite$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")) {
     
     if (csite$GWSDAT_Options$Aggby == "Monthly") {
-      
-      date.range.to.print <- seq.Date(timepoint, by = "-1 month", length.out = 2)
-      
+        date.range.to.print <- seq.Date(timepoint, by = "-1 month", length.out = 2)
     } else {
-      
-      date.range.to.print <- seq.Date(timepoint, by = "-3 month", length.out = 2)
-      
+        date.range.to.print <- seq.Date(timepoint, by = "-3 month", length.out = 2)
     }	
     
     date.range.to.print[2] <- date.range.to.print[2] + 1
@@ -117,7 +113,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     rm(temp.res)
   }
   
-  
+
   #
   # Identify "Bad" Wells. 
   #
@@ -191,7 +187,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
   }#if not try error!
   
-  
+
  
   
   GWSDAT.Terrain <- function(n){
@@ -304,59 +300,67 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
     
     
+
+    ktitle <- title(main = csite$ui_attr$conc_unit_selected)
+    if (csite$ui_attr$contour_selected == "NAPL-Circles") 
+        title(main = paste("NAPL \nThickness \n(", csite$All.Data$NAPL.Units, ")", sep = ""), cex.main = 0.7)
+        
+
+    
+
+      
     plotFilledContour(interp.pred, asp = 1, 
-                          ShapeFiles = if (Show.ShapeFile) {csite$All.Data$ShapeFiles} else {NULL},
-                          fixedConcScale = if (csite$ui_attr$contour_selected == "NAPL-Circles") {FALSE} else {TRUE},
-                          xlim   = Contour.xlim,
-                          ylim   = Contour.ylim,
-                          levels = lev_cut,
-                          col    = col.palette,
-                          plot.title = title(main = tmp_main, xlab = "", ylab = "", cex.main = .95),
-                          key.title  = if (csite$ui_attr$contour_selected == "NAPL-Circles") {title(main = paste("NAPL \nThickness \n(", csite$All.Data$NAPL.Units, ")", sep = ""), 
-                                                                                      cex.main = 0.7)} else {title(main = csite$ui_attr$conc_unit_selected)},
+                      ShapeFiles = if (Show.ShapeFile) {csite$All.Data$ShapeFiles} else {NULL},
+                      fixedConcScale = if (csite$ui_attr$contour_selected == "NAPL-Circles") {FALSE} else {TRUE},
+                      xlim   = Contour.xlim,
+                      ylim   = Contour.ylim,
+                      levels = lev_cut,
+                      col    = col.palette,
+                      plot.title = title(main = tmp_main, xlab = "", ylab = "", cex.main = .95),
+                      key.title  = if (csite$ui_attr$contour_selected == "NAPL-Circles") {title(main = paste("NAPL \nThickness \n(", csite$All.Data$NAPL.Units, ")", sep = ""), cex.main = 0.7)} else {title(main = csite$ui_attr$conc_unit_selected)},
                           
-                          plot.axes  = {axis(1); axis(2, las = 3); axis(3, at = par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02); 
-                            if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
-                            if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1,cex=my.cex[order(my.cex,decreasing=T)])}
+                      plot.axes  = {axis(1);
+          axis(2, las = 3); axis(3, at = par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02); 
+        if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
+
+        if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles") {points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1, cex = my.cex[order(my.cex,decreasing = T)])}                     
                             
+        if (csite$ui_attr$contour_selected == "NAPL-Circles") {points(temp.NAPL.Data$XCoord[order(my.cex,decreasing=T)],temp.NAPL.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
+
+        if (csite$ui_attr$contour_selected == "NAPL-Circles") {points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)}
                             
-                            if (csite$ui_attr$contour_selected == "NAPL-Circles") {points(temp.NAPL.Data$XCoord[order(my.cex,decreasing=T)],temp.NAPL.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
-                            if (csite$ui_attr$contour_selected == "NAPL-Circles") {points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)}
+        points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=.7);
                             
+        if (csite$ui_attr$contour_selected == "NAPL-Circles") {
+            points(Well.Coords[as.character(Well.Coords$WellName) %in% attributes(NAPL.Thickness.Data)$NAPL.Wells,c("XCoord","YCoord")],col="red",pch=19,cex=0.7)
+        }
                             
+        if (Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
                             
-                            
-                            points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=.7);
-                            
-                            if (csite$ui_attr$contour_selected == "NAPL-Circles") {
-                              points(Well.Coords[as.character(Well.Coords$WellName) %in% attributes(NAPL.Thickness.Data)$NAPL.Wells,c("XCoord","YCoord")],col="red",pch=19,cex=0.7)
-                            }
-                            
-                            if (Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
-                            
-                            if (Show.GW.Contour) {
-                              contour(GWSDAT.GW.Contour(temp.GW.Flows), add = T, labcex = .8)
-                            }
-                            if (Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
-                                                                                                    cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
+        if (Show.GW.Contour) {
+            contour(GWSDAT.GW.Contour(temp.GW.Flows), add = T, labcex = .8)
+        }
+
+        if (Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
+                                                                                 cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
 
-                            if (!is.null(plume_stats) & csite$ui_attr$spatial_options["Plume Diagnostics"]) {
+        if (!is.null(plume_stats) & csite$ui_attr$spatial_options["Plume Diagnostics"]) {
                               
-                              try(contour(interp.pred, levels = plume_stats$conc_thresh, add = T, col = "red", lwd = 2, labcex = .8))
+            try(contour(interp.pred, levels = plume_stats$conc_thresh, add = T, col = "red", lwd = 2, labcex = .8))
                               
-                              try(points(plume_stats$mass_centre_x, plume_stats$mass_centre_y, cex = 1.3, pch = 3, lwd = 2, col = "red"))
-                            }
+            try(points(plume_stats$mass_centre_x, plume_stats$mass_centre_y, cex = 1.3, pch = 3, lwd = 2, col = "red"))
+        }
                         
                             
                             
-                            if(nrow(Bad.Wells)>0 & Show.Well.Labels & Do.Image){text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
-                            try(arrows(x0, y0, x1, y1, length = 0.1,lwd=2,col="blue"), silent = TRUE)
-                            
-                          }
+        if(nrow(Bad.Wells)>0 & Show.Well.Labels & Do.Image){text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
+        try(arrows(x0, y0, x1, y1, length = 0.1,lwd=2,col="blue"), silent = TRUE)
+        
+    }
                           
     )
-    
+
     if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
       
       tempUnitHandle <- PlumeUnitHandlingFunc(csite$GWSDAT_Options$WellCoordsLengthUnits, csite$ui_attr$conc_unit_selected, plume_stats$mass, plume_stats$area)
@@ -370,12 +374,13 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   } else {
     
     
-    plotFilledContour(interp.pred,asp=1,ShapeFiles=if(Show.ShapeFile){csite$All.Data$ShapeFiles}else{NULL},
-                          
-                          xlim=Contour.xlim,
-                          ylim=Contour.ylim,
-                          color.palette=col.palette,
-                          plot.title = title(main = paste(substance,":",date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=csite$ui_attr$conc_unit_selected),
+    plotFilledContour(interp.pred,
+                      asp = 1,
+                      ShapeFiles = if(Show.ShapeFile){csite$All.Data$ShapeFiles}else{NULL},
+                      xlim = Contour.xlim,
+                      ylim = Contour.ylim,
+                      color.palette = col.palette,
+                      plot.title = title(main = paste(substance,":",date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=csite$ui_attr$conc_unit_selected),
                           plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
@@ -404,19 +409,16 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       
       tempUnitHandle <- PlumeUnitHandlingFunc(csite$GWSDAT_Options$WellCoordsLengthUnits,csite$ui_attr$conc_unit_selected,plume_stats$mass,plume_stats$area)
       
-      #tp<-paste("Estimated Plume Mass=",round(plume_stats$mass, 2),";   Estimated Plume Area=",round(plume_stats$area,2),sep="")
-      
-      tp <- paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
+        tp <- paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
       mtext(tp,side = 1,adj = -0.1,line = 2, cex = 0.85)
       
     }
     
     
   }
-  
-  
-  par(op)
-  return(csite)
+    
+  #par(op)
+  #return(csite)
   
   
 }
@@ -555,7 +557,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
                               xaxs = "i", yaxs = "i", las = 1, axes = TRUE, frame.plot = axes, 
                               ShapeFiles = NULL, fixedConcScale = FALSE, PlumeDetails=NULL, ...) {
   
-  
+
   if (missing(z)) {
     if (!missing(x)) {
       if (is.list(x)) {

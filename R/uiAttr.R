@@ -25,7 +25,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$ts_options <- ts_options
   ui_attr$napl_present <- FALSE
   
-  ui_attr$timepoints <- format(All.Data$All.Agg.Dates, "%d-%b-%Y")
+  ui_attr$timepoints <- format.Date(All.Data$All.Agg.Dates, "%d-%b-%Y")
   ui_attr$timepoint_sp <- ui_attr$timepoints[length(ui_attr$timepoints)]
   ui_attr$timepoint_tt <- ui_attr$timepoints[length(ui_attr$timepoints)]
 

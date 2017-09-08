@@ -144,7 +144,6 @@ server <- function(input, output, session) {
   })
   
   
-  
   # Plot time-series window
   output$time_series <- renderPlot({
     
@@ -173,6 +172,15 @@ server <- function(input, output, session) {
     plotTimeSeries(csite, input$solute_select, input$well_select)
     
   })
+
+
+  # Debounce slider times : The input of sliderValues() is not debounce.
+  #  Can I put this into sliderValues() to get it out of the way?
+  #  Note: call timepoint_sp_d() to get the value.
+  timepoint_sp_d <- debounce( reactive({ input$timepoint_sp  }), 500)
+  timepoint_tt_d <- debounce( reactive({ input$timepoint_tt  }), 500)
+  
+
   
   
   #
@@ -180,16 +188,14 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
-    # renderPlot() is called when the content of this function is modified.
-    # This is to detect changes in the Options panel.
+    # Detect changes in the Options panel.
     val <- optionsSaved() 
   
     #val <- plumeThreshChange()
     
-    #
-    # Update control attributes from reactive variables. 
-    #
-
+    
+    # Update control attributes from reactive variables.
+    # NEED THIS HERE ? 
     csite$ui_attr$spatial_options[1:length(csite$ui_attr$spatial_options)] <<-  FALSE
     csite$ui_attr$spatial_options[input$imageplot_options] <<-  TRUE
     csite$ui_attr$gw_selected <<- input$gw_flows
@@ -222,13 +228,17 @@ server <- function(input, output, session) {
     
     #
     # On first execution input$timepoint_sp is "", fix this - see sliderValues.R.
-    #
-    if (input$timepoint_sp == "")
+    #                                    #
+        
+    if (timepoint_sp_d() == "")
       plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%b-%Y"))
     else
-      plotSpatialImage(csite, input$solute_select_contour, as.Date(input$timepoint_sp, "%d-%b-%Y"))
+      plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%b-%Y"))
+
+    cat("\n---> left plotSpatialImage() function\n\n")
+    #  browser()
+
     #Rprof(NULL)
-    
     #png("tprofile.png")
     #ggplot(tprof)
     #dev.off()
@@ -241,11 +251,11 @@ server <- function(input, output, session) {
   #
   output$traffic_table <- renderPlot({
 
-    if (input$timepoint_tt == "")
+    if (timepoint_tt_d() == "")
       plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"),
                      input$trend_or_threshold, input$traffic_color)
     else
-      plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%b-%Y"),
+      plotTrendTable(csite, as.Date(timepoint_tt_d(), "%d-%b-%Y"),
                      input$trend_or_threshold, input$traffic_color)
     
   })
@@ -300,7 +310,7 @@ server <- function(input, output, session) {
     dates_tmp <- format(csite$All.Data$All.Agg.Dates, "%d-%b-%Y")
     csite$ui_attr$timepoints   <<- dates_tmp
     csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
-    csite$ui_attr$timepoint_tt <<- csite$ui_attr$timepoint_sp
+    csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
     
     
   }
@@ -1202,10 +1212,12 @@ server <- function(input, output, session) {
                 
                 
               }
-              
+
+
                  
               # Make selected data set active.
               csite <<- csite_list[[j]]
+
               
               shinyjs::hide("data_select_page")
               shinyjs::show("analyse_page")
