@@ -228,15 +228,15 @@ server <- function(input, output, session) {
     
     #
     # On first execution input$timepoint_sp is "", fix this - see sliderValues.R.
-    #                                    #
-        
+    #    
+    #browser()    
     if (timepoint_sp_d() == "")
-      plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%b-%Y"))
+      plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%m-%Y"))
     else
-      plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%b-%Y"))
+      plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"))
 
-    cat("\n---> left plotSpatialImage() function\n\n")
-    #  browser()
+    #cat("\n---> left plotSpatialImage() function\n\n")
+    # browser()
 
     #Rprof(NULL)
     #png("tprofile.png")
@@ -252,10 +252,10 @@ server <- function(input, output, session) {
   output$traffic_table <- renderPlot({
 
     if (timepoint_tt_d() == "")
-      plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"),
+      plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"),
                      input$trend_or_threshold, input$traffic_color)
     else
-      plotTrendTable(csite, as.Date(timepoint_tt_d(), "%d-%b-%Y"),
+      plotTrendTable(csite, as.Date(timepoint_tt_d(), "%d-%m-%Y"),
                      input$trend_or_threshold, input$traffic_color)
     
   })
@@ -307,7 +307,7 @@ server <- function(input, output, session) {
     csite$Fitted.Data <<- Fitted.Data
       
     # Update UI time points of slider.
-    dates_tmp <- format(csite$All.Data$All.Agg.Dates, "%d-%b-%Y")
+    dates_tmp <- format(csite$All.Data$All.Agg.Dates, "%d-%m-%Y")
     csite$ui_attr$timepoints   <<- dates_tmp
     csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
     csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
@@ -581,10 +581,10 @@ server <- function(input, output, session) {
       if (input$export_format_tt == "ppt") {
         
         if (input$timepoint_tt == "")
-          plotTrendTablePPT(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"),  input$trend_or_threshold, input$traffic_color,  
+          plotTrendTablePPT(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$traffic_color,  
                             width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
         else
-          plotTrendTablePPT(csite, as.Date(input$timepoint_tt, "%d-%b-%Y"),  input$trend_or_threshold, input$traffic_color,  
+          plotTrendTablePPT(csite, as.Date(input$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$traffic_color,  
                           width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
         
       } else {
@@ -596,9 +596,9 @@ server <- function(input, output, session) {
         if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         
         if (input$timepoint_tt == "")
-          plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%b-%Y"), input$trend_or_threshold, input$traffic_color) 
+          plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"), input$trend_or_threshold, input$traffic_color) 
         else        
-          plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%b-%Y"),  input$trend_or_threshold, input$traffic_color)
+          plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$traffic_color)
         
         dev.off()
       }
@@ -1213,7 +1213,9 @@ server <- function(input, output, session) {
                 
               }
 
-
+              #browser()
+              
+              #csite_list[[j]]$ui_attr <<- createUIAttr(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
                  
               # Make selected data set active.
               csite <<- csite_list[[j]]

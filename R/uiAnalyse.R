@@ -137,7 +137,7 @@ uiAnalyse <- function(csite) {
                        absolutePanel(id = "timecontrol_sp", class = "panel panel-default", 
                                      fixed = TRUE, draggable = TRUE, top = "auto", 
                                      left = "auto", right = 20, bottom = 20,
-                                     width = 330, height = 110,
+                                     width = 350, height = 110,
                        
                               div(style = "margin-left: 15px; margin-top: 5px",
                               sliderValues(
@@ -145,7 +145,8 @@ uiAnalyse <- function(csite) {
                                 values = csite$ui_attr$timepoints, 
                                 from = csite$ui_attr$timepoint_sp,
                                 #to = csite$ui_attr$choices_month[6],
-                                grid = TRUE, animate = animationOptions(interval = 1500, loop = TRUE)
+                                grid = if (length(csite$ui_attr$timepoints) < 20) {TRUE} else {FALSE},
+                                animate = animationOptions(interval = 1500, loop = TRUE)
                               ))
                               #sliderInput("timepoint_sp", "Time Point",
                               #            min = csite$ui_attr$timepoint_range[1],
@@ -211,7 +212,7 @@ uiAnalyse <- function(csite) {
                        absolutePanel(id = "timecontrol_tt", class = "panel panel-default", 
                                      fixed = TRUE, draggable = TRUE, top = "auto", 
                                      left = "auto", right = 20, bottom = 20,
-                                     width = 330, height = 110,
+                                     width = 350, height = 110,
                                      
                                      div(style = "margin-left: 15px; margin-top: 5px",
                                          sliderValues(
@@ -219,7 +220,8 @@ uiAnalyse <- function(csite) {
                                            values = csite$ui_attr$timepoints, 
                                            from = csite$ui_attr$timepoint_tt,
                                            #to = csite$ui_attr$choices_month[6],
-                                           grid = TRUE, animate = animationOptions(interval = 1500, loop = TRUE)
+                                           grid = if (length(csite$ui_attr$timepoints) < 20) {TRUE} else {FALSE},
+                                           animate = animationOptions(interval = 1500, loop = TRUE)
                                          ))
                        )
                        # column(2,

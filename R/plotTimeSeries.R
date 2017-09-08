@@ -196,8 +196,6 @@ plotTimeSeries <- function(csite,
   
   #axis.Date(1, my.xlim)
   axis.Date(1, seq(my.xlim[1],my.xlim[2],l=10))
-  #,format="%b %d")
-  
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   graphics::box()	
