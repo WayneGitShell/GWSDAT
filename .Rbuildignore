@@ -4,6 +4,7 @@
 ^Readme.md
 ^R/fitSVM.R
 ^R/check_pkg_availability.R
+^R/shapeFiles_sp.R
 ^data/*
 ^app.R
 ^test_excelmode.bat

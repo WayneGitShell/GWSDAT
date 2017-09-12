@@ -56,14 +56,14 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   Show.ShapeFile <- FALSE
   if ("Overlay ShapeFiles" %in% names(csite$ui_attr$spatial_options))
     Show.ShapeFile <- csite$ui_attr$spatial_options["Overlay ShapeFiles"]
-
+  
   Well.Coords <- csite$All.Data$sample_loc$data
 
   temp.time.frac <- as.numeric(timepoint - min(csite$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval)))
   
-  try(if (temp.time.frac == 1) {temp.time.frac = .999}) # to avoid plot issue with wmf format!
-  try(if (temp.time.frac == 0) {temp.time.frac = .001})
-  try(if (as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999}) # Handle case when only one time point.
+  if (temp.time.frac == 1) temp.time.frac = .999 # to avoid plot issue with wmf format!
+  if (temp.time.frac == 0) {temp.time.frac = .001}
+  if (as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
   
 
   
@@ -150,16 +150,16 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       GWFlows <- attr(csite$Fitted.Data,"GWFlows")
       
       
-      if(!is.null(GWFlows)){
+      if (!is.null(GWFlows)) {
         
         
-        if(nrow(temp.GW.Flows) > 0) {
+        if (nrow(temp.GW.Flows) > 0) {
           
           
           x0 = temp.GW.Flows$XCoord
           y0 = temp.GW.Flows$YCoord
           
-          if(csite$ui_attr$gw_selected != "Same Length"){
+          if (csite$ui_attr$gw_selected != "Same Length"){
             
             x1 = temp.GW.Flows$XCoord + L*temp.GW.Flows$R*cos(temp.GW.Flows$RAD)
             y1 = temp.GW.Flows$YCoord + L*temp.GW.Flows$R*sin(temp.GW.Flows$RAD)
@@ -175,9 +175,9 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
           
           
           
-        }else{
+        } else {
           
-          Show.GW.Contour<-FALSE
+          Show.GW.Contour <- FALSE
           
         }
         
@@ -299,18 +299,10 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
               )
     
     
-    
 
-    ktitle <- title(main = csite$ui_attr$conc_unit_selected)
-    if (csite$ui_attr$contour_selected == "NAPL-Circles") 
-        title(main = paste("NAPL \nThickness \n(", csite$All.Data$NAPL.Units, ")", sep = ""), cex.main = 0.7)
-        
-
-    
-
-      
-    plotFilledContour(interp.pred, asp = 1, 
-                      ShapeFiles = if (Show.ShapeFile) {csite$All.Data$ShapeFiles} else {NULL},
+   
+    plotFilledContour(interp.pred, asp = 1,
+                      shape_data = if (Show.ShapeFile) {csite$All.Data$shape_data} else {NULL},
                       fixedConcScale = if (csite$ui_attr$contour_selected == "NAPL-Circles") {FALSE} else {TRUE},
                       xlim   = Contour.xlim,
                       ylim   = Contour.ylim,
@@ -318,47 +310,47 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
                       col    = col.palette,
                       plot.title = title(main = tmp_main, xlab = "", ylab = "", cex.main = .95),
                       key.title  = if (csite$ui_attr$contour_selected == "NAPL-Circles") {title(main = paste("NAPL \nThickness \n(", csite$All.Data$NAPL.Units, ")", sep = ""), cex.main = 0.7)} else {title(main = csite$ui_attr$conc_unit_selected)},
-                          
+
                       plot.axes  = {axis(1);
-          axis(2, las = 3); axis(3, at = par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02); 
+          axis(2, las = 3); axis(3, at = par("usr")[1] + temp.time.frac*(diff(range(par("usr")[1:2]))),labels="",col="red",lwd=3,tck=-0.02);
         if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles"){points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
 
-        if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles") {points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1, cex = my.cex[order(my.cex,decreasing = T)])}                     
-                            
+        if (csite$ui_attr$contour_selected == "Conc-Terrain-Circles" || csite$ui_attr$contour_selected=="Conc-Topo-Circles" || csite$ui_attr$contour_selected=="Conc-GreyScale-Circles") {points(temp.Cont.Data$XCoord[order(my.cex,decreasing=T)],temp.Cont.Data$YCoord[order(my.cex,decreasing=T)],pch=1,col=1, cex = my.cex[order(my.cex,decreasing = T)])}
+
         if (csite$ui_attr$contour_selected == "NAPL-Circles") {points(temp.NAPL.Data$XCoord[order(my.cex,decreasing=T)],temp.NAPL.Data$YCoord[order(my.cex,decreasing=T)],pch=19,col=my.palette[order(my.cex,decreasing=T)],cex=my.cex[order(my.cex,decreasing=T)])}
 
         if (csite$ui_attr$contour_selected == "NAPL-Circles") {points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)}
-                            
+
         points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=.7);
-                            
+
         if (csite$ui_attr$contour_selected == "NAPL-Circles") {
             points(Well.Coords[as.character(Well.Coords$WellName) %in% attributes(NAPL.Thickness.Data)$NAPL.Wells,c("XCoord","YCoord")],col="red",pch=19,cex=0.7)
         }
-                            
-        if (Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
-                            
+
+        if (Show.Well.Labels) text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
+
         if (Show.GW.Contour) {
             contour(GWSDAT.GW.Contour(temp.GW.Flows), add = T, labcex = .8)
         }
 
         if (Show.Values & length(as.character(temp.Cont.Data$Result))>0)try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                  cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
-                            
+
 
         if (!is.null(plume_stats) & csite$ui_attr$spatial_options["Plume Diagnostics"]) {
-                              
+
             try(contour(interp.pred, levels = plume_stats$conc_thresh, add = T, col = "red", lwd = 2, labcex = .8))
-                              
+
             try(points(plume_stats$mass_centre_x, plume_stats$mass_centre_y, cex = 1.3, pch = 3, lwd = 2, col = "red"))
         }
-                        
-                            
-                            
-        if(nrow(Bad.Wells)>0 & Show.Well.Labels & Do.Image){text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
+
+
+
+        if (nrow(Bad.Wells)>0 & Show.Well.Labels & Do.Image){text(Bad.Wells$XCoord,Bad.Wells$YCoord,Bad.Wells$WellName,cex=0.75,col="red",pos=1)}
         try(arrows(x0, y0, x1, y1, length = 0.1,lwd=2,col="blue"), silent = TRUE)
-        
+
     }
-                          
+
     )
 
     if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
@@ -373,21 +365,22 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
   } else {
     
-    
+
     plotFilledContour(interp.pred,
                       asp = 1,
-                      ShapeFiles = if(Show.ShapeFile){csite$All.Data$ShapeFiles}else{NULL},
+                      shape_data = if (Show.ShapeFile) {csite$All.Data$shape_data} else {NULL},
                       xlim = Contour.xlim,
                       ylim = Contour.ylim,
                       color.palette = col.palette,
-                      plot.title = title(main = paste(substance,":",date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),key.title = title(main=csite$ui_attr$conc_unit_selected),
-                          plot.axes={ axis(1); axis(2,las=3);axis(3,at=par("usr")[1]+temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
+                      plot.title = title(main = paste(substance,":",date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),
+                      key.title  = title(main = csite$ui_attr$conc_unit_selected),
+                      plot.axes  = {axis(1); axis(2,las=3); axis(3, at = par("usr")[1] + temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
-                            if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName,cex=0.75,pos=1)
+                            if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName, cex = 0.75, pos = 1)
                             
-                            if (Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8),silent=T)
+                            if (Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8), silent = T)
                             if (Show.Values & length(as.character(temp.Cont.Data$Result)) > 0) try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
-                                                                                                    cex=0.75,col=c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
+                                                                                                    cex = 0.75, col = c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
                             
                             
                             if (!is.null(plume_stats) & csite$ui_attr$spatial_options["Plume Diagnostics"]) {
@@ -416,11 +409,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
     
   }
-    
-  #par(op)
-  #return(csite)
-  
-  
+   
 }
 
 
@@ -531,20 +520,19 @@ GWSDAT.GW.Contour <- function(temp.GW.Flows){
   yo=seq(min(temp.GW.Flows$YCoord),max(temp.GW.Flows$YCoord),l=40)
   my.df<-expand.grid(XCoord=xo,YCoord=yo)
   
-  lo.pred  <-predict(my.lo,my.df)
-  my.hull  <-temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
+  lo.pred  <- predict(my.lo,my.df)
+  my.hull  <- temp.GW.Flows[chull(temp.GW.Flows[,c("XCoord","YCoord")]),c("XCoord","YCoord")]
   temp.pip <- sp::point.in.polygon(my.df$XCoord,my.df$YCoord,my.hull$XCoor,my.hull$YCoor)==0
-  lo.pred[matrix(temp.pip,nrow=length(xo))]<-NA
-  return(list(x=xo,y=yo,z=lo.pred))
+  lo.pred[matrix(temp.pip, nrow = length(xo))]<-NA
+  return(list(x = xo, y = yo, z = lo.pred))
   
 }
 
 GWSDAT.GrayScale <- function(n){
   
-  rev(grey(seq(0,1,length = n + 3)))[c(-1,-2,-(n+3))]
+  rev(grey(seq(0,1,length = n + 3)))[c(-1,-2,-(n + 3))]
   
 }
-
 
 
 
@@ -553,11 +541,80 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
                               z, xlim = range(x, finite = TRUE), ylim = range(y, finite = TRUE),
                               zlim = range(z, finite = TRUE), levels = pretty(zlim, nlevels),
                               nlevels = 20, color.palette = cm.colors, col = color.palette(length(levels) - 1),
+                              plot.title, plot.axes, key.title, asp = NA,
+                              xaxs = "i", yaxs = "i", las = 1, axes = TRUE, frame.plot = axes, 
+                              shape_data = NULL, fixedConcScale = FALSE, PlumeDetails = NULL, ...) {
+  
+  if (missing(z)) {
+    if (!missing(x)) {
+      if (is.list(x)) {
+        z <- x$z
+        y <- x$y
+        x <- x$x
+      }
+      else {
+        z <- x
+        x <- seq(0, 1, len = nrow(z))
+      }
+    }
+    else stop("no 'z' matrix specified")
+  }
+  else if (is.list(x)) {
+    y <- x$y
+    x <- x$x
+  }
+  
+  # Define the levels of the legend. 
+  equal.cuts <- seq(range(levels)[1], range(levels)[2], length = length(levels))
+  if (fixedConcScale) { 
+    
+    my.at   <- equal.cuts[-length(equal.cuts)]
+    my.at   <- c(my.at,0.4*equal.cuts[length(equal.cuts) - 1] + .6*equal.cuts[length(equal.cuts)])
+    my.labs <- paste(" ",levels[-length(levels)], sep = "")
+    my.labs <- c(my.labs,paste(">",levels[length(levels) - 1], sep = ""))
+    
+  } else {
+    
+    my.at <- equal.cuts
+    my.labs <- as.numeric(levels)
+    
+  }
+  
+  
+  
+  filled.contour(x, y, z, 
+                 xlim = xlim, ylim = ylim, 
+                 xaxs = xaxs, yaxs = yaxs, asp = asp,
+                 plot.axes = {
+                   if (!is.null(shape_data)) {
+                     for (i in 1:length(shape_data)) {
+                       plot(shape_data[[i]], add = T, max.plot = 1, col = "lightblue")
+                     } 
+                    }; 
+                    plot.axes;
+                   },
+                 key.title = key.title,
+                 key.axes  = axis(side = 4, at = my.at, labels = my.labs),
+                 plot.title = plot.title,
+                 levels = levels,
+                 col = col
+                 )
+  
+  # Attempting to plot a legend box manually fails..
+  # I had put this into the filled.contour(..,  plot.axes = {}) argument.
+  # rect(0, equal.cuts[-length(equal.cuts)],1,equal.cuts[-1],col = col) #GWSDAT Change!
+  
+}
+
+plotFilledContour_original <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = ncol(z)), 
+                              z, xlim = range(x, finite = TRUE), ylim = range(y, finite = TRUE),
+                              zlim = range(z, finite = TRUE), levels = pretty(zlim, nlevels),
+                              nlevels = 20, color.palette = cm.colors, col = color.palette(length(levels) - 1),
                               plot.title, plot.axes, key.title, key.axes, asp = NA,
                               xaxs = "i", yaxs = "i", las = 1, axes = TRUE, frame.plot = axes, 
-                              ShapeFiles = NULL, fixedConcScale = FALSE, PlumeDetails=NULL, ...) {
+                              shape_data = NULL, fixedConcScale = FALSE, PlumeDetails=NULL, ...) {
   
-
+  
   if (missing(z)) {
     if (!missing(x)) {
       if (is.list(x)) {
@@ -589,24 +646,27 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
   mar[4] <- mar[2]
   mar[2] <- 1
   par(mar = mar)
+  
   plot.new()
   
   plot.window(xlim = c(0, 1), ylim = range(levels), xaxs = "i", yaxs = "i")
+  
   #rect(0, levels[-length(levels)], 1, levels[-1], col = col)
-  equal.cuts<-seq(range(levels)[1],range(levels)[2],length=length(levels))#GWSDAT Change!
+  
+  equal.cuts <- seq(range(levels)[1], range(levels)[2], length = length(levels))#GWSDAT Change!
   rect(0, equal.cuts[-length(equal.cuts)],1,equal.cuts[-1],col = col) #GWSDAT Change!
   
-  if(fixedConcScale){#GWSDAT Change
+  if (fixedConcScale) { 
     
-    my.at<-equal.cuts[-length(equal.cuts)]
-    my.at<-c(my.at,0.4*equal.cuts[length(equal.cuts)-1]+.6*equal.cuts[length(equal.cuts)])
-    my.labs<-paste(" ",levels[-length(levels)],sep="")
-    my.labs<-c(my.labs,paste(">",levels[length(levels)-1],sep=""))
+    my.at   <- equal.cuts[-length(equal.cuts)]
+    my.at   <- c(my.at,0.4*equal.cuts[length(equal.cuts) - 1] + .6*equal.cuts[length(equal.cuts)])
+    my.labs <- paste(" ",levels[-length(levels)], sep = "")
+    my.labs <- c(my.labs,paste(">",levels[length(levels) - 1], sep = ""))
     #my.labs<-c(my.labs,paste(levels[length(levels)-1],"+",sep=""))
     
   } else {
     
-    my.at = equal.cuts
+    my.at <- equal.cuts
     my.labs <- as.numeric(levels)
     
   }
@@ -626,6 +686,8 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
   mar <- mar.orig
   mar[4] <- 1
   par(mar = mar)
+  
+  
   plot.new()
   plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
   if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
@@ -638,9 +700,11 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
   
   ################## ShapeFile Plotting ########################################
   
-  if (!is.null(ShapeFiles)) {
-    for (i in 1:length(ShapeFiles)) {
-      try(GWSDAT.PlotShapeFile(ShapeFiles[[i]]))
+  if (!is.null(shape_data)) {
+    for (i in 1:length(shape_data)) {
+      # browser()
+      plot(shape_data, add = TRUE, col = "lightblue", max.plot = 1)
+
     }
   }
   
@@ -660,7 +724,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
     title(...)
   else plot.title
   
-  invisible()
+  #invisible()
 }
 
 

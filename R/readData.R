@@ -209,6 +209,35 @@ readWellCoords <- function(input_file, ...) {
   
 }
 
+#' @import sf 
+readShapeFiles_sf <- function(ShapeFileNames) {
+
+ 
+  shdat <- list()
+  
+  if (!is.null(ShapeFileNames)) {
+    for (filein in ShapeFileNames) {
+   
+      tryCatch({
+
+          dat <- sf::st_read(filein)
+          shdat[[length(shdat) + 1]] <- dat
+          
+      }, error = function(e) {
+          showNotification(paste0("Failed to load shape file ", ShapeFileNames[[i]], ": ", e$msg), type = "error")
+        }
+      )
+
+    }
+  }
+  
+  if (length(shdat) == 0)
+    return(NULL)
+  
+  return(shdat)
+
+}
+    
 
 
 readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {

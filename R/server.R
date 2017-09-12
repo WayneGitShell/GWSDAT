@@ -2,9 +2,6 @@
 
 
 
-#' @import shiny
-#' @importFrom shinyjs show hide delay onclick
-#' @importFrom utils sessionInfo write.csv
 server <- function(input, output, session) {
   
 
@@ -181,8 +178,6 @@ server <- function(input, output, session) {
   timepoint_tt_d <- debounce( reactive({ input$timepoint_tt  }), 500)
   
 
-  
-  
   #
   # Plot ImagePlot
   #
@@ -223,21 +218,21 @@ server <- function(input, output, session) {
     #require(ggplot2)
     #tprof <- profr(..)
     
-    #Rprof("Rprof_plotSpatialImage.out")
-    #replicate(n = 30, plotSpatialImage(csite, input$solute_select_contour, input$time_steps))
-    
+    #Rprof("Rprof_test1.out")
+    #replicate(n = 5, plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%m-%Y")))
+    #Rprof(NULL)
+    #browser()
     #
     # On first execution input$timepoint_sp is "", fix this - see sliderValues.R.
     #    
-    #browser()    
+    
+    #start <- proc.time()
     if (timepoint_sp_d() == "")
       plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%m-%Y"))
     else
       plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"))
-
-    #cat("\n---> left plotSpatialImage() function\n\n")
-    # browser()
-
+    #time_passed <- proc.time() - start
+    
     #Rprof(NULL)
     #png("tprofile.png")
     #ggplot(tprof)
@@ -550,7 +545,7 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "ppt") {
         
-        plotSpatialImagePPT(csite, input$solute_select_contour, input$timepoint_sp,
+        plotSpatialImagePPT(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"),
                        width  = input$img_width_px  / csite$ui_attr$img_ppi,
                        height = input$img_height_px / csite$ui_attr$img_ppi)
       
@@ -562,7 +557,7 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
           if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           
-          plotSpatialImage(csite, input$solute_select_contour, input$timepoint_sp)
+          plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"))
           dev.off()
       }
       
@@ -1062,6 +1057,7 @@ server <- function(input, output, session) {
     csite_list <<- csite_list
     csite <<- csite_list[[1]]
       
+    
     dataLoaded(2)
     
   }
@@ -1109,6 +1105,8 @@ server <- function(input, output, session) {
       well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
     }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
     
+    
+
     if (is.null(solute_data) || is.null(well_data))
       return(NULL)
 
@@ -1124,9 +1122,15 @@ server <- function(input, output, session) {
     
     if (is.null(Aq_sel))
       Aq_sel <- Aq_list[[1]]
+
     
-    pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel)
+    shape_data <- readShapeFiles_sf(GWSDAT_Options$ShapeFileNames)
+    
+    pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
+                          Aq_sel, shape_data)
         
+    
+    
     # Some Error occured.
     if (is.null(pr_dat))
       return(NULL)
@@ -1147,7 +1151,7 @@ server <- function(input, output, session) {
                    ui_attr        = ui_attr,
 		               Aquifer        = Aq_sel
     )
-    
+    browser()
     csite_list[[length(csite_list) + 1]] <<- csite 
     
     # Flag that data was fully loaded.
@@ -1493,7 +1497,6 @@ server <- function(input, output, session) {
     # Observe load status of data.
     data_load_status <- dataLoaded()
     
-
    
     # Nothing loaded yet, start process.
     if (data_load_status == 0) { 

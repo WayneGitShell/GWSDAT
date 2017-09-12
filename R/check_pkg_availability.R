@@ -10,13 +10,13 @@ check_pkg_availability <- function() {
               "splancs", 
               "Kendall", 
               "deldir", 
-              "maptools", 
+              #"maptools", 
               "geometry", 
               "Matrix", 
               "readxl", 
               "MASS", 
               "lattice", 
-              "sp", 
+              "sf", 
               "rhandsontable")
 
   pkg_ind = c()

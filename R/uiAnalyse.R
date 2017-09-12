@@ -111,6 +111,7 @@ uiAnalyse <- function(csite) {
                        
                        shinydashboard::box(width = 9, status = "primary",
                             plotOutput("image_plot"),
+                            
                            
                             div(style = "display: inline-block;", 
                                 selectInput("export_format_sp", label = "Image format", 

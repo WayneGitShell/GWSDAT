@@ -58,8 +58,12 @@ formatData <- function(solute_data, sample_loc) {
 }
 
 
+
+
+
 #' @importFrom splancs areapl
-processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank") {
+processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank",
+                        shape_file_data) {
 
 
   #Pick up Electron Acceptors before deleting non-aquifer wells. 
@@ -409,12 +413,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
   sample_loc$names <- sample_loc_names
   sample_loc$area  <- splancs::areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
 
-  
-  # Read the shape files.
-  ShapeFiles <- initShapeFiles(GWSDAT_Options)
-  
-  
-  
+
   #
   # This list is way to big!! Make it slimmer and more structured.
   #
@@ -429,7 +428,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
                  GW.Units = GW.Units,
                  NAPL.Units = if (exists("NAPL.Units")) { NAPL.Units } else {NULL}, 
                  ElecAccepts = ElecAccepts,
-                 ShapeFiles = ShapeFiles,
+                 shape_data  = shape_file_data,
                  sample_loc = sample_loc
                  )
   

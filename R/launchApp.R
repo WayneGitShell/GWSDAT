@@ -9,10 +9,9 @@ options(warn = 1)
 #' 
 #' @export
 #' 
-#' @import stats grDevices graphics
-#' @import MASS shiny shinycssloaders geometry zoo readxl maptools rhandsontable
-#'
-# #' @example launchApp(createOptions("Site Name"))
+#' @import stats grDevices graphics MASS shiny shinycssloaders geometry zoo readxl rhandsontable sf
+#' @importFrom shinyjs show hide delay onclick
+#' @importFrom utils sessionInfo write.csv
 launchApp <- function(GWSDAT_Options, session_file) {
 
     # Need this here or shinyjs breaks if operating as package, e.g. shinyjs::show() 
@@ -27,13 +26,14 @@ launchApp <- function(GWSDAT_Options, session_file) {
       shinyApp(ui = uiFull, server = server)
     
     } else {
-      
+
         if (!missing(session_file)) {
           .GlobalEnv$session_file <- normalizePath(session_file)
+          
+        } else {
+          .GlobalEnv$GWSDAT_Options <- GWSDAT_Options    
         }
-       
-        .GlobalEnv$GWSDAT_Options <- GWSDAT_Options    
-        
+
         options(shiny.launch.browser = TRUE)
         
         shinyApp(ui = uiSimple, server = server)
