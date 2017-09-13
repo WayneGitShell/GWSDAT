@@ -85,6 +85,10 @@ uiAnalyse <- function(csite) {
                        
                        shinydashboard::box(width = 3, status = "warning", title = "Settings",
                                
+                               selectInput("aggregate_data_sp", label = "Aggregate Data", 
+                                           choices  = csite$ui_attr$aggregate_list,
+                                           selected = csite$ui_attr$aggregate_selected, 
+                                           width = "80%"),
                                 selectInput("solute_select_contour", label = "Substance", choices = csite$ui_attr$substance_names,
                                             selected = csite$ui_attr$substance_selected, width = '80%'),
                                 
@@ -103,7 +107,6 @@ uiAnalyse <- function(csite) {
                                 radioButtons("gw_flows", label = "Groundwater Flows",
                                              choices  = csite$ui_attr$gw_options, 
                                              selected = csite$ui_attr$gw_selected)
-                                
                                 
                               
                        ),
@@ -157,10 +160,7 @@ uiAnalyse <- function(csite) {
                               #            animate = animationOptions(loop = TRUE)
                               #            ) # ,
                               
-                              # selectInput("aggregate_data", label = "Aggregate Data", 
-                              #             choices  = csite$ui_attr$aggregate_list,
-                              #             selected = csite$ui_attr$aggregate_selected , 
-                              #             width = "100%")
+                              
                        )
               ), # end tabPanel
               

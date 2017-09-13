@@ -7,7 +7,7 @@ uiWellReport <- function(csite) {
       shinydashboard::box(width = 3, title = "Settings", 
         status = "warning", 
         div(style = "margin-bottom:30px",
-            "Exclude contaminants and wells by selecting and pressing the Delete key. Use Strg and Shift to select multiple elements."),
+            "Exclude contaminants and wells by selecting and pressing the Delete key. Use Ctrl and Shift to select multiple elements."),
         
       selectInput("solute_mult_select", 'Contaminant', choices = csite$ui_attr$substance_names,
                   selected = csite$ui_attr$substance_names, multiple = TRUE, selectize = TRUE),

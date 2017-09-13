@@ -6,11 +6,11 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
   # of each date.
   full_plume_stats <- NULL 
 
-  nr_timesteps = length(csite$All.Data$All.Agg.Dates)
+  nr_timesteps = length(csite$All.Data$All_Agg_Dates)
 
   for (i in 1:nr_timesteps) {
     
-    datetmp <- csite$All.Data$All.Agg.Dates[i]
+    datetmp <- csite$All.Data$All_Agg_Dates[i]
     
     progressBar$set(value = (i/nr_timesteps), detail = paste("time point ", i, " / ", nr_timesteps))
     

@@ -170,7 +170,17 @@ plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend",
   if (display_type == "Threshold - Absolute")    {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},las=2, labels=Threshxlabs,las=1,cex.axis = 0.85,padj=-0.1)}
   if (display_type == "Trend")                   {axis(side = 1,tick=FALSE,at=if(Num.Conts==1){0.5}else{rollmean(seq(0,1,length=(Num.Conts+1)),2)},       labels=rep("Trend",Num.Conts),     las=1,cex.axis = 1)}
   
-  mtext(paste(display_type, ": ", format(timepoint, "%d-%b-%Y"), if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
+  
+  # Create the string for the date or date range to print
+  date_to_print <- format(timepoint, "%d-%b-%Y")
+  
+  if (tolower(csite$GWSDAT_Options$Aggby) != "day") {
+    # The second element will be the last day of the month or quarter, year.
+    period <- seq.Date(timepoint, by = tolower(csite$GWSDAT_Options$Aggby), length = 2) - 1
+    date_to_print <- paste0(date_to_print, " to ", format.Date(period[2], "%d-%b-%Y"))
+  }
+  
+  mtext(paste(display_type, ": ", date_to_print, if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep="")}else{""},sep=""),padj=-5,font=2,cex=1.1)
   
 }
 
@@ -196,9 +206,9 @@ plotTrendTablePPT <- function(csite, timepoint, display_type, color_type,
 makeTrendTableAnimation <- function(csite, display_type, color_type, width = 7, height = 5){
   
   # Loop over each time point. 
-  for (i in 1:length(csite$All.Data$All.Agg.Dates)) {
+  for (i in 1:length(csite$All.Data$All_Agg_Dates)) {
 
-    timepoint <- csite$All.Data$All.Agg.Dates[i]
+    timepoint <- csite$All.Data$All_Agg_Dates[i]
     # Create temporary wmf file. 
     mytemp <- tempfile(fileext = ".wmf")
     

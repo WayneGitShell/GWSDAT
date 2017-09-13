@@ -244,7 +244,7 @@ plotTimeSeries <- function(csite,
   
   
   
-  if (showvline) {abline(v = csite$All.Data$All.Agg.Dates[csite$jjj],col = "grey",lwd = 3)}
+  if (showvline) {abline(v = csite$All.Data$All_Agg_Dates[csite$jjj],col = "grey",lwd = 3)}
   points(Result.Corr.ND~SampleDate,Well.Data[Det.Pts,],cex = 1.5,pch = 19,col = "black")
   points(Result.Corr.ND~SampleDate,Well.Data[ND.Pts, ],cex = 1.5,pch = 19,col = "orange")
   if (NAPL.Present) {points(Result.Corr.ND~SampleDate,Well.Data[tolower(as.character(Well.Data$Result)) == "napl", ],cex = 1.5,pch = 19,col = "red")}

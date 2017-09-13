@@ -12,7 +12,7 @@
 createOptions <- function(site_name = NULL) {
   
   GWSDAT_Options <- list()
-  GWSDAT_Options[['Aggby']] <- 'Monthly'
+  GWSDAT_Options[['Aggby']] <- 'Month'
   GWSDAT_Options[['AggMethod']] <- 'Mean'
   GWSDAT_Options[['NDMethod']] <- 'Half of ND Value'
   GWSDAT_Options[['ModelMethod']] <- 'pspline'

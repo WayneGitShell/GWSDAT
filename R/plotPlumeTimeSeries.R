@@ -285,8 +285,8 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
     return(do.call("rbind",chullseglist))
   }
   
-  # Time.Eval <- csite$Fitted.Data[[substance]]$Time.Eval
-  temp.df <- data.frame(Time.Eval = csite$Fitted.Data[[substance]]$Time.Eval)
+  
+  temp.df <- data.frame(Time.Eval = csite$All.Data$All_Agg_Dates)
   temp.df$MaxConc <- rep(NA,nrow(temp.df))
   temp.df$MaxInteriorConc <- rep(NA,nrow(temp.df))
   
@@ -294,10 +294,12 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
   
   
   
-  for (i in 1:length(csite$Fitted.Data[[substance]]$Time.Eval)) {
+  for (i in 1:length(csite$All.Data$All_Agg_Dates)) {
     
-    temp.time.eval <- csite$Fitted.Data[[substance]]$Time.Eval[i]
+    temp.time.eval <- csite$All.Data$All_Agg_Dates[i]
+    
     Good.Wells <- as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+
     Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
     
     
@@ -325,7 +327,7 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
   temp.df$MaxInteriorConc[temp.df$MaxInteriorConc < temp.df$MaxConc] <- temp.df$MaxConc[temp.df$MaxInteriorConc < temp.df$MaxConc]
   
   my.ylim = c(min(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T), max(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T))
-  
+ 
   plot(MaxInteriorConc ~ Time.Eval, data = temp.df,
        log  = "y", type = "b", ylim = my.ylim, xlab = "Date", 
        ylab = "Concentration(ug/l)",

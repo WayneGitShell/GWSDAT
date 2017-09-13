@@ -141,7 +141,7 @@ return(list(Betas=out.Betas,trend.upper.lim=out.upper,h=sm.fit$h))
 
 
 
-All.Time.Evals  <- All.Data$All.Agg.Dates
+All.Time.Evals  <- All.Data$All_Agg_Dates
 sample_loc_names       <- All.Data$sample_loc$names
 smThreshSe      <- as.numeric(GWSDAT_Options$smThreshSe)
 smMethod        <- GWSDAT_Options$smMethod

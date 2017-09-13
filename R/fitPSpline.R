@@ -236,10 +236,10 @@ alpha=BestModel$alpha,fitted=BestModel$fitted)
 #post.ig.a=BestModel$post.ig.a,post.ig.b=BestModel$post.ig.b ,Xtinv=BestModel$Xtinv,d=BestModel$d,e=BestModel$e
 #)
 
-class(best.model)<-"GWSDAT.PSpline"
+class(best.model) <- "GWSDAT.PSpline"
 
 
-Model.tune<-list(Trial.Lambda=Trial.Lambda,best.model=best.model)
+Model.tune <- list(Trial.Lambda=Trial.Lambda,best.model=best.model)
 	
 
 
@@ -255,7 +255,6 @@ return(Model.tune)
 fitPSpline <- function(All.Data,Cont.Name,GWSDAT_Options){
 
 
-Time.Eval <- sort(All.Data$All.Agg.Dates)
 ContData <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$Constituent)==Cont.Name,]
 ContData <- na.omit(ContData)
 names(ContData)[names(ContData)=="AggDate"]<-"AggDatekeep"
@@ -298,7 +297,7 @@ names(ContData)[names(ContData)=="AggDatekeep"]<-"AggDate"
 #### Legacy func from GWSDAT SVM.R. Need to check for NAPL only data sets. 
 ContData$Result.Corr.ND[!is.finite(ContData$Result.Corr.ND)]<-NA #Wayne V3 coerce -inf to NA for NAPL only data sets. 
 
-list(Cont.Data=ContData,Model.tune=Model.tune,Time.Eval=Time.Eval)
+list(Cont.Data=ContData,Model.tune=Model.tune)
 
 }
 #----------------------------------------------------------------------------------------------------------------------#

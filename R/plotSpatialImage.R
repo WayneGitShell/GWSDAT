@@ -59,36 +59,28 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   
   Well.Coords <- csite$All.Data$sample_loc$data
 
-  temp.time.frac <- as.numeric(timepoint - min(csite$Fitted.Data[[substance]]$Time.Eval))/as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval)))
-  
+  # This is for drawing the red tic on the top of the plot to show position in time.
+  temp.time.frac <- as.numeric(timepoint - min(csite$All.Data$All_Agg_Dates))/as.numeric(diff(range(csite$All.Data$All_Agg_Dates)))
   if (temp.time.frac == 1) temp.time.frac = .999 # to avoid plot issue with wmf format!
   if (temp.time.frac == 0) {temp.time.frac = .001}
-  if (as.numeric(diff(range(csite$Fitted.Data[[substance]]$Time.Eval))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
+  if (as.numeric(diff(range(csite$All.Data$All_Agg_Dates))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
   
 
+  # Create the string for the date or date range to print
+  date_to_print <- format(timepoint, "%d-%b-%Y")
   
-  date.to.print <-  format(timepoint, "%d-%b-%Y")
-  
-  if (csite$GWSDAT_Options$Aggby %in% c("Monthly","Quarterly")) {
-    
-    if (csite$GWSDAT_Options$Aggby == "Monthly") {
-        date.range.to.print <- seq.Date(timepoint, by = "-1 month", length.out = 2)
-    } else {
-        date.range.to.print <- seq.Date(timepoint, by = "-3 month", length.out = 2)
-    }	
-    
-    date.range.to.print[2] <- date.range.to.print[2] + 1
-    date.range.to.print <- format(date.range.to.print,"%d-%b-%Y")[c(2,1)]
-    date.to.print <- paste(date.range.to.print,collapse = " to ")
-    
+  if (tolower(csite$GWSDAT_Options$Aggby) != "day") {
+    # The second element will be the last day of the month or quarter, year.
+    period <- seq.Date(timepoint, by = tolower(csite$GWSDAT_Options$Aggby), length = 2) - 1
+    date_to_print <- paste0(date_to_print, " to ", format.Date(period[2], "%d-%b-%Y"))
   }
-
   
   
   
   model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
   temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
   temp.Cont.Data <- temp.Cont.Data[temp.Cont.Data$AggDate == timepoint,]
+  
   temp.Cont.Data$log.Resid <- log(temp.Cont.Data$Result.Corr.ND) - log(temp.Cont.Data$ModelPred)
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") {
@@ -294,7 +286,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     tmp_main <- paste(substance,
                     if (csite$ui_attr$contour_selected == "NAPL-Circles" & substance != " ") {paste("(",csite$ui_attr$conc_unit_selected,")", sep = "")} else {""},
                     if (substance != " ") {":"} else {""},
-                    date.to.print,
+                    date_to_print,
                     if (csite$Aquifer != "") {paste(": Aquifer-",csite$Aquifer, sep = "")} else {""}
               )
     
@@ -372,7 +364,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
                       xlim = Contour.xlim,
                       ylim = Contour.ylim,
                       color.palette = col.palette,
-                      plot.title = title(main = paste(substance,":",date.to.print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),
+                      plot.title = title(main = paste(substance,":",date_to_print,if(csite$Aquifer != ""){paste(": Aquifer-",csite$Aquifer, sep="")}else{""}),xlab = "", ylab = "",cex.main=.95),
                       key.title  = title(main = csite$ui_attr$conc_unit_selected),
                       plot.axes  = {axis(1); axis(2,las=3); axis(3, at = par("usr")[1] + temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
@@ -442,7 +434,7 @@ makeSpatialAnimation <- function(csite, substance,
   full_plume_stats <- NULL 
  
   # Loop over each time step.. 
-  for (timepoint in csite$All.Data$All.Agg.Dates) {
+  for (timepoint in csite$All.Data$All_Agg_Dates) {
  
     # Do the interpolation.
     interp.pred <- interpConc(csite, substance, timepoint)

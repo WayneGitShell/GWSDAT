@@ -170,7 +170,56 @@ server <- function(input, output, session) {
     
   })
 
-
+  
+  
+  # Re-Aggregate the data in case the aggregation type was changed.
+  reaggregateData <- reactive({
+    
+    
+    if (tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_data_sp))
+      return()
+    
+    csite$GWSDAT_Options$Aggby <<- tolower(input$aggregate_data_sp)
+    #csite$ui_attr$aggregate_selected <<- aggby
+    
+    tryCatch(
+      agg_data <- aggregateData(csite$All.Data$Cont.Data, 
+                                csite$All.Data$GW.Data, 
+                                csite$All.Data$NAPL.Thickness.Data,
+                                csite$All.Data$sample_loc$data, 
+                                csite$GWSDAT_Options$Aggby, 
+                                csite$GWSDAT_Options$AggMethod 
+      ), error = function(e) {
+        showModal(modalDialog(title = "Error", paste0("Failed to aggregate data: ", e$message), easyClose = FALSE))
+        return(NULL)                      
+      })
+    
+    
+    # Write back.
+    csite$All.Data$Agg_GW_Data <<- agg_data$Agg_GW_Data
+    csite$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
+    csite$All.Data$Cont.Data <<- agg_data$Cont.Data
+    csite$All.Data$All_Agg_Dates <<- agg_data$All_Agg_Dates
+    
+    browser()
+    # Fit data. 
+    # Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options)
+    
+    if (class(Fitted.Data) != "gwsdat_fit") {
+      stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")
+    }
+    
+    #csite$Fitted.Data <<- Fitted.Data
+    
+    # Update UI time points of slider.
+    dates_tmp <- format(csite$All.Data$All_Agg_Dates, "%d-%m-%Y")
+    csite$ui_attr$timepoints   <<- dates_tmp
+    csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
+    csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
+    
+    
+  })
+  
   # Debounce slider times : The input of sliderValues() is not debounce.
   #  Can I put this into sliderValues() to get it out of the way?
   #  Note: call timepoint_sp_d() to get the value.
@@ -207,8 +256,8 @@ server <- function(input, output, session) {
     ##       I don't know yet how to trigger this renderPlot from observeEvents().
     ##  + I've got two places where I store aggr., need to clean this mess up. 
     #csite$GWSDAT_Options$Aggby <<- input$aggregate_data
-    csite$ui_attr$aggregate_selected <<- input$aggregate_data
-    
+    #csite$ui_attr$aggregate_selected <<- input$aggregate_data
+    reaggregateData()
     
     # Input control in UI is commented out, thus input$aquifer_contour will be NULL
     #csite$All.Data$Aq.sel <<- input$aquifer_contour
@@ -271,44 +320,6 @@ server <- function(input, output, session) {
     
   })
   
-  
-  
-  # Re-Aggregate the data in case the aggregation type was changed.
-  reaggregateData <- function(aggby) {
-
-    csite$GWSDAT_Options$Aggby <<- aggby # input$aggregate_data
-    csite$ui_attr$aggregate_selected <<- aggby
-    
-    agg_data <- aggregateData(csite$GWSDAT_Options, 
-                              csite$All.Data$All.Dates, 
-                              csite$All.Data$GW.Data, 
-                              csite$All.Data$Cont.Data, 
-                              csite$All.Data$sample_loc$data, 
-                              csite$All.Data$NAPL.Thickness.Data)
-      
-    # Write back.
-    csite$All.Data$All.Agg.Dates <<- agg_data$All.Agg.Dates
-    csite$All.Data$Cont.Data <<- agg_data$Cont.Data
-    csite$All.Data$Agg_GW_Data <<- agg_data$Agg_GW_Data
-    csite$All.Data$NAPL.Thickness.Data <<- agg_data$NAPL.Thickness.Data
-      
-    # Fit data. 
-    Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options)
-      
-    if (class(Fitted.Data) != "gwsdat_fit") {
-      stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")
-    }
-      
-    csite$Fitted.Data <<- Fitted.Data
-      
-    # Update UI time points of slider.
-    dates_tmp <- format(csite$All.Data$All.Agg.Dates, "%d-%m-%Y")
-    csite$ui_attr$timepoints   <<- dates_tmp
-    csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
-    csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
-    
-    
-  }
   
   
   updateNAPL <- function(location, substance) {
@@ -424,20 +435,20 @@ server <- function(input, output, session) {
   
   
   # Re-aggregate the data and mirror the controls in the 'Traffic Lights' tab.
-  #observeEvent(input$aggregate_data, {
-  #  
+  # observeEvent(input$aggregate_data, {
+  # 
   #  if (csite$GWSDAT_Options$Aggby != input$aggregate_data) {
   #    reaggregateData(input$aggregate_data)
-  #    
+  # 
   #    # Update time step slider in this panel.
-  #    updateSliderInput(session, "time_steps", value = csite$timestep_range[1], 
+  #    updateSliderInput(session, "time_steps", value = csite$timestep_range[1],
   #                      min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
-  #    
+  # 
   #    # Mirror aggregation type to trend table.
-  #    updateSelectInput(session, "aggregate_data_traffic", selected = input$aggregate_data ) 
-  #    
+  #    updateSelectInput(session, "aggregate_data_traffic", selected = input$aggregate_data )
+  # 
   #  }
-  #})
+  # })
   
   
   # Re-aggregate the data and mirror the controls in the 'Spatial Plot' tab.
@@ -448,9 +459,9 @@ server <- function(input, output, session) {
   #   
   #     # Update time step slider in this panel.
   #     updateSliderInput(session, "timepoint_tt", 
-  #                       min = csite$All.Data$All.Agg.Dates[1], 
-  #                       max = csite$All.Data$All.Agg.Dates[length(csite$All.Data$All.Agg.Dates)],
-  #                       value = csite$All.Data$All.Agg.Dates[length(csite$All.Data$All.Agg.Dates)],
+  #                       min = csite$All.Data$All_Agg_Dates[1], 
+  #                       max = csite$All.Data$All_Agg_Dates[length(csite$All.Data$All_Agg_Dates)],
+  #                       value = csite$All.Data$All_Agg_Dates[length(csite$All.Data$All_Agg_Dates)],
   #     
   #     # Mirror aggregation type to spatial plot.
   #     updateSelectInput(session, "aggregate_data", selected = input$aggregate_data_traffic ) 
@@ -1128,7 +1139,7 @@ server <- function(input, output, session) {
     
     pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
                           Aq_sel, shape_data)
-        
+      
     
     
     # Some Error occured.
@@ -1151,7 +1162,7 @@ server <- function(input, output, session) {
                    ui_attr        = ui_attr,
 		               Aquifer        = Aq_sel
     )
-    browser()
+    
     csite_list[[length(csite_list) + 1]] <<- csite 
     
     # Flag that data was fully loaded.

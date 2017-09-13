@@ -394,21 +394,17 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
   GW.Data <- GW.Data[!is.na(GW.Data$Result),]
   GW.Data[,c("XCoord","YCoord")] <- well_tmp_data[match(as.character(GW.Data$WellName),as.character(well_tmp_data$WellName)),c("XCoord","YCoord")]
 
+  tryCatch(
+    agg_data <- aggregateData(Cont.Data, GW.Data, 
+                              NAPL.Thickness.Data = if (exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL},
+                              well_tmp_data,
+                              GWSDAT_Options$Aggby, 
+                              GWSDAT_Options$AggMethod 
+    ), error = function(e) {
+      showModal(modalDialog(title = "Error", paste0("Failed to aggregate data: ", e$message), easyClose = FALSE))
+      return(NULL)                      
+  })
   
-  
-  ####################### Aggregate Cont, GW and NAPL Data ######################################################
-  All.Dates <- sort(unique(c(GW.Data$SampleDate, solute_data$SampleDate)))
-  
-  if (exists("NAPL.Thickness.Data")) { 
-    All.Dates <- sort(unique(c(All.Dates,NAPL.Thickness.Data$SampleDate)))
-  }
-  
-  
-  agg_data <- aggregateData(GWSDAT_Options, All.Dates, GW.Data, Cont.Data, well_tmp_data, 
-                                    NAPL.Thickness.Data = if (exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL} )
-
-
-
   sample_loc$data  <- well_tmp_data
   sample_loc$names <- sample_loc_names
   sample_loc$area  <- splancs::areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
@@ -422,9 +418,8 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
                  Agg_GW_Data = agg_data$Agg_GW_Data,
                  NAPL.Thickness.Data = agg_data$NAPL.Thickness.Data,
                  Cont.Data  = agg_data$Cont.Data,
+                 All_Agg_Dates = agg_data$All_Agg_Dates,
                  cont_names = cont_names,
-                 All.Dates  = All.Dates,
-                 All.Agg.Dates = agg_data$All.Agg.Dates,
                  GW.Units = GW.Units,
                  NAPL.Units = if (exists("NAPL.Units")) { NAPL.Units } else {NULL}, 
                  ElecAccepts = ElecAccepts,

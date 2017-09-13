@@ -33,14 +33,17 @@ fitData <- function(All.Data, GWSDAT_Options) {
       progress$set(value = PctDone, detail = paste("contaminant ", All.Data$cont_names[i]))
     }
     
+    # fitSVM() not working..
     #if (tolower(GWSDAT_Options$ModelMethod) == "svm") {
     #  
     #  temp.fit <- try(fitSVM(All.Data, All.Data$cont_names[i], GWSDAT_Options))
     #  
     #} else {
-      
-      temp.fit <- fitPSpline(All.Data,All.Data$cont_names[i],GWSDAT_Options)
-      
+    
+    temp.fit <- fitPSpline(All.Data, All.Data$cont_names[i], GWSDAT_Options)
+    
+    # temp.fit_new <- fitPSpline_new(All.Data$Cont.Data, All.Data$cont_names[i], GWSDAT_Options)
+       
     #}
     
     

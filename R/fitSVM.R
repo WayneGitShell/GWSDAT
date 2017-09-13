@@ -1,13 +1,10 @@
 
 
 
-fitSVM <- function(All.Data, Cont.Name, GWSDAT_Options) {
+fitSVM <- function(Cont.Data, Cont.Name, GWSDAT_Options) {
   
   
-  #rearranging names to cope with actual and aggregate dates
-  Time.Eval <- sort(All.Data$All.Agg.Dates)
-  
-  temp.Cont.Data <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$Constituent)==Cont.Name,]
+  temp.Cont.Data <- Cont.Data[Cont.Data$Constituent == Cont.Name,]
   temp.Cont.Data <- na.omit(temp.Cont.Data)
   names(temp.Cont.Data)[names(temp.Cont.Data) == "AggDate"] <- "AggDatekeep"
   names(temp.Cont.Data)[names(temp.Cont.Data) == "SampleDate"] <- "AggDate"
@@ -45,7 +42,7 @@ fitSVM <- function(All.Data, Cont.Name, GWSDAT_Options) {
   
   temp.Cont.Data$Result.Corr.ND[!is.finite(temp.Cont.Data$Result.Corr.ND)] <- NA #Wayne V3 coerce -inf to NA for NAPL only data sets. 
   
-  list(Cont.Data = temp.Cont.Data, Model.tune = svm.temp, Time.Eval = Time.Eval)
+  list(Cont.Data = temp.Cont.Data, Model.tune = svm.temp)
   
 }
 

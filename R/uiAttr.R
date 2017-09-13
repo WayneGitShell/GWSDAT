@@ -25,7 +25,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$ts_options <- ts_options
   ui_attr$napl_present <- FALSE
   
-  ui_attr$timepoints <- format.Date(All.Data$All.Agg.Dates, "%d-%m-%Y")
+  ui_attr$timepoints <- format.Date(All.Data$All_Agg_Dates, "%d-%m-%Y")
   ui_attr$timepoint_sp <- ui_attr$timepoints[length(ui_attr$timepoints)]
   ui_attr$timepoint_tt <- ui_attr$timepoints[length(ui_attr$timepoints)]
 
@@ -43,7 +43,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   
   ui_attr$gw_options  <- c("None", "Same Length", "Weighted Length")
   ui_attr$gw_selected <- ui_attr$gw_options[3]
-  ui_attr$aggregate_list <- c("All Dates","Monthly","Quarterly")  
+  ui_attr$aggregate_list <- c("Day","Month","Quarter", "Year")  
   ui_attr$aggregate_selected <- ui_attr$aggregate_list[2]
   ui_attr$trend_thresh_list <- c("Trend", "Threshold - Absolute", "Threshold - Statistical")
   ui_attr$trend_thresh_selected <- ui_attr$trend_thresh_list[1]
