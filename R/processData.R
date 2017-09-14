@@ -410,10 +410,8 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
   sample_loc$area  <- splancs::areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
 
 
-  #
-  # This list is way to big!! Make it slimmer and more structured.
-  #
   
+  # This list is a little big. Continue making it slimmer.
   All.Data <- list(GW.Data = GW.Data,
                  Agg_GW_Data = agg_data$Agg_GW_Data,
                  NAPL.Thickness.Data = agg_data$NAPL.Thickness.Data,

@@ -2,7 +2,7 @@
 
 calcTrafficLights <- function(All.Data, Fitted.Data, GWSDAT_Options) {
 
-
+  
   ###################  ND.Check#################################################
   
   ND.Beta.Check<-function(Cont.Data,All.Time.Evals){

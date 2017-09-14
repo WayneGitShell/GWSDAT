@@ -27,8 +27,11 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   
   ui_attr$timepoints <- format.Date(All.Data$All_Agg_Dates, "%d-%m-%Y")
   ui_attr$timepoint_sp <- ui_attr$timepoints[length(ui_attr$timepoints)]
+  ui_attr$timepoint_sp_idx <- length(ui_attr$timepoints)
+  
   ui_attr$timepoint_tt <- ui_attr$timepoints[length(ui_attr$timepoints)]
-
+  ui_attr$timepoint_tt_idx <- length(ui_attr$timepoints)
+    
   ui_attr$contour_types <- c("Conc-Terrain", "Conc-Topo","Conc-GreyScale","Conc-Terrain-Circles","Conc-Topo-Circles","Conc-GreyScale-Circles", if (!is.null(All.Data$NAPL.Thickness.Data)) {"NAPL-Circles"})  
   ui_attr$contour_selected <- ui_attr$contour_types[1]
   
@@ -43,7 +46,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   
   ui_attr$gw_options  <- c("None", "Same Length", "Weighted Length")
   ui_attr$gw_selected <- ui_attr$gw_options[3]
-  ui_attr$aggregate_list <- c("Day","Month","Quarter", "Year")  
+  ui_attr$aggregate_list <- c("Day","Month","Quarter") # disabled (error in plotSpatialImage(): , "Year")  
   ui_attr$aggregate_selected <- ui_attr$aggregate_list[2]
   ui_attr$trend_thresh_list <- c("Trend", "Threshold - Absolute", "Threshold - Statistical")
   ui_attr$trend_thresh_selected <- ui_attr$trend_thresh_list[1]

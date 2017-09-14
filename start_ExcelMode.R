@@ -38,14 +38,14 @@ if(exists('XtempScreenExp')){rm(XtempScreenExp)}
 
 GWSDAT_Options[['ShapeFileNames']] <- NULL
 
-GWSDAT_Options[['SiteName']] <- 'Basic Example'
-GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellData.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellCoords.csv'
+#GWSDAT_Options[['SiteName']] <- 'Basic Example'
+#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellData.csv'
+#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellCoords.csv'
 
-#GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
-#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellCoords.csv'
-#GWSDAT_Options[['ShapeFileNames']]     <- c('D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/GIS_Files/GWSDATex2.shp')
+GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
+GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellCoords.csv'
+GWSDAT_Options[['ShapeFileNames']]     <- c('D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/GIS_Files/GWSDATex2.shp')
 
 
 

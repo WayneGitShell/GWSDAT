@@ -39,10 +39,12 @@ fitData <- function(All.Data, GWSDAT_Options) {
     #  temp.fit <- try(fitSVM(All.Data, All.Data$cont_names[i], GWSDAT_Options))
     #  
     #} else {
+    ContData <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$Constituent) == All.Data$cont_names[i],]
+    ContData <- na.omit(ContData)
     
-    temp.fit <- fitPSpline(All.Data, All.Data$cont_names[i], GWSDAT_Options)
+    temp.fit <- fitPSpline(ContData, GWSDAT_Options)
     
-    # temp.fit_new <- fitPSpline_new(All.Data$Cont.Data, All.Data$cont_names[i], GWSDAT_Options)
+    # temp.fit_new <- fitPSpline_new(ContData, GWSDAT_Options)
        
     #}
     
@@ -78,11 +80,15 @@ fitData <- function(All.Data, GWSDAT_Options) {
     progress$set(value = PctDone, detail = paste("calculating trends"))
   }
   
-  Traffic.Lights <- try(calcTrafficLights(All.Data, Fitted.Data, GWSDAT_Options))
+  Traffic.Lights <- NULL
   
-  attr(Fitted.Data,'TrafficLights') <- if (!inherits(Traffic.Lights, 'try-error')) {
-    Traffic.Lights
-  } else {NULL}
+  tryCatch(
+    Traffic.Lights <- calcTrafficLights(All.Data, Fitted.Data, GWSDAT_Options),
+    error = function(e) {
+      showNotification(paste0("Failed to calculate trend table: ", e.message), type = "error", duration = 10)
+    }
+  )
+
   
   PctDone = (NumConts + 2) / (NumConts + 3)
 
@@ -95,26 +101,25 @@ fitData <- function(All.Data, GWSDAT_Options) {
     progress$set(value = PctDone, detail = paste("calculating groundwater"))
   } 
   
+  GW.Flows <- NULL
+  
   if (!is.null(All.Data$Agg_GW_Data)) {
     
-    GW.Flows <- try(do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, calcGWFlow)))
+    tryCatch(
+      GW.Flows <- do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, calcGWFlow)),
+      error = function(e) {
+        showNotification(paste0("Failed to calculate groundwater flows: ", e.message), type = "error", duration = 10)
+      })
     
-    if (!inherits(GW.Flows, 'try-error')) {
-      
+    if (!is.null(GW.Flows)) {    
       GW.Flows$R <- GW.Flows$R/quantile(GW.Flows$R, p = 0.9, na.rm = T)
       GW.Flows$R[GW.Flows$R > 1] <- 1
-      
-    } 
-    
-    GW.Flows = na.omit(GW.Flows)
-    attr(Fitted.Data,'GWFlows') <- if (!inherits(GW.Flows, 'try-error')) {GW.Flows} else {NULL}
+      GW.Flows <- na.omit(GW.Flows)    
+    }
     
   }
-  
-  
-  class(Fitted.Data) = "gwsdat_fit"
-  
-  return(Fitted.Data)
+ 
+  return(list(Fitted.Data = Fitted.Data, Traffic.Lights = Traffic.Lights, GW.Flows = GW.Flows))
 
 }
 

@@ -174,13 +174,27 @@ server <- function(input, output, session) {
   
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- reactive({
+    cat("* reaggregateData()\n")
     
-    
-    if (tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_data_sp))
+    # If nothing changed, return.     
+    if ((tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_data_sp)) &&
+        (tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_data_tt)))
       return()
     
-    csite$GWSDAT_Options$Aggby <<- tolower(input$aggregate_data_sp)
-    #csite$ui_attr$aggregate_selected <<- aggby
+    # Flag which aggregation input was active.
+    sp_changed <- FALSE
+    tt_changed <- FALSE
+    
+    # Detect which aggregation input changed.
+    if (tolower(csite$GWSDAT_Options$Aggby) != tolower(input$aggregate_data_sp)) {
+      csite$GWSDAT_Options$Aggby <<- input$aggregate_data_sp
+      sp_changed <- TRUE
+    } else if (tolower(csite$GWSDAT_Options$Aggby) != tolower(input$aggregate_data_tt)) {
+      csite$GWSDAT_Options$Aggby <<- input$aggregate_data_tt
+      tt_changed <- TRUE
+    }
+    
+    
     
     tryCatch(
       agg_data <- aggregateData(csite$All.Data$Cont.Data, 
@@ -201,30 +215,97 @@ server <- function(input, output, session) {
     csite$All.Data$Cont.Data <<- agg_data$Cont.Data
     csite$All.Data$All_Agg_Dates <<- agg_data$All_Agg_Dates
     
-    browser()
-    # Fit data. 
-    # Fitted.Data = fitData(csite$All.Data, csite$GWSDAT_Options)
     
-    if (class(Fitted.Data) != "gwsdat_fit") {
-      stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", class(Fitted.Data), "\n")
+    # Update aggregation dates in the fitted data contaminant table.
+    # Note: its a little ankward to fiddle inside the data structure this way. 
+    # Maybe change it at some point. Also it assumes that the order of 'AggDate'
+    # in 'csite$All.Data$Cont.Data' matches the one in 'csite$Fitted.Data[[cont]]$Cont.Data'.
+    # This how it is done on first initializatioin in fitData(), but an explicit
+    # date lookup would be more save.
+    for (cont in csite$All.Data$cont_names) {
+      # Extract aggregation dates created above for specific contaminant and copy to fitted data table.
+      agg_col <- csite$All.Data$Cont.Data$AggDate[which(csite$All.Data$Cont.Data$Constituent == cont)]
+      csite$Fitted.Data[[cont]]$Cont.Data$AggDate <<- agg_col
     }
     
-    #csite$Fitted.Data <<- Fitted.Data
+    # Calculate Traffic Lights (depends on aggregation date input)
+    csite$Traffic.Lights <<- NULL
     
+    tryCatch(
+      csite$Traffic.Lights <<- calcTrafficLights(csite$All.Data, csite$Fitted.Data, csite$GWSDAT_Options),
+      error = function(e) {
+        showNotification(paste0("Failed to calculate trend table: ", e.message), type = "error", duration = 10)
+      }
+    )
+
+    # Calculate groundwater flows (depends on aggregation date input)
+    csite$GW.Flows <<- NULL
+    
+    if (!is.null(csite$All.Data$Agg_GW_Data)) {
+      
+      tryCatch(
+        csite$GW.Flows <<- do.call('rbind', by(csite$All.Data$Agg_GW_Data, csite$All.Data$Agg_GW_Data$AggDate, calcGWFlow)),
+        error = function(e) {
+          showNotification(paste0("Failed to calculate groundwater flows: ", e.message), type = "error", duration = 10)
+        })
+      
+      if (!is.null(csite$GW.Flows)) {    
+        csite$GW.Flows$R <<- csite$GW.Flows$R/quantile(csite$GW.Flows$R, p = 0.9, na.rm = T)
+        csite$GW.Flows$R[csite$GW.Flows$R > 1] <<- 1
+        csite$GW.Flows <<- na.omit(csite$GW.Flows)    
+      }
+    }
+
+        
     # Update UI time points of slider.
     dates_tmp <- format(csite$All.Data$All_Agg_Dates, "%d-%m-%Y")
     csite$ui_attr$timepoints   <<- dates_tmp
-    csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
-    csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
+    csite$ui_attr$timepoint_sp_idx <<- length(dates_tmp)
+    csite$ui_attr$timepoint_tt_idx <<- length(dates_tmp)
+    
+    # Old way using real dates as timepoint indicator (together with sliderValues)
+    #csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
+    #csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
+    
+   
+    # Update slider inputs: Spatial plot and in Trend table.
+    outp <- pasteAggLimit(csite$ui_attr$timepoints[input$timepoint_sp_idx], csite$GWSDAT_Options$Aggby)
+    
+    updateSliderInput(session, "timepoint_sp_idx", value = csite$ui_attr$timepoint_sp_idx,
+                      max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp))
+    
+    updateSliderInput(session, "timepoint_tt_idx", value = csite$ui_attr$timepoint_tt_idx,
+                      max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp))
     
     
+    # Update select input: Aggregation in other panel.
+    if (sp_changed)
+      updateSelectInput(session, "aggregate_data_tt", selected = csite$GWSDAT_Options$Aggby)
+    
+    if (tt_changed)
+      updateSelectInput(session, "aggregate_data_sp", selected = csite$GWSDAT_Options$Aggby)
+
   })
+
   
-  # Debounce slider times : The input of sliderValues() is not debounce.
-  #  Can I put this into sliderValues() to get it out of the way?
-  #  Note: call timepoint_sp_d() to get the value.
-  timepoint_sp_d <- debounce( reactive({ input$timepoint_sp  }), 500)
-  timepoint_tt_d <- debounce( reactive({ input$timepoint_tt  }), 500)
+  #  
+  # Update the label of the time slider, when slider changes.
+  #
+  observeEvent(input$timepoint_sp_idx, {
+    cat("* observeEvent : timepoint_sp_idx\n")
+    # For the spatial plot.
+    timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
+    outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
+    updateSliderInput(session, "timepoint_sp_idx", label = paste0("Time: ", outp))
+  })
+
+  observeEvent(input$timepoint_tt_idx, {
+    cat("* observeEvent : timepoint_tt_idx\n")
+    # For the trend table.
+    timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
+    outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
+    updateSliderInput(session, "timepoint_tt_idx", label = paste0("Time: ", outp))
+  })
   
 
   #
@@ -232,61 +313,28 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
-    # Detect changes in the Options panel.
-    val <- optionsSaved() 
+    # React to changes in the Options panel.
+    optionsSaved() 
   
+    # React to data aggregation.
+    reaggregateData()
+    
+    #Fixme: WHAT IS THIS FOR, NEED THIS HERE
     #val <- plumeThreshChange()
     
     
     # Update control attributes from reactive variables.
-    # NEED THIS HERE ? 
-    csite$ui_attr$spatial_options[1:length(csite$ui_attr$spatial_options)] <<-  FALSE
+    #Fixme: CHECK IF NEED THIS HERE, BETTER TO JUST PASS ANYTHING DIRECTLY TO PLOTTING
+    #       FUNCTION AND LEAVE WRITING BACK TO UI ATTRIBUTES TO SEPARATE FUNCTION. 
+    csite$ui_attr$spatial_options[1:length(csite$ui_attr$spatial_options)] <<- FALSE
     csite$ui_attr$spatial_options[input$imageplot_options] <<-  TRUE
     csite$ui_attr$gw_selected <<- input$gw_flows
     csite$ui_attr$contour_selected <<- input$imageplot_type
-    
-    ## The following two also apply to time-series but they are copies
-    ## I need the same input for both tabs!
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
-    
-    
-    ##
-    ## Note: There are separate observeEvents() for the following variables. 
-    ##       I have them here to have renderPlot() called whenever they change.
-    ##       I don't know yet how to trigger this renderPlot from observeEvents().
-    ##  + I've got two places where I store aggr., need to clean this mess up. 
-    #csite$GWSDAT_Options$Aggby <<- input$aggregate_data
-    #csite$ui_attr$aggregate_selected <<- input$aggregate_data
-    reaggregateData()
-    
-    # Input control in UI is commented out, thus input$aquifer_contour will be NULL
-    #csite$All.Data$Aq.sel <<- input$aquifer_contour
-    
-    # PROFILING EXECUTION TIMES:
-    #require(profr)
-    #require(ggplot2)
-    #tprof <- profr(..)
-    
-    #Rprof("Rprof_test1.out")
-    #replicate(n = 5, plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%m-%Y")))
-    #Rprof(NULL)
-    #browser()
-    #
-    # On first execution input$timepoint_sp is "", fix this - see sliderValues.R.
-    #    
-    
-    #start <- proc.time()
-    if (timepoint_sp_d() == "")
-      plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoint_sp, "%d-%m-%Y"))
-    else
-      plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"))
-    #time_passed <- proc.time() - start
-    
-    #Rprof(NULL)
-    #png("tprofile.png")
-    #ggplot(tprof)
-    #dev.off()
-    
+
+    plotSpatialImage(csite, input$solute_select_contour, 
+                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+   
   })
     
     
@@ -294,13 +342,15 @@ server <- function(input, output, session) {
   # Plot Traffic Lights Table
   #
   output$traffic_table <- renderPlot({
+    cat("* plot traffic_table\n")
+    # React to changes in the Options panel.
+    optionsSaved() 
+    
+    # React to data aggregation.
+    reaggregateData()
 
-    if (timepoint_tt_d() == "")
-      plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"),
-                     input$trend_or_threshold, input$traffic_color)
-    else
-      plotTrendTable(csite, as.Date(timepoint_tt_d(), "%d-%m-%Y"),
-                     input$trend_or_threshold, input$traffic_color)
+    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
+                   input$trend_or_threshold, input$traffic_color)
     
   })
   
@@ -433,88 +483,6 @@ server <- function(input, output, session) {
   #
   
   
-  
-  # Re-aggregate the data and mirror the controls in the 'Traffic Lights' tab.
-  # observeEvent(input$aggregate_data, {
-  # 
-  #  if (csite$GWSDAT_Options$Aggby != input$aggregate_data) {
-  #    reaggregateData(input$aggregate_data)
-  # 
-  #    # Update time step slider in this panel.
-  #    updateSliderInput(session, "time_steps", value = csite$timestep_range[1],
-  #                      min = csite$timestep_range[1], max = csite$timestep_range[2], step = 1)
-  # 
-  #    # Mirror aggregation type to trend table.
-  #    updateSelectInput(session, "aggregate_data_traffic", selected = input$aggregate_data )
-  # 
-  #  }
-  # })
-  
-  
-  # Re-aggregate the data and mirror the controls in the 'Spatial Plot' tab.
-  # observeEvent(input$aggregate_data_traffic, {
-  #   
-  #   if (csite$GWSDAT_Options$Aggby != input$aggregate_data_traffic) {
-  #     reaggregateData(input$aggregate_data_traffic)
-  #   
-  #     # Update time step slider in this panel.
-  #     updateSliderInput(session, "timepoint_tt", 
-  #                       min = csite$All.Data$All_Agg_Dates[1], 
-  #                       max = csite$All.Data$All_Agg_Dates[length(csite$All.Data$All_Agg_Dates)],
-  #                       value = csite$All.Data$All_Agg_Dates[length(csite$All.Data$All_Agg_Dates)],
-  #     
-  #     # Mirror aggregation type to spatial plot.
-  #     updateSelectInput(session, "aggregate_data", selected = input$aggregate_data_traffic ) 
-  #     
-  #   }
-  # })
-  # 
-  #
-  # Triggers when the 'Aquifer Group' input selection is changed.
-  #  Not in use right now: need to decide where to put the Aquifer decision:
-  #   1. Into Analyse Tab - needs a recalculation per re-selection, and whole UI needs
-  #       to be redrawn.
-  #   2. Data Manager - extra data entry per Aquifer. This would make it cleaner.
-  #
-  # # Re-select the data in respect to the Aquifer group.
-  # observeEvent(input$aquifer_contour, {
-  #   
-  #   tmpval = input$aquifer_contour
-  #   
-  #   # If the selected aquifer group changed, reload the data.
-  #   if (tmpval != csite$All.Data$Aq.sel) {
-  #     
-  #     # Prepare the input data with the selected Aquifer.
-  #     csite$All.Data <<- try(processData(csite$All.Data$solute_data, 
-  #                                  csite$All.Data$well_data, 
-  #                                  csite$GWSDAT_Options, 
-  #                                  Aq_sel = tmpval))
-  #     
-  #     if (inherits(csite$All.Data, 'try-error')) {
-  #       stop("Error in inputting and formatting data.")
-  #     }
-  #     
-  #     
-  #     # Fit the data.
-  #     csite$Fitted.Data <<- GWSDAT_Fit_Data(csite$All.Data, csite$GWSDAT_Options)
-  #     
-  #     if (class(csite$Fitted.Data) != "gwsdat_fit") {
-  #       stop("There was a problem with GWSDAT_Fit_Data() .. no fitted data returned, object class is: ", 
-  #            class(Fitted.Data), "\n")
-  #     }
-  #     
-  #     tmp_Cont <- csite$Cont.rg
-  #     tmp_rgUnits <- csite$rgUnits
-  #   
-  #     # Create a complete GWSDAT instance with data, model, and options. 
-  #     csite <<- Create_PanelAttr(csite)
-  #     
-  #     csite$Cont.rg <<- tmp_Cont 
-  #     csite$rgUnits <<- tmp_rgUnits
-  #   }
-  #   
-  # 
-  # })
     
   
   output$save_timeseries_plot <- downloadHandler(
@@ -1146,9 +1114,9 @@ server <- function(input, output, session) {
     if (is.null(pr_dat))
       return(NULL)
     
-    Fitted.Data = fitData(pr_dat, GWSDAT_Options)
+    fitdat = fitData(pr_dat, GWSDAT_Options)
     
-    if (is.null(Fitted.Data))
+    if (is.null(fitdat))
       return(NULL)
     
     # Create UI attributes
@@ -1156,9 +1124,10 @@ server <- function(input, output, session) {
     
     # Build list with all data.
     csite <<- list(All.Data       = pr_dat,
-                   Fitted.Data    = Fitted.Data,
+                   Fitted.Data    = fitdat$Fitted.Data,
                    GWSDAT_Options = GWSDAT_Options,
-                   Traffic.Lights = attr(Fitted.Data,"TrafficLights"),
+                   Traffic.Lights = fitdat$Traffic.Lights,
+                   GW.Flows       = fitdat$GW.Flows,
                    ui_attr        = ui_attr,
 		               Aquifer        = Aq_sel
     )
@@ -1216,22 +1185,18 @@ server <- function(input, output, session) {
               # If it was not fitted before, do it now.
               if (is.null(csite_list[[j]]$Fitted.Data)) {
                
-                Fitted.Data <- fitData(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
+                fitdat <- fitData(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
                 
-                if (class(Fitted.Data) != "gwsdat_fit") {
+                if (is.null(fitdat)) {
                   showNotification("Fitting data failed. Aborting.", type = "error", duration = 10)
                 }
                 
-                csite_list[[j]]$Fitted.Data <<- Fitted.Data
-                csite_list[[j]]$Traffic.Lights <<- attr(Fitted.Data,"TrafficLights")
-                
+                csite_list[[j]]$Fitted.Data    <<- fitdat$Fitted.Data
+                csite_list[[j]]$Traffic.Lights <<- fitdat$Traffic.Lights
+                csite_list[[j]]$GW.Flows       <<- fitdat$GW.Flows
                 
               }
 
-              #browser()
-              
-              #csite_list[[j]]$ui_attr <<- createUIAttr(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
-                 
               # Make selected data set active.
               csite <<- csite_list[[j]]
 

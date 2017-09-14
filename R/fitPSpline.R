@@ -252,16 +252,14 @@ return(Model.tune)
 
 ########################################################################################################################
 
-fitPSpline <- function(All.Data,Cont.Name,GWSDAT_Options){
+fitPSpline <- function(ContData,GWSDAT_Options){
 
 
-ContData <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$Constituent)==Cont.Name,]
-ContData <- na.omit(ContData)
-names(ContData)[names(ContData)=="AggDate"]<-"AggDatekeep"
-names(ContData)[names(ContData)=="SampleDate"]<-"AggDate"
+names(ContData)[names(ContData) == "AggDate"]    <- "AggDatekeep"
+names(ContData)[names(ContData) == "SampleDate"] <- "AggDate"
 
 
-Model.tune<-try(GWSDAT.PSplinetune(ContData,GWSDAT_Options))
+Model.tune <- try(GWSDAT.PSplinetune(ContData,GWSDAT_Options))
 
 
 

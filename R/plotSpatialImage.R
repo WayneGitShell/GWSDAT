@@ -67,15 +67,8 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   
 
   # Create the string for the date or date range to print
-  date_to_print <- format(timepoint, "%d-%b-%Y")
-  
-  if (tolower(csite$GWSDAT_Options$Aggby) != "day") {
-    # The second element will be the last day of the month or quarter, year.
-    period <- seq.Date(timepoint, by = tolower(csite$GWSDAT_Options$Aggby), length = 2) - 1
-    date_to_print <- paste0(date_to_print, " to ", format.Date(period[2], "%d-%b-%Y"))
-  }
-  
-  
+  date_to_print <- pasteAggLimit(timepoint, csite$GWSDAT_Options$Aggby)
+
   
   model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
   temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
@@ -127,57 +120,33 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   
   n.col <- length(lev_cut) - 1 #should be n.col-1
   
+  if (is.null(csite$GW.Flows)) {
+    Show.GW.Contour <- FALSE
+  } else {
   
-  GWFlows <- attr(csite$Fitted.Data,"GWFlows")
-  if (!inherits(GWFlows, "try-error")) {
-    
-    
-    temp.GW.Flows <- GWFlows[as.numeric(GWFlows$AggDate) == timepoint,]
+    temp.GW.Flows <- csite$GW.Flows[as.numeric(csite$GW.Flows$AggDate) == timepoint,]
     
     if (!is.null(csite$ui_attr$gw_selected) && csite$ui_attr$gw_selected != "None") {
       
       L <- 0.05 * sqrt(diff(Contour.xlim)^2 + diff(Contour.ylim)^2)
-      
-      
-      GWFlows <- attr(csite$Fitted.Data,"GWFlows")
-      
-      
-      if (!is.null(GWFlows)) {
-        
-        
-        if (nrow(temp.GW.Flows) > 0) {
+
+      if (nrow(temp.GW.Flows) > 0) {
           
+        x0 = temp.GW.Flows$XCoord
+        y0 = temp.GW.Flows$YCoord
           
-          x0 = temp.GW.Flows$XCoord
-          y0 = temp.GW.Flows$YCoord
-          
-          if (csite$ui_attr$gw_selected != "Same Length"){
-            
-            x1 = temp.GW.Flows$XCoord + L*temp.GW.Flows$R*cos(temp.GW.Flows$RAD)
-            y1 = temp.GW.Flows$YCoord + L*temp.GW.Flows$R*sin(temp.GW.Flows$RAD)
-            
-          }
-          else{
-            
+        if (csite$ui_attr$gw_selected != "Same Length") {
+          x1 = temp.GW.Flows$XCoord + L*temp.GW.Flows$R*cos(temp.GW.Flows$RAD)
+          y1 = temp.GW.Flows$YCoord + L*temp.GW.Flows$R*sin(temp.GW.Flows$RAD)
+        } else {
             x1 = temp.GW.Flows$XCoord + .65*L*cos(temp.GW.Flows$RAD)
             y1 = temp.GW.Flows$YCoord + .65*L*sin(temp.GW.Flows$RAD)
-            
           }
-          
-          
-          
-          
         } else {
-          
           Show.GW.Contour <- FALSE
-          
         }
-        
-        
-      }
     }
-    
-  }#if not try error!
+  }
   
 
  

@@ -85,7 +85,7 @@ uiAnalyse <- function(csite) {
                        
                        shinydashboard::box(width = 3, status = "warning", title = "Settings",
                                
-                               selectInput("aggregate_data_sp", label = "Aggregate Data", 
+                               selectInput("aggregate_data_sp", label = "Aggregate by", 
                                            choices  = csite$ui_attr$aggregate_list,
                                            selected = csite$ui_attr$aggregate_selected, 
                                            width = "80%"),
@@ -141,25 +141,28 @@ uiAnalyse <- function(csite) {
                        absolutePanel(id = "timecontrol_sp", class = "panel panel-default", 
                                      fixed = TRUE, draggable = TRUE, top = "auto", 
                                      left = "auto", right = 20, bottom = 20,
-                                     width = 350, height = 110,
+                                     width = 350, height = 110,  
                        
                               div(style = "margin-left: 15px; margin-top: 5px",
-                              sliderValues(
-                                inputId = "timepoint_sp", label = "Time Point", width = "95%",
-                                values = csite$ui_attr$timepoints, 
-                                from = csite$ui_attr$timepoint_sp,
-                                #to = csite$ui_attr$choices_month[6],
-                                grid = if (length(csite$ui_attr$timepoints) < 20) {TRUE} else {FALSE},
-                                animate = animationOptions(interval = 1500, loop = TRUE)
-                              ))
-                              #sliderInput("timepoint_sp", "Time Point",
-                              #            min = csite$ui_attr$timepoint_range[1],
-                              #            max = csite$ui_attr$timepoint_range[2],
-                              #            value = csite$ui_attr$timepoint_spatial_selected,
-                              #            timeFormat = "%d-%m-%Y",
-                              #            animate = animationOptions(loop = TRUE)
-                              #            ) # ,
-                              
+                                  sliderInput("timepoint_sp_idx", 
+                                              label = paste0("Time: ", pasteAggLimit(csite$ui_attr$timepoints[csite$ui_attr$timepoint_sp_idx], csite$GWSDAT_Options$Aggby)),
+                                              min = 1,
+                                              max = length(csite$ui_attr$timepoints),
+                                              step = 1,
+                                              value = csite$ui_attr$timepoint_sp_idx,
+                                              animate = animationOptions(loop = TRUE, interval = 1500)
+                                              ) # ,
+                                  
+                                  # This worked nice for passing a vector of dates to values.
+                                  # However, update does not work and grid is messed up with too many values.
+                                  #
+                                  #sliderValues(
+                                  #  inputId = "timepoint_sp", label = "Time Point", width = "95%",
+                                  #  values = csite$ui_attr$timepoints, 
+                                  #  from = csite$ui_attr$timepoint_sp,
+                                  #  grid = if (length(csite$ui_attr$timepoints) < 20) {TRUE} else {FALSE},
+                                  #  animate = animationOptions(interval = 1500, loop = TRUE)
+                              )
                               
                        )
               ), # end tabPanel
@@ -169,7 +172,11 @@ uiAnalyse <- function(csite) {
               tabPanel("Trends & Thresholds", fluid = TRUE,
                        
                        shinydashboard::box(width = 3, status = "warning", title = "Settings",
-                                
+                                selectInput("aggregate_data_tt", label = "Aggregate by", 
+                                             choices  = csite$ui_attr$aggregate_list,
+                                             selected = csite$ui_attr$aggregate_selected, 
+                                             width = "80%"),
+                                 
                                 radioButtons("trend_or_threshold", label = "Display Table",
                                              choices  = csite$ui_attr$trend_thresh_list, 
                                              selected = csite$ui_attr$trend_thresh_selected),
@@ -216,29 +223,24 @@ uiAnalyse <- function(csite) {
                                      width = 350, height = 110,
                                      
                                      div(style = "margin-left: 15px; margin-top: 5px",
-                                         sliderValues(
-                                           inputId = "timepoint_tt", label = "Time Point", width = "95%",
-                                           values = csite$ui_attr$timepoints, 
-                                           from = csite$ui_attr$timepoint_tt,
-                                           #to = csite$ui_attr$choices_month[6],
-                                           grid = if (length(csite$ui_attr$timepoints) < 20) {TRUE} else {FALSE},
-                                           animate = animationOptions(interval = 1500, loop = TRUE)
-                                         ))
+                                         sliderInput("timepoint_tt_idx", 
+                                                     label = paste0("Time: ", pasteAggLimit(csite$ui_attr$timepoints[csite$ui_attr$timepoint_sp_idx], csite$GWSDAT_Options$Aggby)),
+                                                     min = 1,
+                                                     max = length(csite$ui_attr$timepoints),
+                                                     step = 1,
+                                                     value = csite$ui_attr$timepoint_tt_idx,
+                                                     animate = animationOptions(loop = TRUE, interval = 1500)
+                                         ) 
+                                     )
+                                       # sliderValues(
+                                       #   inputId = "timepoint_tt", label = "Time Point", width = "95%",
+                                       #   values = csite$ui_attr$timepoints, 
+                                       #   from = csite$ui_attr$timepoint_tt,
+                                       #   #to = csite$ui_attr$choices_month[6],
+                                       #   grid = if (length(csite$ui_attr$timepoints) < 20) {TRUE} else {FALSE},
+                                       #   animate = animationOptions(interval = 1500, loop = TRUE)
+                                       # ))
                        )
-                       # column(2,
-                       #        sliderInput("timepoint_tt", "Time Point",
-                       #                    min = csite$ui_attr$timepoint_range[1],
-                       #                    max = csite$ui_attr$timepoint_range[2],
-                       #                    value = csite$ui_attr$timepoint_spatial_selected,
-                       #                    timeFormat = "%d-%m-%Y",
-                       #                    animate = animationOptions(loop = TRUE)
-                       #        )#,
-                       #        
-                       #        # selectInput("aggregate_data_traffic", label = "Aggregate Data", 
-                       #        #             choices  = csite$ui_attr$aggregate_list,
-                       #        #             selected = csite$ui_attr$aggregate_selected, 
-                       #        #             width = "100%")
-                       # ) 
                        
               ), # end tabPanel
 
