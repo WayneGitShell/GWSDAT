@@ -23,10 +23,11 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
-    shinydashboard::menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
-    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
-    shinydashboard::menuItem("Debug", tabName = "debug_it")
-  )),
+      shinydashboard::menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
+      shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
+      shinydashboard::menuItem("Debug", tabName = "debug_it")
+    )
+  ),
   
   shinydashboard::dashboardBody(
                       shinyjs::useShinyjs(), 
@@ -63,7 +64,8 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
     shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
-    )
+    ),
+    collapsed = TRUE
   ),
   
   shinydashboard::dashboardBody(

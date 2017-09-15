@@ -1,5 +1,5 @@
 GWSDAT_Options<-list()
-GWSDAT_Options[['Aggby']] <- 'Day'   # 'day', 'month', 'quarter', 'year'
+GWSDAT_Options[['Aggby']] <- 'Year'   # 'Day', 'Month', 'Quarter', 'Year'
 GWSDAT_Options[['AggMethod ']] <- 'Mean'
 GWSDAT_Options[['NDMethod']] <- 'Half of ND Value'
 GWSDAT_Options[['ModelMethod']] <- 'pspline'

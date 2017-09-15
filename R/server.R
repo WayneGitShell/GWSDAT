@@ -171,12 +171,18 @@ server <- function(input, output, session) {
   })
 
   
-  
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- reactive({
-    cat("* reaggregateData()\n")
+    #cat("* reaggregateData()\n")
     
-    # If nothing changed, return.     
+    # If 'input$aggregate_data_tt' is not put here, reaggregateData() will not
+    # react for the trend table if: 
+    #  1st Aggregation is changed in Spatial plot and  
+    #  2nd Aggregation is change in trend table.
+    input$aggregate_data_sp
+    input$aggregate_data_tt
+    
+    # If nothing changed, return - happens only when session starts.     
     if ((tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_data_sp)) &&
         (tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_data_tt)))
       return()
@@ -273,12 +279,12 @@ server <- function(input, output, session) {
    
     # Update slider inputs: Spatial plot and in Trend table.
     outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
-    
+    browser()
     updateSliderInput(session, "timepoint_sp_idx", value = new_timepoint_idx,
-                      max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp))
+                      min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
     
     updateSliderInput(session, "timepoint_tt_idx", value = new_timepoint_idx,
-                      max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp))
+                      min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
     
     
     # Update select input: Aggregation in other panel.
@@ -288,9 +294,6 @@ server <- function(input, output, session) {
     if (tt_changed)
       updateSelectInput(session, "aggregate_data_sp", selected = csite$GWSDAT_Options$Aggby)
 
-    # Return this to inform calling functions of the change. The updated time inputs
-    #  above are not yet updated and will be in the old state.
-    #return(new_timepoint_idx)
   })
 
   
@@ -365,6 +368,8 @@ server <- function(input, output, session) {
   # Plot Traffic Lights Table
   #
   output$traffic_table <- renderPlot({
+    
+    #cat("* entering traffic_table\n")
     
     # React to changes in the Options panel.
     optionsSaved() 

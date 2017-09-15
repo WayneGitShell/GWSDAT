@@ -4,36 +4,13 @@
 # #' @importFrom shinydashboard box 
 uiAnalyse <- function(csite) {
   
-  #
-  # This code is from the Superzip Shiny Gallery App.
-  #  It is supposed to change the CSS style of a panel (the dragable time control).
-  #  Unfortunately, it does not work here.. maybe move it somewhere else or load
-  #  from .css file.
-  #
-  #   shiny::tags$head(
-  #     shiny::tags$style(HTML("
-  #                             
-  #                            #timecontrol_sp {
-  #                            /* Appearance */
-  #                            background-color: white;
-  #                            padding: 0 20px 20px 20px;
-  #                            cursor: move;
-  #                            /* Fade out while not hovering */
-  #                            opacity: 0.65;
-  #                            zoom: 0.9;
-  #                            transition: opacity 500ms 1s;
-  # }
-  # 
-  # #timecontrol_sp {
-  # /* Fade in while hovering */
-  # opacity: 0.95;
-  # transition-delay: 0;
-  # }"
-  #   )))
-  #   
-
- #corner_element = HTML(paste0(tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
-  corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name)) # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
+  corner_element = csite$ui_attr$site_name
+  
+  # If in MultiData mode, include a BACK button.
+  if (APP_RUN_MODE == "MultiData")
+    corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name)) 
+  
+  # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
   navbarPage(corner_element, windowTitle = csite$ui_attr$site_name, id = "analyse_panel",              
               
               tabPanel("Time-Series", id = "ts_tab", fluid = TRUE,
