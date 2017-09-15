@@ -52,15 +52,16 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     if(type=="IQR/2")   {eval.df$pred<-0.5*(exp(qnorm(p=c(0.75), mean = eval.df$pred, sd = eval.df$pred.sd))-exp(qnorm(p=c(0.25), mean = eval.df$pred, sd = eval.df$pred.sd)))}
     
     
-    
-    #------------------------------------------------------------------#
-    
     ####################### pred.df ####################################
     
     pred.df$InOut<-!sp::point.in.polygon(pred.df$XCoord,pred.df$YCoord,my.area[,1],my.area[,2])==0
     
     predred.df<-pred.df[pred.df$InOut,]
-    dn <- delaunayn(eval.df[,c("XCoord","YCoord")])
+    #tryCatch(
+    dn <- delaunayn(eval.df[,c("XCoord","YCoord")])#,
+    #error = function(e) {
+    #  browser()
+    #})
     tri <- tsearch(eval.df[,"XCoord"],eval.df[,"YCoord"],dn,predred.df[,"XCoord"],predred.df[,"YCoord"],bary=T) 
     active <- dn[tri$idx,] 
     

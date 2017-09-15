@@ -323,8 +323,10 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
     }
   }
   
+  # To avoid trouble with NA entries use which:
+  max_larger_row <- which(temp.df$MaxInteriorConc < temp.df$MaxConc)
   
-  temp.df$MaxInteriorConc[temp.df$MaxInteriorConc < temp.df$MaxConc] <- temp.df$MaxConc[temp.df$MaxInteriorConc < temp.df$MaxConc]
+  temp.df$MaxInteriorConc[max_larger_row] <- temp.df$MaxConc[max_larger_row]
   
   my.ylim = c(min(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T), max(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T))
  

@@ -279,7 +279,7 @@ server <- function(input, output, session) {
    
     # Update slider inputs: Spatial plot and in Trend table.
     outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
-    browser()
+    
     updateSliderInput(session, "timepoint_sp_idx", value = new_timepoint_idx,
                       min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
     
@@ -895,7 +895,7 @@ server <- function(input, output, session) {
 
   # Go to .CSV Data Import (Link).
   shinyjs::onclick("toggleDataImport", {
-        browser()
+        #browser()
     shinyjs::show(id = "uiDataAddCSV");
     shinyjs::hide(id = "uiDataManager")
    
