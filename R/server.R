@@ -194,7 +194,7 @@ server <- function(input, output, session) {
       tt_changed <- TRUE
     }
     
-    
+    cat("  -> doing reaggregation..\n")
     
     tryCatch(
       agg_data <- aggregateData(csite$All.Data$Cont.Data, 
@@ -260,8 +260,11 @@ server <- function(input, output, session) {
     # Update UI time points of slider.
     dates_tmp <- format(csite$All.Data$All_Agg_Dates, "%d-%m-%Y")
     csite$ui_attr$timepoints   <<- dates_tmp
-    csite$ui_attr$timepoint_sp_idx <<- length(dates_tmp)
-    csite$ui_attr$timepoint_tt_idx <<- length(dates_tmp)
+    
+    # Set new time point to last date.
+    new_timepoint_idx <- length(dates_tmp)
+    csite$ui_attr$timepoint_sp_idx <<- new_timepoint_idx
+    csite$ui_attr$timepoint_tt_idx <<- new_timepoint_idx
     
     # Old way using real dates as timepoint indicator (together with sliderValues)
     #csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
@@ -269,12 +272,12 @@ server <- function(input, output, session) {
     
    
     # Update slider inputs: Spatial plot and in Trend table.
-    outp <- pasteAggLimit(csite$ui_attr$timepoints[input$timepoint_sp_idx], csite$GWSDAT_Options$Aggby)
+    outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
     
-    updateSliderInput(session, "timepoint_sp_idx", value = csite$ui_attr$timepoint_sp_idx,
+    updateSliderInput(session, "timepoint_sp_idx", value = new_timepoint_idx,
                       max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp))
     
-    updateSliderInput(session, "timepoint_tt_idx", value = csite$ui_attr$timepoint_tt_idx,
+    updateSliderInput(session, "timepoint_tt_idx", value = new_timepoint_idx,
                       max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp))
     
     
@@ -285,6 +288,9 @@ server <- function(input, output, session) {
     if (tt_changed)
       updateSelectInput(session, "aggregate_data_sp", selected = csite$GWSDAT_Options$Aggby)
 
+    # Return this to inform calling functions of the change. The updated time inputs
+    #  above are not yet updated and will be in the old state.
+    #return(new_timepoint_idx)
   })
 
   
@@ -292,16 +298,22 @@ server <- function(input, output, session) {
   # Update the label of the time slider, when slider changes.
   #
   observeEvent(input$timepoint_sp_idx, {
-    cat("* observeEvent : timepoint_sp_idx\n")
+    #cat("* observeEvent : timepoint_sp_idx\n")
     # For the spatial plot.
+    
+    csite$ui_attr$timepoint_sp_idx <<- input$timepoint_sp_idx
+    
     timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
     updateSliderInput(session, "timepoint_sp_idx", label = paste0("Time: ", outp))
   })
 
   observeEvent(input$timepoint_tt_idx, {
-    cat("* observeEvent : timepoint_tt_idx\n")
+    #cat("* observeEvent : timepoint_tt_idx\n")
     # For the trend table.
+    
+    csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
+    
     timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
     updateSliderInput(session, "timepoint_tt_idx", label = paste0("Time: ", outp))
@@ -313,11 +325,19 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
+    #cat("* entering image_plot\n")
+    
     # React to changes in the Options panel.
     optionsSaved() 
   
-    # React to data aggregation.
+    timepoint_idx <- input$timepoint_sp_idx
+    
     reaggregateData()
+    
+    # reaggregateData() might change csite$ui_attr$timepoint_sp_idx.
+    if (csite$ui_attr$timepoint_sp_idx != input$timepoint_sp_idx)
+      timepoint_idx <- csite$ui_attr$timepoint_sp_idx
+    
     
     #Fixme: WHAT IS THIS FOR, NEED THIS HERE
     #val <- plumeThreshChange()
@@ -331,9 +351,12 @@ server <- function(input, output, session) {
     csite$ui_attr$gw_selected <<- input$gw_flows
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
-
+    
+    
+    # cat(" -> time point idx active: ", timepoint_idx, ", size of timepoints vector: ", length(csite$ui_attr$timepoints), "\n")
+    
     plotSpatialImage(csite, input$solute_select_contour, 
-                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+                     as.Date(csite$ui_attr$timepoints[timepoint_idx], "%d-%m-%Y"))
    
   })
     
@@ -342,14 +365,22 @@ server <- function(input, output, session) {
   # Plot Traffic Lights Table
   #
   output$traffic_table <- renderPlot({
-    cat("* plot traffic_table\n")
+    
     # React to changes in the Options panel.
     optionsSaved() 
     
+    timepoint_idx <- input$timepoint_tt_idx
+    
     # React to data aggregation.
     reaggregateData()
-
-    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
+    
+    # reaggregateData() might change csite$ui_attr$timepoint_sp_idx.
+    if (csite$ui_attr$timepoint_tt_idx != input$timepoint_tt_idx)
+      timepoint_idx <- csite$ui_attr$timepoint_tt_idx
+    
+    #cat(" -> time point idx active: ", timepoint_idx, ", size of timepoints vector: ", length(csite$ui_attr$timepoints), "\n")
+    
+    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[timepoint_idx], "%d-%m-%Y"),
                    input$trend_or_threshold, input$traffic_color)
     
   })

@@ -1,4 +1,4 @@
-
+ 
 
 fitData <- function(All.Data, GWSDAT_Options) {
 
@@ -108,7 +108,7 @@ fitData <- function(All.Data, GWSDAT_Options) {
     tryCatch(
       GW.Flows <- do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, calcGWFlow)),
       error = function(e) {
-        showNotification(paste0("Failed to calculate groundwater flows: ", e.message), type = "error", duration = 10)
+        showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)
       })
     
     if (!is.null(GW.Flows)) {    
