@@ -4,8 +4,9 @@
 
 server <- function(input, output, session) {
   
-
-  
+ 
+  if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
+    APP_RUN_MODE <- "MultiData"
   
   # Flag that indicates whether data was loaded or not.  
   dataLoaded <- reactiveVal(0)

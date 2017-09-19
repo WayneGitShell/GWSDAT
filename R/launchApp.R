@@ -20,15 +20,17 @@ launchApp <- function(GWSDAT_Options, session_file) {
     # something with the order messes up. 
     shinyjs::useShinyjs()
 
-    # .GlobalEnv$APP_RUN_MODE <- "MultiData"
+   
     
     if (missing(GWSDAT_Options) && missing(session_file)) {
 
+      .GlobalEnv$APP_RUN_MODE <- "MultiData"
+      
       shinyApp(ui = uiFull, server = server)
-    
+      
     } else {
 
-      APP_RUN_MODE <<- "SingleData"
+      .GlobalEnv$APP_RUN_MODE <- "SingleData"
       
       if (!missing(session_file)) {
         .GlobalEnv$session_file <- normalizePath(session_file)
