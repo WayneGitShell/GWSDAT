@@ -407,7 +407,16 @@ server <- function(input, output, session) {
     
   })
   
-  
+  #
+  # Plot SpatioTemporal Predictions
+  #
+  output$stpredictions_plot <- renderPlot({
+    
+    use_log_scale <- if (input$logscale_stp == "Yes") {TRUE} else {FALSE}
+    
+    plotSTPredictions(csite, input$solute_select_stp, input$well_mult_select_stp, use_log_scale, input$solute_conc_stp)
+    
+  })
   
   updateNAPL <- function(location, substance) {
     
@@ -629,7 +638,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_wr == "ppt") {
         
-        plotWellReport(csite, input$solute_mult_select, input$well_mult_select, use_log_scale,
+        plotWellReportPPT(csite, input$solute_mult_select, input$well_mult_select, use_log_scale,
                        width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
                        height = input$img_height_px_wide / csite$ui_attr$img_ppi)
       } else {
@@ -697,6 +706,36 @@ server <- function(input, output, session) {
     }
   )
   
+  output$save_stpredictions_plot <- downloadHandler(
+    
+    filename <- function() { 
+      paste("stpredictions.", input$export_format_stp, sep = "")
+    },
+    
+    content <-  function(file) {
+      
+      use_log_scale <- if (input$logscale_stp == "Yes") {TRUE} else {FALSE}
+      
+      if (input$export_format_stp == "ppt") {
+        
+        plotWellReportPPT(csite, input$solute_mult_select, input$well_mult_select, use_log_scale,
+                          width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
+                          height = input$img_height_px_wide / csite$ui_attr$img_ppi)
+      } else {
+        
+        if (input$export_format_stp == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
+        if (input$export_format_stp == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        if (input$export_format_stp == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        if (input$export_format_stp == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
+        if (input$export_format_stp == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        
+        plotSTPredictions(csite, input$solute_select_stp, input$well_mult_select_stp, use_log_scale, input$solute_conc_stp)
+        
+        dev.off()
+      }
+      
+    }
+  )
   
   output$save_session_btn <- downloadHandler(
     

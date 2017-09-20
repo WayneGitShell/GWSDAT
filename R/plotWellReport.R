@@ -1,7 +1,7 @@
 
 
 plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,  
-                             UseLogScale = FALSE, toPPT = FALSE){
+                             UseLogScale = FALSE){
   
   on.exit(palette("default"))
   

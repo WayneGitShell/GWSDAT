@@ -226,6 +226,8 @@ uiAnalyse <- function(csite) {
                            uiWellReport(csite) ),
                   tabPanel("Plume Diagnostic", fluid = TRUE, 
                            uiPlumeDiagnostics(csite) ),
+                  tabPanel("Spatiotemporal Predictions", fluid = TRUE, 
+                           uiSTPredictions(csite) ),
                   "----",
                   tabPanel("Save Session", fluid = TRUE,
                            uiSession() ),  
