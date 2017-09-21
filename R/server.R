@@ -20,7 +20,9 @@ server <- function(input, output, session) {
   default_session_file <- "GWSDAT_Examples.RData"
   
   import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL)
+ 
   
+ 
   # 
   # Some usefull session objects:
   #
@@ -201,7 +203,7 @@ server <- function(input, output, session) {
       tt_changed <- TRUE
     }
     
-    cat("  -> doing reaggregation..\n")
+    # cat("  -> doing reaggregation..\n")
     
     tryCatch(
       agg_data <- aggregateData(csite$All.Data$Cont.Data, 
@@ -241,7 +243,7 @@ server <- function(input, output, session) {
     tryCatch(
       csite$Traffic.Lights <<- calcTrafficLights(csite$All.Data, csite$Fitted.Data, csite$GWSDAT_Options),
       error = function(e) {
-        showNotification(paste0("Failed to calculate trend table: ", e.message), type = "error", duration = 10)
+        showNotification(paste0("Failed to calculate trend table: ", e$message), type = "error", duration = 10)
       }
     )
 
@@ -253,7 +255,7 @@ server <- function(input, output, session) {
       tryCatch(
         csite$GW.Flows <<- do.call('rbind', by(csite$All.Data$Agg_GW_Data, csite$All.Data$Agg_GW_Data$AggDate, calcGWFlow)),
         error = function(e) {
-          showNotification(paste0("Failed to calculate groundwater flows: ", e.message), type = "error", duration = 10)
+          showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)
         })
       
       if (!is.null(csite$GW.Flows)) {    
@@ -302,9 +304,7 @@ server <- function(input, output, session) {
   # Update the label of the time slider, when slider changes.
   #
   observeEvent(input$timepoint_sp_idx, {
-    #cat("* observeEvent : timepoint_sp_idx\n")
-    # For the spatial plot.
-    
+     
     csite$ui_attr$timepoint_sp_idx <<- input$timepoint_sp_idx
     
     timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
@@ -313,9 +313,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$timepoint_tt_idx, {
-    #cat("* observeEvent : timepoint_tt_idx\n")
-    # For the trend table.
-    
+   
     csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
     
     timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
@@ -364,13 +362,10 @@ server <- function(input, output, session) {
    
   })
     
-    
-  #
-  # Plot Traffic Lights Table
-  #
-  output$traffic_table <- renderPlot({
-    
-    #cat("* entering traffic_table\n")
+  
+  
+  
+  output$trend_table <- renderUI({
     
     # React to changes in the Options panel.
     optionsSaved() 
@@ -384,17 +379,15 @@ server <- function(input, output, session) {
     if (csite$ui_attr$timepoint_tt_idx != input$timepoint_tt_idx)
       timepoint_idx <- csite$ui_attr$timepoint_tt_idx
     
-    #cat(" -> time point idx active: ", timepoint_idx, ", size of timepoints vector: ", length(csite$ui_attr$timepoints), "\n")
-    
     plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[timepoint_idx], "%d-%m-%Y"),
-                   input$trend_or_threshold, input$traffic_color)
-    
+               input$trend_or_threshold, input$traffic_color)
   })
-  
+
   
   # Plot the legend for the traffic lights table.
-  output$plot_legend_traffic <- renderPlot({plotTrendTableLegend()  })
+  output$trend_legend <- renderUI({ plotTrendTableLegend()  })
   
+
   
   #
   # Plot Well Report
@@ -570,7 +563,7 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "ppt") {
         
-        plotSpatialImagePPT(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"),
+        plotSpatialImagePPT(csite, input$solute_select_contour, as.Date(input$timepoint_sp_idx, "%d-%m-%Y"),
                        width  = input$img_width_px  / csite$ui_attr$img_ppi,
                        height = input$img_height_px / csite$ui_attr$img_ppi)
       
@@ -582,7 +575,7 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
           if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           
-          plotSpatialImage(csite, input$solute_select_contour, as.Date(timepoint_sp_d(), "%d-%m-%Y"))
+          plotSpatialImage(csite, input$solute_select_contour, as.Date(input$timepoint_sp_idx, "%d-%m-%Y"))
           dev.off()
       }
       
@@ -1127,9 +1120,8 @@ server <- function(input, output, session) {
     
     # Load 'session_file' if specified in launchApp().
     if (exists("session_file", envir = .GlobalEnv)) {
-      
       csite_list <- NULL
-      
+     
       tryCatch( load(session_file), warning = function(w) 
         showModal(modalDialog(title = "Error", w$message, easyClose = FALSE))
       )

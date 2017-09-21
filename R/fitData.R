@@ -85,7 +85,7 @@ fitData <- function(All.Data, GWSDAT_Options) {
   tryCatch(
     Traffic.Lights <- calcTrafficLights(All.Data, Fitted.Data, GWSDAT_Options),
     error = function(e) {
-      showNotification(paste0("Failed to calculate trend table: ", e.message), type = "error", duration = 10)
+      showNotification(paste0("Failed to calculate trend table: ", e$message), type = "error", duration = 10)
     }
   )
 

@@ -1,4 +1,4 @@
-#' @importFrom shinyjs hidden disabled
+
 uiAnalyseOptions <- function(csite) {
   
   shinydashboard::box(title = "Options", width = 8, solidHeader = TRUE, status = "primary",

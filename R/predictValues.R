@@ -2,7 +2,7 @@
 
 
 
-
+#' @importFrom sp point.in.polygon
 predictValues <- function(model, AggDate, eval.df, type = c("predicted","lower","upper","sd")) {
   
   

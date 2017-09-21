@@ -1,6 +1,6 @@
 
 
-#' @importFrom shinyjs hidden
+
 uiPlumeDiagnostics <- function(csite) {
   
   fluidRow(

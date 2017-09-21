@@ -457,7 +457,7 @@ makeSpatialAnimation <- function(csite, substance,
 
 
 
-
+#' @importFrom sp point.in.polygon
 GWSDAT.GW.Contour <- function(temp.GW.Flows){
   
   options(warn = -1)

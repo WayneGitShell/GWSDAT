@@ -3,6 +3,7 @@
 
 
 #' @importFrom Matrix sparseMatrix
+#' @importFrom sp point.in.polygon
 interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","Upper 95% CI","% sd","IQR/2")) {
   
   

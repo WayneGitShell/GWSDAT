@@ -10,7 +10,7 @@ options(warn = 1)
 #' @export
 #' 
 #' @import stats grDevices graphics MASS shiny shinycssloaders geometry zoo readxl rhandsontable sf
-#' @importFrom shinyjs show hide delay onclick
+#' @importFrom shinyjs show hide delay onclick useShinyjs
 #' @importFrom utils sessionInfo write.csv
 launchApp <- function(GWSDAT_Options, session_file) {
 
@@ -20,7 +20,6 @@ launchApp <- function(GWSDAT_Options, session_file) {
     # something with the order messes up. 
     shinyjs::useShinyjs()
 
-   
     
     if (missing(GWSDAT_Options) && missing(session_file)) {
 
@@ -31,6 +30,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
     } else {
 
       .GlobalEnv$APP_RUN_MODE <- "SingleData"
+      
       
       if (!missing(session_file)) {
         .GlobalEnv$session_file <- normalizePath(session_file)

@@ -224,7 +224,7 @@ readShapeFiles_sf <- function(ShapeFileNames) {
           shdat[[length(shdat) + 1]] <- dat
           
       }, error = function(e) {
-          showNotification(paste0("Failed to load shape file ", ShapeFileNames[[i]], ": ", e$msg), type = "error")
+          showNotification(paste0("Failed to load shape file ", filein, ": ", e$msg), type = "error")
         }
       )
 
