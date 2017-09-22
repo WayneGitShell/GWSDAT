@@ -162,7 +162,7 @@ readConcData <- function(input_file, ...) {
 
 #' @importFrom utils read.csv
 readWellCoords <- function(input_file, ...) {
-
+ 
   
   if (length(list(...)) == 0)
     DF = read.csv(input_file)
@@ -202,7 +202,8 @@ readWellCoords <- function(input_file, ...) {
     return(NULL)
   } 
   
-  
+  # Make sure its not a factor, or we get an error when introducing "" 
+  DF_extract$Aquifer <- as.character(DF$Aquifer)
   DF_extract$Aquifer[is.na(DF_extract$Aquifer)] <- ""
   
   return(list(data = DF_extract, unit = coord_unit ))

@@ -563,7 +563,7 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "ppt") {
         
-        plotSpatialImagePPT(csite, input$solute_select_contour, as.Date(input$timepoint_sp_idx, "%d-%m-%Y"),
+        plotSpatialImagePPT(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
                        width  = input$img_width_px  / csite$ui_attr$img_ppi,
                        height = input$img_height_px / csite$ui_attr$img_ppi)
       
@@ -574,8 +574,8 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
           if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
-          
-          plotSpatialImage(csite, input$solute_select_contour, as.Date(input$timepoint_sp_idx, "%d-%m-%Y"))
+         
+          plotSpatialImage(csite, input$solute_select_contour, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
           dev.off()
       }
       
@@ -1153,7 +1153,7 @@ server <- function(input, output, session) {
     }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
     
     
-
+  
     if (is.null(solute_data) || is.null(well_data))
       return(NULL)
 

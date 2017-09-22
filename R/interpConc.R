@@ -22,8 +22,13 @@ interpConc <- function(csite, substance, timepoint) {
   diffrangeX <- 0.06*(range(Well.Coords$XCoord)[2] - range(Well.Coords$XCoord)[1])
   diffrangeY <- 0.06*(range(Well.Coords$YCoord)[2] - range(Well.Coords$YCoord)[1])
   
-  if ((diffrangeX/diffrangeY) > 1.4) {diffrangeY = 0}
-  if ((diffrangeY/diffrangeX) > 1.4) {diffrangeX = 0}
+  
+  if (diffrangeY != 0)
+    if ((diffrangeX/diffrangeY) > 1.4) {diffrangeY = 0}
+  
+  if (diffrangeX != 0)
+    if ((diffrangeY/diffrangeX) > 1.4) {diffrangeX = 0}
+  
   Contour.xlim = c(range(Well.Coords$XCoord)[1] - diffrangeX,range(Well.Coords$XCoord)[2] + diffrangeX)
   Contour.ylim = c(range(Well.Coords$YCoord)[1] - diffrangeY,range(Well.Coords$YCoord)[2] + diffrangeY)
   
@@ -72,8 +77,15 @@ interpConc <- function(csite, substance, timepoint) {
   #
   my.area <- my.area[chull(my.area),, drop = F]
   my.exp.area <- expandpoly(my.area, fact = 1.05)
-  eval.df <- splancs::gridpts(my.exp.area,350)
-  eval.df <- rbind(eval.df,my.exp.area)
+  
+  
+  if (nrow(my.exp.area) != 1) {
+    eval.df <- splancs::gridpts(my.exp.area, 350)
+    eval.df <- rbind(eval.df,my.exp.area)
+  } else {
+    eval.df <- my.exp.area
+  }
+  
   colnames(eval.df)[1:2] <- c("XCoord","YCoord")
   try(rownames(eval.df) <- NULL)
   eval.df <- as.data.frame(eval.df)
@@ -99,7 +111,7 @@ interpConc <- function(csite, substance, timepoint) {
     
   } else {
     
-    interp.pred <- predictValues(NULL, AggDate = eval.df$AggDate[1],eval.df)
+    interp.pred <- predictValues(NULL, AggDate = eval.df$AggDate[1], eval.df)
     Do.Image <- FALSE
     
   }

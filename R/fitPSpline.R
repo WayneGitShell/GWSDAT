@@ -21,6 +21,7 @@ GWSDAT.st.matrices <- function(x, xrange, ndims, nseg, bdeg = 3, pord = 2, compu
     b <- list(length = 3)
     m <- vector(length = 3)
     for (i in 1:3) {
+      
        b[[i]] <- GWSDAT.bbase(x[,i], xl = xrange[i , 1], xr = xrange[i, 2], nseg = nseg[i], deg = bdeg)
        m[i]   <- ncol(b[[i]])
     }
@@ -57,9 +58,10 @@ GWSDAT.st.matrices <- function(x, xrange, ndims, nseg, bdeg = 3, pord = 2, compu
 
 ########################################################################################################################
 
-GWSDAT.bbase<-function(x, xl = min(x), xr = max(x), nseg = 10, deg = 3) {
+GWSDAT.bbase <- function(x, xl = min(x), xr = max(x), nseg = 10, deg = 3) {
 # Construct B-spline basis
     dx <- (xr - xl) / nseg
+    
     knots <- seq(xl - deg * dx, xr + deg * dx, by = dx)
     P <- outer(x, knots, GWSDAT.tpower, deg)
     n <- dim(P)[2]
@@ -108,7 +110,7 @@ pord 		<- GWSDAT_Options$PSplineVars$pord
 bdeg		<- GWSDAT_Options$PSplineVars$bdeg
 Trial.Lambda 	<- GWSDAT_Options$PSplineVars$Trial.Lambda
 #--------------------------------------------------------------------------------------------------------------#
-
+browser()
   mat    <- GWSDAT.st.matrices(X, xrange= xrange <- t(apply(X, 2, range)), ndims = 3, nseg = rep(nseg,3), pord=pord, bdeg=bdeg)
   #BestModel<-GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas=Trial.Lambda , ig.a=NIG.a, ig.b=NIG.b, prior= GWSDAT.Prior)
   B<-mat$B
@@ -183,20 +185,21 @@ GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, pr
 
 ########################################################################################################################
 
-GWSDAT.PSplinetune<-function(ContData,GWSDAT_Options,verbose=interactive()){
+GWSDAT.PSplinetune <- function(ContData, GWSDAT_Options, verbose = interactive()){
 
 
 ######################################## Prepare Data  #########################################################
 
-form<-log(Result.Corr.ND)~XCoord+YCoord+AggDate-1
-X<-model.matrix(form,ContData)
-colnames(X)<-c("XCoord","YCoord","AggDate")
+form <- log(Result.Corr.ND) ~ XCoord + YCoord + AggDate - 1
+X <- model.matrix(form,ContData)
+
+colnames(X) <- c("XCoord","YCoord","AggDate")
 center <- colMeans(X, na.rm = TRUE)
 X <- sweep(X, 2L, center)
-scale<-apply(X,2,sd)
-scale[1:2]<-rep(min(scale[1:2]),2)
+scale <- apply(X, 2, sd)
+scale[1:2] <- rep(min(scale[1:2]),2)
 X <- sweep(X, 2L, scale, "/")
-Y<-model.response(model.frame(form,ContData))
+Y <- model.response(model.frame(form, ContData))
 #--------------------------------------------------------------------------------------------------------------#
 
 
@@ -209,7 +212,7 @@ bdeg		<- GWSDAT_Options$PSplineVars$bdeg
 Trial.Lambda 	<- GWSDAT_Options$PSplineVars$Trial.Lambda
 #--------------------------------------------------------------------------------------------------------------#
 
-mat    <- GWSDAT.st.matrices(X, xrange= xrange <- t(apply(X, 2, range)), ndims = 3, nseg = rep(nseg,3), pord=pord, bdeg=bdeg)
+mat    <- GWSDAT.st.matrices(X, xrange = xrange <- t(apply(X, 2, range)), ndims = 3, nseg = rep(nseg,3), pord=pord, bdeg=bdeg)
 BestModel<-GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas=Trial.Lambda , ig.a=NIG.a, ig.b=NIG.b, prior= GWSDAT.Prior)
 
 if(verbose){

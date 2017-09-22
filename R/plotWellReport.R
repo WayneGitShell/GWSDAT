@@ -234,4 +234,6 @@ plotWellReportPPT <- function(csite, substances, locations, use_log_scale,
   
   try(file.remove(mytemp))
   
+  # This closes the handler
+  ppt <<- NULL
 }

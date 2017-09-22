@@ -38,9 +38,9 @@ if(exists('XtempScreenExp')){rm(XtempScreenExp)}
 
 GWSDAT_Options[['ShapeFileNames']] <- NULL
 
-GWSDAT_Options[['SiteName']] <- 'Basic Example'
-GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellData.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellCoords.csv'
+#GWSDAT_Options[['SiteName']] <- 'Basic Example'
+#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellData.csv'
+#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellCoords.csv'
 
 #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
 #GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
@@ -67,6 +67,11 @@ GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSD
 #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Roads.shp')
 #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Boundary.shp')
 #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Buildings.shp')
+
+GWSDAT_Options[['SiteName']] <- 'New Data'
+GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellData.csv'
+GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellCoords.csv'
+
 
 
 #devtools::install_github("andrejadd/GWSDAT")
