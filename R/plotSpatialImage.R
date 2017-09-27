@@ -379,11 +379,15 @@ plotSpatialImagePPT <- function(csite, substance, timepoint,
   dev.off()
    
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, width, height) 
+  if (is.null(ppt_lst <- initPPT())) {
+    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    return(NULL)
+  }
+  
+  addPlotPPT(mytemp, ppt_lst, width, height) 
   
   try(file.remove(mytemp))
   
-    
 }
 
 
@@ -396,9 +400,17 @@ makeSpatialAnimation <- function(csite, substance,
   
   full_plume_stats <- NULL 
  
+  # Init powerpoint.
+  if (is.null(ppt_lst <- initPPT())) {
+    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    return(NULL)
+  }
+  
   # Loop over each time step.. 
-  for (timepoint in csite$All.Data$All_Agg_Dates) {
- 
+  for (i in 1:length(csite$All.Data$All_Agg_Dates)) {
+    
+    timepoint <- csite$All.Data$All_Agg_Dates[i]
+    
     # Do the interpolation.
     interp.pred <- interpConc(csite, substance, timepoint)
     
@@ -428,29 +440,32 @@ makeSpatialAnimation <- function(csite, substance,
       
     }
 
-    # Make the plot and save to ppt
+    # Make the plot and add to powerpoint.
     mytemp <- tempfile(fileext = ".wmf")
-  
+    #browser()
     win.metafile(mytemp, width = width, height = height) 
     plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
     dev.off()
     
-    AddPlotPPV2(mytemp, width, height) 
+    ppt_lst <- addPlotPPT(mytemp, ppt_lst, width, height) 
     
+    try(file.remove(mytemp))
     
   } # end of for
   
   
-  # Add slide with plume statistics.
+  # Add slide with plume statistics on last page.
   if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
     win.metafile(mytemp, width = width_plume, height = height_plume) 
     plotPlumeTimeSeries(full_plume_stats)
     dev.off()
     
-    AddPlotPPV2(mytemp, width = width_plume, height = height_plume)
+    addPlotPPT(mytemp, ppt_lst, width = width_plume, height = height_plume)
+    
+    try(file.remove(mytemp))
   }
   
-  try(file.remove(mytemp))
+ 
 }
 
 

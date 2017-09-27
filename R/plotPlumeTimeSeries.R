@@ -222,10 +222,16 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, width = 9, height = 5){
   win.metafile(mytemp, width = width, height = height) 
   plotPlumeTimeSeries(plume_stats)
   dev.off()
+ 
   
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, width, height) 
+  if (is.null(ppt_lst <- initPPT())) {
+    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    return(NULL)
+  }
   
+  addPlotPPT(mytemp, ppt_lst, width, height) 
+ 
   try(file.remove(mytemp))
   
   

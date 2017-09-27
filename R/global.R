@@ -1,7 +1,7 @@
 
-ppt <- NULL
-myPres <- NULL
-mySlides <- NULL
+#ppt <- NULL
+#myPres <- NULL
+#mySlides <- NULL
 
 ## Not loading on library(GWSDAT), only on install. Also not loading 
 #  in a start script such as launchApp() to my suprise. Where is this 

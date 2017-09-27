@@ -113,7 +113,7 @@ plotModelPredictions <- function(csite, Cont.Data, SiteName = "", se.fit = FALSE
   
   
   #my.plot <- 
-  lattice::xyplot(Result.Corr.ND ~ as.Date(SampleDate) | WellName,
+  plot(lattice::xyplot(Result.Corr.ND ~ as.Date(SampleDate) | WellName,
                              data = Cont.Data, groups = as.character(Cont.Data$ND),
                     panel = function(x, y,groups,subscripts) {
                     try( lattice::panel.grid(h = -1, v = 2) )
@@ -211,13 +211,31 @@ plotModelPredictions <- function(csite, Cont.Data, SiteName = "", se.fit = FALSE
                   layout = if (length(levels(Cont.Data$Well)) > 30){c(4,4)}else{NULL},xlim=my.xlim,#ylim=my.ylim,
                   main   = if (csite$Aquifer == "") {paste("Spatiotemporal Predictions for ",Cont,"at",SiteName) } else {
                       paste("Spatiotemporal Predictions for ", Cont," at ", SiteName, ": Aquifer-",csite$Aquifer, sep = "")},
-                  drop.unused.levels = FALSE, key = my.key) 
-  
-  #return(my.plot)
-  
+                  drop.unused.levels = FALSE, key = my.key)) 
 }
 
 
-
+plotSTPredictionsPPT <- function(csite, substance = NULL, Wells.to.Plot = NULL,  
+                              UseLogScale = FALSE, solute_unit = "ug/l",
+                              width = 9, height = 5) {
+  
+  # Create temporary wmf file. 
+  mytemp <- tempfile(fileext = ".wmf")
+  
+  win.metafile(mytemp, width = width, height = height) 
+  plotSTPredictions(csite, substance, Wells.to.Plot, UseLogScale, solute_unit)
+  dev.off()
+  
+  # Put into powerpoint slide.
+  if (is.null(ppt_lst <- initPPT())) {
+    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    return(NULL)
+  }
+  
+  addPlotPPT(mytemp, ppt_lst, width, height) 
+  
+  try(file.remove(mytemp))
+  
+}
 
 

@@ -368,8 +368,15 @@ makeTimeSeriesPPT <- function(csite, substance, location, width = 7, height = 5)
   plotTimeSeries(csite, substance, location)
   dev.off()
   
+  
   # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, width, height) 
+  if (is.null(ppt_lst <- initPPT())) {
+    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    return(NULL)
+  }
+  
+  addPlotPPT(mytemp, ppt_lst, width, height) 
+  
   
   try(file.remove(mytemp))
   

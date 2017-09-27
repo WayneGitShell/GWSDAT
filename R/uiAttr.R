@@ -54,11 +54,8 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$trend_color_selected <- ui_attr$trend_color_list[1]
   
   # Define the image formats that can be saved.
-  ui_attr$img_formats <- list("png", "jpg", "pdf", "ps")
-  if (.Platform$OS.type == "windows") {
-    ui_attr$img_formats[[length(ui_attr$img_formats) + 1]] <- "wmf"
-    ui_attr$img_formats[[length(ui_attr$img_formats) + 1]] <- "ppt"
-  }
+  ui_attr$img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
+  
   ui_attr$img_width_px       <- 800 
   ui_attr$img_height_px      <- 600  
   ui_attr$img_width_px_wide  <- 1200

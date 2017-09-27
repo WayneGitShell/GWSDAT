@@ -21,7 +21,6 @@ server <- function(input, output, session) {
   
   import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL)
  
-  
  
   # 
   # Some usefull session objects:
@@ -711,9 +710,11 @@ server <- function(input, output, session) {
       
       if (input$export_format_stp == "ppt") {
         
-        plotWellReportPPT(csite, input$solute_mult_select, input$well_mult_select, use_log_scale,
-                          width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
-                          height = input$img_height_px_wide / csite$ui_attr$img_ppi)
+        plotSTPredictionsPPT(csite, input$solute_select_stp, input$well_mult_select_stp, 
+                             use_log_scale, input$solute_conc_stp,
+                             width = input$img_width_px_wide / csite$ui_attr$img_ppi, 
+                             height = input$img_height_px_wide / csite$ui_attr$img_ppi)
+        
       } else {
         
         if (input$export_format_stp == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
@@ -969,23 +970,45 @@ server <- function(input, output, session) {
 
     
   #
-  # Display the "Generate PPT Animation" button when in windows.
+  # Display the "Generate PPT Animation" button if Powerpoint is available.
   #
   observeEvent(input$analyse_panel, {
-    if (input$analyse_panel == "Spatial Plot" || input$analyse_panel == "Trends & Thresholds") {
-      
-      #
-      # Check here if RDCOMClient is available (requireNames(), see Suggests: in
-      #  DESCRIPTION).
-      #
-      # Disable for now because RDCOMClient:COMCreate() is not working (github #170)
-      
-      #if ( (.Platform$OS.type == "windows")) {
-      #  shinyjs::show(id = "save_spatial_ppt_anim")
-      #  shinyjs::show(id = "save_trendtable_ppt_anim")
-      #}
+   
+    # If Powerpoint export is possible, show the "Generate PPT Animation" button.
+    if (existsPPT()) {
+      shinyjs::show(id = "save_spatial_ppt_anim")
+      shinyjs::show(id = "save_trendtable_ppt_anim")
     }
+  
+    # Take out the option to plot to Powerpoint .ppt, if PPT does not exists.
+    imgs <- csite$ui_attr$img_formats
+    if (!existsPPT())
+      imgs <- imgs[-which(imgs == "ppt")]
+   
+    # If it is not windows, win.metafile() can't be used.
+    if (.Platform$OS.type != "windows") {
+      imgs <- imgs[-which(imgs == "wmf")]
+      imgs <- imgs[-which(imgs == "ppt")]  # the ppt method needs wmf
+    }
+    
+    # Update the image format inputs in each panel
+    if (input$analyse_panel == "Time-Series")
+      updateSelectInput(session, "export_format_ts", choices = imgs, selected = imgs[[1]])
+  
+    if (input$analyse_panel == "Spatial Plot")
+      updateSelectInput(session, "export_format_sp", choices = imgs, selected = imgs[[1]])
+    
+    if (input$analyse_panel == "Well Report")
+      updateSelectInput(session, "export_format_wr", choices = imgs, selected = imgs[[1]])
+
+    if (input$analyse_panel == "Plume Diagnostic")
+      updateSelectInput(session, "export_format_pd", choices = imgs, selected = imgs[[1]])
+    
+    if (input$analyse_panel == "Spatiotemporal Predictions")
+      updateSelectInput(session, "export_format_stp", choices = imgs, selected = imgs[[1]])
+    
   })
+  
   
   # These inputs will modify the plume threshold for each substance, 
   #  saved in csite$ui_attr$plume_thresh.
