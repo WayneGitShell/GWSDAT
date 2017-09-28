@@ -1,5 +1,5 @@
 
-uiSpatialImage <- function(csite) {
+uiSpatialImage <- function(csite, img_frmt) {
 
   fluidPage(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
@@ -30,13 +30,13 @@ uiSpatialImage <- function(csite) {
                       
     ),
     shinydashboard::box(width = 9, status = "primary",
-                      plotOutput("image_plot"),
+                      plotOutput("image_plot", height = 500),
                       
                       
                       div(style = "display: inline-block;", 
                           selectInput("export_format_sp", label = "Image format", 
-                                      choices  = csite$ui_attr$img_formats, 
-                                      selected = csite$ui_attr$img_formats[[1]]
+                                      choices  = img_frmt, 
+                                      selected = img_frmt[[1]]
                           )
                       ),
                       

@@ -25,11 +25,13 @@ plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   
   if (length(Conts.to.plot) == 1) {
     
-    myplot <- GWSDAT.xyplotWells(csite, Cont.Data, SiteName = SiteName,sm.fit=csite$ui_attr$ts_options["Conc. Trend Smoother"],UseLogScale=UseLogScale)
+    myplot <- GWSDAT.xyplotWells(csite, Cont.Data, SiteName = SiteName, 
+                                 sm.fit = csite$ui_attr$ts_options["Conc. Trend Smoother"], UseLogScale = UseLogScale)
     
   } else {
     
-    myplot <- GWSDAT.xyplotAllContbyWells(csite, Cont.Data, SiteName = SiteName, UseLogScale = UseLogScale)
+    myplot <- GWSDAT.xyplotAllContbyWells(csite, Cont.Data, SiteName = SiteName, 
+                                          UseLogScale = UseLogScale)
     
   }
   
@@ -143,7 +145,7 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
                   scales = list(y=list(log = UseLogScale)),
                   xlab = list("Sampling Date",cex = 1.5),
                   ylab = list(paste("Solute concentration"," (", csite$ui_attr$conc_unit_selected,")", sep = ""),cex=1.5),
-                  layout = if(length(levels(Cont.Data$Well))>30){c(4,4)}else{NULL},
+                  #layout = if(length(levels(Cont.Data$Well))>30){c(4,4)}else{NULL},
                   xlim = my.xlim,
                   main = if (csite$Aquifer == "") {paste(Cont,"at",SiteName)} else { 
                     paste(Cont," at ",SiteName,": Aquifer-", csite$Aquifer, sep = "")},
@@ -159,7 +161,7 @@ GWSDAT.xyplotWells <- function(csite, Cont.Data, SiteName = "", sm.fit=TRUE, Use
 ################### All Wells all Conts #########################################
 
 #' @importFrom lattice xyplot
-GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogScale=FALSE) {
+GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName = "", UseLogScale=FALSE) {
   
   my.xlim <- c(min(Cont.Data$SampleDate,na.rm = T),max(Cont.Data$AggDate,na.rm = T)) 
   
@@ -196,7 +198,7 @@ GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogSca
                  groups = Cont.Data$Constituent,
                  data   = Cont.Data,
                  scales = list( y = list(log = UseLogScale)),
-                 layout = if (length(unique(Cont.Data$WellName)) > 30) { c(4,4)} else {NULL},
+                 #layout = if (length(unique(Cont.Data$WellName)) > 30) { c(4,4)} else {NULL},
                  type   = c("b"),
                  pch    = 19,
                  cex    = 0.75,
@@ -205,7 +207,7 @@ GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName="", UseLogSca
                  key    = my.key,
                  xlab   = list("Sampling Date",cex = 1.5),
                  ylab   = list(paste("Solute concentration"," (", csite$ui_attr$conc_unit_selected, ")",sep = ""),cex = 1.5),
-                 main   = if (csite$Aquifer == "") {SiteName} else {paste(SiteName,": Aquifer-",csite$Aquifer, sep = "")},
+                 main   = if (csite$Aquifer == "") {SiteName} else {paste(SiteName, ": Aquifer-", csite$Aquifer, sep = "")},
                  drop.unused.levels = FALSE,
                  xlim   = my.xlim
   )

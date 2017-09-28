@@ -1,5 +1,5 @@
 
-uiTimeSeries <- function(csite) {
+uiTimeSeries <- function(csite, img_frmt) {
 
   fluidRow(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
@@ -27,8 +27,8 @@ uiTimeSeries <- function(csite) {
                         
                         div(style = "display: inline-block;",
                             selectInput("export_format_ts", label = "Image format", 
-                                        choices = csite$ui_attr$img_formats, 
-                                        selected = csite$ui_attr$img_formats[[1]]
+                                        choices = img_frmt, #csite$ui_attr$img_formats, 
+                                        selected = img_frmt[[1]] #csite$ui_attr$img_formats[[1]]
                             )
                         ),
                         

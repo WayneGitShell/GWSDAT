@@ -1,7 +1,7 @@
 
 
 
-uiPlumeDiagnostics <- function(csite) {
+uiPlumeDiagnostics <- function(csite, img_frmt) {
   
   fluidRow(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
@@ -33,8 +33,8 @@ uiPlumeDiagnostics <- function(csite) {
                              div(id = "plume_save_btn_div",
                               div(style = "display: inline-block;",
                                  selectInput("export_format_pd", label = "Image format", 
-                                             choices = csite$ui_attr$img_formats, 
-                                             selected = csite$ui_attr$img_formats[[1]])
+                                             choices = img_frmt, 
+                                             selected = img_frmt[[1]])
                               ),
                               div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
                                              downloadButton("save_plumestats_plot", label = "Save Plot")

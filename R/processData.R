@@ -1,4 +1,21 @@
 
+dataModal <- function(failed = FALSE) {
+  
+  modalDialog(
+    textInput("dataset", "Choose data set",
+              placeholder = 'Try "mtcars" or "abc"'
+    ),
+    span('(Try the name of a valid data object like "mtcars", ',
+         'then a name of a non-existent object like "abc")'),
+    if (failed)
+      div(tags$b("Invalid name of data object", style = "color: red;")),
+    
+    footer = tagList(
+      actionButton("no", "No"),
+      actionButton("yes", "Yes")
+    )
+  )
+}
 
 formatData <- function(solute_data, sample_loc) {
   
@@ -62,8 +79,10 @@ formatData <- function(solute_data, sample_loc) {
 
 
 #' @importFrom splancs areapl
-processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank",
-                        shape_file_data) {
+processData <- function(solute_data, sample_loc, GWSDAT_Options, 
+                        Aq_sel = "Blank",
+                        shape_file_data,
+                        subst_napl_vals = "yes") {
 
 
   #Pick up Electron Acceptors before deleting non-aquifer wells. 
@@ -264,20 +283,19 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options, Aq_sel = "Blank
     
     
     
-    
-    #msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations? \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
-    #msg <- paste(msg, "\n(Currently only Yes choice is possible, changing to Yes/No soon.", sep = "")
-    
-    subst_napl_vals <- "yes"
-    msg <- "NAPL values are substituted with maximum observed solute concentrations (Yes/No choice will soon be supported). \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
-    showNotification(msg, type = "warning", duration = 10)  
+    if (is.null(subst_napl_vals)) {
+      msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations? \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
+      ask_user <- list(msg = msg, title = "NAPL Value Substitution")
+
+      class(ask_user) <- "dialogBox"
+      return(ask_user)
+    }
     
     
     if (ContTypeData == "NoConcData" || subst_napl_vals == "yes") {
       
       
-      
-      cont_names.No.NAPL <- cont_names[tolower(cont_names)!="napl"]
+      cont_names.No.NAPL <- cont_names[tolower(cont_names) != "napl"]
       cont_names.No.NAPL <- setdiff(cont_names.No.NAPL,ElecAccepts) #omit e-acc constituent from NAPL set
       
       

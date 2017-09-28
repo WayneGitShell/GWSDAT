@@ -1,7 +1,7 @@
 
 
 existsPPT <- function() {
- 
+  
   if (!require(RDCOMClient))
     return(FALSE)
   

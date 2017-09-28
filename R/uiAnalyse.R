@@ -2,7 +2,7 @@
 
 # Gives conflict with graphics::box:
 # #' @importFrom shinydashboard box 
-uiAnalyse <- function(csite) {
+uiAnalyse <- function(csite, img_frmt) {
   
   corner_element = csite$ui_attr$site_name
   
@@ -16,21 +16,21 @@ uiAnalyse <- function(csite) {
   navbarPage(corner_element, windowTitle = csite$ui_attr$site_name, id = "analyse_panel",              
               
               tabPanel("Time-Series", fluid = TRUE, 
-                      uiTimeSeries(csite)),
+                      uiTimeSeries(csite, img_frmt)),
             
               tabPanel("Spatial Plot", fluid = TRUE,
-                      uiSpatialImage(csite)),
+                      uiSpatialImage(csite, img_frmt)),
                        
               tabPanel("Trends & Thresholds", fluid = TRUE,
                       uiTrendTable(csite)),
              
               navbarMenu("More",
                   tabPanel("Well Report", fluid = TRUE, 
-                           uiWellReport(csite) ),
+                           uiWellReport(csite, img_frmt) ),
                   tabPanel("Plume Diagnostic", fluid = TRUE, 
-                           uiPlumeDiagnostics(csite) ),
+                           uiPlumeDiagnostics(csite, img_frmt) ),
                   tabPanel("Spatiotemporal Predictions", fluid = TRUE, 
-                           uiSTPredictions(csite) ),
+                           uiSTPredictions(csite, img_frmt) ),
                   "----",
                   tabPanel("Save Session", fluid = TRUE,
                            uiSession() ),  

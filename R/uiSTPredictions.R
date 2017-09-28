@@ -1,6 +1,6 @@
 
 
-uiSTPredictions <- function(csite) {
+uiSTPredictions <- function(csite, img_frmt) {
   
   fluidRow(
     shinydashboard::box(width = 3, title = "Settings", 
@@ -20,12 +20,12 @@ uiSTPredictions <- function(csite) {
     ), # end box
     
     shinydashboard::box(width = 9, status = "primary", 
-                        plotOutput("stpredictions_plot"),  
+                        withSpinner(plotOutput("stpredictions_plot", height = 600)),  
                         
                         div(style = "display: inline-block;",
                             selectInput("export_format_stp", label = "Image format", 
-                                        choices = csite$ui_attr$img_formats, 
-                                        selected = csite$ui_attr$img_formats[[1]]
+                                        choices = img_frmt, 
+                                        selected = img_frmt[[1]]
                             )
                         ),
                         

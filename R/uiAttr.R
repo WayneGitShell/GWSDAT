@@ -54,8 +54,10 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$trend_color_selected <- ui_attr$trend_color_list[1]
   
   # Define the image formats that can be saved.
-  ui_attr$img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
+  # [Global parameter: moved this to global.R]
+  # ui_attr$img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
   
+  # Consider this as global variable as well?
   ui_attr$img_width_px       <- 800 
   ui_attr$img_height_px      <- 600  
   ui_attr$img_width_px_wide  <- 1200

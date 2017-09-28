@@ -208,7 +208,9 @@ plotModelPredictions <- function(csite, Cont.Data, SiteName = "", se.fit = FALSE
                   },
                   scales = list(y = list(log = UseLogScale)),
                   xlab   = list("Sampling Date", cex = 1.5), ylab = list(paste("Solute concentration"," (",solute_unit,")",sep=""),cex=1.5),
-                  layout = if (length(levels(Cont.Data$Well)) > 30){c(4,4)}else{NULL},xlim=my.xlim,#ylim=my.ylim,
+                  #layout = if (length(levels(Cont.Data$Well)) > 30) { c(4,4)} else{NULL},
+                  xlim   = my.xlim,
+                  #ylim=my.ylim,
                   main   = if (csite$Aquifer == "") {paste("Spatiotemporal Predictions for ",Cont,"at",SiteName) } else {
                       paste("Spatiotemporal Predictions for ", Cont," at ", SiteName, ": Aquifer-",csite$Aquifer, sep = "")},
                   drop.unused.levels = FALSE, key = my.key)) 

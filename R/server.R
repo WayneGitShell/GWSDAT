@@ -9,8 +9,9 @@ server <- function(input, output, session) {
     APP_RUN_MODE <- "MultiData"
   
   # Flag that indicates whether data was loaded or not.  
+  LOAD_COMPLETE <- 100
   dataLoaded <- reactiveVal(0)
-  #renderData <- reactiveVal(0)
+  
   
   # List of site data and currently selected site.
   csite_list <- NULL
@@ -20,8 +21,22 @@ server <- function(input, output, session) {
   default_session_file <- "GWSDAT_Examples.RData"
   
   import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL)
- 
- 
+
+  # Default load options that will be overwritten by dialog boxes. 
+  loadOptions <- list(aquifer = NULL, subst_napl = NULL)
+
+  # Define supported image formats
+  img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
+  
+  if (!existsPPT())
+    img_frmt <- img_frmt[-which(img_frmt == "ppt")]
+   
+  # If it is not windows, win.metafile() can't be used.
+  if (.Platform$OS.type != "windows") {
+    img_frmt <- img_frmt[-which(img_frmt == "wmf")]
+    img_frmt <- img_frmt[-which(img_frmt == "ppt")]  # the ppt method needs wmf
+  }
+
   # 
   # Some usefull session objects:
   #
@@ -910,7 +925,7 @@ server <- function(input, output, session) {
     }
 
     # Flag that data was loaded.
-    dataLoaded(dataLoaded() + 1)
+    dataLoaded(LOAD_COMPLETE)
     
     # Go back to Data Manager.
     shinyjs::show(id = "uiDataManager")
@@ -973,7 +988,7 @@ server <- function(input, output, session) {
   # Display the "Generate PPT Animation" button if Powerpoint is available.
   #
   observeEvent(input$analyse_panel, {
-   
+     
     # If Powerpoint export is possible, show the "Generate PPT Animation" button.
     if (existsPPT()) {
       shinyjs::show(id = "save_spatial_ppt_anim")
@@ -981,32 +996,32 @@ server <- function(input, output, session) {
     }
   
     # Take out the option to plot to Powerpoint .ppt, if PPT does not exists.
-    imgs <- csite$ui_attr$img_formats
-    if (!existsPPT())
-      imgs <- imgs[-which(imgs == "ppt")]
-   
-    # If it is not windows, win.metafile() can't be used.
-    if (.Platform$OS.type != "windows") {
-      imgs <- imgs[-which(imgs == "wmf")]
-      imgs <- imgs[-which(imgs == "ppt")]  # the ppt method needs wmf
-    }
-    
-    # Update the image format inputs in each panel
-    if (input$analyse_panel == "Time-Series")
-      updateSelectInput(session, "export_format_ts", choices = imgs, selected = imgs[[1]])
-  
-    if (input$analyse_panel == "Spatial Plot")
-      updateSelectInput(session, "export_format_sp", choices = imgs, selected = imgs[[1]])
-    
-    if (input$analyse_panel == "Well Report")
-      updateSelectInput(session, "export_format_wr", choices = imgs, selected = imgs[[1]])
-
-    if (input$analyse_panel == "Plume Diagnostic")
-      updateSelectInput(session, "export_format_pd", choices = imgs, selected = imgs[[1]])
-    
-    if (input$analyse_panel == "Spatiotemporal Predictions")
-      updateSelectInput(session, "export_format_stp", choices = imgs, selected = imgs[[1]])
-    
+    # imgs <- csite$ui_attr$img_formats
+    # if (!existsPPT())
+    #   imgs <- imgs[-which(imgs == "ppt")]
+    # 
+    # # If it is not windows, win.metafile() can't be used.
+    # if (.Platform$OS.type != "windows") {
+    #   imgs <- imgs[-which(imgs == "wmf")]
+    #   imgs <- imgs[-which(imgs == "ppt")]  # the ppt method needs wmf
+    # }
+    # 
+    # # Update the image format inputs in each panel
+    # if (input$analyse_panel == "Time-Series")
+    #   updateSelectInput(session, "export_format_ts", choices = imgs, selected = imgs[[1]])
+    # 
+    # if (input$analyse_panel == "Spatial Plot")
+    #   updateSelectInput(session, "export_format_sp", choices = imgs, selected = imgs[[1]])
+    # 
+    # if (input$analyse_panel == "Well Report")
+    #   updateSelectInput(session, "export_format_wr", choices = imgs, selected = imgs[[1]])
+    # 
+    # if (input$analyse_panel == "Plume Diagnostic")
+    #   updateSelectInput(session, "export_format_pd", choices = imgs, selected = imgs[[1]])
+    # 
+    # if (input$analyse_panel == "Spatiotemporal Predictions")
+    #   updateSelectInput(session, "export_format_stp", choices = imgs, selected = imgs[[1]])
+    # 
   })
   
   
@@ -1107,13 +1122,9 @@ server <- function(input, output, session) {
     
   
   
-  observeEvent(input$aquifer_btn, {
-    dataLoaded(1)
-  })
-  
   
   loadDefaultSessions <- function() {
-   
+    cat("* in loadDefaultSessions()\n")
     infile <- system.file("extdata", default_session_file, package = "GWSDAT")
     
     csite_list <- NULL
@@ -1129,7 +1140,7 @@ server <- function(input, output, session) {
     csite <<- csite_list[[1]]
       
     
-    dataLoaded(2)
+    dataLoaded(LOAD_COMPLETE)
     
   }
   
@@ -1138,13 +1149,15 @@ server <- function(input, output, session) {
   # Would like to move this fct to another file, however,
   #   it uses the reactive variabled dataLoaded. How to fix this?
   #
-  loadDataSet <- function(Aq_sel = NULL) {
+  loadDataSet <- function() {
 
-    
+    cat("* in loadDataSet()\n")
     # Load 'session_file' if specified in launchApp().
     if (exists("session_file", envir = .GlobalEnv)) {
       csite_list <- NULL
-     
+      
+      cat("session_file exists..\n")
+      
       tryCatch( load(session_file), warning = function(w) 
         showModal(modalDialog(title = "Error", w$message, easyClose = FALSE))
       )
@@ -1155,7 +1168,7 @@ server <- function(input, output, session) {
       csite_list <<- csite_list
       csite <<- csite_list[[1]]
       
-      dataLoaded(2)
+      dataLoaded(LOAD_COMPLETE)
       return(TRUE)  
     }
     
@@ -1163,17 +1176,17 @@ server <- function(input, output, session) {
     if (!exists("GWSDAT_Options", envir = .GlobalEnv)) 
       GWSDAT_Options <-  createOptions()
     
-    
+    Aq_sel <- loadOptions$aquifer
+    subst_napl <- loadOptions$subst_napl
     
     # Load the data from the .csv files.
-    
     solute_data <- well_data <- NULL
     
     # Read Well data and coordinates from file.
     tryCatch({
       solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
       well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
-    }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
+    }, warning = function(w) showModal(modalDialog(title = "Error Mark2", w$message, easyClose = FALSE)))
     
     
   
@@ -1190,16 +1203,18 @@ server <- function(input, output, session) {
       return(Aq_list)
     }
     
-    if (is.null(Aq_sel))
+    if (is.null(Aq_sel)) 
       Aq_sel <- Aq_list[[1]]
 
     
     shape_data <- readShapeFiles_sf(GWSDAT_Options$ShapeFileNames)
     
     pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
-                          Aq_sel, shape_data)
+                          Aq_sel, shape_data, subst_napl_vals = subst_napl)
       
-    
+    if (class(pr_dat) == "dialogBox")
+      return(pr_dat)
+      
     
     # Some Error occured.
     if (is.null(pr_dat))
@@ -1226,7 +1241,7 @@ server <- function(input, output, session) {
     csite_list[[length(csite_list) + 1]] <<- csite 
     
     # Flag that data was fully loaded.
-    dataLoaded(2)
+    dataLoaded(LOAD_COMPLETE)
     
     return(TRUE)
   }  
@@ -1239,8 +1254,8 @@ server <- function(input, output, session) {
   
   
   output$data_overview <- renderUI({
-   
-     if (dataLoaded() == 0) 
+    cat("* in data_overview")
+    if (dataLoaded() < LOAD_COMPLETE) 
       loadDataSet()
     
     html_out <- h3("Select Data Set")
@@ -1500,8 +1515,9 @@ server <- function(input, output, session) {
   
   output$uiDataManager <- renderUI({
     
+    cat("* in uiDataManager\n")
     # Observe load status of data.
-    if (dataLoaded() == 0) {
+    if (dataLoaded() < LOAD_COMPLETE) {
       loadDefaultSessions()
     }
     
@@ -1545,8 +1561,6 @@ server <- function(input, output, session) {
       
     }
     
-   
-    
     return(html_out)
     
   })
@@ -1558,46 +1572,110 @@ server <- function(input, output, session) {
   
   output$rndAnalyse <- renderUI({
    
-    html_out <- NULL
-    
-    
     # Observe load status of data.
     data_load_status <- dataLoaded()
     
-   
+    ret <- FALSE
+    
     # Nothing loaded yet, start process.
-    if (data_load_status == 0) { 
-      
+    if (data_load_status < LOAD_COMPLETE) { 
       ret <- loadDataSet()
-      
-      if (class(ret) == "Aq_list" ) {
-        html_out <- div(style = "width: 50%; margin: 0 auto",
-          shinydashboard::box(
-            selectInput("aquifer", "Choose from list", choices = ret),     
-            div(style = "float: right", actionButton("aquifer_btn", "Next")),
-            status = "primary", 
-            solidHeader = TRUE, 
-            collapsible = FALSE, 
-            width = 6, 
-            title = "Select an Aquifer"
-          )
-        )
+    
+      if (is.null(ret)) {
+        showModal(modalDialog(title = "Error", "Loading data failed, exiting."))
+        return(NULL)
       }
     }
-
+      
     
-    # Data partially loaded, continue with selected Aquifer.
-    if (data_load_status == 1) {
-      ret <- loadDataSet(Aq_sel = input$aquifer)
+    if (class(ret) == "Aq_list" ) {
+      return(div(style = "width: 50%; margin: 0 auto",
+                      shinydashboard::box(
+                        selectInput("aquifer", "Choose from list", choices = ret),     
+                        div(style = "float: right", actionButton("aquifer_btn", "Next")),
+                        status = "primary", 
+                        solidHeader = TRUE, 
+                        collapsible = FALSE, 
+                        width = 6, 
+                        title = "Select an Aquifer"
+                      ))
+      )
     }
+    
+    if (class(ret) == "dialogBox" ) {
+      return(div(style = "width: 80%; margin: 0 auto",
+                      shinydashboard::box(
+                        div(style = "margin-top: 10px; margin-bottom: 25px",
+                          paste0(ret$msg)),
+                        div(style = "float: right", 
+                            actionButton("diag_no" , "No"),
+                            actionButton("diag_yes", "Yes")),
+                        status = "primary", 
+                        solidHeader = TRUE, 
+                        collapsible = FALSE, 
+                        width = 6, 
+                        title = ret$title
+                      ))
+        )
+    }
+    
+    #
+    # The following code, unlocks the global variable img_formats_use and 
+    #  modifies it. It can be later used in the renderUI sub methods.
+    #  However, right now I am using the img_formats_use local variable of server()
+    #  because I have trouble specifying the right environment, without using where()
+    #  from the pryr package. I basically need the namespace environment to unlock the 
+    #  binding and not the package environment (as return by environment("package:GWSDAT")).
+    
+    # require(pryr)
+    # cat("*environment from where():\n")
+    # print(where("img_formats_use"))
+    
+    # app_env <- as.environment("package:GWSDAT") # <- this won't work (need namespace)
+    # app_env <- where("img_formats_use")         # <- this will work 
+    # cat("*environment from as.environment():\n")
+    # print(app_env)
+    # if (bindingIsLocked("img_formats_use", app_env)) {  # <- app_env must look something like: <environment: namespace:GWSDAT>
+    #  cat(" img_formats_use is locked binding, unlocking it..")
+    #  unlockBinding("img_formats_use", app_env)
+    #}
+    
+    # Take out the option to plot to Powerpoint .ppt, if PPT does not exists.
+    # img_formats_use <<- img_formats
+    # if (!existsPPT())
+    #   img_formats_use <<- img_formats_use[-which(img_formats_use == "ppt")]
+    # 
+    # # If it is not windows, win.metafile() can't be used.
+    # if (.Platform$OS.type != "windows") {
+    #   img_formats_use <<- img_formats_use[-which(img_formats_use == "wmf")]
+    #   img_formats_use <<- img_formats_use[-which(img_formats_use == "ppt")]  # the ppt method needs wmf
+    # }
+    
+    
     
     # Completely loaded, display the Analyse UI.
-    if (data_load_status >= 2) {
-      html_out <- uiAnalyse(csite)
+    if (data_load_status >= LOAD_COMPLETE) {
+      return(uiAnalyse(csite, img_frmt))
     }
     
-    return(html_out)
   })
+  
+  
+  observeEvent(input$aquifer_btn, {
+    loadOptions$aquifer <<- input$aquifer
+    dataLoaded(dataLoaded() + 1)
+  })
+  
+  observeEvent(input$diag_no, { 
+    loadOptions$subst_napl <<- "no"
+    dataLoaded(dataLoaded() + 1)
+  })
+  
+  observeEvent(input$diag_yes, { 
+    loadOptions$subst_napl <<- "yes"
+    dataLoaded(dataLoaded() + 1)
+  })
+  
   
 } # end server section
 

@@ -9,13 +9,14 @@ uiTrendTable <- function(csite) {
                                          choices  = csite$ui_attr$aggregate_list,
                                          selected = csite$ui_attr$aggregate_selected, 
                                          width = "80%"),
+
+                             selectInput("traffic_color", label = "Show color", choices = csite$ui_attr$trend_color_list,
+                                         selected = csite$ui_attr$trend_color_selected, width = "80%"),
                              
                              radioButtons("trend_or_threshold", label = "Display Table",
                                           choices  = csite$ui_attr$trend_thresh_list, 
-                                          selected = csite$ui_attr$trend_thresh_selected),
+                                          selected = csite$ui_attr$trend_thresh_selected)
                              
-                             selectInput("traffic_color", label = "Show color", choices = csite$ui_attr$trend_color_list,
-                                         selected = csite$ui_attr$trend_color_selected, width = "80%")
          ),
          
          

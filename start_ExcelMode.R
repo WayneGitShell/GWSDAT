@@ -1,5 +1,5 @@
 GWSDAT_Options<-list()
-GWSDAT_Options[['Aggby']] <- 'Year'   # 'Day', 'Month', 'Quarter', 'Year'
+GWSDAT_Options[['Aggby']] <- 'Month'   # 'Day', 'Month', 'Quarter', 'Year'
 GWSDAT_Options[['AggMethod ']] <- 'Mean'
 GWSDAT_Options[['NDMethod']] <- 'Half of ND Value'
 GWSDAT_Options[['ModelMethod']] <- 'pspline'
@@ -42,17 +42,17 @@ GWSDAT_Options[['ShapeFileNames']] <- NULL
 #GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellData.csv'
 #GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/BasicExample_WellCoords.csv'
 
-#GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
-#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
-#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellCoords.csv'
-#GWSDAT_Options[['ShapeFileNames']]     <- c('D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/GIS_Files/GWSDATex2.shp')
+GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
+GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellData.csv'
+GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/ComprehensiveExample_WellCoords.csv'
+GWSDAT_Options[['ShapeFileNames']]     <- c('D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/GIS_Files/GWSDATex2.shp')
 
 
 
 #
 # Plume Areas (different Aquifer)
 #
-
+#GWSDAT_Options[['SiteName']] <- 'Site 25'
 #GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_concdata.csv'
 #GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_plumeareas_wellcoords.csv'
 
@@ -61,6 +61,7 @@ GWSDAT_Options[['ShapeFileNames']] <- NULL
 # Site 25, site-wide (no Aquifer groups)
 #
 
+#GWSDAT_Options[['SiteName']] <- 'Site 25'
 #GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_sitewide_concdata.csv'
 #GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_sitewide_wellcoords.csv'
 #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Railroads.shp')
@@ -68,9 +69,9 @@ GWSDAT_Options[['ShapeFileNames']] <- NULL
 #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Boundary.shp')
 #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/EPA_Data/Site_25_Buildings.shp')
 
-GWSDAT_Options[['SiteName']] <- 'New Data'
-GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellData.csv'
-GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellCoords.csv'
+#GWSDAT_Options[['SiteName']] <- 'New Data'
+#GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellData.csv'
+#GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellCoords.csv'
 
 
 
