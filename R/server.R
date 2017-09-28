@@ -808,18 +808,59 @@ server <- function(input, output, session) {
   
   
   
-  output$table_conc_data <- rhandsontable::renderRHandsontable({
-    
-    if (is.null(import_tables[["DF_conc"]]))
-      return(NULL)
+  output$tbl_conc_nd <- rhandsontable::renderRHandsontable({
+    if (is.null(import_tables[["DF_conc"]])) return(NULL)
 
     useTypes = FALSE  # as.logical(input$useType)
     if (nrow(import_tables$DF_conc) > 100)
       rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
     else
       rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+  })
+  
+  output$tbl_conc_xls <- rhandsontable::renderRHandsontable({
+    if (is.null(import_tables[["DF_conc"]])) return(NULL)
     
+    useTypes = FALSE  # as.logical(input$useType)
+    if (nrow(import_tables$DF_conc) > 100)
+      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
+    else
+      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+  })
+  
+  output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
+    if (is.null(import_tables[["DF_conc"]])) return(NULL)
     
+    useTypes = FALSE  # as.logical(input$useType)
+    if (nrow(import_tables$DF_conc) > 100)
+      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
+    else
+      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+  })
+  
+  
+  output$tbl_well_nd <- rhandsontable::renderRHandsontable({
+    if (is.null(import_tables$DF_well)) return(NULL)
+    if (is.null(import_tables$DF_well$data)) return(NULL)
+    
+    useTypes = FALSE  # as.logical(input$useType)
+    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
+  })
+
+  output$tbl_well_xls <- rhandsontable::renderRHandsontable({
+    if (is.null(import_tables$DF_well)) return(NULL)
+    if (is.null(import_tables$DF_well$data)) return(NULL)
+    
+    useTypes = FALSE  # as.logical(input$useType)
+    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
+  })
+
+  output$tbl_well_csv <- rhandsontable::renderRHandsontable({
+    if (is.null(import_tables$DF_well)) return(NULL)
+    if (is.null(import_tables$DF_well$data)) return(NULL)
+    
+    useTypes = FALSE  # as.logical(input$useType)
+    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
   })
   
   observeEvent(input$well_coord_file, {
@@ -837,20 +878,7 @@ server <- function(input, output, session) {
     
   })
   
-  output$table_well_coord <- rhandsontable::renderRHandsontable({
-    
-    if (is.null(import_tables$DF_well))
-      return(NULL)
-
-    if (is.null(import_tables$DF_well$data))
-      return(NULL)
-    
-    
-    useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
-    
-  })
-  
+ 
   
   
   #
@@ -1358,10 +1386,10 @@ server <- function(input, output, session) {
       
       shinydashboard::tabBox(title = "New Tables", width = 9, 
            tabPanel("Contaminant Data", 
-                    rhandsontable::rHandsontableOutput("table_conc_data")
+                    rhandsontable::rHandsontableOutput("tbl_conc_nd")
            ), 
            tabPanel("Well Coordinates",
-                    rhandsontable::rHandsontableOutput("table_well_coord")
+                    rhandsontable::rHandsontableOutput("tbl_well_nd")
            )
       )
     )
@@ -1405,9 +1433,9 @@ server <- function(input, output, session) {
       ),
       
       shinydashboard::tabBox(title = "Imported Tables", width = 9, 
-             tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("table_conc_data")
+             tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_xls")
              ), 
-             tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("table_well_coord")
+             tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_xls")
              )
       )
     )
@@ -1471,9 +1499,9 @@ server <- function(input, output, session) {
       ), # end box
       
       shinydashboard::tabBox(title = "Imported Tables", width = 9, 
-             tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("table_conc_data")
+             tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_csv")
              ), 
-             tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("table_well_coord")
+             tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_csv")
              )
       )
       
