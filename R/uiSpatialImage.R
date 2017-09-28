@@ -44,15 +44,14 @@ uiSpatialImage <- function(csite, img_frmt) {
                       div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
                           downloadButton("save_spatial_plot", label = "Save Plot")
                       ),
-                      
-                      shinyjs::hidden( 
+                      if (existsPPT()) {
                         div(id = "save_spatial_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
                             
                             actionButton("generate_spatial_anim_ppt", 
                                          label = "Generate PPT Animation", icon = icon("file-movie-o"))
-                        )
+                        ) }
                         
-                      )
+                      #)
     ),
     absolutePanel(id = "timecontrol_sp", class = "panel panel-default", 
                 fixed = TRUE, draggable = TRUE, top = "auto", 

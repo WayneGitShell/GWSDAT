@@ -48,16 +48,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
                         $('.tabbable .nav.nav-tabs li a:first').click();
                         }
                         </script>"))),
-                      #tags$head(
-                      #  tags$style(HTML('#save_analyse_options{background-color:orange}'))
-                      #),
-                       # tags$head(tags$style(HTML("
-                       #           .save_analyse_options {
-                       #             background-color: #008CBA;
-                       #           }
-                       #           "))
-                       # ),
-
+                 
     shinydashboard::tabItems(
      shinydashboard::tabItem(tabName = "input_data", 
       

@@ -27,16 +27,17 @@ server <- function(input, output, session) {
 
   # Define supported image formats
   img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
-  
-  if (!existsPPT())
+        
+  if (!existsPPT() && ("ppt" %in% img_frmt))
     img_frmt <- img_frmt[-which(img_frmt == "ppt")]
    
-  # If it is not windows, win.metafile() can't be used.
+  # If it is not windows, win.metafile() (wmf) can't be used and ppt as well.
   if (.Platform$OS.type != "windows") {
-    img_frmt <- img_frmt[-which(img_frmt == "wmf")]
-    img_frmt <- img_frmt[-which(img_frmt == "ppt")]  # the ppt method needs wmf
+    if ("wmf" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "wmf")]
+    if ("ppt" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "ppt")]  
   }
-
+    
+  
   # 
   # Some usefull session objects:
   #
@@ -976,12 +977,12 @@ server <- function(input, output, session) {
   # Display the "Generate PPT Animation" button if Powerpoint is available.
   #
   observeEvent(input$analyse_panel, {
-     
+    #cat("* in observe input$analyse_panel") 
     # If Powerpoint export is possible, show the "Generate PPT Animation" button.
-    if (existsPPT()) {
-      shinyjs::show(id = "save_spatial_ppt_anim")
-      shinyjs::show(id = "save_trendtable_ppt_anim")
-    }
+    #if (existsPPT()) {
+    #  shinyjs::show(id = "save_spatial_ppt_anim")
+    #  shinyjs::show(id = "save_trendtable_ppt_anim")
+    #}
   
     
     # Update session file name with current time stamp.

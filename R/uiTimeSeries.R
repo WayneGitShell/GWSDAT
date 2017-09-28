@@ -1,6 +1,6 @@
 
 uiTimeSeries <- function(csite, img_frmt) {
- 
+    
   fluidRow(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
                         
