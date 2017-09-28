@@ -5,17 +5,17 @@ uiPlumeDiagnostics <- function(csite, img_frmt) {
   
   fluidRow(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
-            selectInput("solute_select_plume_pd", label = "Substance", 
-                        choices  = csite$ui_attr$substance_names,
-                        selected = csite$ui_attr$substance_selected, width = '100%'),
+            selectInput("solute_select_pd", label = "Substance", 
+                        choices  = csite$ui_attr$solute_names,
+                        selected = csite$ui_attr$solute_select_pd, width = '100%'),
 
-            numericInput("plume_threshold_pd", label = "Plume Threshold", 
-                         value = csite$ui_attr$plume_thresh[1]),
+            numericInput("plume_thresh_pd", label = "Plume Threshold", 
+                         value = csite$ui_attr$plume_thresh_pd),
             
             sliderInput("ground_porosity_pd", "Ground Porosity (%)",
                         min = 0, 
                         max = 100, 
-                        value = (csite$ui_attr$ground_porosity * 100),
+                        value = csite$ui_attr$ground_porosity_pd,
                         width = '150px'
             ),
             div(style = "float: right",

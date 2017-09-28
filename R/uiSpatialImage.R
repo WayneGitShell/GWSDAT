@@ -1,15 +1,16 @@
 
 uiSpatialImage <- function(csite, img_frmt) {
 
-  fluidPage(
+  fluidRow(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
                       
-                      selectInput("aggregate_data_sp", label = "Aggregate by", 
+                      selectInput("aggregate_select_sp", label = "Aggregate by", 
                                   choices  = csite$ui_attr$aggregate_list,
-                                  selected = csite$ui_attr$aggregate_selected, 
+                                  selected = csite$ui_attr$aggregate_select, 
                                   width = "80%"),
-                      selectInput("solute_select_contour", label = "Substance", choices = csite$ui_attr$substance_names,
-                                  selected = csite$ui_attr$substance_selected, width = '80%'),
+                      
+                      selectInput("solute_select_sp", label = "Substance", choices = csite$ui_attr$solute_names,
+                                  selected = csite$ui_attr$solute_select_sp, width = '80%'),
                       
                       radioButtons("solute_conc_contour", label = "Solute Conc. Unit",
                                    choices  = csite$ui_attr$conc_unit_list, 

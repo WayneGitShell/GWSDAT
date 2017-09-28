@@ -9,14 +9,15 @@ uiWellReport <- function(csite, img_frmt) {
         div(style = "margin-bottom:30px",
             "Exclude contaminants and wells by selecting and pressing the Delete key. Use Ctrl and Shift to select multiple elements."),
         
-      selectInput("solute_mult_select", 'Contaminants', choices = csite$ui_attr$substance_names,
-                  selected = csite$ui_attr$substance_names, multiple = TRUE, selectize = TRUE),
-      selectInput("well_mult_select", 'Wells', choices = csite$ui_attr$sample_loc_names,
-                   selected = csite$ui_attr$sample_loc_names, multiple = TRUE, selectize = TRUE),
+      selectInput("solute_select_wr", 'Substances', choices = csite$ui_attr$solute_names,
+                  selected = csite$ui_attr$solute_select_wr, multiple = TRUE, selectize = TRUE),
+      
+      selectInput("sample_loc_select_wr", 'Wells', choices = csite$ui_attr$sample_loc_names,
+                   selected = csite$ui_attr$sample_loc_select_wr, multiple = TRUE, selectize = TRUE),
             
-      radioButtons("well_report_logscale", label = "Use Log-Scale",
+      radioButtons("logscale_wr", label = "Use Log-Scale",
                  choices = list("Yes", "No"), 
-                 selected = "Yes")
+                 selected = csite$ui_attr$logscale_wr)
     
     ), # end box
 

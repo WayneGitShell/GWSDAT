@@ -16,8 +16,9 @@
 plotTimeSeries <- function(csite, 
                            substance = NULL, 
                            location = NULL,
+                           show_thresh = FALSE,
                            showvline = FALSE
-                           ){
+                           ) {
   
   
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
@@ -44,8 +45,8 @@ plotTimeSeries <- function(csite,
   Stat.Lim <- csite$ui_attr$conc_thres[substance]
   if (csite$ui_attr$conc_unit_selected == "mg/l") { Stat.Lim = Stat.Lim / 1000 }
   if (csite$ui_attr$conc_unit_selected == "ng/l") { Stat.Lim = Stat.Lim * 1000 }
-  if (csite$ui_attr$trend_thresh_selected == "Trend") { Stat.Lim = NA }
-  
+  #if (csite$ui_attr$trend_thresh_selected == "Trend") { Stat.Lim = NA }
+  if (!show_thresh) { Stat.Lim = NA }
   
   #
   #
@@ -207,7 +208,9 @@ plotTimeSeries <- function(csite,
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
   
   abline(v = as.Date(c(paste(1990:2030,c("-01-01"), sep = ""),paste(1990:2030,c("-06-30"),sep=""))),lwd=1,lty=1,col = "lightgray")
-  if (length(grep("Threshold",csite$ui_attr$trend_thresh_selected)) > 0){if(!is.na(Stat.Lim)){abline(h=Stat.Lim,col="red",lty=2,lwd=3)}}
+  #if (length(grep("Threshold",csite$ui_attr$trend_thresh_selected)) > 0) {if(!is.na(Stat.Lim)){abline(h=Stat.Lim,col="red",lty=2,lwd=3)}}
+  if (show_thresh && !is.na(Stat.Lim)) abline(h = Stat.Lim, col = "red", lty = 2, lwd = 3)
+    
   
   if (csite$ui_attr$ts_options["Show Legend"]) {
     

@@ -1,20 +1,21 @@
 
 uiTimeSeries <- function(csite, img_frmt) {
-
+ 
   fluidRow(
     shinydashboard::box(width = 3, status = "warning", title = "Settings",
                         
-                        selectInput("well_select", label = "Select Monitoring Well", choices = csite$ui_attr$sample_loc_names,
-                                    selected = csite$ui_attr$sample_loc_selected, width = "80%"),
+                        selectInput("sample_loc_select_ts", label = "Select Monitoring Well", choices = csite$ui_attr$sample_loc_names,
+                                    selected = csite$ui_attr$sample_loc_select_ts, width = "80%"),
                         
-                        selectInput("solute_select", label = "Solute", choices = csite$ui_attr$substance_names,
-                                    selected = csite$ui_attr$substance_selected, width = '80%'),
+                        selectInput("solute_select_ts", label = "Substance", choices = csite$ui_attr$solute_names,
+                                    selected = csite$ui_attr$solute_select_ts, width = '80%'),
                         
                         radioButtons("solute_conc", label = "Solute Conc. Unit",
                                      choices = csite$ui_attr$conc_unit_list, 
                                      selected = csite$ui_attr$conc_unit_selected),
                         
-                        checkboxInput("check_threshold", label = "Display threshold", value = FALSE ),
+                        checkboxInput("check_threshold", label = "Display threshold", 
+                                      value = csite$ui_attr$show_thresh_ts ),
                         
                         checkboxGroupInput("ts_true_options", label = "Time Series Plot Options", 
                                            choices = names(csite$ui_attr$ts_options),
