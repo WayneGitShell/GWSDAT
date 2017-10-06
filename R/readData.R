@@ -1,83 +1,195 @@
 
-
-readExcel <- function(filein) {
- 
-  conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
-  well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
-  
-  # Fixme: read .ending from $name and append to newfile
-  newfile <- paste0(filein$datapath, ".xlsx")
-  file.rename(filein$datapath, newfile)
-  
-  conc_data <- NULL
-  well_data <- NULL
-  
-  ls_sheets <- excel_sheets(newfile)
-  
-  # Attempt to find valid tables in sheets
-  for (sheet in ls_sheets) {
-  
+getExcelSheets <- function(filein) {
     
-    ## Read Excel contaminant data #############################################
-    ret <- readExcelData(newfile, sheet = sheet, header = conc_header)
-  
-    if (class(ret) != "data.frame") {
-      #  showNotification(paste0("Could not read header: ", paste(ret, collapse = ", ")), type = "error", duration = 10)
-      showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found, skipping."), duration = 10)
-      next
-    }
+    newfile <- paste0(filein$datapath, ".xlsx")
+    file.rename(filein$datapath, newfile)
     
-    
-    if (any(is.na(ret$SampleDate))) {
-      
-      ret <- ret[!is.na(ret$SampleDate),]
-      
-      msg <- paste0("Sheet \'", sheet, "\': Incorrect input date value(s) detected. Ommitting values.")
-      showNotification(msg, type = "warning", duration = 10)
-    
-      if (nrow(ret) == 0) {
-        showNotification(paste0("Sheet \'", sheet, "\': Zero entries in concentration data read, skipping."), type = "error", duration = 10)
-        next
-      } 
-    }
-    
-    if (!"flags" %in% tolower(names(ret))) { ret$Flags <- rep("",nrow(ret))}
-    ret$Flags[is.na(ret$Flags)] <- ""
-    ret$Result[is.na(ret$Result)] <- 0
-    ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
-    
-    conc_data <- ret
-  
-  
-    ## Read Excel well data ####################################################
-    ret <- readExcelData(newfile, sheet = 2, header = well_header, 
-                       ign_first_head = "WellName")
-  
-    if (class(ret) != "data.frame") {
-      showNotification(paste0("Sheet \'", sheet, "\': No valid well table found, skipping."), duration = 10)
-      next
-    }
-    
-    
-    coord_unit <- as.character(ret$CoordUnits[1])
-    if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- "metres"
-    ret$Aquifer[is.na(ret$Aquifer)] <- ""
-    
-    well_data <- list(data = ret, unit = coord_unit)
-    
-    showNotification(paste0("Sheet \'", sheet, "\': Found valid tables."), type = "message", duration = 10)
-    break
-  }
-  
-  if (is.null(conc_data) || is.null(well_data))
-    return(NULL)
-  
-  
-  return(list(conc_data = conc_data, well_data = well_data))
-  
-  
-  
+    return(excel_sheets(newfile))
 }
+
+
+readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {
+    
+    # Avoid reading column header (in first row) in order to have conform input
+    # if table is located somewhere inside the sheet. 'col_names = TRUE' would detect
+    # types and which(excl[,i] == headj)) would fail if not a character. 
+    excl <- read_excel(filein, sheet = sheet, col_names = FALSE)
+    
+    # Find the headers in the sheet
+    dftmp <- NULL
+    head_err = ""
+    end_row = 0
+    
+    # Detect empty table.
+    if (ncol(excl) == 0)
+        return(NULL)
+    
+    for (headj in header) {
+        
+        found_head <- FALSE
+        
+        # Look into each column
+        for (i in 1:ncol(excl)) {
+            #cat("sheet: ", sheet, ", header: ", headj, ", column: ", i, "\n")
+            
+            
+            # Get row offset of header
+            if (length(rowpos <- which(excl[,i] == headj)) == 1) {
+                
+                if (ign_first_head == headj) {
+                    ign_first_head = ""
+                    next
+                }
+                
+                found_head <- TRUE
+                
+                if (get_subset) {
+                    
+                    if (end_row == 0) {
+                        end_row <- which(is.na(excl[ (rowpos + 1):nrow(excl) , i]))[1]
+                        
+                        if (!is.na(end_row))
+                            end_row <- end_row + rowpos - 1
+                        else 
+                            end_row <- nrow(excl)
+                        
+                    }
+                    
+                    # Extract the data for this header
+                    ctmp <- excl[(rowpos + 1):end_row, i]
+                    
+                    colnames(ctmp) <- headj
+                    
+                    if (is.null(dftmp))
+                        dftmp <- ctmp
+                    else
+                        dftmp <- cbind(dftmp, ctmp)
+                }
+                
+                break
+            }
+            
+        }
+        
+        if (!found_head)
+            head_err = paste0(head_err, headj) 
+        
+    }
+    
+    if (head_err != "") {
+        return(head_err)
+    }
+    
+    
+    return(dftmp)
+    
+}
+
+
+
+readExcel <- function(filein, sheet = NULL) {
+    
+    cat("* in readExcel()\n")
+    conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+    well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+    shape_header <- list("Filenames (*.shp)")
+    
+    # Fixme: read .ending from $name and append to newfile
+    newfile <- paste0(filein$datapath, ".xlsx")
+    file.rename(filein$datapath, newfile)
+    
+    conc_data <- NULL
+    well_data <- NULL
+    
+    # If no sheet was specified, extract them and try to find tables.
+    if (is.null(sheet)) 
+        ls_sheets <- excel_sheets(newfile)
+    else 
+        ls_sheets <- list(sheet)
+    
+    # Attempt to find valid tables in sheets.
+    for (sheet in ls_sheets) {
+        
+        #
+        # Read the contaminant data 
+        #
+        ret <- readExcelData(newfile, sheet = sheet, header = conc_header)
+        
+        if (class(ret) != "data.frame") {
+            showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found."), duration = 10, type = "error")
+            next
+        }
+        
+        # Check if the date input is correct.
+        if (any(is.na(ret$SampleDate))) {
+            
+            ret <- ret[!is.na(ret$SampleDate),]
+            
+            msg <- paste0("Sheet \'", sheet, "\': Incorrect input date value(s) detected. Ommitting values.")
+            showNotification(msg, type = "warning", duration = 10)
+            
+            if (nrow(ret) == 0) {
+                showNotification(paste0("Sheet \'", sheet, "\': Zero entries in concentration data read, skipping."), type = "error", duration = 10)
+                next
+            } 
+        }
+        
+        # Modify some columns in order to make it display nicely in the table view.
+        if (!"flags" %in% tolower(names(ret))) { ret$Flags <- rep("",nrow(ret))}
+        ret$Flags[is.na(ret$Flags)] <- ""
+        ret$Result[is.na(ret$Result)] <- 0
+        ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
+        
+        conc_data <- ret
+        
+        
+        #
+        # Read the well data 
+        #
+        ret <- readExcelData(newfile, sheet = sheet, header = well_header, 
+                             ign_first_head = "WellName")
+        
+        if (class(ret) != "data.frame") {
+            showNotification(paste0("Sheet \'", sheet, "\': No valid well table found, skipping."), duration = 10)
+            next
+        }
+        
+        
+        coord_unit <- as.character(ret$CoordUnits[1])
+        if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- "metres"
+        ret$Aquifer[is.na(ret$Aquifer)] <- ""
+        
+        well_data <- list(data = ret, unit = coord_unit)
+        
+        #
+        # Attempt to read shape files
+        #
+        ret <- readExcelData(newfile, sheet = sheet, header = shape_header)
+        
+        shape_files <- NULL
+        
+        if (any(class(ret) == "data.frame")) {
+            showNotification(paste0("Sheet \'", sheet, "\': Found shape file(s)."), type = "message", duration = 10)
+            
+            shape_files <- as.character(ret)
+        }
+        
+
+        # If we made it until here, we were able to read some valid data. 
+        showNotification(paste0("Sheet \'", sheet, "\': Found valid tables."), type = "message", duration = 10)
+        break
+    }
+    
+    if (is.null(conc_data) || is.null(well_data))
+        return(NULL)
+    
+    
+    return(list(conc_data = conc_data, well_data = well_data, shape_files = shape_files))
+     
+}
+
+
+
 
 
 
@@ -239,82 +351,4 @@ readShapeFiles_sf <- function(ShapeFileNames) {
 
 }
     
-
-
-readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {
-  
-  # Avoid reading column header (in first row) in order to have conform input
-  # if table is located somewhere inside the sheet. 'col_names = TRUE' would detect
-  # types and which(excl[,i] == headj)) would fail if not character. 
-  excl <- read_excel(filein, sheet = sheet, col_names = FALSE)
-  
-  # Find the headers in the sheet
-  dftmp <- NULL
-  head_err = ""
-  end_row = 0
-  
-  # Detect empty table.
-  if (ncol(excl) == 0)
-    return(NULL)
-  
-  for (headj in header) {
-    
-    found_head <- FALSE
-    
-    # Look into each column
-    for (i in 1:ncol(excl)) {
-      #cat("sheet: ", sheet, ", header: ", headj, ", column: ", i, "\n")
-    
-
-      # Get row offset of header
-      if (length(rowpos <- which(excl[,i] == headj)) == 1) {
-        
-        if (ign_first_head == headj) {
-          ign_first_head = ""
-          next
-        }
-        
-        found_head <- TRUE
-        
-        if (get_subset) {
-          
-          if (end_row == 0) {
-            end_row <- which(is.na(excl[ (rowpos + 1):nrow(excl) , i]))[1]
-            
-            if (!is.na(end_row))
-              end_row <- end_row + rowpos - 1
-            else 
-              end_row <- nrow(excl)
-            
-          }
-          
-          # Extract the data for this header
-          ctmp <- excl[(rowpos + 1):end_row, i]
-          
-          colnames(ctmp) <- headj
-          
-          if (is.null(dftmp))
-            dftmp <- ctmp
-          else
-            dftmp <- cbind(dftmp, ctmp)
-        }
-        
-        break
-      }
-      
-    }
-    
-    if (!found_head)
-      head_err = paste0(head_err, headj) 
-    
-  }
-  
-  if (head_err != "") {
-    return(head_err)
-  }
-  
-  
-  return(dftmp)
-  
-}
 

@@ -81,7 +81,7 @@ formatData <- function(solute_data, sample_loc) {
 #' @importFrom splancs areapl
 processData <- function(solute_data, sample_loc, GWSDAT_Options, 
                         Aq_sel = "Blank",
-                        shape_file_data,
+                        shape_file_data = NULL,
                         subst_napl_vals = "yes") {
 
 

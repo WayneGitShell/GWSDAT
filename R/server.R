@@ -20,7 +20,7 @@ server <- function(input, output, session) {
   # This will become the default for new users.
   default_session_file <- "GWSDAT_Examples.RData"
   
-  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL)
+  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL, shape_files = NULL)
 
   # Default load options that will be overwritten by dialog boxes. 
   loadOptions <- list(aquifer = NULL, subst_napl = NULL)
@@ -770,18 +770,69 @@ server <- function(input, output, session) {
   })
   
   
+  selectExcelSheetModal <- function(sheet_lst) {
+      modalDialog(
+          selectInput("excelsheet", "Choose data sheet", choices = sheet_lst),
+          span('Select the Excel sheet that contains the GWSDAT data'),
+          #if (failed)
+          #    div(tags$b("Invalid name of data object", style = "color: red;")),
+          
+          footer = tagList(
+              actionButton("cancelExcelSheet", "Cancel"),
+              actionButton("okExcelSheet", "OK")
+          )
+      )
+  }
+  
+  observeEvent(input$cancelExcelSheet, {
+      cat("* in observeEvent: input$cancelExcelSheet\n")
+      removeModal()
+    
+      # If no data was previously loaded, reset the input file control.  
+      if (is.null(import_tables$DF_conc))
+          shinyjs::reset("excel_import_file")
+      
+  })
+  
+  observeEvent(input$okExcelSheet, {
+      cat("* in observeEvent: input$okExcelSheet\n")
+
+      # Attempt to read the sheet, if it succeeds, remove the modal dialog.      
+      if (readExcelSheet(input$excel_import_file, input$excelsheet))
+          removeModal()
+      
+  })
+  
+  
+  readExcelSheet <- function(filein, sheet) {
+    cat("* in readExcelSheet\n")
+    
+    dtmp <- readExcel(filein, sheet)
+    
+    if (is.null(dtmp)) 
+        return(FALSE)
+      
+    import_tables$DF_conc <<- dtmp$conc_data
+    import_tables$DF_well <<- dtmp$well_data
+    import_tables$shape_files <<- dtmp$shape_files
+    
+    return(TRUE)
+  }
+  
   
   observeEvent(input$excel_import_file, {
+    cat("* in observeEvent input$excel_import_file\n")
+      
+    sheet_lst <- getExcelSheets(input$excel_import_file)
     
-    dtmp <- readExcel(input$excel_import_file)
-    
-    if (!is.null(dtmp)) {
-      import_tables$DF_conc <<- dtmp$conc_data
-      import_tables$DF_well <<- dtmp$well_data
+    if (length(sheet_lst) > 1) {
+        # select sheet from dropdown
+        showModal(selectExcelSheetModal(sheet_lst))
     } else {
-      showNotification("Failed to load data from Excel file.", type = "error")
+        
+        readExcelSheet(input$excel_import_file, sheet_lst[[1]])
+        
     }
-    
   }) 
   
   
@@ -794,12 +845,11 @@ server <- function(input, output, session) {
     
     DF <- readConcData(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
     
+    # If there was a problem reading the data, reset the file input control and return.
     if (is.null(DF)) {
-      # If there was an error reading the data, empty the fileInput control.
-      # Fixme: ...
+      shinyjs::reset("excel_import_file")
       return(NULL)
     }
-    
     
     # Save to reactive variable.
     import_tables$DF_conc <<- DF 
@@ -826,6 +876,11 @@ server <- function(input, output, session) {
       rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
     else
       rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+  })
+  
+  output$tbl_shape_xls <- rhandsontable::renderRHandsontable({
+      if (is.null(import_tables[["shape_files"]])) return(NULL)
+      rhandsontable::rhandsontable(import_tables$shape_files, useTypes = FALSE, stretchH = "all")
   })
   
   output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
@@ -898,7 +953,8 @@ server <- function(input, output, session) {
   
   observeEvent(input$import_button,  {
    
-    
+    cat("* in observeEvent: input$import_button\n")
+      
     if (is.null(import_tables[["DF_conc"]])) {
       showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
       return(NULL)
@@ -923,8 +979,11 @@ server <- function(input, output, session) {
 
 
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
-    
-      if (is.null(pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel))) next
+      browser()
+      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
+                            Aq_sel, shape_file_data = import_tables$shape_files)
+      
+      if (is.null(pr_dat)) next
       
       ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
     
@@ -940,9 +999,16 @@ server <- function(input, output, session) {
       csite_list[[length(csite_list) + 1]] <<- csite 
       
     }
-
+    
     # Flag that data was loaded.
-    dataLoaded(LOAD_COMPLETE)
+    isolate(lstate <- dataLoaded())
+    
+    if (lstate >= LOAD_COMPLETE)
+        dataLoaded(lstate + 1)
+    else 
+        dataLoaded(LOAD_COMPLETE)
+    
+    #dataLoaded(LOAD_COMPLETE)
     
     # Go back to Data Manager.
     shinyjs::show(id = "uiDataManager")
@@ -961,7 +1027,6 @@ server <- function(input, output, session) {
 
   # Go to .CSV Data Import (Link).
   shinyjs::onclick("toggleDataImport", {
-        #browser()
     shinyjs::show(id = "uiDataAddCSV");
     shinyjs::hide(id = "uiDataManager")
    
@@ -1436,6 +1501,8 @@ server <- function(input, output, session) {
              tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_xls")
              ), 
              tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_xls")
+             ),
+             tabPanel("Shape Files", rhandsontable::rHandsontableOutput("tbl_shape_xls")
              )
       )
     )
@@ -1511,7 +1578,7 @@ server <- function(input, output, session) {
   
   
   output$uiDataManager <- renderUI({
-    #cat("* in uiDataManager\n")
+    cat("* in uiDataManager\n")
     
     # Observe load status of data.
     if (dataLoaded() < LOAD_COMPLETE) {
