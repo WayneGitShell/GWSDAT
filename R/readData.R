@@ -168,7 +168,7 @@ readExcel <- function(filein, sheet = NULL) {
         ret <- readExcelData(newfile, sheet = sheet, header = shape_header)
         
         shape_files <- NULL
-        browser()
+        
         if (any(class(ret) == "data.frame")) {
             
             shape_files <- validateShapeFiles(ret)

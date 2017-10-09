@@ -935,22 +935,6 @@ server <- function(input, output, session) {
   
  
   
-  
-  #
-  # Supposed to clear everything in the Import Data panel
-  #  Thats a little more complicated, not working right now.
-  # hint: user renderUI() that waits for the reset input
-  #
-  #observeEvent(input$reset_import,  {
-    
-    #value = input$reset_button
-    #gg = 9
-    
-  #})
-  
-  
-  
-  
   observeEvent(input$import_button,  {
    
     cat("* in observeEvent: input$import_button\n")
@@ -1415,9 +1399,11 @@ server <- function(input, output, session) {
   })
 
   output$uiDataAddNew <- renderUI({
-    
+    browser()
+    # React to changes in these:
     input$add_new_data
-    
+    input$reset_new_import
+      
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
     
@@ -1444,7 +1430,7 @@ server <- function(input, output, session) {
           hr(),
           
           textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
-          #actionButton("reset_import", label = "Reset"),
+          actionButton("reset_new_import", label = "Reset"),
           actionButton("add_new_button", label = "Add Data", icon("arrow-down"), 
                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
       ),
@@ -1466,19 +1452,15 @@ server <- function(input, output, session) {
     import_tables$DF_well <- NULL
     import_tables$DF_conc <- NULL
     
+    # React to changes in these:
     input$add_excel_data
+    input$reset_xls_import
     
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
     
    
     fluidPage(
-      #tags$head(
-      #  tags$style(
-      #    HTML(".shiny-notification { 
-      #          width : 300px;
-      #          left  : -200px; } ")
-                                        #)),
       div(style = "margin-bottom: 10px", actionButton("gotoDataManager_b", label = "", icon = icon("arrow-left"))),
       
       shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
@@ -1489,7 +1471,7 @@ server <- function(input, output, session) {
           hr(),
           textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
           fileInput('excel_import_file', 'Excel File', accept = c('.xls', '.xlsx')),
-          #actionButton("reset_import", label = "Reset"),
+          actionButton("reset_xls_import", label = "Reset"),
           actionButton("import_button", label = "Import Data", icon("arrow-down"), 
                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
                        
@@ -1501,25 +1483,25 @@ server <- function(input, output, session) {
              tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_xls")
              ), 
              tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_xls")
-             ),
-             tabPanel("Shape Files", rhandsontable::rHandsontableOutput("tbl_shape_xls")
-             )
-      )
-    )
+             )#,
+             #tabPanel("Shape Files", rhandsontable::rHandsontableOutput("tbl_shape_xls"))
+             #tabPanel("Shape Files", "Shape files must be uploaded to the server.")
+                 #rhandsontable::rHandsontableOutput("tbl_shape_xls")
+                 #fileInput('shapefile_import', 'Shape File (*.shp)', accept = c('.shp'))
+             
+      ))
   })
   
   
   
   output$uiDataAddCSV <- renderUI({
     
-    
-    
     import_tables$DF_well <- NULL
     import_tables$DF_conc <- NULL
     
     # React to add and reset events.
     input$add_csv_data
-    input$reset_import
+    input$reset_csv_import
     
     fluidPage(
       div(style = "margin-bottom: 10px", actionButton("gotoDataManager_c", label = "", icon = icon("arrow-left"))),
@@ -1557,7 +1539,7 @@ server <- function(input, output, session) {
                          'Single Quote' = "'"),
                        '"'),
           hr(),
-          actionButton("reset_import", label = "Reset"),
+          actionButton("reset_csv_import", label = "Reset"),
           actionButton("import_button", label = "Import Data", icon("arrow-down"), 
                        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
           )
@@ -1740,6 +1722,6 @@ server <- function(input, output, session) {
     dataLoaded(dataLoaded() + 1)
   })
   
-  
+ 
 } # end server section
 
