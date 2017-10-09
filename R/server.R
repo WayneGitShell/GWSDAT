@@ -979,7 +979,7 @@ server <- function(input, output, session) {
 
 
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
-      browser()
+      
       pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
                             Aq_sel, shape_file_data = import_tables$shape_files)
       
@@ -1608,15 +1608,15 @@ server <- function(input, output, session) {
     } else {
      
       data_sets <- getDataInfo(csite_list)
-     
+      
       for (set_name in names(data_sets)) {
         
         html_out <- tagList(html_out, fluidRow(
           shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
               title = set_name, 
-              #p(paste("Contaminants: ", paste(csite_list[[i]]$All.Data$cont_names, collapse = ", "))),
-              #p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
-              p(paste0("Aquifer: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", ")))
+              p(HTML(paste("<b>Contaminants</b>: ", pasteLimit(data_sets[[set_name]]$contaminants, limit = 4)))),
+              p(HTML(paste("<b>Wells</b>: ", pasteLimit(data_sets[[set_name]]$wells, limit = 4)))),
+              p(HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", "))))
               #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
               # div(style = "float : right", actionButton(btName, "Select"))
           )))

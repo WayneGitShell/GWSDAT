@@ -16,13 +16,19 @@ getDataInfo <- function(csite_list) {
 
     sname <- csite_list[[i]]$GWSDAT_Options$SiteName
     aname <- csite_list[[i]]$Aquifer
-
+    cnames <- csite_list[[i]]$All.Data$cont_names
+    wnames <- csite_list[[i]]$All.Data$sample_loc$names
 
     if (is.null(data_list[[sname]]))
-      data_list[[sname]] <- list(Aquifer = aname, csite_idx = i)
+      data_list[[sname]] <- list(Aquifer = aname, csite_idx = i, 
+                                 contaminants = cnames,
+                                 wells = wnames)
     else {
       data_list[[sname]]$Aquifer[[length(data_list[[sname]]$Aquifer) + 1]] <- aname
       data_list[[sname]]$csite_idx = c(data_list[[sname]]$csite_idx, i)
+      data_list[[sname]]$contaminants = cnames
+      data_list[[sname]]$wells = wnames
+      
     }
   }
 
@@ -94,4 +100,23 @@ existsNAPL <- function(All.Data, well, solute) {
 
 }
 
+#' Convert array of strings in 'astr' to a single string separated by 'collapse', 
+#' but only include the first 'limit' elements.
+pasteLimit <- function(astr, limit = NULL, collapse = ", ") {
+   
+    if (is.null(limit))
+        return(paste(astr, collapse = collapse))
+    
+    if (!is.numeric(limit))
+        return("Error: limit must be an integer")
+    
+    limit <- as.integer(limit)
+    
+    if (limit > length(astr))
+        return(paste(astr, collapse = collapse))
 
+    outstr <- paste(astr[1:limit], collapse = collapse)
+    outstr <- paste0(outstr, ", ... (", length(astr), ")")
+    
+    return(outstr)
+}
