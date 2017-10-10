@@ -4,17 +4,19 @@
 # Define the Shiny dashboard header
 #
 dbHeader <- shinydashboard::dashboardHeader(title = "GWSDAT",
-#                            tags$li(a(href = 'http://shinyapps.company.com',
-#                                      icon("power-off"),
-#                                      title = "Back to Apps Home"),
-#                                    class = "dropdown"))#,
-                            tags$li(class = "dropdown", 
-                                    tags$a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
-                                      target = '_blank',
-                                      tags$img(src = "extdata/gwsdat_logo.png", 
-                                               title = "GWSDAT Homepage", height = "40px"),
-                                               style = "padding-top:5px; padding-bottom:5px;")
-                                    ))
+                            tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
+                                      icon("home"),
+                                      title = "GWSDAT Homepage"),
+                                    class = "dropdown"))
+                  
+                            # Not using the image because can't get the resource to load:
+                            # tags$li(class = "dropdown", 
+                            #         tags$a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
+                            #           target = '_blank',
+                            #           tags$img(src = "extdata/gwsdat_logo.png", 
+                            #                    title = "GWSDAT Homepage", height = "40px"),
+                            #                    style = "padding-top:5px; padding-bottom:5px;")
+                            #         ))
 
 
 

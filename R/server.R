@@ -16,7 +16,13 @@ server <- function(input, output, session) {
   # List of site data and currently selected site.
   csite_list <- NULL
   csite <- NULL
-
+  csite_selected_idx <- 0
+  
+  # PSplines settings
+  new_psplines_knots <- 0
+  prev_psplines_resolution <- "Default"
+  prev_psplines_knots <- 6
+  
   # This will become the default for new users.
   default_session_file <- "GWSDAT_Examples.RData"
   
@@ -311,6 +317,10 @@ server <- function(input, output, session) {
   observeEvent(input$timepoint_tt_idx, {
     # cat("* in observeEvent: timepoint_tt_idx\n")
     
+    # Not updating here, because 'input$timepoint_sp_idx' is directly used for
+    # plotting. Saving to 'csite$ui_attr$timepoint_sp_idx' is only used in 
+    # 'Save Session' and reading from it inside rndAnalyse <- renderUI().
+    #
     #csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
     
     timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
@@ -782,7 +792,7 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$cancelExcelSheet, {
-      cat("* in observeEvent: input$cancelExcelSheet\n")
+      
       removeModal()
     
       # If no data was previously loaded, reset the input file control.  
@@ -1063,7 +1073,12 @@ server <- function(input, output, session) {
     if (input$analyse_panel == "Save Session")
       updateTextInput(session, "session_filename", value = paste0("GWSDAT_", gsub(":", "_", gsub(" ", "_", Sys.time())), ".RData"))
       
-    
+    if (input$analyse_panel == "Options") {
+      # Save parameters that might have to be restored later if they are invalid.
+      prev_psplines_resolution <<- input$psplines_resolution
+      prev_psplines_knots <<- input$psplines_knots
+      
+    }
   })
   
   
@@ -1112,7 +1127,108 @@ server <- function(input, output, session) {
     })
   })
   
+  
+  
+  changeModelSettingorNotModal <- function(sheet_lst) {
+    modalDialog(
+      #selectInput("excelsheet", "Choose data sheet", choices = sheet_lst),
+      span('You changed the model resolution. This will cause the model to be re-fitted. Do you want to continue?'),
+      #if (failed)
+      #    div(tags$b("Invalid name of data object", style = "color: red;")),
+      
+      footer = tagList(
+        actionButton("cancelModSetting", "Cancel"),
+        actionButton("okModSetting", "Proceed")
+      )
+      )
+  }
+  
+  observeEvent(input$cancelModSetting, {
+    
+    # Revert input to previous resolution setting
+    updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
+    updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+    
+    removeModal()
+  })
+    
+  
+  #' Re-fit the model with the new model resolution setting, i.e. number of knots.
+  observeEvent(input$okModSetting, {
+    
+    if (new_psplines_knots == csite$GWSDAT_Options[['PSplineVars']][['nseg']]) 
+     return()
+    
+    
+    # Re-Fit the data with the new PSplines setting inside GWSDAT_Options.
+    # previous_knots <- csite$GWSDAT_Options[['PSplineVars']][['nseg']]
+    csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- new_psplines_knots
+    
+    fitdat = fitData(csite$All.Data, csite$GWSDAT_Options)
+    
+    # On failure, revert to previous settings
+    if (is.null(fitdat)) {
+     showNotification("Fitting data with updated model resolution failed. Reverting to previous resolution setting.", type = "error", duration = 10)
+     
+     csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
+     updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
+     updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+    } else {
+      
+      # Update the current data.
+      csite$Fitted.Data    <<- fitdat$Fitted.Data
+      csite$Traffic.Lights <<- fitdat$Traffic.Lights
+      csite$GW.Flows       <<- fitdat$GW.Flows
+      
+      # Copy back the altered csite list.
+      csite_list[[csite_selected_idx]] <<- csite  
+      
+      # Save the current state, in case it is changed again and fails.
+      prev_psplines_resolution <<- input$psplines_resolution
+      prev_psplines_knots <<- input$psplines_knots
+    }      
+    
+    
+    removeModal()
+  })
+  
+  
+  #' Update the number of knots in the text field to reflect the resolution.
+  observeEvent(input$psplines_resolution, {
+    
+    nknots <- 6
+    
+    if (input$psplines_resolution == "Default")
+      nknots <- 6
+    if (input$psplines_resolution == "High")
+      nknots <- 8
+    
+    updateTextInput(session, "psplines_knots", value = nknots)
+  })
+  
+  
   observeEvent(input$save_analyse_options, {
+    
+    # cat("* in observeEvent: save_analyse_options\n")
+   
+    input_knots <- as.numeric(input$psplines_knots)
+    # Check if the value changed, if so, refit all data.
+    if ( input_knots != csite$GWSDAT_Options[['PSplineVars']][['nseg']]) {
+      
+      # Check if value is in boundaries.
+      if (input_knots < 2 || input_knots > 10) {
+        showNotification("Number of knots for the model is out of bounds. Minimum: 2, Maximum: 10.", type = "error", duration = 10)
+        updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+      } else {
+        # Ask if to change it. The actual fit is calculated when the actionButton
+        # is pressed inside the modal dialog.
+        new_psplines_knots <<- input_knots
+        showModal(changeModelSettingorNotModal())
+      
+        
+      }
+    }
+   
     
     # Retrieve the substance concentration thresholds
     num_subst <- length(csite$ui_attr$conc_thresh)
@@ -1144,6 +1260,7 @@ server <- function(input, output, session) {
     #csite$ui_attr$img_jpg_quality <<- input$img_jpg_quality 
     
   })
+  
   
   output$options_saved <- renderText({paste("Changes Saved") })
       
@@ -1253,7 +1370,7 @@ server <- function(input, output, session) {
     
     pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
                           Aq_sel, shape_data, subst_napl_vals = subst_napl)
-      
+    
     if (class(pr_dat) == "dialogBox")
       return(pr_dat)
       
@@ -1280,7 +1397,11 @@ server <- function(input, output, session) {
 		               Aquifer        = Aq_sel
     )
     
-    csite_list[[length(csite_list) + 1]] <<- csite 
+    # Save csite to the list of csites and remember index.
+    curr_idx <- length(csite_list) + 1
+    csite_list[[curr_idx]] <<- csite 
+    csite_selected_idx <<- curr_idx
+    
     
     # Flag that data was fully loaded.
     dataLoaded(LOAD_COMPLETE)
@@ -1346,8 +1467,10 @@ server <- function(input, output, session) {
                 
               }
 
-              # Make selected data set active.
+              # Make selected data set active and remember index (to save back 
+              # altered csite objects, which are copies, not references).
               csite <<- csite_list[[j]]
+              csite_selected_idx <<- j
 
               
               shinyjs::hide("data_select_page")

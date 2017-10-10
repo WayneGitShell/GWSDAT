@@ -49,14 +49,15 @@ uiAnalyseOptions <- function(csite) {
       
       div(style = "margin-top:50px", 
           h4("Image Export")),
-      p("Default resolution for most images"), # Resolution for file formats: png and jpeg."),
+      p("Specify the resolution for images that contain the default plot dimensions."), # Resolution for file formats: png and jpeg."),
       
       div(style = "display: inline-block;", 
           numericInput("img_width_px", label = "Width (pixel)", value = csite$ui_attr$img_width_px, width = "100px")
       ),
       
       div(style = "display: inline-block;", 
-          numericInput("img_height_px", label = "Height (pixel)", value = csite$ui_attr$img_height_px, width = "100px") 
+          numericInput("img_height_px", label = "Height (pixel)", 
+                       value = csite$ui_attr$img_height_px, width = "100px") 
       ),
       
       # Disabled because it does not work, yet.
@@ -65,7 +66,7 @@ uiAnalyseOptions <- function(csite) {
       )),
       
       
-      ## Wide Image Resolution Settings #############################################
+      ## Wide Image Resolution Settings ########################################
       
       div(style = "margin-top:30px, margin-bottom:10px", 
           p("Resolution for wide plots, such as Well Report and Plume Diagnostic.")
@@ -91,9 +92,22 @@ uiAnalyseOptions <- function(csite) {
                   max = 100, 
                   value = csite$ui_attr$img_jpg_quality,
                   width = '150px'
-      ))
+      )),
       
-  )
+      ## Model Settings ########################################################
+      div(style = "margin-top:50px", 
+          h4("Model Settings")),
+      p("Select the resolution for the PSpline model fit. The resolution is defined by the number of knots. The number of knots can also be directly defined in the right input field (min:2, max: 15)."),
+      
+      div(style = "display:inline-block; margin-right: 10px",
+          selectInput("psplines_resolution", "PSplines Resolution", choices = c("Default", "High"),
+                    selected = "Default", width = '150px', selectize = FALSE)),
+      div(style = "display:inline-block; margin-right: 10px", "or"),
+      div(style = "display:inline-block", 
+          textInput("psplines_knots", "Number of knots", value = csite$GWSDAT_Options[['PSplineVars']][['nseg']], width = '150px')
+      )
+        
+    )
   )
   
 }
