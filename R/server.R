@@ -173,7 +173,7 @@ server <- function(input, output, session) {
   
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- reactive({
-    #cat("* reaggregateData()\n")
+    # cat("* entering reaggregateData()\n")
     
     # If 'input$aggregate_select_tt' is not put here, reaggregateData() will not
     # react for the trend table if: 
@@ -185,7 +185,7 @@ server <- function(input, output, session) {
     # If nothing changed, return - happens only when session starts.     
     if ((tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_select_sp)) &&
         (tolower(csite$GWSDAT_Options$Aggby) == tolower(input$aggregate_select_tt)))
-      return()
+      return(FALSE)
     
     # Flag which aggregation input was active.
     sp_changed <- FALSE
@@ -200,7 +200,7 @@ server <- function(input, output, session) {
       tt_changed <- TRUE
     }
     
-    # cat("  -> doing reaggregation..\n")
+    cat("  -> doing reaggregation..\n")
     
     tryCatch(
       agg_data <- aggregateData(csite$All.Data$Cont.Data, 
@@ -211,7 +211,7 @@ server <- function(input, output, session) {
                                 csite$GWSDAT_Options$AggMethod 
       ), error = function(e) {
         showModal(modalDialog(title = "Error", paste0("Failed to aggregate data: ", e$message), easyClose = FALSE))
-        return(NULL)                      
+        return(FALSE)                      
       })
     
     
@@ -269,14 +269,7 @@ server <- function(input, output, session) {
     
     # Set new time point to last date.
     new_timepoint_idx <- length(dates_tmp)
-    csite$ui_attr$timepoint_sp_idx <<- new_timepoint_idx
-    csite$ui_attr$timepoint_tt_idx <<- new_timepoint_idx
     
-    # Old way using real dates as timepoint indicator (together with sliderValues)
-    #csite$ui_attr$timepoint_sp <<- dates_tmp[length(dates_tmp)]
-    #csite$ui_attr$timepoint_tt <<- dates_tmp[length(dates_tmp)]
-    
-   
     # Update slider inputs: Spatial plot and in Trend table.
     outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
     
@@ -294,6 +287,7 @@ server <- function(input, output, session) {
     if (tt_changed)
       updateSelectInput(session, "aggregate_select_sp", selected = csite$GWSDAT_Options$Aggby)
 
+    return(TRUE)
   })
 
   
@@ -301,8 +295,13 @@ server <- function(input, output, session) {
   # Update the label of the time slider, when slider changes.
   #
   observeEvent(input$timepoint_sp_idx, {
-     
-    csite$ui_attr$timepoint_sp_idx <<- input$timepoint_sp_idx
+    #cat("* in observeEvent: timepoint_sp_idx\n")
+    
+    # Not updating here, because 'input$timepoint_sp_idx' is directly used for
+    # plotting. Saving to 'csite$ui_attr$timepoint_sp_idx' is only used in 
+    # 'Save Session' and reading from it inside rndAnalyse <- renderUI().
+    #
+    #csite$ui_attr$timepoint_sp_idx <<- input$timepoint_sp_idx
     
     timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
@@ -310,8 +309,9 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$timepoint_tt_idx, {
-   
-    csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
+    # cat("* in observeEvent: timepoint_tt_idx\n")
+    
+    #csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
     
     timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
@@ -324,39 +324,33 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
-    #cat("* entering image_plot\n")
+    # cat("* entering image_plot()\n")
     
     # React to changes in the Options panel.
     optionsSaved() 
-  
-    timepoint_idx <- input$timepoint_sp_idx
+
+    if (reaggregateData()) {
+      #cat("  + (sp) aggregation took place, exiting image_plot()\n")
+      return(NULL)
+    }
     
-    reaggregateData()
-    
-    # reaggregateData() might change csite$ui_attr$timepoint_sp_idx.
-    if (csite$ui_attr$timepoint_sp_idx != input$timepoint_sp_idx)
-      timepoint_idx <- csite$ui_attr$timepoint_sp_idx
-    
-    
+    # cat(" + right after reaggregateData()\n")
+   
     #Fixme: WHAT IS THIS FOR, NEED THIS HERE
     #val <- plumeThreshChange()
     
-    
-    # Update control attributes from reactive variables.
-    #Fixme: CHECK IF NEED THIS HERE, BETTER TO JUST PASS ANYTHING DIRECTLY TO PLOTTING
-    #       FUNCTION AND LEAVE WRITING BACK TO UI ATTRIBUTES TO SEPARATE FUNCTION. 
+    # Update control attributes from reactive variables (Possibly integrate this
+    # into function arguments of plotSpatialImage()?).
     csite$ui_attr$spatial_options[1:length(csite$ui_attr$spatial_options)] <<- FALSE
     csite$ui_attr$spatial_options[input$imageplot_options] <<-  TRUE
     csite$ui_attr$gw_selected <<- input$gw_flows
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
-    
-    
-    # cat(" -> time point idx active: ", timepoint_idx, ", size of timepoints vector: ", length(csite$ui_attr$timepoints), "\n")
-    
-    plotSpatialImage(csite, input$solute_select_sp, 
-                     as.Date(csite$ui_attr$timepoints[timepoint_idx], "%d-%m-%Y"))
    
+    plotSpatialImage(csite, input$solute_select_sp, 
+                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+                     
+    
   })
     
   
@@ -364,25 +358,25 @@ server <- function(input, output, session) {
   
   output$trend_table <- renderUI({
     
+    # cat("* entering trend_table()\n")
+    
     # React to changes in the Options panel.
     optionsSaved() 
-    
-    timepoint_idx <- input$timepoint_tt_idx
-    
-    # React to data aggregation.
-    reaggregateData()
-    
-    # reaggregateData() might change csite$ui_attr$timepoint_sp_idx.
-    if (csite$ui_attr$timepoint_tt_idx != input$timepoint_tt_idx)
-      timepoint_idx <- csite$ui_attr$timepoint_tt_idx
-    
-    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[timepoint_idx], "%d-%m-%Y"),
+  
+    # If aggregation took place, return here because the timepoint index has to
+    # be updated before the actual plotting happens.
+    if (reaggregateData()) {
+      cat("  + (tt) aggregation took place, exiting image_plot()\n")
+      return(NULL)
+    }
+
+    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
                input$trend_or_threshold, input$color_select_tt)
   })
 
   
   # Plot the legend for the traffic lights table.
-  output$trend_legend <- renderUI({ plotTrendTableLegend()  })
+  output$trend_legend <- renderUI({plotTrendTableLegend()  })
   
 
   
@@ -572,42 +566,45 @@ server <- function(input, output, session) {
     }
   )
   
-  
-  output$save_trend_table <- downloadHandler(
-    
-    filename <- function() { 
-      paste("trend_table.", input$export_format_tt, sep = "")
-    },
-    
-    content <-  function(file) {
-      
-      if (input$export_format_tt == "ppt") {
-        
-        if (input$timepoint_tt == "")
-          plotTrendTablePPT(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$color_select_tt,  
-                            width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
-        else
-          plotTrendTablePPT(csite, as.Date(input$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$color_select_tt,  
-                          width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
-        
-      } else {
-        
-        if (input$export_format_tt == "png") png(file, width = input$img_width_px, height = input$img_height_px)
-        if (input$export_format_tt == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
-        if (input$export_format_tt == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
-        if (input$export_format_tt == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-        if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
-        
-        if (input$timepoint_tt == "")
-          plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"), input$trend_or_threshold, input$color_select_tt) 
-        else        
-          plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$color_select_tt)
-        
-        dev.off()
-      }
-      
-    }
-  )
+  #
+  # After changing Trend Table to HTML, saving was disabled.
+  # -> Maybe create pdf of html table and offer save.
+  #
+  # output$save_trend_table <- downloadHandler(
+  #   
+  #   filename <- function() { 
+  #     paste("trend_table.", input$export_format_tt, sep = "")
+  #   },
+  #   
+  #   content <-  function(file) {
+  #     
+  #     if (input$export_format_tt == "ppt") {
+  #       
+  #       if (input$timepoint_tt == "")
+  #         plotTrendTablePPT(csite, as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),  input$trend_or_threshold, input$color_select_tt,  
+  #                           width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
+  #       else
+  #         plotTrendTablePPT(csite, as.Date(input$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$color_select_tt,  
+  #                         width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi)
+  #       
+  #     } else {
+  #       
+  #       if (input$export_format_tt == "png") png(file, width = input$img_width_px, height = input$img_height_px)
+  #       if (input$export_format_tt == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
+  #       if (input$export_format_tt == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
+  #       if (input$export_format_tt == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
+  #       if (input$export_format_tt == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
+  #       
+  #       if (input$timepoint_tt == "")
+  #         plotTrendTable(csite, as.Date(csite$ui_attr$timepoint_tt, "%d-%m-%Y"), input$trend_or_threshold, input$color_select_tt) 
+  #       else        
+  #         plotTrendTable(csite, as.Date(input$timepoint_tt, "%d-%m-%Y"),  input$trend_or_threshold, input$color_select_tt)
+  #       
+  #       dev.off()
+  #     }
+  #     
+  #   }
+  # )
   
   output$save_wellreport_plot <- downloadHandler(
     
@@ -821,7 +818,7 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$excel_import_file, {
-    cat("* in observeEvent input$excel_import_file\n")
+    cat("* in observeEvent: input$excel_import_file\n")
       
     sheet_lst <- getExcelSheets(input$excel_import_file)
     
@@ -1696,7 +1693,6 @@ server <- function(input, output, session) {
     #   img_formats_use <<- img_formats_use[-which(img_formats_use == "wmf")]
     #   img_formats_use <<- img_formats_use[-which(img_formats_use == "ppt")]  # the ppt method needs wmf
     # }
-    
     
     
     # Completely loaded, display the Analyse UI.
