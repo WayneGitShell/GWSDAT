@@ -861,37 +861,59 @@ server <- function(input, output, session) {
     
     # Save to reactive variable.
     import_tables$DF_conc <<- DF 
+    
+    # Switch to tabPanel with table
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Contaminant Data")
   })
   
   observeEvent(input$shape_files_csv, {
     cat("* in observeEvent: shape_files_csv\n")
     
-    import_tables$shape_files <<- input$shape_files_csv
+    # If no shape file has been added yet, create new list.
+    if (is.null(import_tables$shape_files))
+      import_tables$shape_files <<- list(shp_files = c(), file_details = list(input$shape_files_csv))
+    else {
+      # Append to already existing shape file collection.
+      lst_end <- length(import_tables$shape_files$file_details)
+      import_tables$shape_files$file_details[[lst_end + 1]] <<- input$shape_files_csv
+    }
     
-    ## MOVE THIS TO importData(), here just for testing
+    SHP_FILE_DETECTED <- FALSE
     
-    shp_files <- c()
-    #browser()
-    for (i in 1:length(import_tables$shape_files$name)) {
-      
-      #import_tables$shape_files$name[i]
+    # Rename all the temporary files to their original name, so that the sf package
+    # reader can read all files an ones.
+    for (i in 1:length(input$shape_files_csv$name)) {
       
       # Split path and replace file name with real file name.
-      dp <- strsplit(import_tables$shape_files$datapath[i], "/")[[1]]
-      dp[length(dp)] <- import_tables$shape_files$name[i]
+      dp <- strsplit(input$shape_files_csv$datapath[i], "/")[[1]]
+      dp[length(dp)] <- input$shape_files_csv$name[i]
       
       # Put it back together, now with the new file name in the path.
       new_dp <- paste(dp, collapse = "/")
       
-      file.rename(import_tables$shape_files$datapath[i], new_dp)
+      file.rename(input$shape_files_csv$datapath[i], new_dp)
       
-      # Detect if it is a *.shp file - only these will be passed to further processing.
-      # reading with the sf package will automatically read the other files, too.
-      fa <- strsplit(import_tables$shape_files$name[i], "\\.")[[1]]
-      if (fa[length(fa)] == "shp")
-        shp_files <- c(shp_files, new_dp)
+      # Detect *.shp file and save to shp_files vector. It will be used by the 
+      # sf package to read out all other files.
+      fa <- strsplit(input$shape_files_csv$name[i], "\\.")[[1]]
+      if (fa[length(fa)] == "shp") {
+        SHP_FILE_DETECTED <- TRUE
+        import_tables$shape_files$shp_files <<- c(import_tables$shape_files$shp_files, new_dp)
+      }
     }
-    #browser()
+    
+    if (!SHP_FILE_DETECTED)
+      showNotification("No .shp file detected. Need at least one .shp file to read remaining shape files.",
+                       type = "warning", duration = 10)
+    
+    # Switch to 'Shape Files' tab inside tabBox.
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Shape Files")
+    
+    # Reset the file input, so more files can be added
+    shinyjs::reset('shape_files_csv')
+    
+    #shinyjs::show("remove_shapefiles_csv")
+    shinyjs::show("testingaa")
   })
  
   
@@ -918,7 +940,10 @@ server <- function(input, output, session) {
   # Import .CSV table creation
   
   output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_conc_csv\n")
+    
     if (is.null(import_tables[["DF_conc"]])) return(NULL)
+      #return(rhandsontable::rhandsontable(data.frame(), stretchH = "all"))
     
     useTypes = FALSE  # as.logical(input$useType)
     if (nrow(import_tables$DF_conc) > 100)
@@ -936,16 +961,11 @@ server <- function(input, output, session) {
   })
   
   
-  output$tbl_shape_csv <- rhandsontable::renderRHandsontable({
-     
-    if (!is.null(import_tables$shape_files)) {
-      DF <- data.frame(Name = import_tables$shape_files$name, Size = import_tables$shape_files$size)
-    
-      rhandsontable::rhandsontable(DF, useTypes = FALSE, stretchH = "all") %>%
-                                    hot_col("Name", readOnly = TRUE) %>%
-                                    hot_col("Size", readOnly = TRUE)
-    }
-   })
+  output$tbl_shape_csv <- rhandsontable::renderRHandsontable(
+    createShapeFileList(import_tables$shape_files))
+  
+  # This will cause setting of 'output$tbl_shape_csv' because import_tables is reactive.
+  observeEvent(input$remove_shapefiles_csv, import_tables$shape_files <<- NULL )
   
   
   # Import Excel table creation
@@ -986,9 +1006,17 @@ server <- function(input, output, session) {
  
     DF <- readWellCoords(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote) 
     
+    # If there was a problem reading the data, reset the file input control and return.
+    if (is.null(DF)) {
+      shinyjs::reset("well_coord_file")
+      return(NULL)
+    }
+    
     # Save to reactive variable.
     import_tables$DF_well <<- DF
     
+    # Switch to tabPanel with table
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Well Coordinates")
   })
   
   
@@ -1018,20 +1046,22 @@ server <- function(input, output, session) {
     
     all_data <- formatData(import_tables[["DF_conc"]], import_tables[["DF_well"]])
     
+    # Add shape files to GWSDAT_Options if present.
+    if (!is.null(import_tables$shape_files)) {
+      if (length(import_tables$shape_files$shp_files) > 0) {
+        GWSDAT_Options$ShapeFileNames <- import_tables$shape_files$shp_files
+      } else {
+        showNotification("Ignoring shape files because no .shp file was provided.", 
+                         type = "error", duration = 10) 
+      }  
+    }
+    
+    
     # Create a unique data set 'csite' for each Aquifer.
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
       
-      # 
-      if (!is.null(import_tables$shape_files)) {
-        
-        browser()
-        
-      }
-      
-      
-      # Process the data 
       pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
-                            Aq_sel, shape_file_data = import_tables$shape_files)
+                            Aq_sel)
       
       if (is.null(pr_dat)) next
       
@@ -1410,10 +1440,8 @@ server <- function(input, output, session) {
       Aq_sel <- Aq_list[[1]]
 
     
-    shape_data <- readShapeFiles_sf(GWSDAT_Options$ShapeFileNames)
-    
     pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
-                          Aq_sel, shape_data, subst_napl_vals = subst_napl)
+                          Aq_sel, subst_napl_vals = subst_napl)
     
     if (class(pr_dat) == "dialogBox")
       return(pr_dat)
@@ -1460,7 +1488,7 @@ server <- function(input, output, session) {
   
   
   
-  output$data_overview <- renderUI({
+  output$uiAnalyseDataList <- renderUI({
     #cat("* in data_overview")
     
     if (dataLoaded() < LOAD_COMPLETE) 
@@ -1620,6 +1648,7 @@ server <- function(input, output, session) {
     
     import_tables$DF_well <<- NULL
     import_tables$DF_conc <<- NULL
+    import_tables$shape_files <<- NULL
     
     output$uiDataAddCSV <- renderUI(uiImportCSVData(getValidDataName(csite_list)))
   })

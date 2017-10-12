@@ -112,8 +112,8 @@ uiImportCSVData <- function(valid_data_name) {
                                   accept = c('text/csv', 
                                              'text/comma-separated-values,text/plain', 
                                              '.csv')),
-                        
-                        fileInput('shape_files_csv', 'Shape Files', accept = c('*.shx', '*.dbf', '*.sbn', '*.sbx', '*.prj', '*.shp'),
+                        "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
+                        fileInput('shape_files_csv', 'Add Shape Files', accept = c('*.shx', '*.dbf', '*.sbn', '*.sbx', '*.prj', '*.shp'),
                                   multiple = TRUE),
                         
                         hr(),
@@ -139,13 +139,16 @@ uiImportCSVData <- function(valid_data_name) {
                         
     ), # end box
     
-    shinydashboard::tabBox(title = "Imported Tables", width = 9, 
+    shinydashboard::tabBox(title = "Imported Tables", width = 9, id = "tabbox_csv_import",
                            tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_csv")
                            ), 
                            tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_csv")
                            ),
                            #tabPanel("Shape Files", tableOutput("tbl_shape_csv"))
-                           tabPanel("Shape Files", rhandsontable::rHandsontableOutput("tbl_shape_csv"))
+                           tabPanel("Shape Files", {
+                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_csv"),
+                              shinyjs::hidden(div(id = "testingaa", style = "margin-top: 5px", actionButton("remove_shapefiles_csv", label = "Remove All Files"))))
+                             })
     )
     
   ) # end fluidPage

@@ -81,7 +81,7 @@ formatData <- function(solute_data, sample_loc) {
 #' @importFrom splancs areapl
 processData <- function(solute_data, sample_loc, GWSDAT_Options, 
                         Aq_sel = "Blank",
-                        shape_file_data = NULL,
+                        #shape_file_data = NULL,
                         subst_napl_vals = "yes") {
 
 
@@ -428,6 +428,11 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   sample_loc$area  <- splancs::areapl(as.matrix(well_tmp_data[chull(well_tmp_data[,c("XCoord","YCoord")]),c("XCoord","YCoord")]))
 
 
+  # If reading the shape files is not successful, set 'GWSDAT_Options$ShapeFileNames'
+  #  to NULL. This will cause the 'Overlay ShapeFiles' option to be hidden.
+  if (is.null(shape_file_data <- readShapeFiles_sf(GWSDAT_Options$ShapeFileNames)))
+    GWSDAT_Options$ShapeFileNames <- NULL
+    
   
   # This list is a little big. Continue making it slimmer.
   All.Data <- list(GW.Data = GW.Data,

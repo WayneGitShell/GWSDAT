@@ -282,8 +282,8 @@ readConcData <- function(input_file, ...) {
     
     if (nrow(DF) == 0) {
       
-      msg <- "Zero entries in concentration data read."
-      showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+      msg <- "Detected Zero entries in concentration data. Aborting file read."
+      showNotification(msg, type = "error", duration = 10)
       return(NULL)
     } 
   }
@@ -306,8 +306,6 @@ readConcData <- function(input_file, ...) {
 }
 
 
-
-############################# Read Well Coordinates Data Table #########################################################
 
 #' @importFrom utils read.csv
 readWellCoords <- function(input_file, ...) {
@@ -347,7 +345,7 @@ readWellCoords <- function(input_file, ...) {
   
   if (head_not_found != "") {
     msg <- paste0("Reading well coordinates failed. Missing the following columns: ", head_not_found, "." )
-    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    showNotification(msg, type = "error", duration = 10)
     return(NULL)
   } 
   
@@ -359,33 +357,4 @@ readWellCoords <- function(input_file, ...) {
   
 }
 
-#' @import sf 
-readShapeFiles_sf <- function(ShapeFileNames) {
-
- 
-  shdat <- list()
-  
-  if (!is.null(ShapeFileNames)) {
-    for (filein in ShapeFileNames) {
-   
-      tryCatch({
-
-          dat <- sf::st_read(filein)
-          shdat[[length(shdat) + 1]] <- dat
-          
-      }, error = function(e) {
-          showNotification(paste0("Failed to load shape file ", filein, ": ", e$msg), type = "error")
-        }
-      )
-
-    }
-  }
-  
-  if (length(shdat) == 0)
-    return(NULL)
-  
-  return(shdat)
-
-}
-    
 

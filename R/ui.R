@@ -63,7 +63,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
       
       shinydashboard::tabItem(tabName = "analysis", 
               div(id = "data_select_page",
-                  uiOutput("data_overview")
+                  uiOutput("uiAnalyseDataList")
               ),
               shinyjs::hidden(div(id = "analyse_page",
                      uiOutput("rndAnalyse"))
