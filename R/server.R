@@ -961,9 +961,11 @@ server <- function(input, output, session) {
     
     useTypes = FALSE  # as.logical(input$useType)
     if (nrow(import_tables$DF_conc) > 100)
-      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
+      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, 
+                                   stretchH = "all", height = 600)
     else
-      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all",
+                                   height = 600)
   })
   
   
@@ -1072,12 +1074,12 @@ server <- function(input, output, session) {
     
     cat("* in importData()\n")
     
-    if (!validateTable(import_tables[["DF_conc"]])) {
+    if (validateTable(import_tables[["DF_conc"]]) == FALSE) {
       showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
       return(NULL)
     }
     
-    if (!validateTable(import_tables[["DF_well"]])) {
+    if (validateTable(import_tables[["DF_well"]]) == FALSE) {
       showNotification("Well coordinate table was not loaded properly. Aborted.", type = "error")
       return(NULL)
     }

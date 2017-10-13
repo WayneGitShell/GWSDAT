@@ -363,8 +363,8 @@ validateTable <- function(tbl) {
   if (is.null(tbl)) 
     return(FALSE)
   
-  
-  browser()
+  return(TRUE)
+  #browser()
   
 }
 
