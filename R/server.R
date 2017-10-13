@@ -26,12 +26,14 @@ server <- function(input, output, session) {
   # This will become the default for new users.
   default_session_file <- "GWSDAT_Examples.RData"
   
-  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL, shape_files = NULL)
-
   # Default load options that will be overwritten by dialog boxes. 
   loadOptions <- list(aquifer = NULL, subst_napl = NULL)
-  #data_import_ready <- FALSE
   
+  # Define headers for import data.
+  conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+  well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+  
+  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL, shape_files = NULL)
   
   # Define supported image formats
   img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
@@ -779,165 +781,87 @@ server <- function(input, output, session) {
   })
   
   
-  selectExcelSheetModal <- function(sheet_lst) {
-      modalDialog(
-          selectInput("excelsheet", "Choose data sheet", choices = sheet_lst),
-          span('Select the Excel sheet that contains the GWSDAT data'),
-          #if (failed)
-          #    div(tags$b("Invalid name of data object", style = "color: red;")),
-          
-          footer = tagList(
-              actionButton("cancelExcelSheet", "Cancel"),
-              actionButton("okExcelSheet", "OK")
-          )
-      )
-  }
-  
-  observeEvent(input$cancelExcelSheet, {
-      
-      removeModal()
-    
-      # If no data was previously loaded, reset the input file control.  
-      if (is.null(import_tables$DF_conc))
-          shinyjs::reset("excel_import_file")
-      
-  })
-  
-  
-  readExcelSheet <- function(filein, sheet) {
-    cat("* in readExcelSheet\n")
-    
-    dtmp <- readExcel(filein, sheet)
-    
-    if (is.null(dtmp)) 
-        return(FALSE)
-      
-    import_tables$DF_conc <<- dtmp$conc_data
-    import_tables$DF_well <<- dtmp$well_data
-    import_tables$shape_files <<- dtmp$shape_files
-    
-    #data_import_ready <<- TRUE
-    
-    return(TRUE)
-  }
-  
-  observeEvent(input$okExcelSheet, {
-    cat("* in observeEvent: input$okExcelSheet\n")
-    
-    # Attempt to read the sheet, if it succeeds, remove the modal dialog.      
-    if (readExcelSheet(input$excel_import_file, input$excelsheet))
-      removeModal()
-    
-  })
-  
-  observeEvent(input$excel_import_file, {
-    cat("* in observeEvent: input$excel_import_file\n")
-      
-    sheet_lst <- getExcelSheets(input$excel_import_file)
-    
-    if (length(sheet_lst) > 1) {
-        # select sheet from dropdown
-        showModal(selectExcelSheetModal(sheet_lst))
-    } else {
-      readExcelSheet(input$excel_import_file, sheet_lst[[1]])
-    }
-  }) 
-  
-  
-  observeEvent(input$well_data_file, {
-    
-    inFile <- input$well_data_file
-    
-    if (is.null(inFile))
-      return(NULL)
-    
-    DF <- readConcData(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
-    
-    # If there was a problem reading the data, reset the file input control and return.
-    if (is.null(DF)) {
-      shinyjs::reset("well_data_file")
-      return(NULL)
-    }
-    
-    # Save to reactive variable.
-    import_tables$DF_conc <<- DF 
-    
-    # Switch to tabPanel with table
-    updateTabsetPanel(session, "tabbox_csv_import", selected = "Contaminant Data")
-  })
-  
-  observeEvent(input$shape_files_csv, {
-    cat("* in observeEvent: shape_files_csv\n")
-    
-    # If no shape file has been added yet, create new list.
-    if (is.null(import_tables$shape_files))
-      import_tables$shape_files <<- list(shp_files = c(), file_details = list(input$shape_files_csv))
-    else {
-      # Append to already existing shape file collection.
-      lst_end <- length(import_tables$shape_files$file_details)
-      import_tables$shape_files$file_details[[lst_end + 1]] <<- input$shape_files_csv
-    }
-    
-    SHP_FILE_DETECTED <- FALSE
-    
-    # Rename all the temporary files to their original name, so that the sf package
-    # reader can read all files an ones.
-    for (i in 1:length(input$shape_files_csv$name)) {
-      
-      # Split path and replace file name with real file name.
-      dp <- strsplit(input$shape_files_csv$datapath[i], "/")[[1]]
-      dp[length(dp)] <- input$shape_files_csv$name[i]
-      
-      # Put it back together, now with the new file name in the path.
-      new_dp <- paste(dp, collapse = "/")
-      
-      file.rename(input$shape_files_csv$datapath[i], new_dp)
-      
-      # Detect *.shp file and save to shp_files vector. It will be used by the 
-      # sf package to read out all other files.
-      fa <- strsplit(input$shape_files_csv$name[i], "\\.")[[1]]
-      if (fa[length(fa)] == "shp") {
-        SHP_FILE_DETECTED <- TRUE
-        import_tables$shape_files$shp_files <<- c(import_tables$shape_files$shp_files, new_dp)
-      }
-    }
-    
-    if (!SHP_FILE_DETECTED)
-      showNotification("No .shp file detected. Need at least one .shp file to read remaining shape files.",
-                       type = "warning", duration = 10)
-    
-    # Switch to 'Shape Files' tab inside tabBox.
-    updateTabsetPanel(session, "tabbox_csv_import", selected = "Shape Files")
-    
-    # Reset the file input, so more files can be added
-    shinyjs::reset('shape_files_csv')
-    
-    #shinyjs::show("remove_shapefiles_csv")
-    shinyjs::show("testingaa")
-  })
  
   
-  output$tbl_conc_nd <- rhandsontable::renderRHandsontable({
+  
+  ## Import New data ###########################################################
+  
+  output$tbl_shape_nd <- rhandsontable::renderRHandsontable(createShapeFileList(import_tables$shape_files))
+  
+  
+  # This will cause setting of 'output$tbl_shape_nd' because import_tables is reactive.
+  observeEvent(input$remove_shapefiles_nd, import_tables$shape_files <<- NULL )
+  
+  
+  # For some reason double execution of this observer takes place after hitting 
+  #  "Add New Data"
+    output$tbl_conc_nd <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_conc_nd\n")
     if (is.null(import_tables[["DF_conc"]])) return(NULL)
 
-    useTypes = FALSE  # as.logical(input$useType)
-    if (nrow(import_tables$DF_conc) > 100)
-      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
-    else
-      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+    
+    if (is.null(input$tbl_conc_nd)) {
+      #cat(" + DF from import_tables\n")
+      DF <- import_tables[["DF_conc"]]
+      
+    } else {
+      #cat(" + DF from input$tbl_conc_nd\n")
+      DF <- hot_to_r(input$tbl_conc_nd)
+    }
+    
+    well_choices <- unique(import_tables$DF_well$data$WellName)
+    #well_choices <- c("A", "B")
+    browser()
+    rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
+                                 stretchH = "all", height = 500) %>%
+      hot_context_menu(allowColEdit = FALSE) %>% # if useTypes = TRUE, allowColEdit will be FALSE anyway
+      hot_col(col = "Units", type = "dropdown", source = c("ng/l", "ug/l", "mg/l", "Levels")) %>%
+      hot_col(col = "Flags", type = "dropdown", source = c("", "E-acc", "Omit", "NotInNAPL", "Redox")) %>%
+      hot_col(col = "WellName", type = "dropdown", source = well_choices)
+
+      # Disables stretchH = "all" (undesired):
+      #hot_cell(1, 1, "The Well name must also appear in the well coordinate table. If not, the row will be ignored.") #%>%
+      #hot_cell(1, 2, "The name of the constituent/contaminant can include white spaces and numbers.")
+    
   })
   
   
   output$tbl_well_nd <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_well_nd\n")
+    
     if (is.null(import_tables$DF_well)) return(NULL)
     if (is.null(import_tables$DF_well$data)) return(NULL)
     
-    useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
+    if (!is.null(input$tbl_well_nd)) 
+      import_tables$DF_well$data <- hot_to_r(input$tbl_well_nd)
+    #  DF <- import_tables$DF_well$data
+    #else 
+    
+      
+    
+    
+    rhandsontable::rhandsontable(import_tables$DF_well$data, stretchH = "all", useTypes = FALSE, height = 500)
   })
   
   
-  # Import .CSV table creation
+  
+  observeEvent(input$shape_files_nd, {
+    cat("* in observeEvent: shape_files_nd\n")
+    
+    import_tables$shape_files <<- addShapeFiles(input$shape_files_nd, import_tables$shape_files)
+    
+    # Switch to 'Shape Files' tab inside tabBox.
+    updateTabsetPanel(session, "tabbox_nd_import", selected = "Shape Files")
+    
+    # Reset the file input, so more files can be added
+    shinyjs::reset("shape_files_nd")
+    shinyjs::show("removeshp_nd")
+  })
+  
+  
+  
+  
+  ## Import CSV data ###########################################################
   
   output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
     cat("* in tbl_conc_csv\n")
@@ -961,14 +885,76 @@ server <- function(input, output, session) {
   })
   
   
-  output$tbl_shape_csv <- rhandsontable::renderRHandsontable(
-    createShapeFileList(import_tables$shape_files))
+  observeEvent(input$well_data_csv, {
+    
+    inFile <- input$well_data_csv
+    
+    if (is.null(inFile))
+      return(NULL)
+    
+    DF <- readConcData(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
+    
+    # If there was a problem reading the data, reset the file input control and return.
+    if (is.null(DF)) {
+      shinyjs::reset("well_data_csv")
+      return(NULL)
+    }
+    
+    # Save to reactive variable.
+    import_tables$DF_conc <<- DF 
+    
+    # Switch to tabPanel with table
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Contaminant Data")
+  })
+  
+  
+  observeEvent(input$well_coord_csv, {
+    
+    inFile <- input$well_coord_csv
+    
+    if (is.null(inFile))
+      return(NULL)
+    
+    DF <- readWellCoords(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote) 
+    
+    # If there was a problem reading the data, reset the file input control and return.
+    if (is.null(DF)) {
+      shinyjs::reset("well_coord_csv")
+      return(NULL)
+    }
+    
+    # Save to reactive variable.
+    import_tables$DF_well <<- DF
+    
+    # Switch to tabPanel with table
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Well Coordinates")
+  })
+  
+  
+  observeEvent(input$shape_files_csv, {
+    cat("* in observeEvent: shape_files_csv\n")
+    
+    import_tables$shape_files <<- addShapeFiles(input$shape_files_csv, import_tables$shape_files)
+    
+    # Switch to 'Shape Files' tab inside tabBox.
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Shape Files")
+    
+    # Reset the file input, so more files can be added
+    shinyjs::reset("shape_files_csv")
+    shinyjs::show("removeshp_csv")
+  })
+  
+  
+  
+  output$tbl_shape_csv <- rhandsontable::renderRHandsontable(createShapeFileList(import_tables$shape_files))
   
   # This will cause setting of 'output$tbl_shape_csv' because import_tables is reactive.
   observeEvent(input$remove_shapefiles_csv, import_tables$shape_files <<- NULL )
   
   
-  # Import Excel table creation
+  
+  
+  ## Import Excel data #########################################################
   
   output$tbl_conc_xls <- rhandsontable::renderRHandsontable({
     if (is.null(import_tables[["DF_conc"]])) return(NULL)
@@ -991,45 +977,107 @@ server <- function(input, output, session) {
   })
 
   
-  output$tbl_shape_xls <- rhandsontable::renderRHandsontable({
-    if (is.null(import_tables[["shape_files"]])) return(NULL)
-    rhandsontable::rhandsontable(import_tables$shape_files, useTypes = FALSE, stretchH = "all")
+  output$tbl_shape_xls <- rhandsontable::renderRHandsontable(createShapeFileList(import_tables$shape_files))
+  
+  # This will cause setting of 'output$tbl_shape_xls' because import_tables is reactive.
+  observeEvent(input$remove_shapefiles_xls, import_tables$shape_files <<- NULL )
+  
+  observeEvent(input$shape_files_xls, {
+    cat("* in observeEvent: shape_files_xls\n")
+    
+    import_tables$shape_files <<- addShapeFiles(input$shape_files_xls, import_tables$shape_files)
+    
+    # Switch to 'Shape Files' tab inside tabBox.
+    updateTabsetPanel(session, "tabbox_xls_import", selected = "Shape Files")
+    
+    # Reset the file input, so more files can be added
+    shinyjs::reset("shape_files_xls")
+    shinyjs::show("removeshp_xls")
   })
   
   
-  observeEvent(input$well_coord_file, {
+  readExcelSheet <- function(filein, sheet) {
+    cat("* in readExcelSheet\n")
     
-    inFile <- input$well_coord_file
+    dtmp <- readExcel(filein, sheet)
     
-    if (is.null(inFile))
-      return(NULL)
- 
-    DF <- readWellCoords(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote) 
+    if (is.null(dtmp)) 
+      return(FALSE)
     
-    # If there was a problem reading the data, reset the file input control and return.
-    if (is.null(DF)) {
-      shinyjs::reset("well_coord_file")
-      return(NULL)
-    }
+    import_tables$DF_conc <<- dtmp$conc_data
+    import_tables$DF_well <<- dtmp$well_data
     
-    # Save to reactive variable.
-    import_tables$DF_well <<- DF
-    
+    # Disabled for now, because Shape Files are manually uploaded for now.
+    # import_tables$shape_files <<- dtmp$shape_files
     # Switch to tabPanel with table
-    updateTabsetPanel(session, "tabbox_csv_import", selected = "Well Coordinates")
+    updateTabsetPanel(session, "tabbox_xls_import", selected = "Contaminant Data")
+    
+    return(TRUE)
+  }
+  
+  
+  selectExcelSheetModal <- function(sheet_lst) {
+    modalDialog(
+      selectInput("excelsheet", "Choose data sheet", choices = sheet_lst),
+      span('Select the Excel sheet that contains the GWSDAT data'),
+      #if (failed)
+      #    div(tags$b("Invalid name of data object", style = "color: red;")),
+      
+      footer = tagList(
+        actionButton("cancelExcelSheet", "Cancel"),
+        actionButton("okExcelSheet", "OK")
+      )
+    )
+  }
+  
+  
+  observeEvent(input$excel_import_file, {
+    cat("* in observeEvent: input$excel_import_file\n")
+    
+    sheet_lst <- getExcelSheets(input$excel_import_file)
+    
+    if (length(sheet_lst) > 1) {
+      # select sheet from dropdown
+      showModal(selectExcelSheetModal(sheet_lst))
+    } else {
+      readExcelSheet(input$excel_import_file, sheet_lst[[1]])
+    }
+  }) 
+  
+  
+  observeEvent(input$cancelExcelSheet, {
+    
+    removeModal()
+    
+    # If no data was previously loaded, reset the input file control.  
+    if (is.null(import_tables$DF_conc))
+      shinyjs::reset("excel_import_file")
+    
+  })
+  
+  observeEvent(input$okExcelSheet, {
+    cat("* in observeEvent: input$okExcelSheet\n")
+    
+    # Attempt to read the sheet, if it succeeds, remove the modal dialog.      
+    if (readExcelSheet(input$excel_import_file, input$excelsheet))
+      removeModal()
+    
   })
   
   
-  importData <- function() {
+  #
+  # Put large part of this function into readData.R file.
+  #
+  importData <- function(dname) {
     
     cat("* in importData()\n")
     
-    if (is.null(import_tables[["DF_conc"]])) {
+    if (!validateTable(import_tables[["DF_conc"]])) {
       showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
       return(NULL)
     }
     
-    if (is.null(import_tables[["DF_well"]])) {
+    if (!validateTable(import_tables[["DF_well"]])) {
       showNotification("Well coordinate table was not loaded properly. Aborted.", type = "error")
       return(NULL)
     }
@@ -1042,7 +1090,7 @@ server <- function(input, output, session) {
     
     progress$set(value = 0.1, detail = paste("reading data"))
     
-    GWSDAT_Options <- createOptions(isolate(input$new_data_name))
+    GWSDAT_Options <- createOptions(dname)
     
     all_data <- formatData(import_tables[["DF_conc"]], import_tables[["DF_well"]])
     
@@ -1093,13 +1141,15 @@ server <- function(input, output, session) {
     shinyjs::show(id = "uiDataManager")
     shinyjs::hide(id = "uiDataAddCSV")
     shinyjs::hide(id = "uiDataAddExcel")
+    shinyjs::hide(id = "uiDataNewExcel")
     
   }
   
   
   # These two are kept separate to avoid double execution of the observeEvent()
-  observeEvent(input$import_button_csv, importData())
-  observeEvent(input$import_button_xls, importData())
+  observeEvent(input$import_button_csv, importData(input$dname_csv))
+  observeEvent(input$import_button_xls, importData(input$dname_xls))
+  observeEvent(input$import_button_nd, importData(input$dname_nd))
   
     
   # Go (back) to Data Manager.
@@ -1590,58 +1640,54 @@ server <- function(input, output, session) {
     
   })
 
-  output$uiDataAddNew <- renderUI({
+  
+  observeEvent(input$clear_tbl_conc_nd, {
+    import_tables$DF_conc <<- data.frame(matrix("", nrow = 15, ncol = length(conc_header)))
+    colnames(import_tables$DF_conc) <<- conc_header
+  })
+  
+  
+  observeEvent(input$clear_tbl_well_nd, {
+    well_tmp <- data.frame(matrix("", nrow = 15, ncol = length(well_header)))
+    colnames(well_tmp) <- well_header
     
-    # React to changes in these:
-    input$add_new_data
-    input$reset_new_import
-      
-    conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
-    well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
+    import_tables$DF_well <<- NULL  # Need this to trigger reactivity
+    import_tables$DF_well <<- list(data = well_tmp, unit = input$coords_unit)
+  })
+  
+  
+  # Go to New Data Import (Button click).
+  observeEvent(input$add_new_data,  {
+    cat("* in observeEvent: add_new_data\n")
     
+    shinyjs::hide("uiDataManager")
+    shinyjs::show("uiDataAddNew")
+    
+    
+    # Create empty tables with header
     isolate({
-      import_tables$DF_conc <- data.frame(matrix(0, nrow = 20, ncol = length(conc_header)))
-      colnames(import_tables$DF_conc) <- conc_header
+      #import_tables$DF_conc <<- data.frame(matrix("", nrow = 15, ncol = length(conc_header)))
+      #colnames(import_tables$DF_conc) <<- conc_header
+
+      import_tables$DF_conc <<- data.frame(WellName = "", Constituent = "", 
+                                           SampleDate = Sys.Date(), Result = "", 
+                                           Units = "ug/l", Flags = "", stringsAsFactors = FALSE)
+        
+
+      well_tmp <- data.frame(WellName = "Sample Well", XCoord = 0, YCoord = 0, Aquifer = "", stringsAsFactors = FALSE)
       
-      well_tmp <- data.frame(matrix(0, nrow = 20, ncol = length(well_header)))
-      colnames(well_tmp) <- well_header
-      
-      import_tables$DF_well <- list(data = well_tmp, unit = input$coords_unit)
+      import_tables$DF_well <<- list(data = well_tmp, unit = input$coords_unit)
       
     })
+    import_tables$shape_files <<- NULL
     
-
-    fluidPage(
-      div(style = "margin-bottom: 10px", actionButton("gotoDataManager_a", label = "", icon = icon("arrow-left"))),
-      
-      shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
-          
-          
-          h3("Add New Data"),
-          "Enter the data directly or copy/paste into the tables.",
-          hr(),
-          
-          textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
-          actionButton("reset_new_import", label = "Reset"),
-          actionButton("add_new_button", label = "Add Data", icon("arrow-down"), 
-                       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-      ),
-      
-      shinydashboard::tabBox(title = "New Tables", width = 9, 
-           tabPanel("Contaminant Data", 
-                    rhandsontable::rHandsontableOutput("tbl_conc_nd")
-           ), 
-           tabPanel("Well Coordinates",
-                    rhandsontable::rHandsontableOutput("tbl_well_nd")
-           )
-      )
-    )
+    output$uiDataAddNew <- renderUI(uiImportNewData(getValidDataName(csite_list)))
   })
-
+  
   
   # Go to .CSV Data Import (Button click).
   observeEvent(input$add_csv_data,  {
-    cat("* in observeEvent: add_csv_data\n")
+    #cat("* in observeEvent: add_csv_data\n")
     
     shinyjs::hide("uiDataManager")
     shinyjs::show("uiDataAddCSV")
@@ -1655,7 +1701,7 @@ server <- function(input, output, session) {
   
 
   observeEvent(input$reset_csv_import,  {
-    cat("* in observeEvent: reset_csv_import\n")
+    #cat("* in observeEvent: reset_csv_import\n")
 
     import_tables$DF_well <<- NULL
     import_tables$DF_conc <<- NULL

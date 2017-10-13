@@ -1,4 +1,110 @@
 
+uiImportNewData <- function(valid_data_name) {
+
+  fluidPage(
+    div(style = "margin-bottom: 10px", actionButton("gotoDataManager_a", label = "", icon = icon("arrow-left"))),
+    
+    shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
+                        
+                        
+                        h3("Add New Data"),
+                        "Enter the data directly or copy/paste into the tables.",
+                        hr(),
+                        
+                        textInput("dname_nd", label = "Data Name", value = valid_data_name),
+                        "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
+                        fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
+                                  multiple = TRUE),
+                        actionButton("reset_nd_import", label = "Reset"),
+                        actionButton("import_button_nd", label = "Add Data", icon("arrow-up"), 
+                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    ),
+    
+    shinydashboard::tabBox(title = "New Tables", width = 9, id = "tabbox_nd_import",
+                           tabPanel("Contaminant Data", shiny::tagList(
+                             "Right click into table to add or remove rows.",
+                            rhandsontable::rHandsontableOutput("tbl_conc_nd"),
+                            div(style = "margin-top: 5px", actionButton("clear_tbl_conc_nd", "Clear Table")
+                           ))), 
+                           tabPanel("Well Coordinates", shiny::tagList(
+                             "Right click into table to add or remove rows.",
+                             rhandsontable::rHandsontableOutput("tbl_well_nd"),
+                             div(style = "margin-top: 5px", actionButton("clear_tbl_well_nd", "Clear Table")
+                           ))),
+                           tabPanel("Shape Files", {
+                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_nd"),
+                                            shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))))
+                           })
+    )
+  )
+}
+
+
+
+uiImportCSVData <- function(valid_data_name) {
+  
+  fluidPage(
+    div(style = "margin-bottom: 10px", actionButton("gotoDataManager_c", label = "", icon = icon("arrow-left"))),
+    
+    shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
+                        
+                        
+                        h3("Import .csv Data"),
+                        "Select the contaminant data and well coordinate files in .csv format. The tables on the right allow you to edit individual values.",
+                        hr(),
+                        
+                        textInput("dname_csv", label = "Data Name", value = valid_data_name),
+                        fileInput('well_data_csv', 'Contaminant Data File',
+                                  accept = c('text/csv', 
+                                             'text/comma-separated-values,text/plain', 
+                                             '.csv')),
+                        
+                        fileInput('well_coord_csv', 'Well Coordinates File',
+                                  accept = c('text/csv', 
+                                             'text/comma-separated-values,text/plain', 
+                                             '.csv')),
+                        "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
+                        fileInput('shape_files_csv', 'Add Shape Files', accept = c('*.shx', '*.dbf', '*.sbn', '*.sbx', '*.prj', '*.shp'),
+                                  multiple = TRUE),
+                        
+                        hr(),
+                        
+                        checkboxInput('header', 'Header', TRUE),
+                        #checkboxInput('excel_date', 'Transform Excel Date', TRUE),
+                        radioButtons('sep', 'Separator',
+                                     c(Comma = ',',
+                                       Semicolon = ';',
+                                       Tab = '\t'),
+                                     ','),
+                        radioButtons('quote', 'Quote',
+                                     c(None = '',
+                                       'Double Quote' = '"',
+                                       'Single Quote' = "'"),
+                                     '"'),
+                        hr(),
+                        actionButton("reset_csv_import", label = "Reset"),
+                        actionButton("import_button_csv", label = "Import Data", icon("arrow-down"), 
+                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+                        )
+                        
+                        
+    ), # end box
+    
+    shinydashboard::tabBox(title = "Imported Tables", width = 9, id = "tabbox_csv_import",
+                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_csv")
+                           ), 
+                           tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_csv")
+                           ),
+                           #tabPanel("Shape Files", tableOutput("tbl_shape_csv"))
+                           tabPanel("Shape Files", {
+                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_csv"),
+                                            shinyjs::hidden(div(id = "removeshp_csv", style = "margin-top: 5px", actionButton("remove_shapefiles_csv", label = "Remove All Files"))))
+                           })
+    )
+    
+  ) # end fluidPage
+}
+
 
 
 uiImportExcelData <- function(csite_list) {
@@ -12,24 +118,31 @@ uiImportExcelData <- function(csite_list) {
                         h3("Import Excel Data"),
                         "Select the Excel file containing the GWSDAT data.",
                         hr(),
-                        textInput("new_data_name", label = "Data Name", value = getValidDataName(csite_list)),
+                        textInput("dname_xls", label = "Data Name", value = getValidDataName(csite_list)),
                         fileInput('excel_import_file', 'Excel File', accept = c('.xls', '.xlsx')),
+                        "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
+                        fileInput('shape_files_xls', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
+                                  multiple = TRUE),
                         actionButton("reset_xls_import", label = "Reset"),
                         actionButton("import_button_xls", label = "Import Data", icon("arrow-down"), 
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
                         
     ),
     
-    shinydashboard::tabBox(title = "Imported Tables", width = 9, 
+    shinydashboard::tabBox(title = "Imported Tables", width = 9, id = "tabbox_xls_import",
                            tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_xls")
                            ), 
                            tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_xls")
-                           )#,
-                           #tabPanel("Shape Files", rhandsontable::rHandsontableOutput("tbl_shape_xls"))
-                           #tabPanel("Shape Files", "Shape files must be uploaded to the server.")
-                           #rhandsontable::rHandsontableOutput("tbl_shape_xls")
-                           #fileInput('shapefile_import', 'Shape File (*.shp)', accept = c('.shp'))
-                           
+                           ),
+                           tabPanel("Shape Files", {
+                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_xls"),
+                                            shinyjs::hidden(div(id = "removeshp_xls", 
+                                                                style = "margin-top: 5px", 
+                                                                actionButton("remove_shapefiles_xls", 
+                                                                             label = "Remove All Files")))
+                                            )
+                           })
+                             
     ))
   
 }
@@ -89,67 +202,3 @@ uiImportExcelData <- function(csite_list) {
 # })
 
 
-
-uiImportCSVData <- function(valid_data_name) {
-  
-  fluidPage(
-    div(style = "margin-bottom: 10px", actionButton("gotoDataManager_c", label = "", icon = icon("arrow-left"))),
-    
-    shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
-                        
-                        
-                        h3("Import .csv Data"),
-                        "Select the contaminant data and well coordinate files in .csv format. The tables on the right allow you to edit individual values.",
-                        hr(),
-                        
-                        textInput("new_data_name", label = "Data Name", value = valid_data_name),
-                        fileInput('well_data_file', 'Contaminant Data File',
-                                  accept = c('text/csv', 
-                                             'text/comma-separated-values,text/plain', 
-                                             '.csv')),
-                        
-                        fileInput('well_coord_file', 'Well Coordinates File',
-                                  accept = c('text/csv', 
-                                             'text/comma-separated-values,text/plain', 
-                                             '.csv')),
-                        "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
-                        fileInput('shape_files_csv', 'Add Shape Files', accept = c('*.shx', '*.dbf', '*.sbn', '*.sbx', '*.prj', '*.shp'),
-                                  multiple = TRUE),
-                        
-                        hr(),
-                        
-                        checkboxInput('header', 'Header', TRUE),
-                        #checkboxInput('excel_date', 'Transform Excel Date', TRUE),
-                        radioButtons('sep', 'Separator',
-                                     c(Comma = ',',
-                                       Semicolon = ';',
-                                       Tab = '\t'),
-                                     ','),
-                        radioButtons('quote', 'Quote',
-                                     c(None = '',
-                                       'Double Quote' = '"',
-                                       'Single Quote' = "'"),
-                                     '"'),
-                        hr(),
-                        actionButton("reset_csv_import", label = "Reset"),
-                        actionButton("import_button_csv", label = "Import Data", icon("arrow-down"), 
-                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-                        )
-                        
-                        
-    ), # end box
-    
-    shinydashboard::tabBox(title = "Imported Tables", width = 9, id = "tabbox_csv_import",
-                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_csv")
-                           ), 
-                           tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_csv")
-                           ),
-                           #tabPanel("Shape Files", tableOutput("tbl_shape_csv"))
-                           tabPanel("Shape Files", {
-                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_csv"),
-                              shinyjs::hidden(div(id = "testingaa", style = "margin-top: 5px", actionButton("remove_shapefiles_csv", label = "Remove All Files"))))
-                             })
-    )
-    
-  ) # end fluidPage
-}

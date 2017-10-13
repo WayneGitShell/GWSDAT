@@ -358,3 +358,13 @@ readWellCoords <- function(input_file, ...) {
 }
 
 
+validateTable <- function(tbl) {
+  
+  if (is.null(tbl)) 
+    return(FALSE)
+  
+  
+  browser()
+  
+}
+
