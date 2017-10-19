@@ -27,7 +27,7 @@ readShapeFiles_sf <- function(ShapeFileNames) {
 
 
 createShapeFileList <- function(shfiles) {
-
+  cat("* in createShapeFileList()\n")
   if (!is.null(shfiles)) {
     
     MAT <- matrix(nrow = 0, ncol = 2)
@@ -47,10 +47,11 @@ createShapeFileList <- function(shfiles) {
       hot_col("Name", readOnly = TRUE) %>%
       hot_col("Size", readOnly = TRUE)
   } else {
+    #browser()
     # Render Empty table: To leave to blank gap when "Remove All Files" is pressed.
     tbl_out <- rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
                                  useTypes = FALSE, rowHeaders = NULL, stretchH = "all",
-                                 , height = 600) %>%
+                                 height = 600) %>%
       hot_col("Name", readOnly = TRUE) %>%
       hot_col("Size", readOnly = TRUE)
     

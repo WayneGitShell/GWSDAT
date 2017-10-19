@@ -97,7 +97,7 @@ uiAnalyseOptions <- function(csite) {
       ## Model Settings ########################################################
       div(style = "margin-top:50px", 
           h4("Model Settings")),
-      p("Select the resolution for the PSpline model fit. The resolution is defined by the number of knots. The number of knots can also be directly defined in the right input field (min:2, max: 15)."),
+      p("Select the resolution for the PSpline model fit. The resolution is defined by the number of segments, which can also be directly defined in the right input field below (min:2, max: 12)."),
       
       div(style = "display:inline-block; margin-right: 10px",
           selectInput("psplines_resolution", "PSplines Resolution", choices = c("Default", "High"),

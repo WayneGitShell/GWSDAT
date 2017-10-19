@@ -3,7 +3,7 @@
 
 
 server <- function(input, output, session) {
-  
+  DEBUG_MODE <- TRUE
  
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
@@ -795,7 +795,7 @@ server <- function(input, output, session) {
   
   # For some reason double execution of this observer takes place after hitting 
   #  "Add New Data"
-    output$tbl_conc_nd <- rhandsontable::renderRHandsontable({
+  output$tbl_conc_nd <- rhandsontable::renderRHandsontable({
     cat("* in tbl_conc_nd\n")
     if (is.null(import_tables[["DF_conc"]])) return(NULL)
 
@@ -810,8 +810,11 @@ server <- function(input, output, session) {
     }
     
     well_choices <- unique(import_tables$DF_well$data$WellName)
-    #well_choices <- c("A", "B")
-    browser()
+    
+    
+    if (DEBUG_MODE)
+      browser()
+    
     rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
                                  stretchH = "all", height = 500) %>%
       hot_context_menu(allowColEdit = FALSE) %>% # if useTypes = TRUE, allowColEdit will be FALSE anyway
@@ -975,11 +978,16 @@ server <- function(input, output, session) {
     if (is.null(import_tables$DF_well$data)) return(NULL)
     
     useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
+    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all",
+                                  height = 600)
   })
 
   
-  output$tbl_shape_xls <- rhandsontable::renderRHandsontable(createShapeFileList(import_tables$shape_files))
+  output$tbl_shape_xls <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_shape_xls\n")
+    # input$tbl_shape_xls
+    createShapeFileList(import_tables$shape_files)
+    })
   
   # This will cause setting of 'output$tbl_shape_xls' because import_tables is reactive.
   observeEvent(input$remove_shapefiles_xls, import_tables$shape_files <<- NULL )
@@ -1342,8 +1350,8 @@ server <- function(input, output, session) {
     if ( input_knots != csite$GWSDAT_Options[['PSplineVars']][['nseg']]) {
       
       # Check if value is in boundaries.
-      if (input_knots < 2 || input_knots > 10) {
-        showNotification("Number of knots for the model is out of bounds. Minimum: 2, Maximum: 10.", type = "error", duration = 10)
+      if (input_knots < 2 || input_knots > 12) {
+        showNotification("Number of segments for the model is out of bounds. Minimum: 2, Maximum: 12.", type = "error", duration = 10)
         updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
       } else {
         # Ask if to change it. The actual fit is calculated when the actionButton
@@ -1732,67 +1740,20 @@ server <- function(input, output, session) {
     
     import_tables$DF_well <<- NULL
     import_tables$DF_conc <<- NULL
+    import_tables$shape_files <<- NULL
     
     output$uiDataAddExcel <- renderUI(uiImportExcelData(csite_list))                             
   })
-  
   
   
   output$uiDataManager <- renderUI({
     cat("* in uiDataManager\n")
     
     # Observe load status of data.
-    if (dataLoaded() < LOAD_COMPLETE) {
-      loadDefaultSessions()
-    }
+    if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
     
-    html_out <- tagList(
-                        #shinydashboard::box(width = 3, 
-                        div(style = "float : right; margin-bottom: 5px",
-                            actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
-                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("add_csv_data", label = "Import .csv Data", icon = icon("arrow-down"), 
-                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            actionButton("add_excel_data", label = "Import Excel File", icon = icon("arrow-down"), 
-                                         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-                           
-                        ),
-                        h2("Data Manager")
-    )
-                        
-                        
-    
-    if (length(csite_list) == 0) {
-      # No data exists.
-      html_out <- tagList(html_out,
-                          shinydashboard::box(width = 7, title = "No Data Present", status = "warning", "Import and or add to analyse."))
-    } else {
-     
-      data_sets <- getDataInfo(csite_list)
-      
-      for (set_name in names(data_sets)) {
-        
-        html_out <- tagList(html_out, fluidRow(
-          shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
-              title = set_name, 
-              p(HTML(paste("<b>Contaminants</b>: ", pasteLimit(data_sets[[set_name]]$contaminants, limit = 4)))),
-              p(HTML(paste("<b>Wells</b>: ", pasteLimit(data_sets[[set_name]]$wells, limit = 4)))),
-              p(HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", "))))
-              #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
-              # div(style = "float : right", actionButton(btName, "Select"))
-          )))
-        
-      }
-      
-    }
-    
-    return(html_out)
-    
+    uiDataManagerList(csite_list)
   })
-  
-    
-  
-  
   
   
   output$rndAnalyse <- renderUI({
@@ -1900,6 +1861,28 @@ server <- function(input, output, session) {
     dataLoaded(dataLoaded() + 1)
   })
   
+  
+  
+  observe({
+    browser()
+    if (is.null(input$browse)) return()
+    if (input$browse == 0) return()
+    
+    updateTextInput(session, "path",  value = file.choose())
+  })
+  
+  contentInput <- reactive({ 
+    
+    if (input$upload == 0) return()
+    
+    isolate({
+      writeLines(paste(readLines(input$path), collapse = "\n"))
+    })
+  })
+  
+  output$content <- renderPrint({
+    contentInput()
+  })
  
 } # end server section
 

@@ -1,4 +1,58 @@
 
+uiDataManagerList <- function(csite_list) {
+
+  html_out <- tagList(
+    #shinydashboard::box(width = 3, 
+    div(style = "float : right; margin-bottom: 5px",
+        actionButton("browse", label = "Load Data", icon = icon("plus"), 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+        verbatimTextOutput('content'),
+        textInput("path", "File:"),
+        actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+        actionButton("add_csv_data", label = "Import .csv Data", icon = icon("arrow-down"), 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+        actionButton("add_excel_data", label = "Import Excel File", icon = icon("arrow-down"), 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+       
+        
+        
+    ),
+    h2("Data Manager")
+  )
+
+
+  
+  if (length(csite_list) == 0) {
+    # No data exists.
+    html_out <- tagList(html_out,
+                        shinydashboard::box(width = 7, title = "No Data Present", 
+                                            status = "warning", "Import and or add to analyse."))
+  } else {
+    
+    data_sets <- getDataInfo(csite_list)
+    
+    for (set_name in names(data_sets)) {
+      
+      html_out <- tagList(html_out, fluidRow(
+        shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
+                            title = set_name, 
+                            p(HTML(paste("<b>Contaminants</b>: ", pasteLimit(data_sets[[set_name]]$contaminants, limit = 4)))),
+                            p(HTML(paste("<b>Wells</b>: ", pasteLimit(data_sets[[set_name]]$wells, limit = 4)))),
+                            p(HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", "))))
+                            #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
+                            # div(style = "float : right", actionButton(btName, "Select"))
+        )))
+      
+    }
+  }
+    
+    return(html_out)
+  
+}
+
+
+
 uiImportNewData <- function(valid_data_name) {
 
   fluidPage(
