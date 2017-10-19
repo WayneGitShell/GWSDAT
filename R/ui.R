@@ -54,7 +54,8 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
     shinydashboard::tabItems(
      shinydashboard::tabItem(tabName = "input_data", 
       
-        uiOutput("uiDataManager"),                     
+        uiOutput("uiDataManager"),                
+        shinyjs::hidden( uiOutput("uiDataAddSession")),
         shinyjs::hidden( uiOutput("uiDataAddNew")),
         shinyjs::hidden( uiOutput("uiDataAddCSV")),
         shinyjs::hidden( uiOutput("uiDataAddExcel"))

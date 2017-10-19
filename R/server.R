@@ -3,7 +3,7 @@
 
 
 server <- function(input, output, session) {
-  DEBUG_MODE <- TRUE
+  DEBUG_MODE <- FALSE
  
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
@@ -1166,12 +1166,15 @@ server <- function(input, output, session) {
   shinyjs::onclick("gotoDataManager_a", showDataMng())
   shinyjs::onclick("gotoDataManager_b", showDataMng())
   shinyjs::onclick("gotoDataManager_c", showDataMng())
+  shinyjs::onclick("gotoDataManager_d", showDataMng())
 
   showDataMng <- function() {
-    shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddSession")
     shinyjs::hide(id = "uiDataAddCSV")
     shinyjs::hide(id = "uiDataAddNew")
     shinyjs::hide(id = "uiDataAddExcel")
+    
+    shinyjs::show(id = "uiDataManager")
   }
   
   
@@ -1181,6 +1184,12 @@ server <- function(input, output, session) {
     shinyjs::hide(id = "uiDataManager")
   })
   
+  # Go to Load Session Data (Button click).
+  observeEvent(input$add_session_data,  {
+    cat("* in observeEvent: add_session_data (line 1189)\n")
+    shinyjs::show(id = "uiDataAddSession")
+    shinyjs::hide(id = "uiDataManager")
+  })
   
   
   # Follow link to 'Boundary Estimate' tabPanel.
@@ -1667,6 +1676,17 @@ server <- function(input, output, session) {
   
   
   # Go to New Data Import (Button click).
+  observeEvent(input$add_session_data,  {
+    cat("* in observeEvent: add_session_data (line 1680)\n")
+    
+    shinyjs::hide("uiDataManager")
+    shinyjs::show("uiDataAddSession")
+    #browser()
+    output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
+  })
+  
+  
+  # Go to New Data Import (Button click).
   observeEvent(input$add_new_data,  {
     cat("* in observeEvent: add_new_data\n")
     
@@ -1863,26 +1883,6 @@ server <- function(input, output, session) {
   
   
   
-  observe({
-    browser()
-    if (is.null(input$browse)) return()
-    if (input$browse == 0) return()
-    
-    updateTextInput(session, "path",  value = file.choose())
-  })
-  
-  contentInput <- reactive({ 
-    
-    if (input$upload == 0) return()
-    
-    isolate({
-      writeLines(paste(readLines(input$path), collapse = "\n"))
-    })
-  })
-  
-  output$content <- renderPrint({
-    contentInput()
-  })
  
 } # end server section
 

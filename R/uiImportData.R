@@ -4,10 +4,8 @@ uiDataManagerList <- function(csite_list) {
   html_out <- tagList(
     #shinydashboard::box(width = 3, 
     div(style = "float : right; margin-bottom: 5px",
-        actionButton("browse", label = "Load Data", icon = icon("plus"), 
+        actionButton("add_session_data", label = "Load Data", icon = icon("plus"), 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-        verbatimTextOutput('content'),
-        textInput("path", "File:"),
         actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("add_csv_data", label = "Import .csv Data", icon = icon("arrow-down"), 
@@ -51,6 +49,41 @@ uiDataManagerList <- function(csite_list) {
   
 }
 
+
+
+
+uiImportSessionData <- function(valid_data_name) {
+  
+  cat("* in uiImportSessionData\n")
+  fluidPage(
+    div(style = "margin-bottom: 10px", actionButton("gotoDataManager_d", label = "", icon = icon("arrow-left"))),
+    
+    shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
+                        
+                        
+                        h3("Load Session Data"),
+                        "Load a session file that was previously saved inside GWSDAT. The file has to be a valid RData file in GWSDAT format.",
+                        hr(),
+                        
+                        textInput("dname_nd", label = "Data Name", value = valid_data_name),
+                        fileInput('shape_files_nd', 'Add Shape Files', accept = c('.Rdata', '.RData')),
+                        actionButton("reset_sess_import", label = "Reset"),
+                        actionButton("import_button_sess", label = "Add Data", icon("arrow-up"), 
+                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    ),
+    
+    shinydashboard::tabBox(title = "New Tables", width = 9, id = "tabbox_nd_import",
+                           tabPanel("Contaminant Data", 
+                                    "Std table goes here."), 
+                           tabPanel("Well Coordinates", 
+                                    "Std table goes here."),
+                           tabPanel("Shape Files", {
+                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_nd"),
+                                            shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))))
+                           })
+    )
+  )
+}
 
 
 uiImportNewData <- function(valid_data_name) {
