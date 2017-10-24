@@ -3,7 +3,7 @@
 
 
 server <- function(input, output, session) {
-  DEBUG_MODE <- FALSE
+  DEBUG_MODE <- TRUE
  
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
@@ -33,7 +33,10 @@ server <- function(input, output, session) {
   conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
   well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
   
-  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL, shape_files = NULL)
+  
+  import_tables <- reactiveValues(DF_conc = NULL, DF_well = NULL, 
+                                  shape_files = NULL,
+                                  new_csite = NULL)
   
   # Define supported image formats
   img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
@@ -56,7 +59,7 @@ server <- function(input, output, session) {
   # isClosed()  - function that return TRUE if client has disconnected  
   #
   
-  output$debug <- renderPrint({
+  output$version_info <- renderPrint({
       print(sessionInfo())
 
       #cat("\n\n** Path to image logo: ", system.file("logo.gif", package = "GWSDAT"), "\n")
@@ -740,9 +743,10 @@ server <- function(input, output, session) {
       fn <- input$session_filename
       pa <- strsplit(fn, "\\.")[[1]]
       
-      # If there is no RData ending, append it.
-      if (tolower(pa[length(pa)]) != "rdata")
-        fn <- paste0(fn, ".RData")
+      # If there is no RDS ending, append it.
+      if (tolower(pa[length(pa)]) != "rds")
+        #fn <- paste0(fn, ".RData")
+        fn <- paste0(fn, ".rds")
       
       return(fn)
     },
@@ -758,7 +762,10 @@ server <- function(input, output, session) {
         # This will not overwrite the server csite_list.
         csite_list <- list(csite = csite)
         
-        save(file = file, "csite_list")
+        class(csite_list) <- "GWSDAT_DATA_LIST"
+        
+        #save(file = file, "csite_list")
+        saveRDS(csite_list, file = file)
       }
     }
     
@@ -781,7 +788,119 @@ server <- function(input, output, session) {
   })
   
   
+  
+  
+  
+  ## Load Session Data ().rds ##################################################
  
+  
+  output$tbl_conc_sess <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_conc_sess <- renderRHandsontable()\n")
+    
+    if (is.null(import_tables$DF_conc)) {
+      outDF <- data.frame(WellName = character(), Constituent = numeric(),
+                         SampleDate = character(), Result = character(),
+                         Units = character(), Flags = character())
+      
+    } else {
+      
+      # Create Preview DF
+      outDF <- import_tables$DF_conc
+
+      # Delete some of the columns
+      outDF$ND <- NULL
+      outDF$Result.Corr.ND <- NULL
+      outDF$XCoord <- NULL
+      outDF$YCoord <- NULL
+      outDF$AggDate <- NULL
+
+      outDF$SampleDate <- format.Date(outDF$SampleDate, "%d-%m-%Y")
+    }
+    
+    tbl_height <- 700
+    
+    # Use smaller size for placeholder table (only header).
+    if (nrow(outDF) == 0)  tbl_height <- 330 
+    
+    try(rhandsontable::rhandsontable(outDF, 
+                                 useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                 height = tbl_height, readOnly = TRUE), silent = T) 
+      
+    
+    
+  })
+  
+  
+  output$tbl_well_sess <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_well_sess\n")
+    
+    # Create empty DF with header to display minimal table.
+    if (is.null(import_tables$DF_well)) {
+      outDF <- data.frame(WellName = character(), XCoord = numeric(),
+                         YCoord = numeric(), Aquifer = character())
+    } else {
+      outDF <- import_tables$DF_well
+    }
+    
+    # Use smaller size for placeholder table (only header).
+    tbl_height <- 700
+    if (nrow(outDF) == 0)  tbl_height <- 330 
+    
+    # Create the table with specific height. Always display it even if it has no entries.
+    rhandsontable::rhandsontable(outDF, useTypes = TRUE, stretchH = "all",
+                                 height = tbl_height, rowHeaders = NULL, readOnly = TRUE) 
+    
+  })
+  
+  
+  observeEvent(input$data_session_file, {
+    cat("* in observeEvent: session_data_file\n")
+    
+    inFile <- input$data_session_file
+    
+    if (is.null(inFile)) {
+      showNotification("Upload of file failed.", type = "error", duration = 10)
+      return(NULL)
+    }
+    
+    # Attempt to read the .rds file into a temporary list.
+    tryCatch(   
+      csite_tmp <- readRDS(inFile$datapath)
+      , error = function(e) {
+        showNotification(paste0("Error reading uploaded .rds file ", inFile$name), type = "error", duration = 10 )
+        return(NULL)
+      })
+    
+    # Check if data object was read properly - The following checks could be
+    #  moved into the tryCatch() above, but this way it is more specific.
+    if (!exists("csite_tmp")) {
+      showNotification(paste0("Uploaded .rds file ", inFile$name, " does not contain GWSDAT object."), type = "error", duration = 10 )
+      shinyjs::reset("data_session_file")
+      return(NULL)
+    }
+    
+    if (class(csite_tmp) != "GWSDAT_DATA_LIST") {
+      showNotification(paste0("Uploaded .rds file ", inFile$name, " does not contain data of type GWSDAT (wrong class)."), type = "error", duration = 10 )
+      shinyjs::reset("data_session_file")
+      return(NULL)
+    }
+    
+    
+    # Create new data name if already exists. It needs to be unique.
+    site_name <- csite_tmp[[1]]$GWSDAT_Options$SiteName
+    new_name <- getValidDataName(csite_list, template = site_name, propose_name = site_name)
+    csite_tmp[[1]]$GWSDAT_Options$SiteName <- new_name
+    
+    updateTextInput(session, "dname_sess", value = new_name)
+    
+    # Set the preview tables displayed on the right of the import panel.
+    import_tables$new_csite <<- csite_tmp[[1]] 
+    import_tables$DF_conc <<- csite_tmp[[1]]$All.Data$Cont.Data
+    import_tables$DF_well <- csite_tmp[[1]]$All.Data$sample_loc$data
+    
+    
+  })
+  
   
   
   ## Import New data ###########################################################
@@ -811,9 +930,6 @@ server <- function(input, output, session) {
     
     well_choices <- unique(import_tables$DF_well$data$WellName)
     
-    
-    if (DEBUG_MODE)
-      browser()
     
     rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
                                  stretchH = "all", height = 500) %>%
@@ -866,25 +982,83 @@ server <- function(input, output, session) {
   
   ## Import CSV data ###########################################################
   
-  output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_conc_csv\n")
+  
+  # Re-read uploaded files in case one of the CSV format settings changes.
+  observeEvent(c(input$sep, input$quote), {
+    cat("* in observeEvnet: sep and quote\n")
     
-    if (is.null(import_tables[["DF_conc"]])) return(NULL)
-      #return(rhandsontable::rhandsontable(data.frame(), stretchH = "all"))
+    # For the contaminant data:
+    if (!is.null(input$well_data_csv)) {
+      import_tables$DF_conc <<- readConcData(input$well_data_csv$datapath, conc_header, header = TRUE, #input$header, 
+                                             sep = input$sep, quote = input$quote)
+    }
     
-    useTypes = FALSE  # as.logical(input$useType)
-    if (nrow(import_tables$DF_conc) > 100)
-      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, stretchH = "all")
-    else
-      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all")
+    # For the well data:
+    if (!is.null(input$well_coord_csv)) {
+      import_tables$DF_well <<- readWellCoords(input$well_coord_csv$datapath, well_header, header = TRUE, #input$header, 
+                                               sep = input$sep, quote = input$quote)
+    }
   })
   
-  output$tbl_well_csv <- rhandsontable::renderRHandsontable({
-    if (is.null(import_tables$DF_well)) return(NULL)
-    if (is.null(import_tables$DF_well$data)) return(NULL)
+  
+  output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_conc_csv\n")
+  
+    # Create empty table with only header as a placeholder.
+    if (is.null(import_tables$DF_conc)) {
+      mtmp <- data.frame(WellName = character(), Constituent = numeric(),
+                         SampleDate = character(), Result = character(),
+                         Units = character(), Flags = character())
+      
+      isolate(import_tables$DF_conc <<- mtmp)
+    }
+  
+    tbl_height <- 700
+ 
+    # Use smaller size for placeholder table (only header).
+    if (nrow(import_tables$DF_conc) == 0)  tbl_height <- 400 
     
-    useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all")
+    rhandsontable::rhandsontable(import_tables$DF_conc, 
+                                 useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                 height = tbl_height, readOnly = TRUE)                             
+   
+  })
+  
+  
+  output$tbl_well_csv <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_well_csv\n")
+    
+    # Create empty DF with header to display minimal table.
+    if (is.null(import_tables$DF_well)) {
+      mtmp <- data.frame(WellName = character(), XCoord = numeric(),
+                         YCoord = numeric(), Aquifer = character())
+      isolate( import_tables$DF_well$data <<- mtmp )
+    }
+    
+    # Use smaller size for placeholder table (only header).
+    tbl_height <- 700
+    if (nrow(import_tables$DF_well$data) == 0)  tbl_height <- 400 
+    
+    # Create the table with specific height. Always display it even if it has no entries.
+    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = TRUE, stretchH = "all",
+                                 height = tbl_height, rowHeaders = NULL, readOnly = TRUE) 
+    
+  })
+  
+  #
+  # Empty table header does not display correctly after 'Reset'. It is not triggering
+  #  for reactive import_tables$shape_files, although the output$
+  #
+  #
+  output$tbl_shape_csv <- rhandsontable::renderRHandsontable({
+    #input$reset_csv_import
+    cat("* in tbl_shape_csv\n")
+    if (is.null(import_tables$shape_files))
+      return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
+                                          useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                          height = 400, readOnly = TRUE))
+    
+    createShapeFileList(import_tables$shape_files)
   })
   
   
@@ -895,7 +1069,8 @@ server <- function(input, output, session) {
     if (is.null(inFile))
       return(NULL)
     
-    DF <- readConcData(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote)
+    DF <- readConcData(inFile$datapath, conc_header, header = TRUE, #input$header, 
+                       sep = input$sep, quote = input$quote)
     
     # If there was a problem reading the data, reset the file input control and return.
     if (is.null(DF)) {
@@ -918,7 +1093,8 @@ server <- function(input, output, session) {
     if (is.null(inFile))
       return(NULL)
     
-    DF <- readWellCoords(inFile$datapath, header = input$header, sep = input$sep, quote = input$quote) 
+    DF <- readWellCoords(inFile$datapath, well_header, header = TRUE, #input$header, 
+                         sep = input$sep, quote = input$quote) 
     
     # If there was a problem reading the data, reset the file input control and return.
     if (is.null(DF)) {
@@ -929,7 +1105,7 @@ server <- function(input, output, session) {
     # Save to reactive variable.
     import_tables$DF_well <<- DF
     
-    # Switch to tabPanel with table
+    # Switch to tabPanel with table.
     updateTabsetPanel(session, "tabbox_csv_import", selected = "Well Coordinates")
   })
   
@@ -948,11 +1124,11 @@ server <- function(input, output, session) {
   })
   
   
-  
-  output$tbl_shape_csv <- rhandsontable::renderRHandsontable(createShapeFileList(import_tables$shape_files))
-  
   # This will cause setting of 'output$tbl_shape_csv' because import_tables is reactive.
-  observeEvent(input$remove_shapefiles_csv, import_tables$shape_files <<- NULL )
+  observeEvent(input$remove_shapefiles_csv, {
+    import_tables$shape_files <<- NULL
+    shinyjs::hide("removeshp_csv")  
+  })
   
   
   
@@ -960,37 +1136,73 @@ server <- function(input, output, session) {
   ## Import Excel data #########################################################
   
   output$tbl_conc_xls <- rhandsontable::renderRHandsontable({
-    if (is.null(import_tables[["DF_conc"]])) return(NULL)
     
-    useTypes = FALSE  # as.logical(input$useType)
-    if (nrow(import_tables$DF_conc) > 100)
-      rhandsontable::rhandsontable(import_tables$DF_conc[1:100,], useTypes = useTypes, 
-                                   stretchH = "all", height = 600)
-    else
-      rhandsontable::rhandsontable(import_tables$DF_conc, useTypes = useTypes, stretchH = "all",
-                                   height = 600)
+    cat("* in tbl_conc_xls\n")
+    
+    # Create empty table with only header as a placeholder.
+    if (is.null(import_tables$DF_conc)) {
+      mtmp <- data.frame(WellName = character(), Constituent = numeric(),
+                         SampleDate = character(), Result = character(),
+                         Units = character(), Flags = character())
+      
+      isolate(import_tables$DF_conc <<- mtmp)
+    }
+    
+    tbl_height <- 700
+    
+    # Use smaller size for placeholder table (only header).
+    if (nrow(import_tables$DF_conc) == 0)  tbl_height <- 400 
+    
+    rhandsontable::rhandsontable(import_tables$DF_conc, 
+                                 useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                 height = tbl_height, readOnly = TRUE)  
   })
   
   
   output$tbl_well_xls <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_well_xls\n")
     
-    if (is.null(import_tables$DF_well)) return(NULL)
-    if (is.null(import_tables$DF_well$data)) return(NULL)
+    # Create empty DF with header to display minimal table.
+    if (is.null(import_tables$DF_well)) {
+      mtmp <- data.frame(WellName = character(), XCoord = numeric(),
+                         YCoord = numeric(), Aquifer = character())
+      isolate( import_tables$DF_well$data <<- mtmp )
+    }
     
-    useTypes = FALSE  # as.logical(input$useType)
-    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = useTypes, stretchH = "all",
-                                  height = 600)
+    # Use smaller size for placeholder table (only header).
+    tbl_height <- 700
+    if (nrow(import_tables$DF_well$data) == 0)  tbl_height <- 400 
+    
+    # Create the table with specific height. Always display it even if it has no entries.
+    rhandsontable::rhandsontable(import_tables$DF_well$data, useTypes = TRUE, stretchH = "all",
+                                 height = tbl_height, rowHeaders = NULL, readOnly = TRUE) 
+    
   })
 
   
+  #
+  # Empty table header does not display correctly after 'Reset'. It is not triggering
+  #  for reactive import_tables$shape_files, although the output$
+  #
+  #
   output$tbl_shape_xls <- rhandsontable::renderRHandsontable({
+    #input$reset_csv_import
     cat("* in tbl_shape_xls\n")
-    # input$tbl_shape_xls
+    if (is.null(import_tables$shape_files))
+      return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
+                                          useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                          height = 400, readOnly = TRUE))
+    
     createShapeFileList(import_tables$shape_files)
-    })
+  })
+  
+ 
   
   # This will cause setting of 'output$tbl_shape_xls' because import_tables is reactive.
-  observeEvent(input$remove_shapefiles_xls, import_tables$shape_files <<- NULL )
+  observeEvent(input$remove_shapefiles_xls, {
+    import_tables$shape_files <<- NULL 
+    shinyjs::hide("removeshp_xls")
+    })
   
   observeEvent(input$shape_files_xls, {
     cat("* in observeEvent: shape_files_xls\n")
@@ -1005,7 +1217,9 @@ server <- function(input, output, session) {
     shinyjs::show("removeshp_xls")
   })
   
-  
+  #
+  #FIXME: Move this to readData.R or excel related file?
+  #
   readExcelSheet <- function(filein, sheet) {
     cat("* in readExcelSheet\n")
     
@@ -1017,7 +1231,7 @@ server <- function(input, output, session) {
     import_tables$DF_conc <<- dtmp$conc_data
     import_tables$DF_well <<- dtmp$well_data
     
-    # Disabled for now, because Shape Files are manually uploaded for now.
+    # Disabled for now, because Shape Files are manually uploaded.
     # import_tables$shape_files <<- dtmp$shape_files
     # Switch to tabPanel with table
     updateTabsetPanel(session, "tabbox_xls_import", selected = "Contaminant Data")
@@ -1149,14 +1363,22 @@ server <- function(input, output, session) {
     
     # Go back to Data Manager.
     shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddNew")
     shinyjs::hide(id = "uiDataAddCSV")
     shinyjs::hide(id = "uiDataAddExcel")
-    shinyjs::hide(id = "uiDataNewExcel")
+    
     
   }
   
   
-  # These two are kept separate to avoid double execution of the observeEvent()
+  # React to Import button click.
+  observeEvent(input$import_button_sess, {
+    if (!is.null(import_tables$new_csite))
+      csite_list[[length(csite_list) + 1]] <<- import_tables$new_csite  
+    shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddSession")
+    dataLoaded(dataLoaded() + 1)
+  })
   observeEvent(input$import_button_csv, importData(input$dname_csv))
   observeEvent(input$import_button_xls, importData(input$dname_xls))
   observeEvent(input$import_button_nd, importData(input$dname_nd))
@@ -1214,7 +1436,7 @@ server <- function(input, output, session) {
     
     # Update session file name with current time stamp.
     if (input$analyse_panel == "Save Session")
-      updateTextInput(session, "session_filename", value = paste0("GWSDAT_", gsub(":", "_", gsub(" ", "_", Sys.time())), ".RData"))
+      updateTextInput(session, "session_filename", value = paste0("GWSDAT_", gsub(":", "_", gsub(" ", "_", Sys.time())), ".rds"))
       
     if (input$analyse_panel == "Options") {
       # Save parameters that might have to be restored later if they are invalid.
@@ -1414,12 +1636,23 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$sidebar_menu, {
+    cat("* click on sidebar_menu\n")
     
-    if (input$sidebar_menu == "analysis") {
+    if (input$sidebar_menu == "menu_analyse") {
       shinyjs::hide("analyse_page")
       shinyjs::show("data_select_page")
-      
     }
+    
+    # Click on side bar menu, shows main data manager and hides everything else.
+    if (input$sidebar_menu == "menu_data_manager") {
+      shinyjs::show(id = "uiDataManager")
+      
+      shinyjs::hide(id = "uiDataAddNew")
+      shinyjs::hide(id = "uiDataAddCSV")
+      shinyjs::hide(id = "uiDataAddExcel")
+      shinyjs::hide(id = "uiDataAddSession") 
+    }
+    
   })
     
   
@@ -1486,8 +1719,8 @@ server <- function(input, output, session) {
     
     # Read Well data and coordinates from file.
     tryCatch({
-      solute_data <- readConcData(GWSDAT_Options$WellDataFilename)
-      well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename)
+      solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
+      well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
     }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
     
     
@@ -1681,10 +1914,24 @@ server <- function(input, output, session) {
     
     shinyjs::hide("uiDataManager")
     shinyjs::show("uiDataAddSession")
-    #browser()
+    
+    import_tables$DF_conc <<- NULL
+    import_tables$DF_well <<- NULL
+    import_tables$new_csite <<- NULL
+    
     output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
   })
   
+  
+  observeEvent(input$reset_sess_import,  {
+    
+    import_tables$DF_well <<- NULL
+    import_tables$DF_conc <<- NULL
+    import_tables$new_csite <<- NULL
+    
+    output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
+
+  })
   
   # Go to New Data Import (Button click).
   observeEvent(input$add_new_data,  {
@@ -1731,7 +1978,7 @@ server <- function(input, output, session) {
   
 
   observeEvent(input$reset_csv_import,  {
-    #cat("* in observeEvent: reset_csv_import\n")
+    cat("* in observeEvent: reset_csv_import\n")
 
     import_tables$DF_well <<- NULL
     import_tables$DF_conc <<- NULL

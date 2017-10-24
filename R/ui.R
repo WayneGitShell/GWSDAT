@@ -25,9 +25,9 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
-      shinydashboard::menuItem("Manage Data", tabName = "input_data", icon = icon("archive")),
-      shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
-      shinydashboard::menuItem("Debug", tabName = "debug_it")
+      shinydashboard::menuItem("Manage Data", tabName = "menu_data_manager", icon = icon("archive")),
+      shinydashboard::menuItem("Analyse", tabName = "menu_analyse", icon = icon("bar-chart")),
+      shinydashboard::menuItem("Version", tabName = "menu_version")
     )
   ),
   
@@ -52,7 +52,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
                         </script>"))),
                  
     shinydashboard::tabItems(
-     shinydashboard::tabItem(tabName = "input_data", 
+     shinydashboard::tabItem(tabName = "menu_data_manager", 
       
         uiOutput("uiDataManager"),                
         shinyjs::hidden( uiOutput("uiDataAddSession")),
@@ -62,7 +62,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
         
       ),
       
-      shinydashboard::tabItem(tabName = "analysis", 
+      shinydashboard::tabItem(tabName = "menu_analyse", 
               div(id = "data_select_page",
                   uiOutput("uiAnalyseDataList")
               ),
@@ -70,8 +70,8 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
                      uiOutput("rndAnalyse"))
               )
               ),
-     shinydashboard::tabItem(tabName = "debug_it",
-                             verbatimTextOutput("debug")
+     shinydashboard::tabItem(tabName = "menu_version",
+                             verbatimTextOutput("version_info")
                              )
       
     ) # end tabItems

@@ -36,13 +36,28 @@ getDataInfo <- function(csite_list) {
 }
 
 
-getValidDataName <- function(csite_list = NULL, template = "Area") {
+getValidDataName <- function(csite_list = NULL, template = "Area", propose_name = NULL) {
 
   if (is.null(csite_list))
     return(template)
 
-  propose_name <- NULL
-
+  # If a name was provided (proposed_name not NULL), check if it already in use.
+  if (!is.null(propose_name)) {
+    name_conflicted <- FALSE
+    
+    for (j in 1:length(csite_list)) {
+      if (propose_name == csite_list[[j]]$GWSDAT_Options$SiteName) {
+        name_conflicted <- TRUE
+        break
+      }
+    }
+    
+    # Return 'propose_name' if no equal name found in 'csite_list'.
+    if (!name_conflicted)
+      return(propose_name)
+  }
+  
+  # Try a new name using 'template' as prefix for the name.
   for (i in 1:1000) {
 
     propose_name <- paste0(template, " ", i)

@@ -92,7 +92,7 @@ readExcel <- function(filein, sheet = NULL) {
     cat("* in readExcel()\n")
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
-    shape_header <- list("Filenames (*.shp)")
+    #shape_header <- list("Filenames (*.shp)")
     
     # Fixme: read .ending from $name and append to newfile
     newfile <- paste0(filein$datapath, ".xlsx")
@@ -164,20 +164,21 @@ readExcel <- function(filein, sheet = NULL) {
         
         #
         # Attempt to read shape files (if not found, ignore)
+        # (Disabled: Shape files must be uploaded with the file input control)
         #
-        ret <- readExcelData(newfile, sheet = sheet, header = shape_header)
-        
-        shape_files <- NULL
-        
-        if (any(class(ret) == "data.frame")) {
-            
-            shape_files <- validateShapeFiles(ret)
-            
-            if (!is.null(shape_files))
-                showNotification(paste0("Sheet \'", sheet, "\': Found ", length(shape_files), 
-                                        " shape file(s)."), type = "message", duration = 10)
-            
-        }
+        # ret <- readExcelData(newfile, sheet = sheet, header = shape_header)
+        # 
+        # shape_files <- NULL
+        # 
+        # if (any(class(ret) == "data.frame")) {
+        #     
+        #     shape_files <- validateShapeFiles(ret)
+        #     
+        #     if (!is.null(shape_files))
+        #         showNotification(paste0("Sheet \'", sheet, "\': Found ", length(shape_files), 
+        #                                 " shape file(s)."), type = "message", duration = 10)
+        #     
+        # }
         
 
         # If we made it until here, we were able to read some valid data. 
@@ -189,7 +190,7 @@ readExcel <- function(filein, sheet = NULL) {
         return(NULL)
     
     
-    return(list(conc_data = conc_data, well_data = well_data, shape_files = shape_files))
+    return(list(conc_data = conc_data, well_data = well_data))
      
 }
 
@@ -233,7 +234,7 @@ validateShapeFiles <- function(fstrings) {
 
 
 #' @importFrom utils read.csv
-readConcData <- function(input_file, ...) {
+readConcData <- function(input_file, valid_header, ...) {
 
   
   if (length(list(...)) == 0)
@@ -244,9 +245,6 @@ readConcData <- function(input_file, ...) {
   
   # Create Flags column or replace NA values with "" if exist.
   if (!"flags" %in% tolower(names(DF))) { DF$Flags <- rep("",nrow(DF))}
-  
-
-  valid_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
   
   DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
   head_not_found <- ""
@@ -265,8 +263,8 @@ readConcData <- function(input_file, ...) {
   
   
   if (head_not_found != "") {
-    msg <- paste0("Reading well coordinates failed. Headers missing: ", paste(head_not_found, collapse = ", "), "." )
-    showNotification(msg, type = "error")
+    msg <- paste0("Reading well coordinates failed. Header missing: ", paste(head_not_found, collapse = ", "), ". Try to change the Column Separator." )
+    showNotification(msg, type = "error", duration = 7)
     return(NULL)
   }
    
@@ -308,7 +306,7 @@ readConcData <- function(input_file, ...) {
 
 
 #' @importFrom utils read.csv
-readWellCoords <- function(input_file, ...) {
+readWellCoords <- function(input_file, valid_header, ...) {
  
   
   if (length(list(...)) == 0)
@@ -328,8 +326,7 @@ readWellCoords <- function(input_file, ...) {
     DF$Aquifer <- rep("",nrow(DF))
   }
   
-  valid_header <- list("WellName", "XCoord", "YCoord", "Aquifer") # , "CoordUnits")
-  
+   
   DF_extract <- data.frame(matrix(nrow = nrow(DF), ncol = 0))
   head_not_found <- ""
   

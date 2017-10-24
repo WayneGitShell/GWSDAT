@@ -12,9 +12,6 @@ uiDataManagerList <- function(csite_list) {
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("add_excel_data", label = "Import Excel File", icon = icon("arrow-down"), 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
-       
-        
-        
     ),
     h2("Data Manager")
   )
@@ -62,25 +59,19 @@ uiImportSessionData <- function(valid_data_name) {
                         
                         
                         h3("Load Session Data"),
-                        "Load a session file that was previously saved inside GWSDAT. The file has to be a valid RData file in GWSDAT format.",
+                        "Load a session file that was previously saved inside GWSDAT. The file has to be a valid .rds file in GWSDAT format.",
                         hr(),
                         
-                        textInput("dname_nd", label = "Data Name", value = valid_data_name),
-                        fileInput('shape_files_nd', 'Add Shape Files', accept = c('.Rdata', '.RData')),
+                        textInput("dname_sess", label = "Data Name", value = valid_data_name),
+                        fileInput('data_session_file', 'Load .rds File', accept = c('.Rdata', '.RData')),
                         actionButton("reset_sess_import", label = "Reset"),
                         actionButton("import_button_sess", label = "Add Data", icon("arrow-up"), 
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
     ),
     
-    shinydashboard::tabBox(title = "New Tables", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", 
-                                    "Std table goes here."), 
-                           tabPanel("Well Coordinates", 
-                                    "Std table goes here."),
-                           tabPanel("Shape Files", {
-                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_nd"),
-                                            shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))))
-                           })
+    shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_nd_import",
+                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_sess")), 
+                           tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_sess"))
     )
   )
 }
@@ -136,8 +127,8 @@ uiImportCSVData <- function(valid_data_name) {
     shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
                         
                         
-                        h3("Import .csv Data"),
-                        "Select the contaminant data and well coordinate files in .csv format. The tables on the right allow you to edit individual values.",
+                        h3("Import CSV Data"),
+                        "Select the contaminant data and well coordinate files in CSV format (see setting below).",
                         hr(),
                         
                         textInput("dname_csv", label = "Data Name", value = valid_data_name),
@@ -155,15 +146,15 @@ uiImportCSVData <- function(valid_data_name) {
                                   multiple = TRUE),
                         
                         hr(),
-                        
-                        checkboxInput('header', 'Header', TRUE),
+                        "Change the format of the CSV file in case it can not be read properly.",
+                        #checkboxInput('header', 'Header is Present', TRUE),
                         #checkboxInput('excel_date', 'Transform Excel Date', TRUE),
-                        radioButtons('sep', 'Separator',
+                        radioButtons('sep', 'Column Separator',
                                      c(Comma = ',',
                                        Semicolon = ';',
                                        Tab = '\t'),
                                      ','),
-                        radioButtons('quote', 'Quote',
+                        radioButtons('quote', 'Quote for Character Strings',
                                      c(None = '',
                                        'Double Quote' = '"',
                                        'Single Quote' = "'"),
@@ -177,15 +168,18 @@ uiImportCSVData <- function(valid_data_name) {
                         
     ), # end box
     
-    shinydashboard::tabBox(title = "Imported Tables", width = 9, id = "tabbox_csv_import",
-                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_csv")
+    shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_csv_import",
+                           tabPanel("Contaminant Data", 
+                                    rhandsontable::rHandsontableOutput("tbl_conc_csv")
                            ), 
-                           tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_csv")
+                           tabPanel("Well Coordinates", 
+                                    rhandsontable::rHandsontableOutput("tbl_well_csv")
                            ),
                            #tabPanel("Shape Files", tableOutput("tbl_shape_csv"))
                            tabPanel("Shape Files", {
                              shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_csv"),
-                                            shinyjs::hidden(div(id = "removeshp_csv", style = "margin-top: 5px", actionButton("remove_shapefiles_csv", label = "Remove All Files"))))
+                                            shinyjs::hidden(div(id = "removeshp_csv", style = "margin-top: 5px", 
+                                                                actionButton("remove_shapefiles_csv", label = "Remove All Files"))))
                            })
     )
     
@@ -216,18 +210,17 @@ uiImportExcelData <- function(csite_list) {
                         
     ),
     
-    shinydashboard::tabBox(title = "Imported Tables", width = 9, id = "tabbox_xls_import",
+    shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_xls_import",
                            tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_xls")
                            ), 
                            tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_xls")
                            ),
                            tabPanel("Shape Files", {
-                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_xls"),
-                                            shinyjs::hidden(div(id = "removeshp_xls", 
-                                                                style = "margin-top: 5px", 
-                                                                actionButton("remove_shapefiles_xls", 
-                                                                             label = "Remove All Files")))
-                                            )
+                             shiny::tagList(
+                               HTML("Note: Shape files specified in the Excel file will not be automatically uploaded. Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                               rhandsontable::rHandsontableOutput("tbl_shape_xls"),
+                                            shinyjs::hidden(div(id = "removeshp_xls", style = "margin-top: 5px", 
+                                                                actionButton("remove_shapefiles_xls", label = "Remove All Files"))))
                            })
                              
     ))
