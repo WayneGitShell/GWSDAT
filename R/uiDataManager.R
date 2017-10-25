@@ -1,6 +1,9 @@
 
 uiDataManagerList <- function(csite_list) {
 
+  # Will contain the button information needed to create observers later.
+  del_btns <- list()
+  
   html_out <- tagList(
     #shinydashboard::box(width = 3, 
     div(style = "float : right; margin-bottom: 5px",
@@ -16,7 +19,6 @@ uiDataManagerList <- function(csite_list) {
     h2("Data Manager")
   )
 
-
   
   if (length(csite_list) == 0) {
     # No data exists.
@@ -27,22 +29,39 @@ uiDataManagerList <- function(csite_list) {
     
     data_sets <- getDataInfo(csite_list)
     
+    btn_idx <- 1
+    
     for (set_name in names(data_sets)) {
+      
+      # If data set can be deleted, create button in side the box.
+      if (!data_sets[[set_name]]$do_not_del) {
+        
+        # Create the name of the button and a safe to list with associated data name.
+        # This will be passed back to create an observer in the calling function.
+        btn_name <- paste0("del_data_btn", btn_idx)
+        del_btns[[length(del_btns) + 1]] <- list(btn_name = btn_name, 
+                                                 csite_name = set_name)  
+        
+        btn_idx <- btn_idx + 1
+      }
       
       html_out <- tagList(html_out, fluidRow(
         shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
                             title = set_name, 
-                            p(HTML(paste("<b>Contaminants</b>: ", pasteLimit(data_sets[[set_name]]$contaminants, limit = 4)))),
-                            p(HTML(paste("<b>Wells</b>: ", pasteLimit(data_sets[[set_name]]$wells, limit = 4)))),
-                            p(HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", "))))
-                            #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
-                            # div(style = "float : right", actionButton(btName, "Select"))
+                            div(style = "float: left", 
+                                HTML(paste("<b>Contaminants</b>: ", pasteLimit(data_sets[[set_name]]$contaminants, limit = 4), "<br />")),
+                                HTML(paste("<b>Wells</b>: ", pasteLimit(data_sets[[set_name]]$wells, limit = 4), "<br />")),
+                                HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", ")))
+                                ),
+                            
+                            if (!data_sets[[set_name]]$do_not_del) { div(style = "display: inline-block; float : right", 
+                                actionButton(btn_name, "Delete")
+                            ) }
         )))
-      
     }
-  }
-    
-    return(html_out)
+  } # end of else
+  
+  return(list(html_out = html_out, del_btns = del_btns))
   
 }
 

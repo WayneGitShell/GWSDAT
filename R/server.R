@@ -4,6 +4,10 @@
 
 server <- function(input, output, session) {
   DEBUG_MODE <- TRUE
+
+  # Increase upload file size to 30MB (default: 5MB)
+  options(shiny.maxRequestSize = 30*1024^2)
+  
  
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
@@ -23,7 +27,8 @@ server <- function(input, output, session) {
   prev_psplines_resolution <- "Default"
   prev_psplines_knots <- 6
   
-  # This will become the default for new users.
+  # Default data set including the Basic and Comprehensive example. Loaded in
+  # server mode. 
   default_session_file <- "GWSDAT_Examples.RData"
   
   # Default load options that will be overwritten by dialog boxes. 
@@ -893,6 +898,9 @@ server <- function(input, output, session) {
     
     updateTextInput(session, "dname_sess", value = new_name)
     
+    # Make it possible to delete this from the data manager. 
+    csite_tmp[[1]]$DO_NOT_DELETE <- FALSE
+    
     # Set the preview tables displayed on the right of the import panel.
     import_tables$new_csite <<- csite_tmp[[1]] 
     import_tables$DF_conc <<- csite_tmp[[1]]$All.Data$Cont.Data
@@ -1048,7 +1056,6 @@ server <- function(input, output, session) {
   #
   # Empty table header does not display correctly after 'Reset'. It is not triggering
   #  for reactive import_tables$shape_files, although the output$
-  #
   #
   output$tbl_shape_csv <- rhandsontable::renderRHandsontable({
     #input$reset_csv_import
@@ -1649,7 +1656,6 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$sidebar_menu, {
-    cat("* click on sidebar_menu\n")
     
     if (input$sidebar_menu == "menu_analyse") {
       shinyjs::hide("analyse_page")
@@ -1799,12 +1805,12 @@ server <- function(input, output, session) {
     
   
   # List of observers for Analyse buttons, one for each data set.
-  obsAnayseBtnList <- list()
+  obsAnalyseBtnList <- list()
   
   
   
   output$uiAnalyseDataList <- renderUI({
-    #cat("* in data_overview")
+    
     
     if (dataLoaded() < LOAD_COMPLETE) 
       loadDataSet()
@@ -1819,19 +1825,22 @@ server <- function(input, output, session) {
       )
       
     } else {
-      
+      # Data is present: Retrieve information on datasets and create an observer
+      # (button select click) that selects a specific data set for analysis.
       data_sets <- getDataInfo(csite_list)
 
       databoxes <- as.list(1:length(data_sets))
       
       databoxes <- lapply(databoxes, function(i) {
         
+          # Name of the Select button for each data set. 
           btName <- paste0("analyse_btn", i)
         
-          # creates an observer only if it doesn't already exists
-          if (is.null(obsAnayseBtnList[[btName]])) {
+          #  Creates an observer only if it doesn't already exists.
+          if (is.null(obsAnalyseBtnList[[btName]])) {
             
-            obsAnayseBtnList[[btName]] <<- observeEvent(input[[btName]], {
+            # Store observer function in list of buttons.
+            obsAnalyseBtnList[[btName]] <<- observeEvent(input[[btName]], {
               
               # Retrieve the aquifer select input value.
               aquifer <- eval(parse(text = paste0("input$aquifer_select_", i)))
@@ -1874,7 +1883,8 @@ server <- function(input, output, session) {
           }
       })
       
-      
+      # Create a shinydashboard box for each data set. Include a choice for the 
+      # Aquifer and the select button. 
       for (i in 1:length(data_sets)) {
         
         set_name <- names(data_sets)[i]
@@ -1882,10 +1892,7 @@ server <- function(input, output, session) {
         html_out <- tagList(html_out, fluidRow(
           shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
               title = set_name, 
-              #p(paste("Contaminants: ", paste(csite_list[[i]]$All.Data$cont_names, collapse = ", "))),
-              #p(paste("Wells: ", paste(csite_list[[i]]$All.Data$sample_loc$names, collapse = ", "))),
-              #p(paste0("Model method: ", csite_list[[i]]$GWSDAT_Options$ModelMethod))
-              
+                 
               div(style = "display: inline-block", 
                   selectInput(paste0("aquifer_select_", i), label = "Select Aquifer",
                           choices  = data_sets[[set_name]]$Aquifer,
@@ -2025,14 +2032,62 @@ server <- function(input, output, session) {
     output$uiDataAddExcel <- renderUI(uiImportExcelData(csite_list))                             
   })
   
+  obsDelBtnList <- list()
   
   output$uiDataManager <- renderUI({
-    cat("* in uiDataManager\n")
     
     # Observe load status of data.
     if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
     
-    uiDataManagerList(csite_list)
+    ret <- uiDataManagerList(csite_list)
+    
+    del_btns <- ret$del_btns
+    
+    # Check if a Delete button was created.
+    if (length(del_btns) > 0) {
+
+      databoxes <- as.list(1:length(del_btns))
+      databoxes <- lapply(databoxes, function(i) {
+      
+        # Extract the button name and the associated data name. Deletion is 
+        #  going to occur based on the data name. 
+        #FIXME: Maybe safer to use a unique ID.
+        btn_name <- del_btns[[i]]$btn_name
+        del_csite_name <- del_btns[[i]]$csite_name
+        
+        #  Creates an observer only if it doesn't already exists.
+        if (is.null(obsDelBtnList[[btn_name]])) {
+        
+          # Store observer function in list of buttons.
+          obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
+            #cat("* observeEvent: button clicked: ", btn_name, "\n")
+          
+            # Copy to temporary buffer
+            tmplist <- list()
+            
+            # Loop over the data list and copy names not matching 'del_csite_name'.
+            for (i in 1:length(csite_list)) {
+              
+            # If the name is not matching, copy the data to the temporary list.
+                if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
+                  tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
+            }
+            
+            # Write back the temporary buffer that contains the new data excluding
+            # the data set specified in 'del_csite_name'.
+            csite_list <<- tmplist
+            
+            # Need this to trigger observer that re-displays the new data list.
+            dataLoaded(dataLoaded() + 1)
+            
+            
+          })
+        }
+      }) # end of lapply
+    }
+    
+    return(ret$html_out)
+    
   })
   
   

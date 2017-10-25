@@ -12,22 +12,30 @@ getDataInfo <- function(csite_list) {
 
   data_list <- list()
 
+  # Loop over the data list and extract some useful information.
   for (i in 1:length(csite_list)) {
 
     sname <- csite_list[[i]]$GWSDAT_Options$SiteName
     aname <- csite_list[[i]]$Aquifer
     cnames <- csite_list[[i]]$All.Data$cont_names
     wnames <- csite_list[[i]]$All.Data$sample_loc$names
-
+    donotdel <- FALSE
+    
+    # If the DO_NOT_DELETE Flag exists, copy it.
+    if (!is.null(csite_list[[i]]$DO_NOT_DELETE))
+      donotdel <- csite_list[[i]]$DO_NOT_DELETE
+        
     if (is.null(data_list[[sname]]))
       data_list[[sname]] <- list(Aquifer = aname, csite_idx = i, 
                                  contaminants = cnames,
-                                 wells = wnames)
+                                 wells = wnames,
+                                 do_not_del = donotdel)
     else {
       data_list[[sname]]$Aquifer[[length(data_list[[sname]]$Aquifer) + 1]] <- aname
       data_list[[sname]]$csite_idx = c(data_list[[sname]]$csite_idx, i)
       data_list[[sname]]$contaminants = cnames
       data_list[[sname]]$wells = wnames
+      data_list[[sname]]$do_not_del = donotdel
       
     }
   }
