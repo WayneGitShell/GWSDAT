@@ -1,11 +1,4 @@
 
-getExcelSheets <- function(filein) {
-    
-    newfile <- paste0(filein$datapath, ".xlsx")
-    file.rename(filein$datapath, newfile)
-    
-    return(excel_sheets(newfile))
-}
 
 
 readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {

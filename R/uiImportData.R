@@ -63,7 +63,7 @@ uiImportSessionData <- function(valid_data_name) {
                         hr(),
                         
                         textInput("dname_sess", label = "Data Name", value = valid_data_name),
-                        fileInput('data_session_file', 'Load .rds File', accept = c('.Rdata', '.RData')),
+                        fileInput('data_session_file', 'Load .rds File', accept = c('.rds', '.RDS')),
                         actionButton("reset_sess_import", label = "Reset"),
                         actionButton("import_button_sess", label = "Add Data", icon("arrow-up"), 
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
@@ -200,7 +200,8 @@ uiImportExcelData <- function(csite_list) {
                         "Select the Excel file containing the GWSDAT data.",
                         hr(),
                         textInput("dname_xls", label = "Data Name", value = getValidDataName(csite_list)),
-                        fileInput('excel_import_file', 'Excel File', accept = c('.xls', '.xlsx')),
+                        fileInput('excel_import_file', 'Excel File', accept = c(".xls", ".xlsx")),
+                        # MIME type .xlsx: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
                         "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
                         fileInput('shape_files_xls', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
                                   multiple = TRUE),

@@ -1256,15 +1256,28 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$excel_import_file, {
-    cat("* in observeEvent: input$excel_import_file\n")
     
-    sheet_lst <- getExcelSheets(input$excel_import_file)
     
-    if (length(sheet_lst) > 1) {
-      # select sheet from dropdown
-      showModal(selectExcelSheetModal(sheet_lst))
-    } else {
-      readExcelSheet(input$excel_import_file, sheet_lst[[1]])
+    sheet_lst <- NULL
+    
+    # Attempt to read out sheets, which can be selected by user. 
+    tryCatch(
+      sheet_lst <- excel_sheets(input$excel_import_file$datapath),
+    error = function(e) {
+      showNotification(paste0("Failed to retrieve Excel sheets with error: ", e$message), 
+                       type = "error", duration = 10)
+      shinyjs::reset("excel_import_file")
+    })
+  
+    # 'sheet_lst' will _stay_ NULL if excel_sheets() fails. 
+    if (!is.null(sheet_lst)) {
+
+      if (length(sheet_lst) > 1) {
+        # select sheet from dropdown
+        showModal(selectExcelSheetModal(sheet_lst))
+      } else {
+        readExcelSheet(input$excel_import_file, sheet_lst[[1]])
+      }
     }
   }) 
   
