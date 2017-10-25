@@ -119,17 +119,22 @@ uiImportNewData <- function(valid_data_name) {
     
     shinydashboard::tabBox(title = "New Tables", width = 9, id = "tabbox_nd_import",
                            tabPanel("Contaminant Data", shiny::tagList(
-                             "Right click into table to add or remove rows.",
-                            rhandsontable::rHandsontableOutput("tbl_conc_nd"),
-                            div(style = "margin-top: 5px", actionButton("clear_tbl_conc_nd", "Clear Table")
-                           ))), 
+                             div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_nd", "Clear Table")),
+                             div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_nd", "Add Row", icon = icon("plus") )),
+                             rhandsontable::rHandsontableOutput("tbl_conc_nd"),
+                             HTML("<b>Hints</b>: Right click into table to remove rows. Select Well Names that already exist inside the Well Coordinates Tab.")
+                           )), 
+                           
                            tabPanel("Well Coordinates", shiny::tagList(
-                             "Right click into table to add or remove rows.",
+                             div(style = "display: inline-block; float:left", actionButton("clear_tbl_well_nd", "Clear Table")),
+                             div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_well_nd", "Add Row", icon = icon("plus") )),
                              rhandsontable::rHandsontableOutput("tbl_well_nd"),
-                             div(style = "margin-top: 5px", actionButton("clear_tbl_well_nd", "Clear Table")
-                           ))),
+                             HTML("<b>Hints</b>: Right click into table to remove rows.")
+                           )), 
+                           
                            tabPanel("Shape Files", {
-                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_nd"),
+                             shiny::tagList(
+                                            rhandsontable::rHandsontableOutput("tbl_shape_nd"),
                                             shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))))
                            })
     )
