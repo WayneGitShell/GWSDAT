@@ -85,7 +85,8 @@ formatData <- function(solute_data, sample_loc) {
 processData <- function(solute_data, sample_loc, GWSDAT_Options, 
                         Aq_sel = "Blank",
                         #shape_file_data = NULL,
-                        subst_napl_vals = "yes") {
+                        subst_napl_vals = "yes",
+                        verbose = TRUE) {
 
 
   #Pick up Electron Acceptors before deleting non-aquifer wells. 
@@ -108,12 +109,12 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
     return(NULL)
   }
   
-  
-  if (nrow(unique(well_tmp_data[,c("XCoord","YCoord")])) < nrow(well_tmp_data)) {
-    msg <- paste0("Aquifer \'", Aq_sel, "\': Non-Unique Well Coordinates found. Corresponding Groundwater elevations will be substituted by their mean value.")
-    showNotification(msg, type = "warning", duration = 10)
+  if (verbose) {
+    if (nrow(unique(well_tmp_data[,c("XCoord","YCoord")])) < nrow(well_tmp_data)) {
+      msg <- paste0("Aquifer \'", Aq_sel, "\': Non-Unique Well Coordinates found. Corresponding Groundwater elevations will be substituted by their mean value.")
+      showNotification(msg, type = "warning", duration = 10)
+    }
   }
-  
  
   
   # Keep concentration data that also exists in the well coordinate table.
@@ -188,13 +189,12 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   
   if (length(zero_conc) > 0) {
     Cont.Data <- Cont.Data[-zero_conc,] 
-    showNotification(paste0("Ignoring ", length(zero_conc), "/", length(non_zero), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),
+    if (verbose) showNotification(paste0("Ignoring ", length(zero_conc), "/", length(non_zero), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),
                      duration = 10)
   }
   
   if (nrow(Cont.Data) == 0)  {
-    showNotification(paste0("No concentration data (valid and ND) present for Aquifer ", Aq_sel, ", skipping."),
-                     type = "warning", duration = 10)
+    showNotification(paste0("No concentration data (valid and ND) present for Aquifer ", Aq_sel, ", skipping."), type = "warning", duration = 10)
   }
   
   # if (any(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"] == 0,na.rm = TRUE)) {
@@ -227,8 +227,8 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
     Cont.Data$Units[grep("mg",Cont.Data$Units)] <- "mg/l"
     Cont.Data$Result.Corr.ND[Cont.Data$Units == "mg/l"] <- 1000*Cont.Data$Result.Corr.ND[Cont.Data$Units=="mg/l"]
     Cont.Data$Result <- as.character(Cont.Data$Result)
-    Cont.Data$Result[Cont.Data$Units == "mg/l" & !Cont.Data$ND]<-as.character(Cont.Data$Result.Corr.ND[Cont.Data$Units=="mg/l" & !Cont.Data$ND])
-    Cont.Data$Result[Cont.Data$Units == "mg/l" & Cont.Data$ND]<-paste("ND<",as.character(Cont.Data$Result.Corr.ND[Cont.Data$Units=="mg/l" & Cont.Data$ND]),sep="")
+    Cont.Data$Result[Cont.Data$Units == "mg/l" & !Cont.Data$ND] <- as.character(Cont.Data$Result.Corr.ND[Cont.Data$Units=="mg/l" & !Cont.Data$ND])
+    Cont.Data$Result[Cont.Data$Units == "mg/l" & Cont.Data$ND]  <- paste("ND<",as.character(Cont.Data$Result.Corr.ND[Cont.Data$Units=="mg/l" & Cont.Data$ND]),sep="")
     Cont.Data$Result <- factor(as.character(Cont.Data$Result))
     Cont.Data$Units[Cont.Data$Units == "mg/l"] <- "ug/l"
     

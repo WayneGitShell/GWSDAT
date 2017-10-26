@@ -21,9 +21,9 @@ getDataInfo <- function(csite_list) {
     wnames <- csite_list[[i]]$All.Data$sample_loc$names
     donotdel <- FALSE
     
-    # If the DO_NOT_DELETE Flag exists, copy it.
-    if (!is.null(csite_list[[i]]$DO_NOT_DELETE))
-      donotdel <- csite_list[[i]]$DO_NOT_DELETE
+    # If the DO_NOT_MODIFY Flag exists, copy it.
+    if (!is.null(csite_list[[i]]$DO_NOT_MODIFY))
+      donotdel <- csite_list[[i]]$DO_NOT_MODIFY
         
     if (is.null(data_list[[sname]]))
       data_list[[sname]] <- list(Aquifer = aname, csite_idx = i, 

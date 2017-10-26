@@ -85,11 +85,7 @@ readExcel <- function(filein, sheet = NULL) {
     cat("* in readExcel()\n")
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
-    #browser()
-    # Fixme: read .ending from $name and append to newfile
-    #newfile <- paste0(filein$datapath, ".xlsx")
-    #file.rename(filein$datapath, newfile)
-    
+   
     conc_data <- NULL
     well_data <- NULL
     coord_unit <- "metres"

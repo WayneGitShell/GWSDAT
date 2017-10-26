@@ -1,8 +1,9 @@
 
-uiDataManagerList <- function(csite_list) {
+uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
 
   # Will contain the button information needed to create observers later.
   del_btns <- list()
+  edit_btns <- list()
   
   html_out <- tagList(
     #shinydashboard::box(width = 3, 
@@ -29,20 +30,35 @@ uiDataManagerList <- function(csite_list) {
     
     data_sets <- getDataInfo(csite_list)
     
-    btn_idx <- 1
     
     for (set_name in names(data_sets)) {
       
-      # If data set can be deleted, create button in side the box.
+      # If data set can be modified, create a 'Delete' am 'Edit' button.
       if (!data_sets[[set_name]]$do_not_del) {
         
-        # Create the name of the button and a safe to list with associated data name.
-        # This will be passed back to create an observer in the calling function.
-        btn_name <- paste0("del_data_btn", btn_idx)
-        del_btns[[length(del_btns) + 1]] <- list(btn_name = btn_name, 
+        # Create the name of the button but make sure it does not exists yet.
+        # The button name will be passed back to create an observer in the calling function.
+        for (i in 1:1000) {
+          del_btn_name <- paste0("del_data_btn", floor(runif(1,min = 1, max = 1000000)))
+          if (!del_btn_name %in% del_btns)
+            break
+        }
+        
+        del_btns[[length(del_btns) + 1]] <- list(btn_name = del_btn_name, 
                                                  csite_name = set_name)  
         
-        btn_idx <- btn_idx + 1
+        
+        # Edit Button: Create again a unique button name.
+        for (i in 1:1000) {
+          edit_btn_name <- paste0("edit_data_btn", floor(runif(1,min = 1, max = 1000000)))
+          if (!edit_btn_name %in% edit_btns)
+            break
+        }
+        
+        edit_btns[[length(edit_btns) + 1]] <- list(btn_name = edit_btn_name, 
+                                                   csite_name = set_name) 
+        
+        
       }
       
       html_out <- tagList(html_out, fluidRow(
@@ -54,14 +70,19 @@ uiDataManagerList <- function(csite_list) {
                                 HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", ")))
                                 ),
                             
-                            if (!data_sets[[set_name]]$do_not_del) { div(style = "display: inline-block; float : right", 
-                                actionButton(btn_name, "Delete")
-                            ) }
-        )))
+                            if (!data_sets[[set_name]]$do_not_del) { 
+                              div(style = "display: inline-block; float : right", 
+                                  actionButton(del_btn_name, "Delete"),
+                                  actionButton(edit_btn_name, "Edit"))
+                            }
+                            #if (data_sets[[set_name]]$do_not_del) { 
+                            #  div(style = "display: inline-block; float : right", actionButton(edit_btn_name, "Delete"))
+                            #}
+      )))
     }
   } # end of else
   
-  return(list(html_out = html_out, del_btns = del_btns))
+  return(list(html_out = html_out, del_btns = del_btns, edit_btns = edit_btns))
   
 }
 
@@ -120,7 +141,7 @@ uiImportNewData <- function(valid_data_name) {
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
     ),
     
-    shinydashboard::tabBox(title = "New Tables", width = 9, id = "tabbox_nd_import",
+    shinydashboard::tabBox(title = "", width = 9, id = "tabbox_nd_import",
                            tabPanel("Contaminant Data", shiny::tagList(
                              div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_nd", "Clear Table")),
                              div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_nd", "Add Row", icon = icon("plus") )),
@@ -258,6 +279,59 @@ uiImportExcelData <- function(csite_list) {
     ))
   
 }
+
+
+uiEditData <- function(csite) {
+  
+  fluidPage(
+    div(style = "margin-bottom: 10px", actionButton("gotoDataManager_e", label = "", icon = icon("arrow-left"))),
+    
+    shinydashboard::box(width = 3, solidHeader = TRUE, status = "primary", 
+                        
+                        
+                        h3("Edit Data"),
+                        "Enter the data directly or copy/paste into the tables.",
+                        hr(),
+                        
+                        textInput("dname_ed", label = "Data Name", value = csite$GWSDAT_Options$SiteName),
+                        #"Shape data editing not implemented.",
+                        #fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
+                        #          multiple = TRUE),
+                        selectInput("coord_unit_ed", label = "Coordinate Unit", choices = coord_units,
+                                    selected = csite$All.Data$sample_loc$coord_unit, width = "50%"),
+                        hr(),
+                        actionButton("reset_ed_data", label = "Reset"),
+                        actionButton("save_button_ed", label = "Save", icon("save"), 
+                                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+    ),
+    
+    shinydashboard::tabBox(title = "", width = 9, id = "tabbox_nd_import",
+                           tabPanel("Contaminant Data", shiny::tagList(
+                             #div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_ed", "Clear Table")),
+                             div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_ed", "Add Row", icon = icon("plus") )),
+                             rhandsontable::rHandsontableOutput("tbl_conc_ed"),
+                             HTML("<b>Hints</b>: Right click into table to remove rows. Select Well Names that already exist inside the Well Coordinates Tab.")
+                           )), 
+                           
+                           tabPanel("Well Coordinates", shiny::tagList(
+                             #div(style = "display: inline-block; float:left", actionButton("clear_tbl_well_ed", "Clear Table")),
+                             div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_well_ed", "Add Row", icon = icon("plus") )),
+                             rhandsontable::rHandsontableOutput("tbl_well_ed"),
+                             HTML("<b>Hints</b>: Right click into table to remove rows.")
+                           ))#, 
+                           
+                           # tabPanel("Shape Files", {
+                           #   shiny::tagList(
+                           #     HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                           #     shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))),
+                           #     rhandsontable::rHandsontableOutput("tbl_shape_nd")
+                           #   )
+                           # })
+    )
+  )
+}
+
+
 
 #
 # Previously, I had a single call to output$uiDataAddExcel (was inside server()). 

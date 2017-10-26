@@ -870,7 +870,9 @@ server <- function(input, output, session) {
                      GWSDAT_Options = GWSDAT_Options,
                      Traffic.Lights = NULL,
                      ui_attr        = ui_attr,
-                     Aquifer        = Aq_sel
+                     Aquifer        = Aq_sel,
+                     raw_contaminant_tbl = import_tables$DF_conc,
+                     raw_well_tbl = import_tables$DF_well
       )
       
       csite_list[[length(csite_list) + 1]] <<- csite 
@@ -895,13 +897,41 @@ server <- function(input, output, session) {
     
   }
   
+  ## Data Manager Landing ######################################################
+  
+  
+  showDataMng <- function() {
+    shinyjs::hide(id = "uiDataAddSession")
+    shinyjs::hide(id = "uiDataAddCSV")
+    shinyjs::hide(id = "uiDataAddNew")
+    shinyjs::hide(id = "uiDataAddExcel")
+    shinyjs::hide(id = "uiDataEdit")
+    
+    shinyjs::show(id = "uiDataManager")
+    
+  }
+  
+  
+  # Go to Load Session Data (Button click).
+  observeEvent(input$add_session_data,  {
+    cat("* in observeEvent: add_session_data (line 1189)\n")
+    shinyjs::show(id = "uiDataAddSession")
+    shinyjs::hide(id = "uiDataManager")
+  })
+  
+  # Go (back) to Data Manager.
+  shinyjs::onclick("gotoDataManager_a", showDataMng())
+  shinyjs::onclick("gotoDataManager_b", showDataMng())
+  shinyjs::onclick("gotoDataManager_c", showDataMng())
+  shinyjs::onclick("gotoDataManager_d", showDataMng())
+  shinyjs::onclick("gotoDataManager_e", showDataMng())
   
   
   ## Load Session Data ().rds ##################################################
  
   
   output$tbl_conc_sess <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_conc_sess <- renderRHandsontable()\n")
+    #cat("* in tbl_conc_sess <- renderRHandsontable()\n")
     
     if (is.null(import_tables$DF_conc)) {
       outDF <- data.frame(WellName = character(), Constituent = numeric(),
@@ -1000,7 +1030,7 @@ server <- function(input, output, session) {
     updateTextInput(session, "dname_sess", value = new_name)
     
     # Make it possible to delete this from the data manager. 
-    csite_tmp[[1]]$DO_NOT_DELETE <- FALSE
+    csite_tmp[[1]]$DO_NOT_MODIFY <- FALSE
     
     # Set the preview tables displayed on the right of the import panel.
     import_tables$new_csite <- csite_tmp[[1]] 
@@ -1151,7 +1181,7 @@ server <- function(input, output, session) {
   # Triggers each time input$tbl_conc_nd (the rhandsontable) changes.
   # Converts the hot table to the data.frame in import_tables.
   observe({
-    cat("* in observe: input$tbl_conc_nd\n")
+    #cat("* in observe: input$tbl_conc_nd\n")
     
     if (is.null(input$tbl_conc_nd)) {
       DF <- import_tables$DF_conc
@@ -1203,7 +1233,7 @@ server <- function(input, output, session) {
   
   # Triggers each time input$tbl_conc_nd (the rhandsontable) changes
   observe({
-    cat("* in observe: input$tbl_well_nd\n")
+    #cat("* in observe: input$tbl_well_nd\n")
     
     if (is.null(input$tbl_well_nd)) {
       DF <- import_tables$DF_well
@@ -1216,7 +1246,7 @@ server <- function(input, output, session) {
   
   
   output$tbl_well_nd <- rhandsontable::renderRHandsontable({
-    cat("\n* in tbl_well_nd <- renderRHandsontable()\n")
+    #cat("\n* in tbl_well_nd <- renderRHandsontable()\n")
     
     isolate(DF <- import_tables$DF_well)
     
@@ -1251,6 +1281,50 @@ server <- function(input, output, session) {
     
     importData(input$dname_nd)
   })
+  
+  observeEvent(input$clear_tbl_conc_nd, {
+    createNewConcTable()  
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
+  })
+  
+  observeEvent(input$clear_tbl_well_nd, {
+    createNewWellTable()
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonWell(renderRHandsonWell() + 1)
+  })
+  
+  
+  observeEvent(input$addrow_tbl_conc_nd, {
+    
+    DF <- import_tables$DF_conc
+    
+    # Take last row, modify and append (rbind).
+    new_row <- DF[nrow(DF),]
+    new_row$Constituent <- ""
+    new_row$Result <- ""
+    rownames(new_row) <- (nrow(DF) + 1)
+    import_tables$DF_conc <- rbind(import_tables$DF_conc, new_row)
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
+    
+  })
+  
+  observeEvent(input$addrow_tbl_well_nd, {
+    
+    DF <- import_tables$DF_well
+    
+    new_row <- DF[nrow(DF),]
+    rownames(new_row) <- (nrow(DF) + 1)
+    
+    import_tables$DF_well <- rbind(import_tables$DF_well, new_row)
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonWell(renderRHandsonWell() + 1)
+    
+  })
+  
   
   
   ## Import CSV data ###########################################################
@@ -1405,7 +1479,7 @@ server <- function(input, output, session) {
     shinyjs::hide("removeshp_csv")  
   })
   
-  
+  observeEvent(input$import_button_csv, importData(input$dname_csv))
   
   
   ## Import Excel data #########################################################
@@ -1578,36 +1652,278 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
-  observeEvent(input$import_button_csv, importData(input$dname_csv))
   observeEvent(input$import_button_xls, importData(input$dname_xls))
   
   
+  ## Edit Data #################################################################
+  
+  # Triggers each time input$tbl_conc_nd (the rhandsontable) changes.
+  # Converts the hot table to the data.frame in import_tables.
+  observe({
+    cat("* in observe: input$tbl_conc_ed\n")
     
-  # Go (back) to Data Manager.
-  shinyjs::onclick("gotoDataManager_a", showDataMng())
-  shinyjs::onclick("gotoDataManager_b", showDataMng())
-  shinyjs::onclick("gotoDataManager_c", showDataMng())
-  shinyjs::onclick("gotoDataManager_d", showDataMng())
+    if (is.null(input$tbl_conc_ed)) {
+      DF <- import_tables$DF_conc
+    } else {
+      DF <- hot_to_r(input$tbl_conc_ed)
+    }
+    
+    import_tables$DF_conc <- DF  # update import tables
+  })
+  
+  
+  
+  # For some reason double execution of this observer takes place after hitting 
+  #  "Add New Data"
+  output$tbl_conc_ed <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_conc_ed <- renderRHandsontable()\n")
+    
+    # Isolated because it shall not react to changes in 'import_tables$DF_conc'. 
+    # Otherwise there will be too much rendering taking place.
+    # As alternative, the reactive variable renderRHandsonConc() below is used to 
+    # implement selective reactivity (on enter panel, reset, clear table)
+    isolate(DF <- import_tables$DF_conc)
+    
+    # Observe changes triggered from another place.
+    renderRHandsonConc()
+    
+    # Retrieve well choices (exclude empty string) - this reacts to changes in import_tables$DF_well.
+    well_choices <- unique(import_tables$DF_well$WellName)
+    well_choices <- as.list(well_choices[-which(well_choices == "")]) 
+    
 
-  showDataMng <- function() {
-    shinyjs::hide(id = "uiDataAddSession")
-    shinyjs::hide(id = "uiDataAddCSV")
-    shinyjs::hide(id = "uiDataAddNew")
-    shinyjs::hide(id = "uiDataAddExcel")
+    hot <- rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
+                                        stretchH = "all", height = 605) %>%
+      hot_context_menu(allowColEdit = FALSE) %>% # if useTypes = TRUE, allowColEdit will be FALSE anyway
+      hot_col(col = "WellName", type = "dropdown", source = well_choices, strict = TRUE) %>%
+      hot_col(col = "Units", type = "dropdown", source = conc_units) %>%
+      hot_col(col = "Flags", type = "dropdown", source = conc_flags) 
+    
+    # With this other formats still produce "Invalid date". correctFormat is set to TRUE.
+    #hot <- hot %>% hot_col(col = "SampleDate", type = "date", allowInvalid = TRUE)
+    
+    # Tooltip (hot_cell) causes stretchH to be ignored (also in Dev-version 0.3.4.9).
+    #hot <- hot %>% hot_cell(1, 1, "The Well name must also appear in the well coordinate table. If not, the row will be ignored.") #%>%
+    #hot <- hot %>% hot_cell(1, 2, "The name of the constituent/contaminant can include white spaces and numbers.")
+    
+    return(hot)
+  })
+  
+
+  observe({
+    cat("* in observe: input$tbl_well_ed\n")
+    
+    if (is.null(input$tbl_well_ed)) {
+      DF <- import_tables$DF_well
+    } else {
+      DF <- hot_to_r(input$tbl_well_ed)
+    }
+    
+    import_tables$DF_well <- DF
+  })
+  
+  
+  output$tbl_well_ed <- rhandsontable::renderRHandsontable({
+    cat("\n* in tbl_well_ed <- renderRHandsontable()\n")
+    
+    isolate(DF <- import_tables$DF_well)
+    
+    renderRHandsonWell()
+    
+    hot <- rhandsontable::rhandsontable(DF, useTypes = TRUE, stretchH = "all", height = 605) 
+  })
+  
+  
+  observeEvent(input$save_button_ed, {
+    
+    import_tables$Coord_unit <- input$coord_unit_ed
+
+     if (!input$coord_unit_ed %in% coord_units) {
+      showNotification("Coordinate unit is not valid. Use \'metres\' or \'feet\'.", type = "error", duration = 10)
+      return(NULL)
+    }
+    
+    if (input$dname_ed == "") {
+      showNotification("Data name can not be an empty string.", type = "error", duration = 10)
+      return(NULL)
+    }
+    
+    # If the name changed, write to csite_list and notify that Data Manager 
+    # needs a re-render.
+    if (csite$GWSDAT_Options$SiteName != input$dname_ed) {
+      
+      # Check if any other data set has the new name. 
+      check_name <- getValidDataName(csite_list, propose_name = input$dname_ed)
+      
+      if (check_name != input$dname_ed) {
+        showNotification("Data name already exists. Please enter a unique name that is not taken by any other data set.", 
+                         type = "warning", duration = 10)
+        return(NULL)
+      }
+      
+      # Change the name inside the original data list. 
+      for (i in csite_selected_idx) 
+        csite_list[[i]]$GWSDAT_Options$SiteName <<- input$dname_ed
+      
+      # Signal the Data Manager List to be re-rendered.
+      dataLoaded(dataLoaded() + 1)
+    }
+     
+    #FIXME: Do I really need to update everything when only the coordinate unit changes?
+    # Force update to be on the save side.
+    needs_processing <- FALSE
+    if (input$coord_unit_ed != csite$All.Data$sample_loc$coord_unit)
+      needs_processing <- TRUE
+    
+    # Check if contaminant table changed.
+    if (!isTRUE( all.equal(import_tables$DF_conc, csite$raw_contaminant_tbl, check.attributes = FALSE)))
+      needs_processing <- TRUE
+    
+    # Check if well table changed.
+    if (!isTRUE( all.equal(import_tables$DF_well, csite$raw_well_tbl, check.attributes = FALSE)))
+      needs_processing <- TRUE
+    
+    
+    if (needs_processing) {
+      
+      # Do import by creating novel data sets. This is very similar to importData(),
+      # but a little slimmer: 
+      #    - no shape file handling instead the shape data is copied.
+      #    - GWSDAT_Options is not created from scratch but copied.
+      
+      if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
+        showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
+                         type = "error", duration = 10)      
+        return(NULL)
+      }
+      
+      if (is.null(DF_conc <- parseTable(import_tables$DF_conc, type = "contaminant", 
+                                        wells = unique(DF_well$WellName), units = conc_units,
+                                        flags = conc_flags))) {
+        showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
+                         type = "error", duration = 10)      
+        return(NULL)
+      }
+      
+      # Copy Options. No need to keep information on shape file path. The actual
+      # shape data is located in 'csite$All.Data$shape_file_data', which is copied
+      # further below.
+      GWSDAT_Options <- csite$GWSDAT_Options
+      GWSDAT_Options$ShapeFileNames <- NULL
+      
+      # Change Well Table format to comply with internal format.  
+      DF_well <- list(data = DF_well, coord_unit = import_tables$Coord_unit)
+      all_data <- formatData(DF_conc, DF_well)
+      
+      # Create a unique data set 'csite' for each Aquifer.
+      for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
+        
+        pr_dat <- processData(all_data$solute_data, all_data$sample_loc, 
+                              GWSDAT_Options, Aq_sel, verbose = FALSE)
+        
+        # Copy shape data.
+        pr_dat$shape_data <- csite$All.Data$shape_data
+        
+        if (is.null(pr_dat)) next
+        
+        ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
+        
+        # Build list with all data.
+        ctmp <- list(All.Data       = pr_dat,
+                     Fitted.Data    = NULL,
+                     GWSDAT_Options = GWSDAT_Options,
+                     Traffic.Lights = NULL,
+                     ui_attr        = ui_attr,
+                     Aquifer        = Aq_sel,
+                     raw_contaminant_tbl = import_tables$DF_conc,
+                     raw_well_tbl = import_tables$DF_well
+        )
+        
+        csite_list[[length(csite_list) + 1]] <- ctmp 
+        
+      }
+      
+      # Now we need to delete the original data sets. We did not just replace the
+      # original data sets because the number of Aquifer can change and, thus, the
+      # number of data sets. 
+      
+      tmplist <- list()
+      
+      # Loop over the data list and copy those not matching csite_selected_idx.
+      for (i in 1:length(csite_list)) {
+        
+        if (!(i %in% csite_selected_idx))
+          tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
+      }
+      
+      # Write back the temporary buffer that contains the updated data list.
+      csite_list <<- tmplist
+
+      # Signal re-rendering of Data Manager List.
+      dataLoaded(dataLoaded() + 1)
+      
+    } 
     
     shinyjs::show(id = "uiDataManager")
-  }
-  
-  
-  # Go to Load Session Data (Button click).
-  observeEvent(input$add_session_data,  {
-    cat("* in observeEvent: add_session_data (line 1189)\n")
-    shinyjs::show(id = "uiDataAddSession")
-    shinyjs::hide(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataEdit")
+   
   })
+  
+  
+  # Restore data.
+  observeEvent(input$reset_ed_data,  {
+    #cat("* in observeEvent: reset_ed_data\n")
+     
+     
+    # Write back the original data.
+    import_tables$DF_conc <- csite$raw_contaminant_tbl
+    import_tables$DF_well <- csite$raw_well_tbl
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
+    renderRHandsonWell(renderRHandsonWell() + 1)
+    
+    # Reset data name.
+    updateTextInput(session, "dname_ed", value = csite$GWSDAT_Options$SiteName)
+    
+  })
+  
+  
+  observeEvent(input$addrow_tbl_conc_ed, {
+    
+    DF <- import_tables$DF_conc
+    
+    # Take last row, modify and append (rbind).
+    new_row <- DF[nrow(DF),]
+    new_row$Constituent <- ""
+    new_row$Result <- ""
+    rownames(new_row) <- (nrow(DF) + 1)
+    import_tables$DF_conc <- rbind(import_tables$DF_conc, new_row)
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
+    
+  })
+  
+  observeEvent(input$addrow_tbl_well_ed, {
+    
+    DF <- import_tables$DF_well
+    
+    new_row <- DF[nrow(DF),]
+    rownames(new_row) <- (nrow(DF) + 1)
+    
+    import_tables$DF_well <- rbind(import_tables$DF_well, new_row)
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonWell(renderRHandsonWell() + 1)
+    
+  })
+  
+  
+  ## Analyis Panel #############################################################
+  
+    
+ 
   
   
   # Follow link to 'Boundary Estimate' tabPanel.
@@ -1846,6 +2162,7 @@ server <- function(input, output, session) {
       shinyjs::hide(id = "uiDataAddCSV")
       shinyjs::hide(id = "uiDataAddExcel")
       shinyjs::hide(id = "uiDataAddSession") 
+      shinyjs::hide(id = "uiDataEdit")
     }
     
   })
@@ -2090,49 +2407,6 @@ server <- function(input, output, session) {
 
   
   
-  observeEvent(input$clear_tbl_conc_nd, {
-    createNewConcTable()  
-    # Triggers re-rendering of rhandsontable.
-    renderRHandsonConc(renderRHandsonConc() + 1)
-  })
-  
-  observeEvent(input$clear_tbl_well_nd, {
-    createNewWellTable()
-    # Triggers re-rendering of rhandsontable.
-    renderRHandsonWell(renderRHandsonWell() + 1)
-  })
-  
-  
-  observeEvent(input$addrow_tbl_conc_nd, {
-    
-    DF <- import_tables$DF_conc
-    
-    # Take last row, modify and append (rbind).
-    new_row <- DF[nrow(DF),]
-    new_row$Constituent <- ""
-    new_row$Result <- ""
-    rownames(new_row) <- (nrow(DF) + 1)
-    import_tables$DF_conc <- rbind(import_tables$DF_conc, new_row)
-    
-    # Triggers re-rendering of rhandsontable.
-    renderRHandsonConc(renderRHandsonConc() + 1)
-   
-  })
-  
-  observeEvent(input$addrow_tbl_well_nd, {
-    
-    DF <- import_tables$DF_well
-    
-    new_row <- DF[nrow(DF),]
-    rownames(new_row) <- (nrow(DF) + 1)
-    
-    import_tables$DF_well <- rbind(import_tables$DF_well, new_row)
-    
-    # Triggers re-rendering of rhandsontable.
-    renderRHandsonWell(renderRHandsonWell() + 1)
-    
-  })
-  
   
   
   
@@ -2191,77 +2465,25 @@ server <- function(input, output, session) {
   obsEditBtnList <- list()
   
   
-  createDelBtnObserver <- function(del_btns) {
+  createDelBtnObserver <- function(btns) {
     
     # Check if a Delete button was created.
-    if (length(del_btns) > 0) {
-      
-      databoxes <- as.list(1:length(del_btns))
+    if (length(btns) > 0) {
+      cat(" + creating del button observers\n")
+      databoxes <- as.list(1:length(btns))
       databoxes <- lapply(databoxes, function(i) {
         
         # Extract the button name and the associated data name. Deletion is 
         #  going to occur based on the data name. 
         #FIXME: Maybe safer to use a unique ID.
-        btn_name <- del_btns[[i]]$btn_name
-        del_csite_name <- del_btns[[i]]$csite_name
+        btn_name <- btns[[i]]$btn_name
+        csite_name <- btns[[i]]$csite_name
         
         #  Creates an observer only if it doesn't already exists.
         if (is.null(obsDelBtnList[[btn_name]])) {
           
           # Store observer function in list of buttons.
           obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
-            #cat("* observeEvent: button clicked: ", btn_name, "\n")
-            
-            # Copy to temporary buffer
-            tmplist <- list()
-            
-            # Loop over the data list and copy names not matching 'del_csite_name'.
-            for (i in 1:length(csite_list)) {
-              
-              # If the name is not matching, copy the data to the temporary list.
-              if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
-                tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
-            }
-            
-            # Write back the temporary buffer that contains the new data excluding
-            # the data set specified in 'del_csite_name'.
-            csite_list <<- tmplist
-            
-            # Need this to trigger observer that re-displays the new data list.
-            dataLoaded(dataLoaded() + 1)
-            
-            
-          })
-        }
-      }) # end of lapply
-    }
-  }
-  
-  
-  createBtnObserver <- function(del_btns) {
-    
-    if (length(del_btns) == 0)
-      return(NULL)
-    
-    btn_list <- list()
-    
-    # Check if a Delete button was created.
-    if (length(del_btns) > 0) {
-      cat("* creating del button, see ", length(del_btns), "\n")
-      databoxes <- as.list(1:length(del_btns))
-      databoxes <- lapply(databoxes, function(i) {
-        
-        # Extract the button name and the associated data name. Deletion is 
-        #  going to occur based on the data name. 
-        #FIXME: Maybe safer to use a unique ID.
-        btn_name <- del_btns[[i]]$btn_name
-        del_csite_name <- del_btns[[i]]$csite_name
-        
-        #  Creates an observer only if it doesn't already exists.
-        if (is.null(btn_list[[btn_name]])) {
-          
-          # Store observer function in list of buttons.
-          btn_list[[btn_name]] <- observeEvent(input[[btn_name]], {
             cat("* observeEvent: button clicked: ", btn_name, "\n")
             
             # Copy to temporary buffer
@@ -2271,7 +2493,7 @@ server <- function(input, output, session) {
             for (i in 1:length(csite_list)) {
               
               # If the name is not matching, copy the data to the temporary list.
-              if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
+              if (csite_list[[i]]$GWSDAT_Options$SiteName != csite_name)
                 tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
             }
             
@@ -2284,64 +2506,138 @@ server <- function(input, output, session) {
             
             
           })
+        } else {
+          # This should never happen but make sure the very unlikely case shows up.
+          stop("Attempting to create Delete button with already existing ID. Aborting. Fix this!")
         }
       }) # end of lapply
     }
-    
-    return(btn_list)
   }
   
+  createEditBtnObserver <- function(btns) {
+    
+    # Check if a Delete button was created.
+    if (length(btns) > 0) {
+      cat(" + creating edit button observers\n")
+      databoxes <- as.list(1:length(btns))
+      databoxes <- lapply(databoxes, function(i) {
+        
+        btn_name <- btns[[i]]$btn_name
+        csite_name <- btns[[i]]$csite_name
+        
+        #  Creates an observer only if it doesn't already exists.
+        if (is.null(obsEditBtnList[[btn_name]])) {
+          
+          # Store observer function in list of buttons.
+          obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
+            cat("* observeEvent: button clicked: ", btn_name, "\n")
+            
+            # Find data set by name.
+            csite_selected_idx <<- c()
+            for (i in 1:length(csite_list)) {
+              if (csite_list[[i]]$GWSDAT_Options$SiteName == csite_name) {
+                csite <<- csite_list[[i]]
+                
+                # One data set can contain multiple sub-sets (one for each Aquifer)
+                csite_selected_idx <<- c(csite_selected_idx, i)
+              }
+            }
+            
+            # Copy tables
+            import_tables$DF_conc <- csite$raw_contaminant_tbl
+            import_tables$DF_well <- csite$raw_well_tbl
+            
+            # Copy shape data? Can't copy no files but maybe objects that can be 
+            # deleted.
+            # ...
+            
+            # Switch to Edit panel.
+            shinyjs::show(id = "uiDataEdit")
+            shinyjs::hide(id = "uiDataManager")
+            
+            output$uiDataEdit <- renderUI(uiEditData(csite))
+            
+          })
+        } else {
+          # This should never happen but make sure the very unlikely case shows up.
+          stop("Attempting to create Delete button with already existing ID. Aborting. Fix this!")
+        }
+      }) # end of lapply
+    }
+  }
+  
+  #
+  # Attempted to create generic function to create buttons, but content of 
+  #  button observer changes (Delete or Edit action), so I won't go deeper here
+  #  ,although, I think it is possible.
+  #
+  #
+  # createBtnObserver <- function(del_btns) {
+  #   
+  #   if (length(del_btns) == 0)
+  #     return(NULL)
+  #   
+  #   btn_list <- list()
+  #   
+  #   # Check if a Delete button was created.
+  #   if (length(del_btns) > 0) {
+  #     cat("* creating del button, see ", length(del_btns), "\n")
+  #     databoxes <- as.list(1:length(del_btns))
+  #     databoxes <- lapply(databoxes, function(i) {
+  #       
+  #       # Extract the button name and the associated data name. Deletion is 
+  #       #  going to occur based on the data name. 
+  #       #FIXME: Maybe safer to use a unique ID.
+  #       btn_name <- del_btns[[i]]$btn_name
+  #       del_csite_name <- del_btns[[i]]$csite_name
+  #       
+  #       #  Creates an observer only if it doesn't already exists.
+  #       if (is.null(btn_list[[btn_name]])) {
+  #         cat(" + creating del button ", btn_name, "\n")
+  #         # Store observer function in list of buttons.
+  #         btn_list[[btn_name]] <- observeEvent(input[[btn_name]], {
+  #           cat("* observeEvent: button clicked: ", btn_name, "\n")
+  #           
+  #           # Copy to temporary buffer
+  #           tmplist <- list()
+  #           
+  #           # Loop over the data list and copy names not matching 'del_csite_name'.
+  #           for (i in 1:length(csite_list)) {
+  #             
+  #             # If the name is not matching, copy the data to the temporary list.
+  #             if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
+  #               tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
+  #           }
+  #           
+  #           # Write back the temporary buffer that contains the new data excluding
+  #           # the data set specified in 'del_csite_name'.
+  #           csite_list <<- tmplist
+  #           
+  #           # Need this to trigger observer that re-displays the new data list.
+  #           dataLoaded(dataLoaded() + 1)
+  #           
+  #           
+  #         })
+  #       }
+  #     }) # end of lapply
+  #   }
+  #   
+  #   return(btn_list)
+  # }
+  
   output$uiDataManager <- renderUI({
+    cat("* in uiDataManager <- renderUI()\n")
     
     # Observe load status of data.
     if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
     
-    ret <- uiDataManagerList(csite_list)
+    ret <- uiDataManagerList(csite_list, del_btns = names(obsDelBtnList),
+                             edit_btns = names(obsEditBtnList))
     
-    obsDelBtnList <<- createBtnObserver(ret$del_btns)
     
-    # # Check if a Delete button was created.
-    # if (length(del_btns) > 0) {
-    # 
-    #   databoxes <- as.list(1:length(del_btns))
-    #   databoxes <- lapply(databoxes, function(i) {
-    #   
-    #     # Extract the button name and the associated data name. Deletion is 
-    #     #  going to occur based on the data name. 
-    #     #FIXME: Maybe safer to use a unique ID.
-    #     btn_name <- del_btns[[i]]$btn_name
-    #     del_csite_name <- del_btns[[i]]$csite_name
-    #     
-    #     #  Creates an observer only if it doesn't already exists.
-    #     if (is.null(obsDelBtnList[[btn_name]])) {
-    #     
-    #       # Store observer function in list of buttons.
-    #       obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
-    #         #cat("* observeEvent: button clicked: ", btn_name, "\n")
-    #       
-    #         # Copy to temporary buffer
-    #         tmplist <- list()
-    #         
-    #         # Loop over the data list and copy names not matching 'del_csite_name'.
-    #         for (i in 1:length(csite_list)) {
-    #           
-    #         # If the name is not matching, copy the data to the temporary list.
-    #             if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
-    #               tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
-    #         }
-    #         
-    #         # Write back the temporary buffer that contains the new data excluding
-    #         # the data set specified in 'del_csite_name'.
-    #         csite_list <<- tmplist
-    #         
-    #         # Need this to trigger observer that re-displays the new data list.
-    #         dataLoaded(dataLoaded() + 1)
-    #         
-    #         
-    #       })
-    #     }
-    #   }) # end of lapply
-    # }
+    createDelBtnObserver(ret$del_btns)
+    
+    createEditBtnObserver(ret$edit_btns)
     
     return(ret$html_out)
     
@@ -2452,8 +2748,6 @@ server <- function(input, output, session) {
     loadOptions$subst_napl <<- "yes"
     dataLoaded(dataLoaded() + 1)
   })
-  
-  
   
  
 } # end server section

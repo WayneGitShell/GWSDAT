@@ -58,7 +58,8 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
         shinyjs::hidden( uiOutput("uiDataAddSession")),
         shinyjs::hidden( uiOutput("uiDataAddNew")),
         shinyjs::hidden( uiOutput("uiDataAddCSV")),
-        shinyjs::hidden( uiOutput("uiDataAddExcel"))
+        shinyjs::hidden( uiOutput("uiDataAddExcel")),
+        shinyjs::hidden( uiOutput("uiDataEdit"))
         
       ),
       

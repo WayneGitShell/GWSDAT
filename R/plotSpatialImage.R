@@ -107,7 +107,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   if (nrow(Bad.Wells) > 0) {Bad.Wells$WellName <- paste("<",Bad.Wells$WellName,">",sep = "")}
   
   
-  #browser()
+ 
   lev_cut <- csite$ui_attr$lev_cut
   if (csite$ui_attr$pred_interval == "% sd") {
     lev_cut <- csite$ui_attr$sd_lev_cut
@@ -442,7 +442,7 @@ makeSpatialAnimation <- function(csite, substance,
 
     # Make the plot and add to powerpoint.
     mytemp <- tempfile(fileext = ".wmf")
-    #browser()
+   
     win.metafile(mytemp, width = width, height = height) 
     plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
     dev.off()
