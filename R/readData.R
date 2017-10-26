@@ -89,7 +89,7 @@ readExcel <- function(filein, sheet = NULL) {
     # Fixme: read .ending from $name and append to newfile
     #newfile <- paste0(filein$datapath, ".xlsx")
     #file.rename(filein$datapath, newfile)
-    browser()
+    
     conc_data <- NULL
     well_data <- NULL
     coord_unit <- "metres"

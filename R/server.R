@@ -34,11 +34,6 @@ server <- function(input, output, session) {
   # Default load options that will be overwritten by dialog boxes. 
   loadOptions <- list(aquifer = NULL, subst_napl = NULL)
   
-  # Define headers for import data.
-  conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
-  well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
-  conc_units  <- c("ng/l", "ug/l", "mg/l", "Level", "pH")
-  conc_flags  <- c("", "E-acc", "Omit", "NotInNAPL", "Redox")
   
   import_tables <- reactiveValues(DF_conc = NULL, 
                                   DF_well = NULL,
@@ -806,18 +801,6 @@ server <- function(input, output, session) {
   # Can I move parts (or all) of this function into importTables?
   importData <- function(dname) {
     
-    # Make several checks before attempting to import the tables.
-    
-    # if (validateTable(import_tables$DF_conc) == FALSE) {
-    #   showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
-    #   return(NULL)
-    # }
-    # 
-    # if (validateTable(import_tables$DF_well) == FALSE) {
-    #   showNotification("Well coordinate table was not loaded properly. Aborted.", type = "error")
-    #   return(NULL)
-    # }
-    
     if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
       showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
                        type = "error", duration = 10)      
@@ -833,9 +816,6 @@ server <- function(input, output, session) {
     }
     
     
-    
-    # return() #browser()
-   
     # Check if data name is valid, i.e. does not already exists. If getValidDataName()
     # returns a different name than the proposed one (this one), the data name is 
     # already taken. Warn the user and do nothing.
@@ -860,7 +840,9 @@ server <- function(input, output, session) {
     # Change Well Table format to comply with internal format.  
     DF_well <- list(data = DF_well, coord_unit = import_tables$Coord_unit)
     all_data <- formatData(DF_conc, DF_well)
-    browser()
+    
+    
+    
     # Add shape files to GWSDAT_Options if present.
     if (!is.null(import_tables$shape_files)) {
       if (length(import_tables$shape_files$shp_files) > 0) {
@@ -1156,7 +1138,7 @@ server <- function(input, output, session) {
     cat("* in tbl_shape_nd\n")
     if (is.null(import_tables$shape_files))
       return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
-                                          useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                          useTypes = FALSE, rowHeaders = NULL, stretchH = "all",
                                           height = 400, readOnly = TRUE))
     
     createShapeFileList(import_tables$shape_files)
@@ -2206,22 +2188,17 @@ server <- function(input, output, session) {
   })
   
   obsDelBtnList <- list()
+  obsEditBtnList <- list()
   
-  output$uiDataManager <- renderUI({
-    
-    # Observe load status of data.
-    if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
-    
-    ret <- uiDataManagerList(csite_list)
-    
-    del_btns <- ret$del_btns
+  
+  createDelBtnObserver <- function(del_btns) {
     
     # Check if a Delete button was created.
     if (length(del_btns) > 0) {
-
+      
       databoxes <- as.list(1:length(del_btns))
       databoxes <- lapply(databoxes, function(i) {
-      
+        
         # Extract the button name and the associated data name. Deletion is 
         #  going to occur based on the data name. 
         #FIXME: Maybe safer to use a unique ID.
@@ -2230,20 +2207,20 @@ server <- function(input, output, session) {
         
         #  Creates an observer only if it doesn't already exists.
         if (is.null(obsDelBtnList[[btn_name]])) {
-        
+          
           # Store observer function in list of buttons.
           obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
             #cat("* observeEvent: button clicked: ", btn_name, "\n")
-          
+            
             # Copy to temporary buffer
             tmplist <- list()
             
             # Loop over the data list and copy names not matching 'del_csite_name'.
             for (i in 1:length(csite_list)) {
               
-            # If the name is not matching, copy the data to the temporary list.
-                if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
-                  tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
+              # If the name is not matching, copy the data to the temporary list.
+              if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
+                tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
             }
             
             # Write back the temporary buffer that contains the new data excluding
@@ -2258,6 +2235,113 @@ server <- function(input, output, session) {
         }
       }) # end of lapply
     }
+  }
+  
+  
+  createBtnObserver <- function(del_btns) {
+    
+    if (length(del_btns) == 0)
+      return(NULL)
+    
+    btn_list <- list()
+    
+    # Check if a Delete button was created.
+    if (length(del_btns) > 0) {
+      cat("* creating del button, see ", length(del_btns), "\n")
+      databoxes <- as.list(1:length(del_btns))
+      databoxes <- lapply(databoxes, function(i) {
+        
+        # Extract the button name and the associated data name. Deletion is 
+        #  going to occur based on the data name. 
+        #FIXME: Maybe safer to use a unique ID.
+        btn_name <- del_btns[[i]]$btn_name
+        del_csite_name <- del_btns[[i]]$csite_name
+        
+        #  Creates an observer only if it doesn't already exists.
+        if (is.null(btn_list[[btn_name]])) {
+          
+          # Store observer function in list of buttons.
+          btn_list[[btn_name]] <- observeEvent(input[[btn_name]], {
+            cat("* observeEvent: button clicked: ", btn_name, "\n")
+            
+            # Copy to temporary buffer
+            tmplist <- list()
+            
+            # Loop over the data list and copy names not matching 'del_csite_name'.
+            for (i in 1:length(csite_list)) {
+              
+              # If the name is not matching, copy the data to the temporary list.
+              if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
+                tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
+            }
+            
+            # Write back the temporary buffer that contains the new data excluding
+            # the data set specified in 'del_csite_name'.
+            csite_list <<- tmplist
+            
+            # Need this to trigger observer that re-displays the new data list.
+            dataLoaded(dataLoaded() + 1)
+            
+            
+          })
+        }
+      }) # end of lapply
+    }
+    
+    return(btn_list)
+  }
+  
+  output$uiDataManager <- renderUI({
+    
+    # Observe load status of data.
+    if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
+    
+    ret <- uiDataManagerList(csite_list)
+    
+    obsDelBtnList <<- createBtnObserver(ret$del_btns)
+    
+    # # Check if a Delete button was created.
+    # if (length(del_btns) > 0) {
+    # 
+    #   databoxes <- as.list(1:length(del_btns))
+    #   databoxes <- lapply(databoxes, function(i) {
+    #   
+    #     # Extract the button name and the associated data name. Deletion is 
+    #     #  going to occur based on the data name. 
+    #     #FIXME: Maybe safer to use a unique ID.
+    #     btn_name <- del_btns[[i]]$btn_name
+    #     del_csite_name <- del_btns[[i]]$csite_name
+    #     
+    #     #  Creates an observer only if it doesn't already exists.
+    #     if (is.null(obsDelBtnList[[btn_name]])) {
+    #     
+    #       # Store observer function in list of buttons.
+    #       obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
+    #         #cat("* observeEvent: button clicked: ", btn_name, "\n")
+    #       
+    #         # Copy to temporary buffer
+    #         tmplist <- list()
+    #         
+    #         # Loop over the data list and copy names not matching 'del_csite_name'.
+    #         for (i in 1:length(csite_list)) {
+    #           
+    #         # If the name is not matching, copy the data to the temporary list.
+    #             if (csite_list[[i]]$GWSDAT_Options$SiteName != del_csite_name)
+    #               tmplist[[length(tmplist) + 1]] <- csite_list[[i]]
+    #         }
+    #         
+    #         # Write back the temporary buffer that contains the new data excluding
+    #         # the data set specified in 'del_csite_name'.
+    #         csite_list <<- tmplist
+    #         
+    #         # Need this to trigger observer that re-displays the new data list.
+    #         dataLoaded(dataLoaded() + 1)
+    #         
+    #         
+    #       })
+    #     }
+    #   }) # end of lapply
+    # }
     
     return(ret$html_out)
     

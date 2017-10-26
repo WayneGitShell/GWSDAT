@@ -23,3 +23,10 @@
 #img_formats_use <- img_formats
 
 coord_units <- c("metres", "feet")
+conc_units  <- c("ng/l", "ug/l", "mg/l", "Level", 
+                 "metres",  # for GW (groundwater depth)
+                 "mm",      # for NAPL thickness
+                 "pH")
+conc_flags  <- c("", "E-acc", "Omit", "NotInNAPL", "Redox")
+conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
+well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
