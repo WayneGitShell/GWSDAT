@@ -76,7 +76,11 @@ server <- function(input, output, session) {
     
   # Clean-up user session.
   session$onSessionEnded(function() {
-    stopApp()
+    
+    # Browser Reload also triggers onSessionEnded(). Trying work-around by only
+    # stopping server if app is not run in MultiData mode (i.e. in single a.k.a. ExcelMode).
+    if (APP_RUN_MODE != "MultiData")
+      stopApp()
   })
   
   
