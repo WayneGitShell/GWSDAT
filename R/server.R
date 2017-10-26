@@ -1210,8 +1210,8 @@ server <- function(input, output, session) {
     
     # Retrieve well choices (exclude empty string) - this reacts to changes in import_tables$DF_well.
     well_choices <- unique(import_tables$DF_well$WellName)
-    well_choices <- as.list(well_choices[-which(well_choices == "")]) 
-    
+    well_choices <- as.list(well_choices[which(well_choices != "")]) 
+
     
     hot <- rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
                                  stretchH = "all", height = 605) %>%
@@ -1689,7 +1689,7 @@ server <- function(input, output, session) {
     
     # Retrieve well choices (exclude empty string) - this reacts to changes in import_tables$DF_well.
     well_choices <- unique(import_tables$DF_well$WellName)
-    well_choices <- as.list(well_choices[-which(well_choices == "")]) 
+    well_choices <- as.list(well_choices[which(well_choices != "")]) 
     
 
     hot <- rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
