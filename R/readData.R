@@ -85,18 +85,18 @@ readExcel <- function(filein, sheet = NULL) {
     cat("* in readExcel()\n")
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
-    #shape_header <- list("Filenames (*.shp)")
-    
+    #browser()
     # Fixme: read .ending from $name and append to newfile
-    newfile <- paste0(filein$datapath, ".xlsx")
-    file.rename(filein$datapath, newfile)
-    
+    #newfile <- paste0(filein$datapath, ".xlsx")
+    #file.rename(filein$datapath, newfile)
+    browser()
     conc_data <- NULL
     well_data <- NULL
+    coord_unit <- "metres"
     
     # If no sheet was specified, extract them and try to find tables.
     if (is.null(sheet)) 
-        ls_sheets <- excel_sheets(newfile)
+        ls_sheets <- excel_sheets(filein$datapath)
     else 
         ls_sheets <- list(sheet)
     
@@ -106,7 +106,7 @@ readExcel <- function(filein, sheet = NULL) {
         #
         # Read the contaminant data 
         #
-        ret <- readExcelData(newfile, sheet = sheet, header = conc_header)
+        ret <- readExcelData(filein$datapath, sheet = sheet, header = conc_header)
         
         if (class(ret) != "data.frame") {
             showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found."), duration = 10, type = "error")
@@ -139,21 +139,21 @@ readExcel <- function(filein, sheet = NULL) {
         #
         # Read the well data 
         #
-        ret <- readExcelData(newfile, sheet = sheet, header = well_header, 
+        well_data <- readExcelData(filein$datapath, sheet = sheet, header = well_header, 
                              ign_first_head = "WellName")
         
-        if (class(ret) != "data.frame") {
+        if (class(well_data) != "data.frame") {
             showNotification(paste0("Sheet \'", sheet, "\': No valid well table found, skipping."), duration = 10)
             next
         }
         
         
+        # Extract the coordinate unit (default: metres).
         coord_unit <- as.character(ret$CoordUnits[1])
         if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- "metres"
-        ret$Aquifer[is.na(ret$Aquifer)] <- ""
         
-        well_data <- list(data = ret, unit = coord_unit)
-        
+        # Replace <NA> Aquifer with emptry string
+        well_data$Aquifer[is.na(well_data$Aquifer)] <- ""
         
         #
         # Attempt to read shape files (if not found, ignore)
@@ -183,7 +183,7 @@ readExcel <- function(filein, sheet = NULL) {
         return(NULL)
     
     
-    return(list(conc_data = conc_data, well_data = well_data))
+    return(list(conc_data = conc_data, well_data = well_data, coord_unit = coord_unit))
      
 }
 
@@ -344,17 +344,6 @@ readWellCoords <- function(input_file, valid_header, ...) {
   DF_extract$Aquifer[is.na(DF_extract$Aquifer)] <- ""
   
   return(list(data = DF_extract, unit = coord_unit ))
-  
-}
-
-
-validateTable <- function(tbl) {
-  
-  if (is.null(tbl)) 
-    return(FALSE)
-  
-  return(TRUE)
-  #browser()
   
 }
 

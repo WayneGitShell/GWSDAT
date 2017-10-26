@@ -112,8 +112,11 @@ uiImportNewData <- function(valid_data_name) {
                         "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
                         fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
                                   multiple = TRUE),
+                        selectInput("coord_unit_nd", label = "Coordinate Unit", choices = coord_units,
+                                    selected = coord_units[1], width = "50%"),
+                        hr(),
                         actionButton("reset_nd_import", label = "Reset"),
-                        actionButton("import_button_nd", label = "Add Data", icon("arrow-up"), 
+                        actionButton("save_button_nd", label = "Save", icon("save"), 
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
     ),
     
@@ -134,8 +137,10 @@ uiImportNewData <- function(valid_data_name) {
                            
                            tabPanel("Shape Files", {
                              shiny::tagList(
-                                            rhandsontable::rHandsontableOutput("tbl_shape_nd"),
-                                            shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))))
+                               HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                               shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))),
+                              rhandsontable::rHandsontableOutput("tbl_shape_nd")
+                             )
                            })
     )
   )
@@ -185,7 +190,7 @@ uiImportCSVData <- function(valid_data_name) {
                                      '"'),
                         hr(),
                         actionButton("reset_csv_import", label = "Reset"),
-                        actionButton("import_button_csv", label = "Import Data", icon("arrow-down"), 
+                        actionButton("import_button_csv", label = "Import", icon("arrow-down"), 
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
                         )
                         
@@ -201,9 +206,11 @@ uiImportCSVData <- function(valid_data_name) {
                            ),
                            #tabPanel("Shape Files", tableOutput("tbl_shape_csv"))
                            tabPanel("Shape Files", {
-                             shiny::tagList(rhandsontable::rHandsontableOutput("tbl_shape_csv"),
-                                            shinyjs::hidden(div(id = "removeshp_csv", style = "margin-top: 5px", 
-                                                                actionButton("remove_shapefiles_csv", label = "Remove All Files"))))
+                              shiny::tagList(
+                                HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                                shinyjs::hidden(div(id = "removeshp_csv", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_csv", label = "Remove All Files"))),
+                                rhandsontable::rHandsontableOutput("tbl_shape_csv")
+                              )
                            })
     )
     
@@ -230,7 +237,7 @@ uiImportExcelData <- function(csite_list) {
                         fileInput('shape_files_xls', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
                                   multiple = TRUE),
                         actionButton("reset_xls_import", label = "Reset"),
-                        actionButton("import_button_xls", label = "Import Data", icon("arrow-down"), 
+                        actionButton("import_button_xls", label = "Import", icon("arrow-down"), 
                                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
                         
     ),
@@ -242,10 +249,10 @@ uiImportExcelData <- function(csite_list) {
                            ),
                            tabPanel("Shape Files", {
                              shiny::tagList(
-                               HTML("Note: Shape files specified in the Excel file will not be automatically uploaded. Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
-                               rhandsontable::rHandsontableOutput("tbl_shape_xls"),
-                                            shinyjs::hidden(div(id = "removeshp_xls", style = "margin-top: 5px", 
-                                                                actionButton("remove_shapefiles_xls", label = "Remove All Files"))))
+                               HTML("<b>Note</b>: Shape files specified in the Excel file will not be automatically uploaded. Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                               shinyjs::hidden(div(id = "removeshp_xls", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_xls", label = "Remove All Files"))),
+                               rhandsontable::rHandsontableOutput("tbl_shape_xls")
+                              )
                            })
                              
     ))

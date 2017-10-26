@@ -52,7 +52,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
                         </script>"))),
                  
     shinydashboard::tabItems(
-     shinydashboard::tabItem(tabName = "menu_data_manager", 
+      shinydashboard::tabItem(tabName = "menu_data_manager", 
       
         uiOutput("uiDataManager"),                
         shinyjs::hidden( uiOutput("uiDataAddSession")),
@@ -69,10 +69,11 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
               shinyjs::hidden(div(id = "analyse_page",
                      uiOutput("rndAnalyse"))
               )
-              ),
-     shinydashboard::tabItem(tabName = "menu_version",
+      ),
+     
+      shinydashboard::tabItem(tabName = "menu_version",
                              verbatimTextOutput("version_info")
-                             )
+      )
       
     ) # end tabItems
     ) # end dashboardBody
@@ -83,7 +84,8 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
 
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
-    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart"))
+    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
+    shinydashboard::menuItem("Version", tabName = "menu_version")
     ),
     collapsed = TRUE
   ),
@@ -92,7 +94,11 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
                       shinyjs::useShinyjs(),
                       shiny::singleton(tags$head(tags$script(src = system.file("www", "trafficlight.js", package = "GWSDAT")))),
                       shiny::singleton(tags$head(tags$link(href = system.file("www", "trafficlight.css", package = "GWSDAT"), rel = "stylesheet"))),
-                      shinydashboard::tabItems( shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse")))
+                      shinydashboard::tabItems( 
+                        shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse")),
+                        shinydashboard::tabItem(tabName = "menu_version", verbatimTextOutput("version_info"))
+                      )
+                      
   ) # end dashboardBody 
 ) # end ui
 

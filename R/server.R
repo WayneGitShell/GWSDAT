@@ -37,7 +37,8 @@ server <- function(input, output, session) {
   # Define headers for import data.
   conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
   well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
-  
+  conc_units  <- c("ng/l", "ug/l", "mg/l", "Level", "pH")
+  conc_flags  <- c("", "E-acc", "Omit", "NotInNAPL", "Redox")
   
   import_tables <- reactiveValues(DF_conc = NULL, 
                                   DF_well = NULL,
@@ -45,7 +46,9 @@ server <- function(input, output, session) {
                                   shape_files = NULL,
                                   new_csite = NULL)
   
+  # Trigger table rendering only on specific events.
   renderRHandsonConc <- reactiveVal(0)
+  renderRHandsonWell <- reactiveVal(0)
   
   # Define supported image formats
   img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
@@ -797,6 +800,118 @@ server <- function(input, output, session) {
   })
   
   
+  ## General Import Routines ###################################################
+  
+  
+  # Can I move parts (or all) of this function into importTables?
+  importData <- function(dname) {
+    
+    # Make several checks before attempting to import the tables.
+    
+    # if (validateTable(import_tables$DF_conc) == FALSE) {
+    #   showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
+    #   return(NULL)
+    # }
+    # 
+    # if (validateTable(import_tables$DF_well) == FALSE) {
+    #   showNotification("Well coordinate table was not loaded properly. Aborted.", type = "error")
+    #   return(NULL)
+    # }
+    
+    if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
+      showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
+                       type = "error", duration = 10)      
+      return(NULL)
+    }
+    
+    if (is.null(DF_conc <- parseTable(import_tables$DF_conc, type = "contaminant", 
+                                 wells = unique(DF_well$WellName), units = conc_units,
+                                 flags = conc_flags))) {
+      showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
+                       type = "error", duration = 10)      
+      return(NULL)
+    }
+    
+    
+    
+    # return() #browser()
+   
+    # Check if data name is valid, i.e. does not already exists. If getValidDataName()
+    # returns a different name than the proposed one (this one), the data name is 
+    # already taken. Warn the user and do nothing.
+    check_name <- getValidDataName(csite_list, propose_name = dname)
+    
+    if (check_name != dname) {
+      showNotification("Data name already exists. Please enter a unique name that is not present in the Data Manager.", 
+                       type = "warning", duration = 10)
+      return(NULL)
+    }
+    
+    
+    # Create the progress bar.
+    progress <- shiny::Progress$new()
+    progress$set(message = "Loading data", value = 0)
+    on.exit(progress$close())
+    
+    progress$set(value = 0.1, detail = paste("reading data"))
+    
+    GWSDAT_Options <- createOptions(dname)
+  
+    # Change Well Table format to comply with internal format.  
+    DF_well <- list(data = DF_well, coord_unit = import_tables$Coord_unit)
+    all_data <- formatData(DF_conc, DF_well)
+    browser()
+    # Add shape files to GWSDAT_Options if present.
+    if (!is.null(import_tables$shape_files)) {
+      if (length(import_tables$shape_files$shp_files) > 0) {
+        GWSDAT_Options$ShapeFileNames <- import_tables$shape_files$shp_files
+      } else {
+        showNotification("Ignoring shape files because no .shp file was provided.", 
+                         type = "error", duration = 10) 
+      }  
+    }
+    
+    
+    # Create a unique data set 'csite' for each Aquifer.
+    for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
+      
+      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
+                            Aq_sel)
+      
+      if (is.null(pr_dat)) next
+      
+      ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
+      
+      # Build list with all data.
+      csite <<- list(All.Data       = pr_dat,
+                     Fitted.Data    = NULL,
+                     GWSDAT_Options = GWSDAT_Options,
+                     Traffic.Lights = NULL,
+                     ui_attr        = ui_attr,
+                     Aquifer        = Aq_sel
+      )
+      
+      csite_list[[length(csite_list) + 1]] <<- csite 
+      
+    }
+    
+    
+    # Flag that the data was loaded.
+    isolate(lstate <- dataLoaded())
+    
+    if (lstate >= LOAD_COMPLETE)
+      dataLoaded(lstate + 1)
+    else 
+      dataLoaded(LOAD_COMPLETE)
+    
+    # Go back to Data Manager.
+    shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddNew")
+    shinyjs::hide(id = "uiDataAddCSV")
+    shinyjs::hide(id = "uiDataAddExcel")
+    
+    
+  }
   
   
   
@@ -914,11 +1029,139 @@ server <- function(input, output, session) {
   })
   
   
+  # Go to New Data Import (Button click).
+  observeEvent(input$add_session_data,  {
+    cat("* in observeEvent: add_session_data (line 1680)\n")
+    
+    shinyjs::hide("uiDataManager")
+    shinyjs::show("uiDataAddSession")
+    
+    import_tables$DF_conc <<- NULL
+    import_tables$DF_well <<- NULL
+    import_tables$new_csite <<- NULL
+    
+    output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
+  })
+  
+  
+  observeEvent(input$reset_sess_import,  {
+    
+    import_tables$DF_well <<- NULL
+    import_tables$DF_conc <<- NULL
+    import_tables$new_csite <<- NULL
+    
+    output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
+    
+  })
+  
+  # React to Import button click.
+  observeEvent(input$import_button_sess, {
+    
+    # Check if a data object was loaded. 
+    if (is.null(import_tables$new_csite)) { 
+      showNotification("Nothing to import. Please upload a valid .rds GWSDAT session file.", 
+                       type = "warning", duration = 10)
+      return()
+    }
+    
+    # Check if data name is valid, i.e. does not already exists. If getValidDataName()
+    # returns a different name than the proposed one (this one), the data name is 
+    # already taken. Warn the user and do nothing.
+    check_name <- getValidDataName(csite_list, propose_name = input$dname_sess)
+    
+    if (check_name != input$dname_sess) {
+      showNotification("Data name already exists. Please enter a unique name that is not present in the Data Manager.", 
+                       type = "warning", duration = 10)
+      return()
+    }
+    
+    # Write data name and append to main data list.
+    import_tables$new_csite$GWSDAT_Options$SiteName <<- input$dname_sess
+    csite_list[[length(csite_list) + 1]] <<- import_tables$new_csite  
+    
+    shinyjs::show(id = "uiDataManager")
+    shinyjs::hide(id = "uiDataAddSession")
+    dataLoaded(dataLoaded() + 1)
+  })
   
   ## Import New data ###########################################################
   
-  output$tbl_shape_nd <- rhandsontable::renderRHandsontable(createShapeFileList(import_tables$shape_files))
+  createNewConcTable <- function() {
+    
+    import_tables$DF_conc <- data.frame(matrix("", nrow = 25, ncol = length(conc_header)),
+                                        stringsAsFactors = FALSE)
+    colnames(import_tables$DF_conc) <- conc_header
+    
+    class(import_tables$DF_conc$SampleDate) <- "Date"
+    
+    import_tables$DF_conc$WellName[1] <- "Sample Well"
+    import_tables$DF_conc$SampleDate  <- Sys.Date()
+    import_tables$DF_conc$Units[1] <- "ug/l"
+    
+  }
   
+  createNewWellTable <- function() {
+    
+    well_tmp <- data.frame(matrix("", nrow = 25, ncol = length(well_header)),
+                           stringsAsFactors = FALSE)
+    colnames(well_tmp) <- well_header
+    
+    well_tmp$WellName[1] <- "Sample Well"
+    well_tmp$XCoord[1] <- 50.12345
+    well_tmp$YCoord[1] <- 20.12345
+    
+    import_tables$DF_well <- well_tmp
+    import_tables$Coord_unit <- input$coord_unit_nd
+    
+  }
+  
+  # Go to New Data Import (Button click).
+  observeEvent(input$add_new_data,  {
+    cat("* in observeEvent: add_new_data\n")
+    
+    shinyjs::hide("uiDataManager")
+    shinyjs::show("uiDataAddNew")
+    
+    createNewConcTable()
+    createNewWellTable()
+    import_tables$shape_files <<- NULL
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
+    renderRHandsonWell(renderRHandsonWell() + 1)
+    
+    output$uiDataAddNew <- renderUI(uiImportNewData(getValidDataName(csite_list)))
+  })
+  
+  
+  # Go to New Data Import (Button click).
+  observeEvent(input$reset_nd_import,  {
+    cat("* in observeEvent: reset_nd_import\n")
+    
+    createNewConcTable()
+    createNewWellTable()
+    import_tables$shape_files <<- NULL
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
+    renderRHandsonWell(renderRHandsonWell() + 1)
+    
+    # Reset data name.
+    updateTextInput(session, "dname_nd", value = getValidDataName(csite_list))
+    
+  })
+  
+  
+  output$tbl_shape_nd <- rhandsontable::renderRHandsontable({
+    cat("* in tbl_shape_nd\n")
+    if (is.null(import_tables$shape_files))
+      return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
+                                          useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
+                                          height = 400, readOnly = TRUE))
+    
+    createShapeFileList(import_tables$shape_files)
+  })
+
   
   # This will cause setting of 'output$tbl_shape_nd' because import_tables is reactive.
   observeEvent(input$remove_shapefiles_nd, import_tables$shape_files <<- NULL )
@@ -953,15 +1196,17 @@ server <- function(input, output, session) {
     # Observe changes triggered from another place.
     renderRHandsonConc()
     
-    # Retrieve well choices - this reacts to changes in import_tables$DF_well.
-    well_choices <- as.list(unique(import_tables$DF_well$WellName))
+    # Retrieve well choices (exclude empty string) - this reacts to changes in import_tables$DF_well.
+    well_choices <- unique(import_tables$DF_well$WellName)
+    well_choices <- as.list(well_choices[-which(well_choices == "")]) 
+    
     
     hot <- rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
                                  stretchH = "all", height = 605) %>%
       hot_context_menu(allowColEdit = FALSE) %>% # if useTypes = TRUE, allowColEdit will be FALSE anyway
       hot_col(col = "WellName", type = "dropdown", source = well_choices, strict = TRUE) %>%
-      hot_col(col = "Units", type = "dropdown", source = c("ng/l", "ug/l", "mg/l", "Level")) %>%
-      hot_col(col = "Flags", type = "dropdown", source = c("", "E-acc", "Omit", "NotInNAPL", "Redox")) 
+      hot_col(col = "Units", type = "dropdown", source = conc_units) %>%
+      hot_col(col = "Flags", type = "dropdown", source = conc_flags) 
 
     # With this other formats still produce "Invalid date". correctFormat is set to TRUE.
     #hot <- hot %>% hot_col(col = "SampleDate", type = "date", allowInvalid = TRUE)
@@ -991,7 +1236,9 @@ server <- function(input, output, session) {
   output$tbl_well_nd <- rhandsontable::renderRHandsontable({
     cat("\n* in tbl_well_nd <- renderRHandsontable()\n")
     
-    DF <- import_tables$DF_well
+    isolate(DF <- import_tables$DF_well)
+    
+    renderRHandsonWell()
     
     hot <- rhandsontable::rhandsontable(DF, useTypes = TRUE, 
                                         stretchH = "all", height = 605) 
@@ -1017,6 +1264,11 @@ server <- function(input, output, session) {
   })
   
   
+  observeEvent(input$save_button_nd, {
+    import_tables$Coord_unit <- input$coord_unit_nd
+    
+    importData(input$dname_nd)
+  })
   
   
   ## Import CSV data ###########################################################
@@ -1227,7 +1479,7 @@ server <- function(input, output, session) {
   #
   #
   output$tbl_shape_xls <- rhandsontable::renderRHandsontable({
-    #input$reset_csv_import
+    
     cat("* in tbl_shape_xls\n")
     if (is.null(import_tables$shape_files))
       return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
@@ -1269,8 +1521,9 @@ server <- function(input, output, session) {
     if (is.null(dtmp)) 
       return(FALSE)
     
-    import_tables$DF_conc <<- dtmp$conc_data
-    import_tables$DF_well <<- dtmp$well_data
+    import_tables$DF_conc <- dtmp$conc_data
+    import_tables$DF_well <- dtmp$well_data
+    import_tables$Coord_unit <- dtmp$coord_unit
     
     # Disabled for now, because Shape Files are manually uploaded.
     # import_tables$shape_files <<- dtmp$shape_files
@@ -1343,132 +1596,12 @@ server <- function(input, output, session) {
   })
   
   
-  #
-  # Put large part of this function into readData.R file.
-  #
-  importData <- function(dname) {
-    
-    # Make several checks before attempting to import the tables.
-    
-    if (validateTable(import_tables[["DF_conc"]]) == FALSE) {
-      showNotification("Contaminant concentration table was not loaded properly. Aborted.", type = "error")
-      return(NULL)
-    }
-    
-    if (validateTable(import_tables[["DF_well"]]) == FALSE) {
-      showNotification("Well coordinate table was not loaded properly. Aborted.", type = "error")
-      return(NULL)
-    }
-    
-    # Check if data name is valid, i.e. does not already exists. If getValidDataName()
-    # returns a different name than the proposed one (this one), the data name is 
-    # already taken. Warn the user and do nothing.
-    check_name <- getValidDataName(csite_list, propose_name = dname)
-    
-    if (check_name != dname) {
-      showNotification("Data name already exists. Please enter a unique name that is not present in the Data Manager.", 
-                       type = "warning", duration = 10)
-      return(NULL)
-    }
-    
-    
-    # Create the progress bar.
-    progress <- shiny::Progress$new()
-    progress$set(message = "Loading data", value = 0)
-    on.exit(progress$close())
-    
-    progress$set(value = 0.1, detail = paste("reading data"))
-    
-    GWSDAT_Options <- createOptions(dname)
-    
-    all_data <- formatData(import_tables$DF_conc, import_tables$DF_well)
-    
-    # Add shape files to GWSDAT_Options if present.
-    if (!is.null(import_tables$shape_files)) {
-      if (length(import_tables$shape_files$shp_files) > 0) {
-        GWSDAT_Options$ShapeFileNames <- import_tables$shape_files$shp_files
-      } else {
-        showNotification("Ignoring shape files because no .shp file was provided.", 
-                         type = "error", duration = 10) 
-      }  
-    }
-    
-    
-    # Create a unique data set 'csite' for each Aquifer.
-    for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
-      
-      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
-                            Aq_sel)
-      
-      if (is.null(pr_dat)) next
-      
-      ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
-      
-      # Build list with all data.
-      csite <<- list(All.Data       = pr_dat,
-                     Fitted.Data    = NULL,
-                     GWSDAT_Options = GWSDAT_Options,
-                     Traffic.Lights = NULL,
-                     ui_attr        = ui_attr,
-                     Aquifer        = Aq_sel
-      )
-      
-      csite_list[[length(csite_list) + 1]] <<- csite 
-      
-    }
-    
-    
-    # Flag that the data was loaded.
-    isolate(lstate <- dataLoaded())
-    
-    if (lstate >= LOAD_COMPLETE)
-      dataLoaded(lstate + 1)
-    else 
-      dataLoaded(LOAD_COMPLETE)
-    
-    # Go back to Data Manager.
-    shinyjs::show(id = "uiDataManager")
-    shinyjs::hide(id = "uiDataAddNew")
-    shinyjs::hide(id = "uiDataAddCSV")
-    shinyjs::hide(id = "uiDataAddExcel")
-    
-    
-  }
   
   
-  # React to Import button click.
-  observeEvent(input$import_button_sess, {
-    
-    # Check if a data object was loaded. 
-    if (is.null(import_tables$new_csite)) { 
-      showNotification("Nothing to import. Please upload a valid .rds GWSDAT session file.", 
-                       type = "warning", duration = 10)
-      return()
-    }
-    
-    # Check if data name is valid, i.e. does not already exists. If getValidDataName()
-    # returns a different name than the proposed one (this one), the data name is 
-    # already taken. Warn the user and do nothing.
-    check_name <- getValidDataName(csite_list, propose_name = input$dname_sess)
-    
-    if (check_name != input$dname_sess) {
-      showNotification("Data name already exists. Please enter a unique name that is not present in the Data Manager.", 
-                       type = "warning", duration = 10)
-      return()
-    }
-    
-    # Write data name and append to main data list.
-    import_tables$new_csite$GWSDAT_Options$SiteName <<- input$dname_sess
-    csite_list[[length(csite_list) + 1]] <<- import_tables$new_csite  
-    
-    shinyjs::show(id = "uiDataManager")
-    shinyjs::hide(id = "uiDataAddSession")
-    dataLoaded(dataLoaded() + 1)
-  })
   
   observeEvent(input$import_button_csv, importData(input$dname_csv))
   observeEvent(input$import_button_xls, importData(input$dname_xls))
-  observeEvent(input$import_button_nd, importData(input$dname_nd))
+  
   
     
   # Go (back) to Data Manager.
@@ -1486,12 +1619,6 @@ server <- function(input, output, session) {
     shinyjs::show(id = "uiDataManager")
   }
   
-  
-  # Go to Add New Data (Button click).
-  observeEvent(input$add_new_data,  {
-    shinyjs::show(id = "uiDataAddNew")
-    shinyjs::hide(id = "uiDataManager")
-  })
   
   # Go to Load Session Data (Button click).
   observeEvent(input$add_session_data,  {
@@ -1813,7 +1940,7 @@ server <- function(input, output, session) {
   
     if (is.null(solute_data) || is.null(well_data))
       return(NULL)
-
+    
     all_data <- formatData(solute_data, well_data)
     
     # Extract list of Aquifer. If there is more than one, return the list.
@@ -1980,34 +2107,6 @@ server <- function(input, output, session) {
   })
 
   
-  createNewConcTable <- function() {
-    
-    import_tables$DF_conc <- data.frame(matrix("", nrow = 25, ncol = length(conc_header)),
-                                        stringsAsFactors = FALSE)
-    colnames(import_tables$DF_conc) <- conc_header
-    
-    class(import_tables$DF_conc$SampleDate) <- "Date"
-    
-    import_tables$DF_conc$WellName[1] <- "Sample Well"
-    import_tables$DF_conc$SampleDate  <- Sys.Date()
-    import_tables$DF_conc$Units[1] <- "ug/l"
-    
-  }
- 
-  createNewWellTable <- function() {
-    cat(" * in createNewWellTable()\n")
-    well_tmp <- data.frame(matrix("", nrow = 25, ncol = length(well_header)),
-                           stringsAsFactors = FALSE)
-    colnames(well_tmp) <- well_header
-    
-    well_tmp$WellName[1] <- "Sample Well"
-    well_tmp$XCoord[1] <- 50.12345
-    well_tmp$YCoord[1] <- 20.12345
-    
-    import_tables$DF_well <- well_tmp
-    import_tables$Coord_unit <- input$coords_unit
-    
-  }
   
   observeEvent(input$clear_tbl_conc_nd, {
     createNewConcTable()  
@@ -2015,19 +2114,26 @@ server <- function(input, output, session) {
     renderRHandsonConc(renderRHandsonConc() + 1)
   })
   
-  observeEvent(input$clear_tbl_well_nd, createNewWellTable())
+  observeEvent(input$clear_tbl_well_nd, {
+    createNewWellTable()
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonWell(renderRHandsonWell() + 1)
+  })
   
   
   observeEvent(input$addrow_tbl_conc_nd, {
     
     DF <- import_tables$DF_conc
     
+    # Take last row, modify and append (rbind).
     new_row <- DF[nrow(DF),]
     new_row$Constituent <- ""
     new_row$Result <- ""
     rownames(new_row) <- (nrow(DF) + 1)
-    
     import_tables$DF_conc <- rbind(import_tables$DF_conc, new_row)
+    
+    # Triggers re-rendering of rhandsontable.
+    renderRHandsonConc(renderRHandsonConc() + 1)
    
   })
   
@@ -2040,51 +2146,13 @@ server <- function(input, output, session) {
     
     import_tables$DF_well <- rbind(import_tables$DF_well, new_row)
     
-  })
-  
-  
-  # Go to New Data Import (Button click).
-  observeEvent(input$add_session_data,  {
-    cat("* in observeEvent: add_session_data (line 1680)\n")
-    
-    shinyjs::hide("uiDataManager")
-    shinyjs::show("uiDataAddSession")
-    
-    import_tables$DF_conc <<- NULL
-    import_tables$DF_well <<- NULL
-    import_tables$new_csite <<- NULL
-    
-    output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
-  })
-  
-  
-  observeEvent(input$reset_sess_import,  {
-    
-    import_tables$DF_well <<- NULL
-    import_tables$DF_conc <<- NULL
-    import_tables$new_csite <<- NULL
-    
-    output$uiDataAddSession <- renderUI(uiImportSessionData(getValidDataName(csite_list)))
-
-  })
-  
-  # Go to New Data Import (Button click).
-  observeEvent(input$add_new_data,  {
-    cat("* in observeEvent: add_new_data\n")
-    
-    shinyjs::hide("uiDataManager")
-    shinyjs::show("uiDataAddNew")
-    
-    createNewConcTable()
-    createNewWellTable()
-
-    import_tables$shape_files <<- NULL
-
-    output$uiDataAddNew <- renderUI(uiImportNewData(getValidDataName(csite_list)))
-    
     # Triggers re-rendering of rhandsontable.
-    renderRHandsonConc(renderRHandsonConc() + 1)
+    renderRHandsonWell(renderRHandsonWell() + 1)
+    
   })
+  
+  
+  
   
   
   # Go to .CSV Data Import (Button click).

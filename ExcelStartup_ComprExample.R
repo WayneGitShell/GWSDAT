@@ -1,5 +1,5 @@
 GWSDAT_Options<-list()
-GWSDAT_Options[['Aggby']]<-'Monthly'
+GWSDAT_Options[['Aggby']]<-'Month'
 GWSDAT_Options[['AggMethod']]<-'Mean'
 GWSDAT_Options[['NDMethod']]<-'Half of ND Value'
 GWSDAT_Options[['ModelMethod']]<-'pspline'
@@ -41,12 +41,12 @@ GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSD
 GWSDAT_Options[['ShapeFileNames']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSDAT/data/GIS_Files/GWSDATex2.shp'
 
 
-devtools::install_github("andrejadd/GWSDAT")
+#devtools::install_github("andrejadd/GWSDAT")
 
 # only Debugging inside GWSDAT directoy:
-# devtools::load_all()
+devtools::load_all()
 
-library(GWSDAT)
+#library(GWSDAT)
 options(shiny.launch.browser = TRUE)
 launchApp(GWSDAT_Options)
 

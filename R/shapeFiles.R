@@ -42,10 +42,10 @@ createShapeFileList <- function(shfiles) {
     colnames(MAT) <- c("Name", "Size")
     
     # Render the table.
-    tbl_out <- rhandsontable::rhandsontable(MAT, useTypes = FALSE, rowHeaders = NULL, 
-                                            stretchH = "all", height = 400) %>%
-      hot_col("Name", readOnly = TRUE) %>%
-      hot_col("Size", readOnly = TRUE)
+    tbl_out <- rhandsontable::rhandsontable(MAT, useTypes = TRUE, rowHeaders = NULL, 
+                                            stretchH = "all", height = 400, readOnly = TRUE)# %>%
+      #hot_col("Name", readOnly = TRUE) %>%
+      #hot_col("Size", readOnly = TRUE)
     
     return(tbl_out)
   } #else {

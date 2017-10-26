@@ -21,3 +21,5 @@
 #  I could use them here.
 #img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
 #img_formats_use <- img_formats
+
+coord_units <- c("metres", "feet")

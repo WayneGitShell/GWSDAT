@@ -19,7 +19,7 @@ dataModal <- function(failed = FALSE) {
 
 formatData <- function(solute_data, sample_loc) {
   
-  ## Format solute concentration data ##########################################
+  # Format solute concentration data 
   
   # Replace NA flags and delete rows that have the flag "omit".
   solute_data$Flags[is.na(solute_data$Flags)] = ""
@@ -43,10 +43,14 @@ formatData <- function(solute_data, sample_loc) {
   # }
   
   solute_data$WellName <- factor(rm_spaces(as.character(solute_data$WellName)))
-  solute_data$Result <- factor(rm_spaces(as.character(solute_data$Result)))
   solute_data$Units <- factor(rm_spaces(as.character(solute_data$Units)))
   solute_data$Constituent <- factor(rm_spaces(as.character(solute_data$Constituent)))
   
+  # In case "," is used as comma, replace to ".".
+  solute_data$Result <- gsub(",", ".", solute_data$Result)
+  solute_data$Result <- factor(rm_spaces(as.character(solute_data$Result)))
+  
+    
   if (length(unique(as.character(solute_data$Constituent))) != 
       length(unique(toupper(as.character(solute_data$Constituent))))) {
     
@@ -57,12 +61,11 @@ formatData <- function(solute_data, sample_loc) {
   }
   
   
-  ##  Tranform Aquifer #########################################################
-  
+  # Tranform Aquifer 
   sample_loc$data$Aquifer <- as.character(sample_loc$data$Aquifer)  
   sample_loc$data$Aquifer[sample_loc$data$Aquifer == ""] <- "Blank"
   sample_loc$data$Aquifer[is.na(sample_loc$data$Aquifer)] <- "Blank"
-
+  
   sample_loc$data$WellName <- factor(rm_spaces(as.character(sample_loc$data$WellName)))
     
   sample_loc$data$XCoord <- as.numeric(rm_spaces(as.character(sample_loc$data$XCoord)))
@@ -411,7 +414,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   GW.Data$Result <- as.numeric(as.character(GW.Data$Result))
   GW.Data <- GW.Data[!is.na(GW.Data$Result),]
   GW.Data[,c("XCoord","YCoord")] <- well_tmp_data[match(as.character(GW.Data$WellName),as.character(well_tmp_data$WellName)),c("XCoord","YCoord")]
-
+  
   tryCatch(
     agg_data <- aggregateData(Cont.Data, GW.Data, 
                               NAPL.Thickness.Data = if (exists("NAPL.Thickness.Data")) { NAPL.Thickness.Data } else {NULL},
