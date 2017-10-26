@@ -92,7 +92,7 @@ server <- function(input, output, session) {
     progress$set(message = "Calculating Plume", value = 0)
     on.exit(progress$close())
     
-   
+    #browser()
     val <- getFullPlumeStats(csite, 
                              substance = input$solute_select_pd, 
                              plume_thresh = input$plume_thresh_pd,
@@ -2253,7 +2253,7 @@ server <- function(input, output, session) {
     if (is.null(Aq_sel)) 
       Aq_sel <- Aq_list[[1]]
 
-    
+   
     pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
                           Aq_sel, subst_napl_vals = subst_napl)
     
@@ -2280,7 +2280,9 @@ server <- function(input, output, session) {
                    Traffic.Lights = fitdat$Traffic.Lights,
                    GW.Flows       = fitdat$GW.Flows,
                    ui_attr        = ui_attr,
-		               Aquifer        = Aq_sel
+		               Aquifer        = Aq_sel,
+		               raw_contaminant_tbl = solute_data,
+		               raw_well_tbl   = well_data$data
     )
     
     # Save csite to the list of csites and remember index.

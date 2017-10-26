@@ -308,25 +308,45 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
 
     Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
     
-    
     if (length(Good.Wells) > 2) {
-     
+
       ### Calculate Max Conc on hull boundary
       my.area <- csite$All.Data$sample_loc$data[csite$All.Data$sample_loc$names %in% Good.Wells, c("XCoord","YCoord") ]
-     
+
       myhull  <- my.area[chull(my.area),]
-      
-      hulldatapoints <- getHullDataPoints(myhull)
-      
-      my.df <- data.frame(XCoord = hulldatapoints$x,YCoord = hulldatapoints$y, AggDate = temp.time.eval)
-      temp.df$MaxConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
-      
-      ### Calculate Max Conc on interior points of hull. 
-      InteriorPoints <- splancs::gridpts(as.matrix(myhull), 200)
-      my.df <- data.frame(XCoord = InteriorPoints[,1], YCoord = InteriorPoints[,2], AggDate = temp.time.eval)
-      temp.df$MaxInteriorConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
-      
+
+      # The hull points can become only one or two if the points in Good.Wells include duplicates.
+      if (nrow(myhull) > 2) {
+        
+        hulldatapoints <- getHullDataPoints(myhull)
+
+        my.df <- data.frame(XCoord = hulldatapoints$x,YCoord = hulldatapoints$y, AggDate = temp.time.eval)
+        temp.df$MaxConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
+        ### Calculate Max Conc on interior points of hull.
+        InteriorPoints <- splancs::gridpts(as.matrix(myhull), 200)
+        my.df <- data.frame(XCoord = InteriorPoints[,1], YCoord = InteriorPoints[,2], AggDate = temp.time.eval)
+        temp.df$MaxInteriorConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
+      }
     }
+    
+    # if (length(Good.Wells) > 2) {
+    #  
+    #   ### Calculate Max Conc on hull boundary
+    #   my.area <- csite$All.Data$sample_loc$data[csite$All.Data$sample_loc$names %in% Good.Wells, c("XCoord","YCoord") ]
+    #  
+    #   myhull  <- my.area[chull(my.area),]
+    #   
+    #   hulldatapoints <- getHullDataPoints(myhull)
+    #   
+    #   my.df <- data.frame(XCoord = hulldatapoints$x,YCoord = hulldatapoints$y, AggDate = temp.time.eval)
+    #   temp.df$MaxConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
+    #   browser()
+    #   ### Calculate Max Conc on interior points of hull. 
+    #   InteriorPoints <- splancs::gridpts(as.matrix(myhull), 200)
+    #   my.df <- data.frame(XCoord = InteriorPoints[,1], YCoord = InteriorPoints[,2], AggDate = temp.time.eval)
+    #   temp.df$MaxInteriorConc[i] = max(exp(predict(model, newdata = my.df)$predicted))
+    #   
+    # }
   }
   
   # To avoid trouble with NA entries use which:

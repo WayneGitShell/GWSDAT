@@ -105,7 +105,7 @@ getPlumeStats <- function(csite,
   #
   # Create plume statistics summary.
   #
-  
+  #browser()
   plume_stats <- data.frame(area = NA, volume = NA, mass = NA, avg_conc = NA,
                             mass_centre_x = NA, mass_centre_y = NA,
                             conc_thresh = plume_thresh,
