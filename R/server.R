@@ -89,14 +89,19 @@ server <- function(input, output, session) {
     input$save_analyse_options 
   })
   
+  
+  
+  ## Plume Diagnostics Panel ###################################################
+  
   checkPlumeStats <- reactive({
+    #cat("\n* checkPlumeStats()\n")
     
     # Create a Progress object
     progress <- shiny::Progress$new()
     progress$set(message = "Calculating Plume", value = 0)
     on.exit(progress$close())
     
-    #browser()
+    
     val <- getFullPlumeStats(csite, 
                              substance = input$solute_select_pd, 
                              plume_thresh = input$plume_thresh_pd,
@@ -118,25 +123,15 @@ server <- function(input, output, session) {
     return(val)
   })
   
-  # return
-  updatePlumeTS <- reactive({
-    
-    # update plume threshold
-    input$update_plume_ts
-    
-    })
   
   output$plume_diagn_msg <- renderUI({
-    
-    # Detect press of update button
-    updatePlumeTS()
+    #cat("* plume_diagn_msg <- renderUI()\n")
     
     # Detect changes in the Options.
     optionsSaved()
     
     # Detect if stats can not be displayed (hides this text box).
-    # Isolate reactive inputs. 
-    isolate(checkPlumeStats())
+    checkPlumeStats()
     
     # Isolate the inputs (so a change in the sidebar does not trigger this fct.)
     isolate(
@@ -153,32 +148,31 @@ server <- function(input, output, session) {
   
   
   output$plume_estimate_plot <- renderPlot({
+    #cat("plume_estimate_plot <- renderPlot()\n")
     
-    # Detect press of update button
-    updatePlumeTS()
-    
-    isolate(plotPlumeEst(csite, input$solute_select_pd, input$plume_thresh_pd))
-
+    #isolate(plotPlumeEst(csite, input$solute_select_pd, input$plume_thresh_pd))
+    plotPlumeEst(csite, input$solute_select_pd, input$plume_thresh_pd)
   })
   
   
   output$plume_diagn_plot <- renderPlot({
-    
-    # Detect press of update button
-    updatePlumeTS()
+    #cat("plume_estimate_plot <- renderPlot()\n")
     
     # Detect changes in the Options.
     # optionsSaved()
     
     # Re-evaluate plume statistics if any reactive expression changes. 
     # The return value is the full plume statistics (for all timesteps). 
-    isolate(plume_stats <- checkPlumeStats())
+    #isolate(plume_stats <- checkPlumeStats())
+    plume_stats <- checkPlumeStats()
     
     plotPlumeTimeSeries(plume_stats)
     
     
   })
   
+  
+  ## Time-Series Panel #########################################################
   
   # Plot time-series window
   output$time_series <- renderPlot({
@@ -1390,6 +1384,7 @@ server <- function(input, output, session) {
     }
     
     # Use smaller size for placeholder table (only header).
+    
     tbl_height <- 700
     if (nrow(import_tables$DF_well) == 0)  tbl_height <- 400 
     
@@ -1456,7 +1451,9 @@ server <- function(input, output, session) {
     }
     
     # Save to reactive variable.
-    import_tables$DF_well <<- DF
+    import_tables$DF_well <- DF$data
+    import_tables$Coord_unit <- DF$unit
+    
     
     # Switch to tabPanel with table.
     updateTabsetPanel(session, "tabbox_csv_import", selected = "Well Coordinates")

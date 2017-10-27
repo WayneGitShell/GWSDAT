@@ -71,7 +71,10 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, fla
     
     # In some data sets spaces in WellName are present Well Table but not 
     # contaminant table: Delete spaces in both to synchronize.
-    wells <- rm_spaces(unique(wells))
+    wells <- rm_spaces(as.character(unique(wells)))
+    
+    # Make sure the WellName is not a factor (will break rm_spaces)
+    tbl$WellName <- as.character(tbl$WellName)
     
     # Some data sets have "Levels" instead of "Level" as unit for GW. 
     # Temporarily add "Levels" to units so they don't get lost.

@@ -17,10 +17,10 @@ uiPlumeDiagnostics <- function(csite, img_frmt) {
                         max = 100, 
                         value = csite$ui_attr$ground_porosity_pd,
                         width = '150px'
-            ),
-            div(style = "float: right",
-              actionButton("update_plume_ts", label = "Update", icon = icon("cogs"))
-            )
+            )#,
+            #div(style = "float: right",
+            #  actionButton("update_plume_ts", label = "Update", icon = icon("cogs"))
+            #)
                          
     ), # end box
     
