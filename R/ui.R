@@ -3,7 +3,7 @@
 #
 # Define the Shiny dashboard header
 #
-dbHeader <- shinydashboard::dashboardHeader(title = "GWSDAT",
+dbHeader <- shinydashboard::dashboardHeader(title = "GWSDAT.beta",
                             tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
                                       icon("home"),
                                       title = "GWSDAT Homepage"),
