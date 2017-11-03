@@ -339,7 +339,7 @@ readWellCoords <- function(input_file, valid_header, ...) {
   DF_extract$Aquifer <- as.character(DF$Aquifer)
   DF_extract$Aquifer[is.na(DF_extract$Aquifer)] <- ""
   
-  return(list(data = DF_extract, unit = coord_unit ))
+  return(list(data = DF_extract, coord_unit = coord_unit ))
   
 }
 

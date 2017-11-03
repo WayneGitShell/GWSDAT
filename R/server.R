@@ -46,15 +46,15 @@ server <- function(input, output, session) {
   renderRHandsonWell <- reactiveVal(0)
   
   # Define supported image formats
-  img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
+  img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "pptx")
         
-  if (!existsPPT() && ("ppt" %in% img_frmt))
-    img_frmt <- img_frmt[-which(img_frmt == "ppt")]
+  if (!existsPPT() && ("pptx" %in% img_frmt))
+    img_frmt <- img_frmt[-which(img_frmt == "pptx")]
    
   # If it is not windows, win.metafile() (wmf) can't be used and ppt as well.
   if (.Platform$OS.type != "windows") {
     if ("wmf" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "wmf")]
-    if ("ppt" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "ppt")]  
+    if ("pptx" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "pptx")]  
   }
     
   
@@ -359,6 +359,8 @@ server <- function(input, output, session) {
     # cat(" + right after reaggregateData()\n")
    
     #Fixme: WHAT IS THIS FOR, NEED THIS HERE
+    #plume threshold affects the plot, should detect here if it changes
+    # However, commenting this out seems to make it work anyway.
     #val <- plumeThreshChange()
     
     # Update control attributes from reactive variables (Possibly integrate this
@@ -368,7 +370,7 @@ server <- function(input, output, session) {
     csite$ui_attr$gw_selected <<- input$gw_flows
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
-   
+    
     plotSpatialImage(csite, input$solute_select_sp, 
                      as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
                      
@@ -538,8 +540,11 @@ server <- function(input, output, session) {
 
     content <-  function(file) {
       
-      if (input$export_format_ts == "ppt") {
+      if (input$export_format_ts == "pptx") {
         
+        #makeTimeSeriesPPT(file, csite, input$solute_select_ts, input$sample_loc_select_ts,
+        #                  width  = input$img_width_px, 
+        #                  height = input$img_height_px)
         makeTimeSeriesPPT(csite, input$solute_select_ts, input$sample_loc_select_ts,
                           width  = input$img_width_px  / csite$ui_attr$img_ppi, 
                           height = input$img_height_px / csite$ui_attr$img_ppi)
@@ -1344,7 +1349,7 @@ server <- function(input, output, session) {
                                                sep = input$sep, quote = input$quote)
       
       import_tables$DF_well <- ret$data
-      import_tables$Coord_unit <- ret$unit
+      import_tables$Coord_unit <- ret$coord_unit
     }
   })
   
@@ -1452,7 +1457,7 @@ server <- function(input, output, session) {
     
     # Save to reactive variable.
     import_tables$DF_well <- DF$data
-    import_tables$Coord_unit <- DF$unit
+    import_tables$Coord_unit <- DF$coord_unit
     
     
     # Switch to tabPanel with table.
@@ -2311,7 +2316,9 @@ server <- function(input, output, session) {
     if (dataLoaded() < LOAD_COMPLETE) 
       loadDataSet()
     
+    
     html_out <- h3("Select Data Set")
+    
     
     if (length(csite_list) == 0) {
       html_out <- tagList(html_out,
@@ -2321,63 +2328,14 @@ server <- function(input, output, session) {
       )
       
     } else {
+    
       # Data is present: Retrieve information on datasets and create an observer
       # (button select click) that selects a specific data set for analysis.
       data_sets <- getDataInfo(csite_list)
 
-      databoxes <- as.list(1:length(data_sets))
-      
-      databoxes <- lapply(databoxes, function(i) {
-        
-          # Name of the Select button for each data set. 
-          btName <- paste0("analyse_btn", i)
-        
-          #  Creates an observer only if it doesn't already exists.
-          if (is.null(obsAnalyseBtnList[[btName]])) {
-            
-            # Store observer function in list of buttons.
-            obsAnalyseBtnList[[btName]] <<- observeEvent(input[[btName]], {
-              
-              # Retrieve the aquifer select input value.
-              aquifer <- eval(parse(text = paste0("input$aquifer_select_", i)))
-              
-              # Get list index of selected data and aquifer.
-              j <- data_sets[[i]]$csite_idx[which(data_sets[[i]]$Aquifer == aquifer)]
-              
-              # If it was not fitted before, do it now.
-              if (is.null(csite_list[[j]]$Fitted.Data)) {
-               
-                fitdat <- fitData(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
-                
-                if (is.null(fitdat)) {
-                  showNotification("Fitting data failed. Aborting.", type = "error", duration = 10)
-                }
-                
-                csite_list[[j]]$Fitted.Data    <<- fitdat$Fitted.Data
-                csite_list[[j]]$Traffic.Lights <<- fitdat$Traffic.Lights
-                csite_list[[j]]$GW.Flows       <<- fitdat$GW.Flows
-                
-              }
-
-              # Make selected data set active and remember index (to save back 
-              # altered csite objects, which are copies, not references).
-              csite <<- csite_list[[j]]
-              csite_selected_idx <<- j
-
-              
-              shinyjs::hide("data_select_page")
-              shinyjs::show("analyse_page")
-              
-              # Triggers renderUI() of Analyse panel
-              # Fixme: Also triggers observer. I tried a separate reactive variable 
-              #        that is only observed by output$rndAnalyse, but it will also 
-              #        trigger here again. 
-              dataLoaded(dataLoaded() + 1)
-              
-              
-            })
-          }
-      })
+      # Store generated control IDs for Select and Aquifer Select Input
+      sel_ids <- c()
+      aq_ids  <- c()
       
       # Create a shinydashboard box for each data set. Include a choice for the 
       # Aquifer and the select button. 
@@ -2385,25 +2343,85 @@ server <- function(input, output, session) {
         
         set_name <- names(data_sets)[i]
         
+        # Create unique button name with random ID.
+        for (i in 1:1000) {
+          
+          tmpid <- sample(1:100000, 1)
+          
+          sel_id <- paste0("analyse_btn_", tmpid)
+          aq_id  <- paste0("aquifer_select_", tmpid)  
+          
+          if (!sel_id %in% sel_ids)
+            break
+        }
+        
+        sel_ids <- c(sel_ids, sel_id)
+        aq_ids  <- c(aq_ids, aq_id)
+        
         html_out <- tagList(html_out, fluidRow(
           shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
-              title = set_name, 
-                 
-              div(style = "display: inline-block", 
-                  selectInput(paste0("aquifer_select_", i), label = "Select Aquifer",
-                          choices  = data_sets[[set_name]]$Aquifer,
-                          selected = data_sets[[set_name]]$Aquifer[1], 
-                          width = '150px')
-              ),
-              div(style = "display: inline-block; float : right", 
-                  actionButton(paste0("analyse_btn", i), "Select")
-              )
-        )))
-        
-      }
+                              title = set_name, 
+                              
+                              div(style = "display: inline-block", 
+                                  selectInput(aq_id, label = "Select Aquifer",
+                                              choices  = data_sets[[set_name]]$Aquifer,
+                                              selected = data_sets[[set_name]]$Aquifer[1], 
+                                              width = '150px')
+                              ),
+                              div(style = "display: inline-block; float : right", 
+                                  actionButton(sel_id, "Select")
+                              )
+          )))
+      } # end for loop
       
-    }
-    
+      # Create temporary list that will be used to create the observer
+      databoxes <- as.list(1:length(data_sets))
+      
+      databoxes <- lapply(databoxes, function(i) {
+        
+        sel_id <- sel_ids[i]
+        aq_id  <- aq_ids[i]
+        
+        # Store observer function in list of buttons.
+        obsAnalyseBtnList[[sel_id]] <<- observeEvent(input[[sel_id]], {
+              
+          # Retrieve the aquifer select input value.
+          #aquifer <- eval(parse(text = paste0("input$", aq_id)))
+          aquifer <- input[[aq_id]] 
+             
+          # Get list index of selected data and aquifer.
+          j <- data_sets[[i]]$csite_idx[which(data_sets[[i]]$Aquifer == aquifer)]
+              
+          # If it was not fitted before, do it now.
+          if (is.null(csite_list[[j]]$Fitted.Data)) {
+               
+            fitdat <- fitData(csite_list[[j]]$All.Data, csite_list[[j]]$GWSDAT_Options)
+                
+            if (is.null(fitdat)) showNotification("Fitting data failed. Aborting.", type = "error", duration = 10)
+            
+            csite_list[[j]]$Fitted.Data    <<- fitdat$Fitted.Data
+            csite_list[[j]]$Traffic.Lights <<- fitdat$Traffic.Lights
+            csite_list[[j]]$GW.Flows       <<- fitdat$GW.Flows
+          }
+
+          # Make selected data set active and remember index (to save back 
+          # altered csite objects, which are copies, not references).
+          csite <<- csite_list[[j]]
+          csite_selected_idx <<- j
+
+              
+          shinyjs::hide("data_select_page")
+          shinyjs::show("analyse_page")
+              
+          # Triggers renderUI() of Analyse panel
+          # Fixme: Also triggers observer. I tried a separate reactive variable 
+          #        that is only observed by output$rndAnalyse, but it will also 
+          #        trigger here again. 
+          dataLoaded(dataLoaded() + 1)
+        })
+      }) # end of lapply
+    }  
+     
     return(html_out)
     
   })

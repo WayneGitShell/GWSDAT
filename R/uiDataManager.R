@@ -39,7 +39,7 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
         # Create the name of the button but make sure it does not exists yet.
         # The button name will be passed back to create an observer in the calling function.
         for (i in 1:1000) {
-          del_btn_name <- paste0("del_data_btn", floor(runif(1,min = 1, max = 1000000)))
+          del_btn_name <- paste0("del_data_btn", sample(1:100000, 1))
           if (!del_btn_name %in% del_btns)
             break
         }
@@ -50,7 +50,7 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
         
         # Edit Button: Create again a unique button name.
         for (i in 1:1000) {
-          edit_btn_name <- paste0("edit_data_btn", floor(runif(1,min = 1, max = 1000000)))
+          edit_btn_name <- paste0("edit_data_btn", sample(1:100000, 1))
           if (!edit_btn_name %in% edit_btns)
             break
         }

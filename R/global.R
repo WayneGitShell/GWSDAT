@@ -19,7 +19,7 @@
 
 # If I can unlock these binding, see output$rndAnalyse <- renderUI().
 #  I could use them here.
-#img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "ppt")
+#img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "pptx")
 #img_formats_use <- img_formats
 
 coord_units <- c("metres", "feet")

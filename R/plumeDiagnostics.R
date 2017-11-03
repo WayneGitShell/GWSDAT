@@ -105,13 +105,13 @@ getPlumeStats <- function(csite,
   #
   # Create plume statistics summary.
   #
-  #browser()
+  
   plume_stats <- data.frame(area = NA, volume = NA, mass = NA, avg_conc = NA,
                             mass_centre_x = NA, mass_centre_y = NA,
                             conc_thresh = plume_thresh,
                             substance = substance,
                             ground_porosity = ground_porosity,
-                            coord_unit = csite$All.Data$sample_loc$unit,
+                            coord_unit = csite$All.Data$sample_loc$coord_unit,
                             conc_unit = csite$ui_attr$conc_unit_selected
                             )
   

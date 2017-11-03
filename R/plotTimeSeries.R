@@ -362,6 +362,29 @@ plotTimeSeries <- function(csite,
 }
 
 
+# #' @import officer
+# makeTimeSeriesPPT_officer <- function(file, csite, substance, location, width = 7, height = 5){
+# 
+#   # Create png file.
+#   mytemp <- tempfile(fileext = ".wmf")
+# 
+#   png(mytemp, width = width, height = height)
+#   plotTimeSeries(csite, substance, location)
+#   dev.off()
+# 
+#   my_pres <- officer::read_pptx()
+# 
+#   my_pres <- my_pres %>%
+#     officer::add_slide(layout = "Title and Content", master = "Office Theme") %>%
+#     officer::ph_with_img(type = "body", index = 1, src = mytemp, height = 1.06, width = 1.39 )
+# 
+#   print(my_pres, target = file) %>% invisible()
+# 
+#   try(file.remove(mytemp))
+# 
+# }
+
+
 makeTimeSeriesPPT <- function(csite, substance, location, width = 7, height = 5){
   
   # Create temporary wmf file. 
