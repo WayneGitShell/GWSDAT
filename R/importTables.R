@@ -1,6 +1,6 @@
 
 
-parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, flags = NULL) {
+parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, dsource = "") {
   
   if (is.null(tbl)) {
     stop("First argument \'tbl\' is missing\n")
@@ -17,19 +17,12 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, fla
     return(NULL)
   }
   
-  if (type == "contaminant" && is.null(units)) {
-    stop("If type = \'contaminant\', need to specify the parameter \'units\'.")
-    return(NULL)
-  }
-  
-  if (type == "contaminant" && is.null(flags)) {
-    stop("If type = \'contaminant\', need to specify the parameter \'flags\'.")
-    return(NULL)
-  }
   
   if (nrow(tbl) == 0)
     return(NULL)
   
+  if (dsource == "excel")
+    return(tbl)
    
   
   # Create empty buffer for valid entries
@@ -40,7 +33,7 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, fla
   if (type == "wells") {
   
     duplicate_wells = c()
-    
+      
     # Loop over rows and check every column.
     for (i in 1:nrow(tbl)) {
       
@@ -78,13 +71,14 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, fla
     
     # Some data sets have "Levels" instead of "Level" as unit for GW. 
     # Temporarily add "Levels" to units so they don't get lost.
-    units <- tolower(c(units, "Levels"))
+    units <- tolower(c(conc_units, "Levels"))
     
     invalid_wells <- c()
     invalid_sampledates <- 0
     invalid_units <- 0
     invalid_flags <- 0
     
+    #ptm <- proc.time()
     # Loop over rows and check every column.
     for (i in 1:nrow(tbl)) {
       
@@ -112,7 +106,7 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, fla
         next
       }
       
-      if (!(tbl$Flags[i] %in% flags)) {
+      if (!(tbl$Flags[i] %in% conc_flags)) {
         invalid_flags <- invalid_flags + 1
         next
       }
@@ -120,6 +114,8 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, units = NULL, fla
       # If we made it until here, the row is ok. 
       val_buf <- rbind(val_buf, tbl[i,])
     }
+    #print("Time to go through table (parseTable): ")
+    #print(proc.time() - ptm)
     
     # Check if all wells are unique
     if (length(invalid_wells) > 0) {

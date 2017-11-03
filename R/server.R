@@ -802,21 +802,25 @@ server <- function(input, output, session) {
   
   
   # Can I move parts (or all) of this function into importTables?
-  importData <- function(dname) {
+  importData <- function(dname, dsource = NULL) {
+    
+    ptm <- proc.time()
+    
     
     if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
       showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
                        type = "error", duration = 10)      
       return(NULL)
     }
-    
+        
     if (is.null(DF_conc <- parseTable(import_tables$DF_conc, type = "contaminant", 
-                                 wells = unique(DF_well$WellName), units = conc_units,
-                                 flags = conc_flags))) {
+                                      wells = unique(DF_well$WellName), 
+                                      dsource = dsource))) {
       showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
                        type = "error", duration = 10)      
       return(NULL)
     }
+    
     
     
     # Check if data name is valid, i.e. does not already exists. If getValidDataName()
@@ -897,7 +901,8 @@ server <- function(input, output, session) {
     shinyjs::hide(id = "uiDataAddCSV")
     shinyjs::hide(id = "uiDataAddExcel")
     
-    
+    print("Time to run formatData: ")
+    print(proc.time() - ptm)
   }
   
   ## Data Manager Landing ######################################################
@@ -1658,7 +1663,7 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$import_button_xls, importData(input$dname_xls))
+  observeEvent(input$import_button_xls, importData(input$dname_xls, "excel"))
   
   
   ## Edit Data #################################################################
