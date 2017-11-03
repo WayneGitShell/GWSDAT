@@ -264,8 +264,12 @@ uiImportExcelData <- function(csite_list) {
     ),
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_xls_import",
-                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_xls")
-                           ), 
+                           tabPanel("Contaminant Data", {
+                             shiny::tagList(
+                               HTML("<b>Note</b>: Only the first 1000 rows are displayed to speed up the table view given large data sets."),
+                               rhandsontable::rHandsontableOutput("tbl_conc_xls")
+                             )
+                           }), 
                            tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_xls")
                            ),
                            tabPanel("Shape Files", {

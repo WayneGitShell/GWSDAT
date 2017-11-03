@@ -3,11 +3,14 @@
 
 
 server <- function(input, output, session) {
-  DEBUG_MODE <- TRUE
+  #DEBUG_MODE <- TRUE
 
   # Increase upload file size to 30MB (default: 5MB)
   options(shiny.maxRequestSize = 30*1024^2)
   
+  si <- sessionInfo()
+  tmplog <- paste0(si$R.version$version.string, "\nPlatform: ", si$platform, "\n")
+  app_log <- reactiveVal(tmplog)
  
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
@@ -67,7 +70,10 @@ server <- function(input, output, session) {
   #
   
   output$version_info <- renderPrint({
-      print(sessionInfo())
+    
+      #print()
+    #browser()
+    cat(app_log())
 
       #cat("\n\n** Path to image logo: ", system.file("logo.gif", package = "GWSDAT"), "\n")
       #cat("\n\n** Content of .libPaths():\n\n")
@@ -901,8 +907,9 @@ server <- function(input, output, session) {
     shinyjs::hide(id = "uiDataAddCSV")
     shinyjs::hide(id = "uiDataAddExcel")
     
-    print("Time to run formatData: ")
-    print(proc.time() - ptm)
+    # Log the time it took to run this function
+    time_passed <- (proc.time() - ptm)[1]
+    app_log(paste0(app_log(), "Time to run formatData(): ", time_passed, " seconds\n"))
   }
   
   ## Data Manager Landing ######################################################
@@ -1513,9 +1520,17 @@ server <- function(input, output, session) {
     # Use smaller size for placeholder table (only header).
     if (nrow(import_tables$DF_conc) == 0)  tbl_height <- 400 
     
-    rhandsontable::rhandsontable(import_tables$DF_conc, 
-                                 useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
-                                 height = tbl_height, readOnly = TRUE)  
+    # Only show first 1000 rows (should be sufficient) in preview.
+    # Large data set will take too much time to send the whole table
+    # back to the client.
+    if (nrow(import_tables$DF_conc) > 1000)
+      DF <- import_tables$DF_conc[1:1000,]
+    else
+      DF <- import_tables$DF_conc
+        
+    rhandsontable::rhandsontable(DF, useTypes = TRUE, rowHeaders = NULL, 
+                                 stretchH = "all", height = tbl_height, 
+                                 readOnly = TRUE)  
   })
   
   
