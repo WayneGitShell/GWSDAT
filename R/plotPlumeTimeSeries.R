@@ -285,10 +285,25 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
     chullseglist <- list()
     
     for (i in 1:(nrow(myhull) - 1)) {
-      chullseglist[[i]] <- as.data.frame(approx(myhull[i:(i + 1),], n = max(Perimeter.Npts[i],3)))
+      
+      # Sometimes the number of perimeter points is zero. This is caused
+      # by identical coordinates in 'myhull'. If this happens, do not execute
+      # approx() and just copy the single coordinate.
+      if (Perimeter.Npts[i] != 0) {
+      
+        amh <- approx(myhull[i:(i + 1),], n = max(Perimeter.Npts[i],3))
+        
+      } else {
+        # Copy the first coordinate (remaining should be identical).
+        amh <- myhull[i,]
+        colnames(amh) <- c("x", "y")
+        rownames(amh) <- 1
+      }
+      
+      chullseglist[[i]] <- as.data.frame(amh)
     }
     
-    return(do.call("rbind",chullseglist))
+    return(do.call("rbind", chullseglist))
   }
   
   

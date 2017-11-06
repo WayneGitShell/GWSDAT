@@ -4,6 +4,7 @@
 
 #' @importFrom Matrix sparseMatrix
 #' @importFrom sp point.in.polygon
+#' @importFrom geometry delaunay
 interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","Upper 95% CI","% sd","IQR/2")) {
   
   
@@ -55,26 +56,40 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     
     ####################### pred.df ####################################
     
-    pred.df$InOut<-!sp::point.in.polygon(pred.df$XCoord,pred.df$YCoord,my.area[,1],my.area[,2])==0
+    pred.df$InOut <- !sp::point.in.polygon(pred.df$XCoord,pred.df$YCoord,my.area[,1],my.area[,2]) == 0
     
-    predred.df<-pred.df[pred.df$InOut,]
-    
-    dn <- delaunayn(eval.df[,c("XCoord","YCoord")])#,
-    
-    tri <- tsearch(eval.df[,"XCoord"],eval.df[,"YCoord"],dn,predred.df[,"XCoord"],predred.df[,"YCoord"],bary=T) 
-    active <- dn[tri$idx,] 
+    predred.df <- pred.df[pred.df$InOut,]
     
     
-    M <- Matrix::sparseMatrix(i=rep(1:nrow(predred.df),each=3),j=as.numeric(t(active)),x=as.numeric(t(tri$p)),dims=c(nrow(predred.df),length(eval.df$pred))) 
-    predred.df$pred<-as.numeric(M%*%eval.df$pred)
+    #
+    # The following code needs attention: 
+    #  - delaunayn() will generate warnings/errors if the set of points is not
+    #    convex (check before or just catch). 
+    #  - As a consequence, calls to contourLines() will produce warnings.
+
+    dn <- try(geometry::delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
     
-    
-    pred.df$pred[pred.df$InOut]<-predred.df$pred
-    
+    if (!inherits(dn, "try-error")) {
+      tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
+                     predred.df[,"YCoord"], bary = T) 
+      active <- dn[tri$idx,] 
+      
+      
+      M <- Matrix::sparseMatrix(i = rep(1:nrow(predred.df), each = 3), 
+                                j = as.numeric(t(active)), x = as.numeric(t(tri$p)),
+                                dims = c(nrow(predred.df), length(eval.df$pred))) 
+      
+      predred.df$pred <- as.numeric(M %*% eval.df$pred)
+      
+      
+      pred.df$pred[pred.df$InOut] <- predred.df$pred
+    } else {
+      cat("Encountered github issue #123 associated to geometry::delaunay(). Coordinates lack convex hull.\n")
+    }    
     
   }
   
-  out<-list(x=x0,y=y0,z=matrix(pred.df$pred,nrow = length(x0), ncol = length(y0)))
+  out <- list(x = x0, y = y0, z = matrix(pred.df$pred,nrow = length(x0), ncol = length(y0)))
   
   return(out)
   

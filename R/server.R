@@ -1115,7 +1115,7 @@ server <- function(input, output, session) {
   
   createNewConcTable <- function() {
     
-    import_tables$DF_conc <- data.frame(matrix("", nrow = 25, ncol = length(conc_header)),
+    import_tables$DF_conc <- data.frame(matrix("", nrow = 1000, ncol = length(conc_header)),
                                         stringsAsFactors = FALSE)
     colnames(import_tables$DF_conc) <- conc_header
     
@@ -1129,7 +1129,7 @@ server <- function(input, output, session) {
   
   createNewWellTable <- function() {
     
-    well_tmp <- data.frame(matrix("", nrow = 25, ncol = length(well_header)),
+    well_tmp <- data.frame(matrix("", nrow = 200, ncol = length(well_header)),
                            stringsAsFactors = FALSE)
     colnames(well_tmp) <- well_header
     
@@ -1197,11 +1197,22 @@ server <- function(input, output, session) {
   # Converts the hot table to the data.frame in import_tables.
   observe({
     #cat("* in observe: input$tbl_conc_nd\n")
+    #DF_OK = TRUE
     
     if (is.null(input$tbl_conc_nd)) {
       DF <- import_tables$DF_conc
     } else {
-      DF <- hot_to_r(input$tbl_conc_nd)
+      tryCatch(
+        DF <- hot_to_r(input$tbl_conc_nd),
+      error = function(e) {
+        showModal(modalDialog(
+          title = "Crash Detected",
+          HTML("You just encountered one of the known bugs in the table editing (rhandsontable). 
+               <br> 1. After removing a row, the table crashes when using hot_to_r() because the row name indexing is not working properly.
+               <br> 2. Pasting content that has more rows than exist in this table will crash hot_to_r() with the same reason as in point 1.
+               "),
+          easyClose = FALSE, footer = NULL))
+      })
     }
     
     import_tables$DF_conc <- DF  # update import tables
@@ -1229,7 +1240,7 @@ server <- function(input, output, session) {
 
     
     hot <- rhandsontable::rhandsontable(DF, #useTypes = FALSE, 
-                                 stretchH = "all", height = 605) %>%
+                                 stretchH = "all", height = 750, rowHeaders = TRUE) %>% #height = 605, rowHeaders = TRUE) %>%
       hot_context_menu(allowColEdit = FALSE) %>% # if useTypes = TRUE, allowColEdit will be FALSE anyway
       hot_col(col = "WellName", type = "dropdown", source = well_choices, strict = TRUE) %>%
       hot_col(col = "Units", type = "dropdown", source = conc_units) %>%
@@ -1253,7 +1264,17 @@ server <- function(input, output, session) {
     if (is.null(input$tbl_well_nd)) {
       DF <- import_tables$DF_well
     } else {
-      DF <- hot_to_r(input$tbl_well_nd)
+      tryCatch(
+        DF <- hot_to_r(input$tbl_well_nd),
+      error = function(e) {
+        showModal(modalDialog(
+          title = "Crash Detected",
+          HTML("You just encountered one of the known bugs in the table editing (rhandsontable). 
+               <br> 1. After removing a row, the table crashes when using hot_to_r() because the row name indexing is not working properly.
+               <br> 2. Pasting content that has more rows than exist in this table will crash hot_to_r() with the same reason as in point 1.
+               "),
+          easyClose = FALSE, footer = NULL))
+      })
     }
     
     import_tables$DF_well <- DF
@@ -1268,7 +1289,7 @@ server <- function(input, output, session) {
     renderRHandsonWell()
     
     hot <- rhandsontable::rhandsontable(DF, useTypes = TRUE, 
-                                        stretchH = "all", height = 605) 
+                                        stretchH = "all", height = 750) 
       #hot_context_menu(allowColEdit = FALSE) %>% # if useTypes = TRUE, allowColEdit will be FALSE anyway
       #hot_col(col = "WellName", type = "dropdown", source = well_choices, strict = TRUE)
     
