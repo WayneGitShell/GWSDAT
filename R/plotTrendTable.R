@@ -245,10 +245,10 @@ plotTrendTableLegend <- function() {
                  } </style> ")
 
 
-  html <- paste0(html, "<div style=\"display: inline-block; margin-right: 30px\">")
-  html <- paste0(html, "<div style=\"margin-bottom:10px\"><h4> Color Key: Trend Table </h4></div>")
+  html <- paste0(html, "<div style=\"display: inline-block; margin-left:20px\">")
+  html <- paste0(html, "<div style=\"margin-bottom:10px; text-align:center\"><h4> Color Key: Trend Table </h4></div>")
   html <- paste0(html, "<table>") 
-  html <- paste0(html, "<col width=\"350\">")
+  html <- paste0(html, "<col width=\"310\">")
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"grey\">  Not Available </td></tr>") 
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"blue\"> Non-Detect Data </td></tr>") 
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"#1A9641\"> Strong Downward Trend: Half-Life < 1 Year</td></tr>") 
@@ -258,10 +258,10 @@ plotTrendTableLegend <- function() {
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"#D7191C\"> Strong Upward Trend: Doubling-Time < 1 Year </td></tr>") 
   html <- paste0(html, "</tbody></table></div>")
   
-  html <- paste0(html, "<div style=\"display: inline-block\">")
-  html <- paste0(html, "<div style=\"margin-bottom:10px\"><h4> Color Key: Threshold Tables </h4></div>")
+  html <- paste0(html, "<div style=\"display: inline-block; margin-left:20px\">")
+  html <- paste0(html, "<div style=\"margin-bottom:10px; text-align:center\"><h4> Color Key: Threshold Tables </h4></div>")
   html <- paste0(html, "<table>")
-  html <- paste0(html, "<col width=\"350\">")
+  html <- paste0(html, "<col width=\"310\">")
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"grey\">  Not Available </td></tr>") 
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"blue\"> Non-Detect Data </td></tr>") 
   html <- paste0(html, "<tr><td style=\"height: 30px; text-align:center; color:white\", bgcolor=\"#1A9641\"> (Significantly) Below Threshold Limit</td></tr>") 
