@@ -34,8 +34,18 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   shinydashboard::dashboardBody(
                       shinyjs::useShinyjs(), 
                       
-                      tags$head(includeScript("inst/www/google-analytics.js")),
+                      #tags$head(includeScript("inst/www/google-analytics.js")),
                       
+                      tags$head(HTML(sprintf(
+                      "<!-- Global site tag (gtag.js) - Google Analytics -->
+                        <script async src='https://www.googletagmanager.com/gtag/js?id=UA-109683161-1'></script>
+                        <script>
+                        window.dataLayer = window.dataLayer || [];
+                      function gtag(){dataLayer.push(arguments);}
+                      gtag('js', new Date());
+                      gtag('config', 'UA-109683161-1');
+                      </script>"))),
+                        
                       #shinyjs::extendShinyjs(text = jsCode),
                       #path_to_extdata <- system.file("extdata", package = "GWSDAT"),
                       #cat("* adding ", path_to_extdata, " as resource\n"),
@@ -46,13 +56,12 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
                       #shiny::singleton(tags$head(tags$script(src = "inst/extdata/trafficlight.js"))),
                       #includeScript("www/trafficlight.js"),
                       
-                      
-                      tags$head(HTML(sprintf(
-                        "<script>
-                        function jumpToPlot(i, j) {
-                        $('.tabbable .nav.nav-tabs li a:first').click();
-                        }
-                        </script>"))),
+                      #tags$head(HTML(sprintf(
+                      #  "<script>
+                      #  function jumpToPlot(i, j) {
+                      #  $('.tabbable .nav.nav-tabs li a:first').click();
+                      #  }
+                      #  </script>"))),
                  
     shinydashboard::tabItems(
       shinydashboard::tabItem(tabName = "menu_data_manager", 
