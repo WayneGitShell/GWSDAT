@@ -82,7 +82,7 @@ readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_f
 
 readExcel <- function(filein, sheet = NULL) {
     
-    cat("* in readExcel()\n")
+    
     conc_header <- list("WellName", "Constituent", "SampleDate", "Result", "Units", "Flags")
     well_header <- list("WellName", "XCoord", "YCoord", "Aquifer")
    

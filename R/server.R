@@ -3,13 +3,14 @@
 
 
 server <- function(input, output, session) {
-  #DEBUG_MODE <- TRUE
+  DEBUG_MODE <- FALSE
 
   # Increase upload file size to 30MB (default: 5MB)
   options(shiny.maxRequestSize = 30*1024^2)
   
   si <- sessionInfo()
-  tmplog <- paste0(si$R.version$version.string, "\nPlatform: ", si$platform, "\n")
+  tmplog <- paste0(si$R.version$version.string, "\nPlatform: ", si$platform, "\n",
+                   "GWSDAT version: ", packageVersion("GWSDAT"), "\n")
   app_log <- reactiveVal(tmplog)
  
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
@@ -71,8 +72,6 @@ server <- function(input, output, session) {
   
   output$version_info <- renderPrint({
     
-      #print()
-    #browser()
     cat(app_log())
 
       #cat("\n\n** Path to image logo: ", system.file("logo.gif", package = "GWSDAT"), "\n")
@@ -121,9 +120,9 @@ server <- function(input, output, session) {
       shinyjs::hide("plume_diagn_plot_div")
       shinyjs::hide("plume_save_btn_div")
     } else {
-      shinyjs::show("plume_diagn_plot_div")
-      shinyjs::show("plume_save_btn_div")
-      shinyjs::hide("plume_diagn_msg_div")
+      shinyjs::show("plume_diagn_plot_div", anim = FALSE)
+      shinyjs::show("plume_save_btn_div", anim = FALSE)
+      shinyjs::hide("plume_diagn_msg_div", anim = FALSE)
     }
 
     return(val)
@@ -182,13 +181,18 @@ server <- function(input, output, session) {
   
   # Plot time-series window
   output$time_series <- renderPlot({
-    
+    if (DEBUG_MODE)
+      cat("* in time_series <- renderPlot()\n")
+  
     optionsSaved()
     
     # Update control attributes from reactive variables. 
     csite$ui_attr$conc_unit_selected <<- input$solute_conc
     csite$ui_attr$ts_options[1:length(csite$ui_attr$ts_options)] <<- FALSE
     csite$ui_attr$ts_options[input$ts_true_options] <<- TRUE
+    
+    
+    #cat("--> input$sample_loc_select_ts: ", input$sample_loc_select_ts, "\n")
     
     plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts, input$check_threshold)
     
@@ -808,21 +812,21 @@ server <- function(input, output, session) {
   
   
   # Can I move parts (or all) of this function into importTables?
-  importData <- function(dname, dsource = NULL) {
+  importData <- function(dname, dsource = "") {
     
     ptm <- proc.time()
     
     
     if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
-      showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
+      showNotification("Nothing to import: Could not find at least one valid row entry in contaminant table.", 
                        type = "error", duration = 10)      
       return(NULL)
     }
-        
+    
     if (is.null(DF_conc <- parseTable(import_tables$DF_conc, type = "contaminant", 
                                       wells = unique(DF_well$WellName), 
                                       dsource = dsource))) {
-      showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
+      showNotification("Nothing to import: Could not find at least one valid row entry in contaminant table.", 
                        type = "error", duration = 10)      
       return(NULL)
     }
@@ -878,7 +882,7 @@ server <- function(input, output, session) {
       ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
       
       # Build list with all data.
-      csite <<- list(All.Data       = pr_dat,
+      csite <- list(All.Data       = pr_dat,
                      Fitted.Data    = NULL,
                      GWSDAT_Options = GWSDAT_Options,
                      Traffic.Lights = NULL,
@@ -1524,8 +1528,8 @@ server <- function(input, output, session) {
   ## Import Excel data #########################################################
   
   output$tbl_conc_xls <- rhandsontable::renderRHandsontable({
-    
-    cat("* in tbl_conc_xls\n")
+    if (DEBUG_MODE)
+      cat("* in tbl_conc_xls\n")
     
     # Create empty table with only header as a placeholder.
     if (is.null(import_tables$DF_conc)) {
@@ -1617,7 +1621,8 @@ server <- function(input, output, session) {
   #FIXME: Move this to readData.R or excel related file?
   #
   readExcelSheet <- function(filein, sheet) {
-    cat("* in readExcelSheet\n")
+    if (DEBUG_MODE)
+      cat("* in readExcelSheet\n")
     
     dtmp <- readExcel(filein, sheet)
     
@@ -1690,7 +1695,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$okExcelSheet, {
-    cat("* in observeEvent: input$okExcelSheet\n")
+    if (DEBUG_MODE)
+      cat("* in observeEvent: input$okExcelSheet\n")
     
     # Attempt to read the sheet, if it succeeds, remove the modal dialog.      
     if (readExcelSheet(input$excel_import_file, input$excelsheet))
@@ -1707,7 +1713,8 @@ server <- function(input, output, session) {
   # Triggers each time input$tbl_conc_nd (the rhandsontable) changes.
   # Converts the hot table to the data.frame in import_tables.
   observe({
-    cat("* in observe: input$tbl_conc_ed\n")
+    if (DEBUG_MODE)
+      cat("* in observe: input$tbl_conc_ed\n")
     
     if (is.null(input$tbl_conc_ed)) {
       DF <- import_tables$DF_conc
@@ -1723,7 +1730,8 @@ server <- function(input, output, session) {
   # For some reason double execution of this observer takes place after hitting 
   #  "Add New Data"
   output$tbl_conc_ed <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_conc_ed <- renderRHandsontable()\n")
+    if (DEBUG_MODE)
+      cat("* in tbl_conc_ed <- renderRHandsontable()\n")
     
     # Isolated because it shall not react to changes in 'import_tables$DF_conc'. 
     # Otherwise there will be too much rendering taking place.
@@ -1758,7 +1766,8 @@ server <- function(input, output, session) {
   
 
   observe({
-    cat("* in observe: input$tbl_well_ed\n")
+    if (DEBUG_MODE)
+      cat("* in observe: input$tbl_well_ed\n")
     
     if (is.null(input$tbl_well_ed)) {
       DF <- import_tables$DF_well
@@ -1771,7 +1780,8 @@ server <- function(input, output, session) {
   
   
   output$tbl_well_ed <- rhandsontable::renderRHandsontable({
-    cat("\n* in tbl_well_ed <- renderRHandsontable()\n")
+    if (DEBUG_MODE)
+      cat("\n* in tbl_well_ed <- renderRHandsontable()\n")
     
     isolate(DF <- import_tables$DF_well)
     
@@ -1919,9 +1929,9 @@ server <- function(input, output, session) {
   
   # Restore data.
   observeEvent(input$reset_ed_data,  {
-    #cat("* in observeEvent: reset_ed_data\n")
-     
-     
+    if (DEBUG_MODE)
+      cat("* in observeEvent: reset_ed_data\n")
+  
     # Write back the original data.
     import_tables$DF_conc <- csite$raw_contaminant_tbl
     import_tables$DF_well <- csite$raw_well_tbl
@@ -2218,7 +2228,8 @@ server <- function(input, output, session) {
   
   
   loadDefaultSessions <- function() {
-    #cat("* in loadDefaultSessions()\n")
+    if (DEBUG_MODE)
+      cat("* in loadDefaultSessions()\n")
     
     infile <- system.file("extdata", default_session_file, package = "GWSDAT")
     
@@ -2233,7 +2244,7 @@ server <- function(input, output, session) {
     
     csite_list <<- csite_list
     csite <<- csite_list[[1]]
-      
+    csite_selected_idx <<- 1
     
     dataLoaded(LOAD_COMPLETE)
     
@@ -2245,7 +2256,8 @@ server <- function(input, output, session) {
   #   it uses the reactive variabled dataLoaded. How to fix this?
   #
   loadDataSet <- function() {
-
+  
+    #if (DEBUG_MODE)
     cat("* in loadDataSet()\n")
     
     # Load 'session_file' if specified in launchApp().
@@ -2261,6 +2273,7 @@ server <- function(input, output, session) {
       
       csite_list <<- csite_list
       csite <<- csite_list[[1]]
+      csite_selected_idx <<- 1
       
       dataLoaded(LOAD_COMPLETE)
       return(TRUE)  
@@ -2322,15 +2335,14 @@ server <- function(input, output, session) {
     
     # Build list with all data.
     csite <<- list(All.Data       = pr_dat,
-                   Fitted.Data    = fitdat$Fitted.Data,
-                   GWSDAT_Options = GWSDAT_Options,
-                   Traffic.Lights = fitdat$Traffic.Lights,
-                   GW.Flows       = fitdat$GW.Flows,
-                   ui_attr        = ui_attr,
-		               Aquifer        = Aq_sel,
-		               raw_contaminant_tbl = solute_data,
-		               raw_well_tbl   = well_data$data
-    )
+                  Fitted.Data    = fitdat$Fitted.Data,
+                  GWSDAT_Options = GWSDAT_Options,
+                  Traffic.Lights = fitdat$Traffic.Lights,
+                  GW.Flows       = fitdat$GW.Flows,
+                  ui_attr        = ui_attr,
+		              Aquifer        = Aq_sel,
+		              raw_contaminant_tbl = solute_data,
+		              raw_well_tbl   = well_data$data)
     
     # Save csite to the list of csites and remember index.
     curr_idx <- length(csite_list) + 1
@@ -2353,7 +2365,7 @@ server <- function(input, output, session) {
   
   output$uiAnalyseDataList <- renderUI({
     
-    
+    # If nothing was loaded yet, attempt to do so.
     if (dataLoaded() < LOAD_COMPLETE) 
       loadDataSet()
     
@@ -2489,7 +2501,8 @@ server <- function(input, output, session) {
   
 
   observeEvent(input$reset_csv_import,  {
-    cat("* in observeEvent: reset_csv_import\n")
+    if (DEBUG_MODE)
+      cat("* in observeEvent: reset_csv_import\n")
 
     import_tables$DF_conc <<- NULL
     import_tables$DF_well <<- NULL
@@ -2502,7 +2515,8 @@ server <- function(input, output, session) {
   
   # Go to Excel Data Import (Button click).
   observeEvent(input$add_excel_data,  {
-    cat("* in observeEvent: add_excel_data\n")
+    if (DEBUG_MODE)
+      cat("* in observeEvent: add_excel_data\n")
 
     shinyjs::hide(id = "uiDataManager")    
     shinyjs::show(id = "uiDataAddExcel")
@@ -2514,7 +2528,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$reset_xls_import, {
-    cat("* in observeEvent: reset_xls_import\n")
+    if (DEBUG_MODE)
+      cat("* in observeEvent: reset_xls_import\n")
     
     import_tables$DF_well <<- NULL
     import_tables$DF_conc <<- NULL
@@ -2531,7 +2546,9 @@ server <- function(input, output, session) {
     
     # Check if a Delete button was created.
     if (length(btns) > 0) {
-      cat(" + creating del button observers\n")
+      if (DEBUG_MODE)
+        cat(" + creating del button observers\n")
+  
       databoxes <- as.list(1:length(btns))
       databoxes <- lapply(databoxes, function(i) {
         
@@ -2580,7 +2597,9 @@ server <- function(input, output, session) {
     
     # Check if a Delete button was created.
     if (length(btns) > 0) {
-      cat(" + creating edit button observers\n")
+      if (DEBUG_MODE)
+        cat(" + creating edit button observers\n")
+      
       databoxes <- as.list(1:length(btns))
       databoxes <- lapply(databoxes, function(i) {
         
@@ -2592,7 +2611,8 @@ server <- function(input, output, session) {
           
           # Store observer function in list of buttons.
           obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
-            cat("* observeEvent: button clicked: ", btn_name, "\n")
+            if (DEBUG_MODE)
+              cat("* observeEvent: button clicked: ", btn_name, "\n")
             
             # Find data set by name.
             csite_selected_idx <<- c()
@@ -2688,7 +2708,8 @@ server <- function(input, output, session) {
   # }
   
   output$uiDataManager <- renderUI({
-    cat("* in uiDataManager <- renderUI()\n")
+    if (DEBUG_MODE)
+      cat("* in uiDataManager <- renderUI()\n")
     
     # Observe load status of data.
     if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
@@ -2707,7 +2728,9 @@ server <- function(input, output, session) {
   
   
   output$rndAnalyse <- renderUI({
-   
+    if (DEBUG_MODE)
+      cat("* in rndAnalyse <- renderUI()\n")
+  
     # Observe load status of data.
     data_load_status <- dataLoaded()
     

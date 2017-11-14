@@ -34,18 +34,14 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   shinydashboard::dashboardBody(
                       shinyjs::useShinyjs(), 
                       
-                      #tags$head(includeScript("inst/www/google-analytics.js")),
+                      # Not using includeScript because it wraps <script> tags
+                      # around which doesn't work with the GA js directives.
+                      tags$head(includeHTML("inst/www/google-analytics.js")),
                       
-                      tags$head(HTML(sprintf(
-                      "<!-- Global site tag (gtag.js) - Google Analytics -->
-                        <script async src='https://www.googletagmanager.com/gtag/js?id=UA-109683161-1'></script>
-                        <script>
-                        window.dataLayer = window.dataLayer || [];
-                      function gtag(){dataLayer.push(arguments);}
-                      gtag('js', new Date());
-                      gtag('config', 'UA-109683161-1');
-                      </script>"))),
-                        
+                      # Laden des .js Codes funktioniert im R Packet.
+                      # Der Code sollte alo auch laden.
+                      tags$head(includeScript("inst/www/jump_to_tsplot.js")),
+                      
                       #shinyjs::extendShinyjs(text = jsCode),
                       #path_to_extdata <- system.file("extdata", package = "GWSDAT"),
                       #cat("* adding ", path_to_extdata, " as resource\n"),
@@ -54,14 +50,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
                       #includeScript("extdata/trafficlight.js"),
                       #includeHTML("inst/www/trafficlight.js"),
                       #shiny::singleton(tags$head(tags$script(src = "inst/extdata/trafficlight.js"))),
-                      #includeScript("www/trafficlight.js"),
                       
-                      #tags$head(HTML(sprintf(
-                      #  "<script>
-                      #  function jumpToPlot(i, j) {
-                      #  $('.tabbable .nav.nav-tabs li a:first').click();
-                      #  }
-                      #  </script>"))),
                  
     shinydashboard::tabItems(
       shinydashboard::tabItem(tabName = "menu_data_manager", 

@@ -17,23 +17,23 @@ GWSDAT_Options[['PSplineVars']][['nseg']]<-6
 GWSDAT_Options[['OutputGraphics']]<-'wmf'
 GWSDAT_Options[['DefContThresh']]<-500
 GWSDAT_Options[['DefPlumeThresh']]<-10
-GWSDAT_Options[['DefPorosity']]<-0.25
-GWSDAT_Options[['smThreshSe']]<-1.1512
-GWSDAT_Options[['smThreshSe']]<-as.numeric(GWSDAT_Options[['smThreshSe']])
-GWSDAT_Options[['smMethod']]<-'aicc'
-GWSDAT_Options[['Version']]<-'2.11'
-GWSDAT_Options[['Version']]<-as.numeric(GWSDAT_Options[['Version']])
-XtempScreenExp<-as.character('1,6')
-YtempScreenExp<-as.character('1,125')
-XtempScreenExp<-gsub(',','.',XtempScreenExp)
-YtempScreenExp<-gsub(',','.',YtempScreenExp)
-XtempScreenExp<-as.numeric(XtempScreenExp)
-YtempScreenExp<-as.numeric(YtempScreenExp)
-if(is.na(XtempScreenExp)){XtempScreenExp<-1}
-if(is.na(YtempScreenExp)){YtempScreenExp<-1}
-GWSDAT_Options[['Scale.panelImage']] <- list(hscale = as.numeric(XtempScreenExp),vscale=as.numeric(YtempScreenExp))
-if(exists('YtempScreenExp')){rm(YtempScreenExp)}
-if(exists('XtempScreenExp')){rm(XtempScreenExp)}
+GWSDAT_Options[['DefPorosity']] <- 0.25
+GWSDAT_Options[['smThreshSe']] <- 1.1512
+GWSDAT_Options[['smThreshSe']] <- as.numeric(GWSDAT_Options[['smThreshSe']])
+GWSDAT_Options[['smMethod']] <- 'aicc'
+GWSDAT_Options[['Version']] <- '2.11'
+GWSDAT_Options[['Version']] <- as.numeric(GWSDAT_Options[['Version']])
+XtempScreenExp <- as.character('1,6')
+YtempScreenExp <- as.character('1,125')
+XtempScreenExp <- gsub(',','.',XtempScreenExp)
+YtempScreenExp <- gsub(',','.',YtempScreenExp)
+XtempScreenExp <- as.numeric(XtempScreenExp)
+YtempScreenExp <- as.numeric(YtempScreenExp)
+if (is.na(XtempScreenExp)) {XtempScreenExp <- 1}
+if (is.na(YtempScreenExp)) {YtempScreenExp <- 1}
+GWSDAT_Options[['Scale.panelImage']] <- list(hscale = as.numeric(XtempScreenExp), vscale = as.numeric(YtempScreenExp))
+if (exists('YtempScreenExp')) {rm(YtempScreenExp)}
+if (exists('XtempScreenExp')) {rm(XtempScreenExp)}
 
 
 GWSDAT_Options[['ShapeFileNames']] <- NULL

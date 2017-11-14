@@ -4,11 +4,11 @@
 # #' @importFrom shinydashboard box 
 uiAnalyse <- function(csite, img_frmt) {
   
-  corner_element = csite$ui_attr$site_name
+  corner_element = paste0(csite$ui_attr$site_name, " - ", csite$Aquifer)
   
   # If in MultiData mode, include a BACK button.
   if (APP_RUN_MODE == "MultiData")
-    corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name)) 
+    corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name, " - ", csite$Aquifer)) 
   
   
   

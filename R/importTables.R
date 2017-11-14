@@ -3,17 +3,17 @@
 parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, dsource = "") {
   
   if (is.null(tbl)) {
-    stop("First argument \'tbl\' is missing\n")
+    #stop("First argument \'tbl\' is missing\n")
     return(NULL)
   }
   
   if (is.null(type)) {
-    stop("Need to specify \'type\' of table: \'contaminant\' or \'well\'\n")
+    #stop("Need to specify \'type\' of table: \'contaminant\' or \'well\'\n")
     return(NULL)
   }
   
   if (type == "contaminant" && is.null(wells)) {
-    stop("If type = \'contaminant\', need to specify the parameter \'wells\'.")
+    #stop("If type = \'contaminant\', need to specify the parameter \'wells\'.")
     return(NULL)
   }
   
