@@ -33,6 +33,9 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   
   shinydashboard::dashboardBody(
                       shinyjs::useShinyjs(), 
+                      
+                      tags$head(includeScript("inst/www/google-analytics.js")),
+                      
                       #shinyjs::extendShinyjs(text = jsCode),
                       #path_to_extdata <- system.file("extdata", package = "GWSDAT"),
                       #cat("* adding ", path_to_extdata, " as resource\n"),
