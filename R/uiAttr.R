@@ -29,6 +29,7 @@ saveUIAttr <- function(csite, input) {
   return(csite)
 }
 
+
 createUIAttr <- function(All.Data, GWSDAT_Options) {
   
   
@@ -94,31 +95,25 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$logscale_wr    <- "Yes"
   ui_attr$logscale_stp    <- "Yes"
   
-  # Consider this as global variable as well?
+  # Define image save options.
   ui_attr$img_width_px       <- 800 
   ui_attr$img_height_px      <- 600  
-  ui_attr$img_width_px_wide  <- 1200
-  ui_attr$img_height_px_wide <- 600  
+  ui_attr$img_width_px_wide  <- 1100
+  ui_attr$img_height_px_wide <- 500  
   ui_attr$img_jpg_quality    <- 90
-  ui_attr$img_ppi            <- 120   
+  ui_attr$img_ppi            <- 90   
   
-  
-  
-  # NOT DECIDED YET ON WHERE TO PUT THESE:
-  #
-  # Maybe into separate model attributes data set.
-  #
-  #
-  # related to plume model; read by 'uiPlumeTimeSeries.R'
+
+  # Related to plume model; read by 'uiPlumeTimeSeries.R'.
   ui_attr$ground_porosity <- GWSDAT_Options$DefPorosity
   ui_attr$ground_porosity_pd <- ui_attr$ground_porosity * 100
   
-  # related to plume model; read by 'uiPlumeTimeSeries.R'
+  # Related to plume model; read by 'uiPlumeTimeSeries.R'.
   ui_attr$plume_thresh <- rep(GWSDAT_Options$DefPlumeThresh, length(ui_attr$solute_names))
   names(ui_attr$plume_thresh) <- ui_attr$solute_names
   ui_attr$plume_thresh_pd <- ui_attr$plume_thresh[1]
     
-  # related to trend/threshold table, not (yet) used in UI. 
+  # Related to trend/threshold table, not (yet) used in UI. 
   ui_attr$conc_thresh <- rep(GWSDAT_Options$DefContThresh, length(ui_attr$solute_names)) 
   names(ui_attr$conc_thresh) <- ui_attr$solute_names
 

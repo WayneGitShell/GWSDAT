@@ -4,7 +4,7 @@
 
 #' @importFrom Matrix sparseMatrix
 #' @importFrom sp point.in.polygon
-#' @importFrom geometry delaunay
+# #' @importFrom geometry delaunay
 interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","Upper 95% CI","% sd","IQR/2")) {
   
   
@@ -67,7 +67,7 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     #    convex (check before or just catch). 
     #  - As a consequence, calls to contourLines() will produce warnings.
 
-    dn <- try(geometry::delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
+    dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
     
     if (!inherits(dn, "try-error")) {
       tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
@@ -84,7 +84,7 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
       
       pred.df$pred[pred.df$InOut] <- predred.df$pred
     } else {
-      cat("Encountered github issue #123 associated to geometry::delaunay(). Coordinates lack convex hull.\n")
+      cat("Encountered github issue #123 associated to delaunay(). Coordinates lack convex hull.\n")
     }    
     
   }

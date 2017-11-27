@@ -8,7 +8,7 @@
 #' @param csite monitoring site object.
 #' @param substance contaminant name
 #' @param location  well name
-#' @param showvline show position in time (not used)
+#' @param show_thresh show the threshold line if TRUE
 #' 
 #' @export
 #'
@@ -16,10 +16,10 @@
 plotTimeSeries <- function(csite, 
                            substance = NULL, 
                            location = NULL,
-                           show_thresh = FALSE,
-                           showvline = FALSE
+                           show_thresh = FALSE
                            ) {
   
+  showvline = FALSE
   
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
   
@@ -389,12 +389,12 @@ plotTimeSeries <- function(csite,
 # }
 
 
-makeTimeSeriesPPT <- function(csite, substance, location, width = 7, height = 5){
+makeTimeSeriesPPT <- function(csite, substance, location, width = 600, height = 400){
   
   # Create temporary wmf file. 
-  mytemp <- tempfile(fileext = ".wmf")
+  mytemp <- tempfile(fileext = ".png")
   
-  win.metafile(mytemp, width = width, height = height) 
+  png(mytemp, width = width, height = height) 
   plotTimeSeries(csite, substance, location)
   dev.off()
   

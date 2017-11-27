@@ -21,47 +21,7 @@ uiTrendTable <- function(csite) {
          shinydashboard::box(width = 9, title = "Trends & Thresholds", status = "primary",
                              htmlOutput("trend_table")
          ),
-               
-         #
-         # Previously, the legend was in a separate tab inside a tabPanel().
-         # I moved the legend into an absolutePanel() and put the 'trend_table'
-         # into a shinydashboard::box(), see above.
-         # (DELETE THE FOLLOWING CODE, IF NOTHING CHANGES.)
-         #
-         # shinydashboard::tabBox(title = "Trends & Thresholds", width = 9, 
-         #                        
-         #                        
-         #                        
-         #                        tabPanel("Indicator Table", 
-         #                                 
-         #                                 htmlOutput("trend_table")  #,
-         # div(style = "display: inline-block;",
-         #     selectInput("export_format_tt", label = "Image format",
-         #                 choices  = csite$ui_attr$img_formats,
-         #                 selected = csite$ui_attr$img_formats[[1]]
-         #     )
-         # ),
-         # 
-         # div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px",
-         #     downloadButton("save_trend_table", label = "Save Plot")
-         # ),
-         # 
-         # shinyjs::hidden(
-         #   div(id = "save_trendtable_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
-         #       actionButton("generate_trendtable_anim_ppt",
-         #                    label = "Generate PPT Animation", icon = icon("file-movie-o"))
-         #   )
-         # )
-         # ),
-         # 
-         # tabPanel("Legend", 
-         #          
-         #         # plotOutput("plot_legend_traffic") 
-         #         htmlOutput("trend_legend")
-         #         
-         #          
-         # )
-         #),
+       
          absolutePanel(id = "timecontrol_tt", class = "panel panel-default", 
                        fixed = TRUE, draggable = TRUE, top = "auto", 
                        left = "auto", right = 10, bottom = 10,
@@ -78,12 +38,27 @@ uiTrendTable <- function(csite) {
                            ) 
                        )
          ), # end absolutePanel()
-         absolutePanel(id = "timecontrol_tt2", class = "panel panel-default", 
-                       fixed = TRUE, draggable = TRUE, top = "auto", 
-                       left = "auto", right = 10, bottom = 130, style = "opacity: 0.90",
-                       width = 350, height = 420,
-                       htmlOutput("trend_legend")
-         ) # end absolutePanel()
+       
+        absolutePanel(id = "trendtable_legend", class = "panel panel-default", 
+                      fixed = TRUE, draggable = TRUE, top = "auto", 
+                      left = "auto", right = 10, bottom = 130, style = "opacity: 0.90",
+                      width = 350, height = 420,
+                      htmlOutput("trend_legend")
+         )              
+         #
+         # Collapse absolutePanel(). This works, but after moving the panel, the lower
+         # edge will stick to the 'bottom' parameter and the panel's height changes.
+         # Changing the height to a fixed value, collapses the include HTML legend table
+         # but not the panel. 
+         #
+         # absolutePanel(id = "trendtable_legend", class = "panel panel-default", 
+         #               fixed = TRUE, draggable = TRUE, top = "auto", 
+         #               left = "auto", right = 10, bottom = 130, style = "opacity: 0.90",
+         #               width = 350, height = "auto",#420,
+         #               HTML('<button data-toggle="collapse" data-target="#demo">Collapsible</button>'),
+         #               tags$div(id = 'demo',  class = "collapse in",
+         #               htmlOutput("trend_legend"))
+         # ) # end absolutePanel()
 
   ) # end fluidRow()
 }

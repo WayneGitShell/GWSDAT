@@ -3,6 +3,9 @@
 
 
 server <- function(input, output, session) {
+  
+  time.log <- ''
+  
   DEBUG_MODE <- FALSE
 
   # Increase upload file size to 30MB (default: 5MB)
@@ -13,13 +16,18 @@ server <- function(input, output, session) {
                    "GWSDAT version: ", packageVersion("GWSDAT"), "\n")
   app_log <- reactiveVal(tmplog)
  
+  # This is set inside launchApp()
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
+  
+  # This is set inside launchApp()
+  if (!exists("session_file", envir = .GlobalEnv)) {
+    session_file <- NULL
+  }
   
   # Flag that indicates whether data was loaded or not.  
   LOAD_COMPLETE <- 100
   dataLoaded <- reactiveVal(0)
-  
   
   # List of site data and currently selected site.
   csite_list <- NULL
@@ -49,31 +57,19 @@ server <- function(input, output, session) {
   renderRHandsonConc <- reactiveVal(0)
   renderRHandsonWell <- reactiveVal(0)
   
-  # Define supported image formats
-  img_frmt <- list("png", "jpg", "pdf", "ps", "wmf", "pptx")
+  # Define supported image formats for saving plots.
+  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx")
         
-  if (!existsPPT() && ("pptx" %in% img_frmt))
+  # Remove pptx (powerpoint) if no support was found. 
+  if (!existsPPT())
     img_frmt <- img_frmt[-which(img_frmt == "pptx")]
    
-  # If it is not windows, win.metafile() (wmf) can't be used and ppt as well.
-  if (.Platform$OS.type != "windows") {
-    if ("wmf" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "wmf")]
-    if ("pptx" %in% img_frmt) img_frmt <- img_frmt[-which(img_frmt == "pptx")]  
-  }
-    
-  
-  # 
-  # Some usefull session objects:
-  #
-  # session$userData  - store user data here
-  # onSessionEnded(callback), onEnded(callback)  - executes when user exits browser
-  # isClosed()  - function that return TRUE if client has disconnected  
-  #
+
   
   output$version_info <- renderPrint({
     
     cat(app_log())
-
+    
       #cat("\n\n** Path to image logo: ", system.file("logo.gif", package = "GWSDAT"), "\n")
       #cat("\n\n** Content of .libPaths():\n\n")
       #sapply(.libPaths(), list.files)
@@ -228,7 +224,8 @@ server <- function(input, output, session) {
       tt_changed <- TRUE
     }
     
-    cat("  -> doing reaggregation..\n")
+    if (DEBUG_MODE)
+      cat("  -> doing reaggregation..\n")
     
     tryCatch(
       agg_data <- aggregateData(csite$All.Data$Cont.Data, 
@@ -381,9 +378,19 @@ server <- function(input, output, session) {
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
     
+    #start.time = Sys.time()
     plotSpatialImage(csite, input$solute_select_sp, 
-                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
+                     app_log)
                      
+    #end.time <- Sys.time()
+    
+    #time.passed <- (end.time - start.time) * 1000
+    #time.log <- paste0("[TIME_MEASURE] plotSpatialImage(): ", time.passed, " milliseconds.\n")
+    #if (DEBUG_MODE) cat(time.log)
+    
+    #isolate(alog <- app_log())
+    #app_log(paste0(alog, time.log))
     
   })
     
@@ -400,7 +407,7 @@ server <- function(input, output, session) {
     # If aggregation took place, return here because the timepoint index has to
     # be updated before the actual plotting happens.
     if (reaggregateData()) {
-      cat("  + (tt) aggregation took place, exiting image_plot()\n")
+      if (DEBUG_MODE) cat("[trend_table <- renderUI()] aggregation took place, exiting image_plot()\n")
       return(NULL)
     }
 
@@ -552,12 +559,8 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "pptx") {
         
-        #makeTimeSeriesPPT(file, csite, input$solute_select_ts, input$sample_loc_select_ts,
-        #                  width  = input$img_width_px, 
-        #                  height = input$img_height_px)
         makeTimeSeriesPPT(csite, input$solute_select_ts, input$sample_loc_select_ts,
-                          width  = input$img_width_px  / csite$ui_attr$img_ppi, 
-                          height = input$img_height_px / csite$ui_attr$img_ppi)
+                          width  = input$img_width_px, height = input$img_height_px)
         
       } else {
         
@@ -565,7 +568,6 @@ server <- function(input, output, session) {
         if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_ts == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-        if (input$export_format_ts == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         
         plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts)
         dev.off()
@@ -582,20 +584,18 @@ server <- function(input, output, session) {
      
     content <-  function(file) {
      
-      if (input$export_format_sp == "ppt") {
+      if (input$export_format_sp == "pptx") {
         
         plotSpatialImagePPT(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                       width  = input$img_width_px  / csite$ui_attr$img_ppi,
-                       height = input$img_height_px / csite$ui_attr$img_ppi)
+                       width  = input$img_width_px, height = input$img_height_px)
       
         } else {
-        
+          
           if (input$export_format_sp == "png") png(file, width = input$img_width_px, height = input$img_height_px)
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
-         
+           
           plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
           dev.off()
       }
@@ -653,19 +653,19 @@ server <- function(input, output, session) {
       
       use_log_scale    <- if (input$logscale_wr == "Yes") {TRUE} else {FALSE}
       
-      if (input$export_format_wr == "ppt") {
+      if (input$export_format_wr == "pptx") {
         
         plotWellReportPPT(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale,
-                       width  = input$img_width_px_wide  / csite$ui_attr$img_ppi, 
-                       height = input$img_height_px_wide / csite$ui_attr$img_ppi)
+                       width  = input$img_width_px_wide, height = input$img_height_px_wide)
+        
+        
       } else {
         
         if (input$export_format_wr == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
         if (input$export_format_wr == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_wr == "ps") postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_wr == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
-        if (input$export_format_wr == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
-
+        
         plotWellReport(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale)
 
         
@@ -687,11 +687,10 @@ server <- function(input, output, session) {
       plume_stats <- checkPlumeStats()
       
       
-      if (input$export_format_pd == "ppt") {
+      if (input$export_format_pd == "pptx") {
         
         plotPlumeTimeSeriesPPT(plume_stats, 
-                               width = input$img_width_px_wide / csite$ui_attr$img_ppi, 
-                               height = input$img_height_px_wide / csite$ui_attr$img_ppi)
+                               width = input$img_width_px_wide, height = input$img_height_px_wide)
         
       } else {
         
@@ -699,7 +698,7 @@ server <- function(input, output, session) {
         if (input$export_format_pd == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_pd == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
-        if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        #if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
         plotPlumeTimeSeries(plume_stats)
         dev.off()
@@ -733,12 +732,12 @@ server <- function(input, output, session) {
       
       use_log_scale <- if (input$logscale_stp == "Yes") {TRUE} else {FALSE}
       
-      if (input$export_format_stp == "ppt") {
+      if (input$export_format_stp == "pptx") {
         
         plotSTPredictionsPPT(csite, input$solute_select_stp, input$sample_loc_select_stp, 
                              use_log_scale, input$solute_conc_stp,
-                             width = input$img_width_px_wide / csite$ui_attr$img_ppi, 
-                             height = input$img_height_px_wide / csite$ui_attr$img_ppi)
+                             width = input$img_width_px_wide, 
+                             height = input$img_height_px_wide)
         
       } else {
         
@@ -746,7 +745,7 @@ server <- function(input, output, session) {
         if (input$export_format_stp == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_stp == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_stp == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
-        if (input$export_format_stp == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
+        #if (input$export_format_stp == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
         plotSTPredictions(csite, input$solute_select_stp, input$sample_loc_select_stp, use_log_scale, input$solute_conc_stp)
         
@@ -794,18 +793,15 @@ server <- function(input, output, session) {
   
   # Generate PPT with spatial animation.
   observeEvent(input$generate_spatial_anim_ppt, {
+    
     makeSpatialAnimation(csite, input$solute_select_sp,
-                         input$img_width_px / csite$ui_attr$img_ppi,
-                         input$img_height_px / csite$ui_attr$img_ppi,
-                         input$img_width_px_wide / csite$ui_attr$img_ppi,
-                         input$img_height_px_wide / csite$ui_attr$img_ppi)
+                         input$img_width_px, input$img_height_px,
+                         input$img_width_px_wide, input$img_height_px_wide)
+    
   })
   
   
-  # Generate PPT with trend table animation.
-  observeEvent(input$generate_trendtable_anim_ppt, {
-    makeTrendTableAnimation(csite, input$trend_or_threshold, input$color_select_tt)
-  })
+ 
   
   
   ## General Import Routines ###################################################
@@ -933,7 +929,8 @@ server <- function(input, output, session) {
   
   # Go to Load Session Data (Button click).
   observeEvent(input$add_session_data,  {
-    cat("* in observeEvent: add_session_data (line 1189)\n")
+    if (DEBUG_MODE) cat("* in observeEvent: add_session_data (line 1189)\n")
+    
     shinyjs::show(id = "uiDataAddSession")
     shinyjs::hide(id = "uiDataManager")
   })
@@ -950,7 +947,6 @@ server <- function(input, output, session) {
  
   
   output$tbl_conc_sess <- rhandsontable::renderRHandsontable({
-    #cat("* in tbl_conc_sess <- renderRHandsontable()\n")
     
     if (is.null(import_tables$DF_conc)) {
       outDF <- data.frame(WellName = character(), Constituent = numeric(),
@@ -987,7 +983,6 @@ server <- function(input, output, session) {
   
   
   output$tbl_well_sess <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_well_sess\n")
     
     # Create empty DF with header to display minimal table.
     if (is.null(import_tables$DF_well)) {
@@ -1009,7 +1004,6 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$data_session_file, {
-    cat("* in observeEvent: session_data_file\n")
     
     inFile <- input$data_session_file
     
@@ -1062,7 +1056,6 @@ server <- function(input, output, session) {
   
   # Go to New Data Import (Button click).
   observeEvent(input$add_session_data,  {
-    cat("* in observeEvent: add_session_data (line 1680)\n")
     
     shinyjs::hide("uiDataManager")
     shinyjs::show("uiDataAddSession")
@@ -1148,7 +1141,6 @@ server <- function(input, output, session) {
   
   # Go to New Data Import (Button click).
   observeEvent(input$add_new_data,  {
-    cat("* in observeEvent: add_new_data\n")
     
     shinyjs::hide("uiDataManager")
     shinyjs::show("uiDataAddNew")
@@ -1167,7 +1159,6 @@ server <- function(input, output, session) {
   
   # Go to New Data Import (Button click).
   observeEvent(input$reset_nd_import,  {
-    cat("* in observeEvent: reset_nd_import\n")
     
     createNewConcTable()
     createNewWellTable()
@@ -1184,7 +1175,7 @@ server <- function(input, output, session) {
   
   
   output$tbl_shape_nd <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_shape_nd\n")
+    
     if (is.null(import_tables$shape_files))
       return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
                                           useTypes = FALSE, rowHeaders = NULL, stretchH = "all",
@@ -1200,8 +1191,6 @@ server <- function(input, output, session) {
   # Triggers each time input$tbl_conc_nd (the rhandsontable) changes.
   # Converts the hot table to the data.frame in import_tables.
   observe({
-    #cat("* in observe: input$tbl_conc_nd\n")
-    #DF_OK = TRUE
     
     if (is.null(input$tbl_conc_nd)) {
       DF <- import_tables$DF_conc
@@ -1227,7 +1216,6 @@ server <- function(input, output, session) {
   # For some reason double execution of this observer takes place after hitting 
   #  "Add New Data"
   output$tbl_conc_nd <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_conc_nd <- renderRHandsontable()\n")
     
     # Isolated because it shall not react to changes in 'import_tables$DF_conc'. 
     # Otherwise there will be too much rendering taking place.
@@ -1263,7 +1251,6 @@ server <- function(input, output, session) {
   
   # Triggers each time input$tbl_conc_nd (the rhandsontable) changes
   observe({
-    #cat("* in observe: input$tbl_well_nd\n")
     
     if (is.null(input$tbl_well_nd)) {
       DF <- import_tables$DF_well
@@ -1286,8 +1273,7 @@ server <- function(input, output, session) {
   
   
   output$tbl_well_nd <- rhandsontable::renderRHandsontable({
-    #cat("\n* in tbl_well_nd <- renderRHandsontable()\n")
-    
+
     isolate(DF <- import_tables$DF_well)
     
     renderRHandsonWell()
@@ -1303,7 +1289,6 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$shape_files_nd, {
-    cat("* in observeEvent: shape_files_nd\n")
     
     import_tables$shape_files <<- addShapeFiles(input$shape_files_nd, import_tables$shape_files)
     
@@ -1372,7 +1357,6 @@ server <- function(input, output, session) {
   
   # Re-read uploaded files in case one of the CSV format settings changes.
   observeEvent(c(input$sep, input$quote), {
-    cat("* in observeEvnet: sep and quote\n")
     
     # For the contaminant data:
     if (!is.null(input$well_data_csv)) {
@@ -1392,8 +1376,7 @@ server <- function(input, output, session) {
   
   
   output$tbl_conc_csv <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_conc_csv\n")
-  
+    
     # Create empty table with only header as a placeholder.
     if (is.null(import_tables$DF_conc)) {
       mtmp <- data.frame(WellName = character(), Constituent = numeric(),
@@ -1416,7 +1399,6 @@ server <- function(input, output, session) {
   
   
   output$tbl_well_csv <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_well_csv\n")
     
     # Create empty DF with header to display minimal table.
     if (is.null(import_tables$DF_well)) {
@@ -1441,8 +1423,7 @@ server <- function(input, output, session) {
   #  for reactive import_tables$shape_files, although the output$
   #
   output$tbl_shape_csv <- rhandsontable::renderRHandsontable({
-    #input$reset_csv_import
-    cat("* in tbl_shape_csv\n")
+    
     if (is.null(import_tables$shape_files))
       return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
                                           useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
@@ -1503,7 +1484,6 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$shape_files_csv, {
-    cat("* in observeEvent: shape_files_csv\n")
     
     import_tables$shape_files <<- addShapeFiles(input$shape_files_csv, import_tables$shape_files)
     
@@ -1560,7 +1540,6 @@ server <- function(input, output, session) {
   
   
   output$tbl_well_xls <- rhandsontable::renderRHandsontable({
-    cat("* in tbl_well_xls\n")
     
     # Create empty DF with header to display minimal table.
     if (is.null(import_tables$DF_well)) {
@@ -1587,7 +1566,6 @@ server <- function(input, output, session) {
   #
   output$tbl_shape_xls <- rhandsontable::renderRHandsontable({
     
-    cat("* in tbl_shape_xls\n")
     if (is.null(import_tables$shape_files))
       return(rhandsontable::rhandsontable(data.frame(Name = character(), Size = numeric()), 
                                           useTypes = TRUE, rowHeaders = NULL, stretchH = "all",
@@ -1605,7 +1583,6 @@ server <- function(input, output, session) {
     })
   
   observeEvent(input$shape_files_xls, {
-    cat("* in observeEvent: shape_files_xls\n")
     
     import_tables$shape_files <<- addShapeFiles(input$shape_files_xls, import_tables$shape_files)
     
@@ -1855,8 +1832,7 @@ server <- function(input, output, session) {
       }
       
       if (is.null(DF_conc <- parseTable(import_tables$DF_conc, type = "contaminant", 
-                                        wells = unique(DF_well$WellName), units = conc_units,
-                                        flags = conc_flags))) {
+                                        wells = unique(DF_well$WellName)))) {
         showNotification("Aborting Save: Could not find at least one valid row entry in contaminant table.", 
                          type = "error", duration = 10)      
         return(NULL)
@@ -1995,13 +1971,6 @@ server <- function(input, output, session) {
   # Display the "Generate PPT Animation" button if Powerpoint is available.
   #
   observeEvent(input$analyse_panel, {
-    #cat("* in observe input$analyse_panel") 
-    # If Powerpoint export is possible, show the "Generate PPT Animation" button.
-    #if (existsPPT()) {
-    #  shinyjs::show(id = "save_spatial_ppt_anim")
-    #  shinyjs::show(id = "save_trendtable_ppt_anim")
-    #}
-  
     
     # Update session file name with current time stamp.
     if (input$analyse_panel == "Save Session")
@@ -2087,7 +2056,7 @@ server <- function(input, output, session) {
   })
     
   
-  #' Re-fit the model with the new model resolution setting, i.e. number of knots.
+  # Re-fit the model with the new model resolution setting, i.e. number of knots.
   observeEvent(input$okModSetting, {
     
     if (new_psplines_knots == csite$GWSDAT_Options[['PSplineVars']][['nseg']]) 
@@ -2127,7 +2096,7 @@ server <- function(input, output, session) {
   })
   
   
-  #' Update the number of knots in the text field to reflect the resolution.
+  # Update the number of knots in the text field to reflect the resolution.
   observeEvent(input$psplines_resolution, {
     
     nknots <- 6
@@ -2142,8 +2111,6 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$save_analyse_options, {
-    
-    # cat("* in observeEvent: save_analyse_options\n")
    
     input_knots <- as.numeric(input$psplines_knots)
     # Check if the value changed, if so, refit all data.
@@ -2257,11 +2224,11 @@ server <- function(input, output, session) {
   #
   loadDataSet <- function() {
   
-    #if (DEBUG_MODE)
-    cat("* in loadDataSet()\n")
+    if (DEBUG_MODE) cat("* in loadDataSet()\n")
     
     # Load 'session_file' if specified in launchApp().
-    if (exists("session_file", envir = .GlobalEnv)) {
+    #if (exists("session_file", envir = .GlobalEnv)) {
+    if (!is.null(session_file)) {
       csite_list <- NULL
       
       tryCatch( load(session_file), warning = function(w) 
@@ -2487,7 +2454,6 @@ server <- function(input, output, session) {
   
   # Go to .CSV Data Import (Button click).
   observeEvent(input$add_csv_data,  {
-    #cat("* in observeEvent: add_csv_data\n")
     
     shinyjs::hide("uiDataManager")
     shinyjs::show("uiDataAddCSV")
@@ -2563,7 +2529,6 @@ server <- function(input, output, session) {
           
           # Store observer function in list of buttons.
           obsDelBtnList[[btn_name]] <<- observeEvent(input[[btn_name]], {
-            cat("* observeEvent: button clicked: ", btn_name, "\n")
             
             # Copy to temporary buffer
             tmplist <- list()
@@ -2778,45 +2743,14 @@ server <- function(input, output, session) {
         )
     }
     
-    #
-    # The following code, unlocks the global variable img_formats_use and 
-    #  modifies it. It can be later used in the renderUI sub methods.
-    #  However, right now I am using the img_formats_use local variable of server()
-    #  because I have trouble specifying the right environment, without using where()
-    #  from the pryr package. I basically need the namespace environment to unlock the 
-    #  binding and not the package environment (as return by environment("package:GWSDAT")).
-    
-    # require(pryr)
-    # cat("*environment from where():\n")
-    # print(where("img_formats_use"))
-    
-    # app_env <- as.environment("package:GWSDAT") # <- this won't work (need namespace)
-    # app_env <- where("img_formats_use")         # <- this will work 
-    # cat("*environment from as.environment():\n")
-    # print(app_env)
-    # if (bindingIsLocked("img_formats_use", app_env)) {  # <- app_env must look something like: <environment: namespace:GWSDAT>
-    #  cat(" img_formats_use is locked binding, unlocking it..")
-    #  unlockBinding("img_formats_use", app_env)
-    #}
-    
-    # Take out the option to plot to Powerpoint .ppt, if PPT does not exists.
-    # img_formats_use <<- img_formats
-    # if (!existsPPT())
-    #   img_formats_use <<- img_formats_use[-which(img_formats_use == "ppt")]
-    # 
-    # # If it is not windows, win.metafile() can't be used.
-    # if (.Platform$OS.type != "windows") {
-    #   img_formats_use <<- img_formats_use[-which(img_formats_use == "wmf")]
-    #   img_formats_use <<- img_formats_use[-which(img_formats_use == "ppt")]  # the ppt method needs wmf
-    # }
-    
     
     # Completely loaded, display the Analyse UI.
     if (data_load_status >= LOAD_COMPLETE) {
-      return(uiAnalyse(csite, img_frmt))
+      return(uiAnalyse(csite, img_frmt, APP_RUN_MODE))
     }
     
   })
+  
   
   # These observers catch the button press in the dialog boxes on startup
   observeEvent(input$aquifer_btn, {

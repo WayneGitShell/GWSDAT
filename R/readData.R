@@ -161,7 +161,7 @@ readExcel <- function(filein, sheet = NULL) {
         # 
         # if (any(class(ret) == "data.frame")) {
         #     
-        #     shape_files <- validateShapeFiles(ret)
+        #     shape_files <- validateShapeFiles(ret, sheet)
         #     
         #     if (!is.null(shape_files))
         #         showNotification(paste0("Sheet \'", sheet, "\': Found ", length(shape_files), 
@@ -184,39 +184,39 @@ readExcel <- function(filein, sheet = NULL) {
 }
 
 
-validateShapeFiles <- function(fstrings) {
-    
-    # Attempt to tranform to data.frame (from tibble, vector of characters)
-    tryCatch(
-        fstrings <- as.data.frame(fstrings),
-        error = function(e) {
-            showNotification(paste0("Sheet \'", sheet, "\': Could not transform shape file entries into data frame."), type = "message", duration = 10)
-            return(NULL)
-        }
-    )
-    
-    if (ncol(fstrings) != 1) {
-        showNotification(paste0("Sheet \'", sheet, "\': Shape file data should have single column, multiple row entries."), type = "message", duration = 10)
-        return(NULL)
-    }
-    
-    # Valid shape file strings go into here (array of strings)    
-    outfstr <- c()
-    
-    # Loop through rows and check each string.
-    for (i in 1:nrow(fstrings)) {
-        if (is.na(fstrings[i,1]))
-            next
-        
-        # Might check if the file really exists on the system (problem when running server?)
-        # ...
-        
-        outfstr <- c(outfstr, fstrings[i,1])
-    }
-    
-    return(outfstr)
-        
-}
+# validateShapeFiles <- function(fstrings, sheet) {
+#     
+#     # Attempt to tranform to data.frame (from tibble, vector of characters)
+#     tryCatch(
+#         fstrings <- as.data.frame(fstrings),
+#         error = function(e) {
+#             showNotification(paste0("Sheet \'", sheet, "\': Could not transform shape file entries into data frame."), type = "message", duration = 10)
+#             return(NULL)
+#         }
+#     )
+#     
+#     if (ncol(fstrings) != 1) {
+#         showNotification(paste0("Sheet \'", sheet, "\': Shape file data should have single column, multiple row entries."), type = "message", duration = 10)
+#         return(NULL)
+#     }
+#     
+#     # Valid shape file strings go into here (array of strings)    
+#     outfstr <- c()
+#     
+#     # Loop through rows and check each string.
+#     for (i in 1:nrow(fstrings)) {
+#         if (is.na(fstrings[i,1]))
+#             next
+#         
+#         # Might check if the file really exists on the system (problem when running server?)
+#         # ...
+#         
+#         outfstr <- c(outfstr, fstrings[i,1])
+#     }
+#     
+#     return(outfstr)
+#         
+# }
 
 
 

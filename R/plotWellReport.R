@@ -222,12 +222,12 @@ GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName = "", UseLogS
 
 
 plotWellReportPPT <- function(csite, substances, locations, use_log_scale,
-                              width = 9, height = 5){
+                              width = 900, height = 500){
   
   # Create temporary wmf file. 
-  mytemp <- tempfile(fileext = ".wmf")
+  mytemp <- tempfile(fileext = ".png")
   
-  win.metafile(mytemp, width = width, height = height) 
+  png(mytemp, width = width, height = height) 
   plotWellReport(csite, substances, locations, use_log_scale)
   dev.off()
   

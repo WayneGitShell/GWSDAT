@@ -123,8 +123,8 @@ existsNAPL <- function(All.Data, well, solute) {
 
 }
 
-#' Convert array of strings in 'astr' to a single string separated by 'collapse', 
-#' but only include the first 'limit' elements.
+# Convert array of strings in 'astr' to a single string separated by 'collapse', 
+# but only include the first 'limit' elements.
 pasteLimit <- function(astr, limit = NULL, collapse = ", ") {
    
     if (is.null(limit))

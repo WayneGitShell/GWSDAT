@@ -2,7 +2,7 @@
 
 # Gives conflict with graphics::box:
 # #' @importFrom shinydashboard box 
-uiAnalyse <- function(csite, img_frmt) {
+uiAnalyse <- function(csite, img_frmt, APP_RUN_MODE) {
   
   corner_element = paste0(csite$ui_attr$site_name, " - ", csite$Aquifer)
   
@@ -15,11 +15,11 @@ uiAnalyse <- function(csite, img_frmt) {
   # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 
   navbarPage(corner_element, windowTitle = csite$ui_attr$site_name, id = "analyse_panel",              
               
-              tabPanel("Time-Series", fluid = TRUE, 
-                      uiTimeSeries(csite, img_frmt)),
-            
               tabPanel("Spatial Plot", fluid = TRUE,
                       uiSpatialImage(csite, img_frmt)),
+             
+             tabPanel("Time-Series", fluid = TRUE, 
+                      uiTimeSeries(csite, img_frmt)),
                        
               tabPanel("Trends & Thresholds", fluid = TRUE,
                       uiTrendTable(csite)),

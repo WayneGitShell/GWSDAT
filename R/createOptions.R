@@ -1,7 +1,7 @@
  
  
 
-#' Create a start options list.
+#' Create start options list.
 #'
 #' @return List containing essential model parameters and start options.
 #' @param site_name The name of the monitoring site. 
@@ -12,6 +12,7 @@
 createOptions <- function(site_name = NULL) {
   
   GWSDAT_Options <- list()
+  
   GWSDAT_Options[['Aggby']] <- 'Month'
   GWSDAT_Options[['AggMethod']] <- 'Mean'
   GWSDAT_Options[['NDMethod']] <- 'Half of ND Value'
@@ -31,30 +32,15 @@ createOptions <- function(site_name = NULL) {
   GWSDAT_Options[['DefPlumeThresh']] <- 10
   GWSDAT_Options[['DefPorosity']] <- 0.25
   GWSDAT_Options[['smThreshSe']] <- 1.1512
-  GWSDAT_Options[['smThreshSe']] <- as.numeric(GWSDAT_Options[['smThreshSe']])
   GWSDAT_Options[['smMethod']] <- 'aicc'
-  GWSDAT_Options[['Version']] <- '3.00'
-  GWSDAT_Options[['Version']] <- as.numeric(GWSDAT_Options[['Version']])
+  GWSDAT_Options[['Version']] <- as.numeric('3.00')
+  GWSDAT_Options[['ShapeFileNames']] <- NULL
   
-  XtempScreenExp <- as.character('1,6')
-  YtempScreenExp <- as.character('1,125')
-  XtempScreenExp <- gsub(',','.',XtempScreenExp)
-  YtempScreenExp <- gsub(',','.',YtempScreenExp)
-  XtempScreenExp <- as.numeric(XtempScreenExp)
-  YtempScreenExp <- as.numeric(YtempScreenExp)
   
-  if (is.na(XtempScreenExp)) {XtempScreenExp <- 1}
-  if (is.na(YtempScreenExp)) {YtempScreenExp <- 1}
-  
-  GWSDAT_Options[['Scale.panelImage']] <- list(hscale = as.numeric(XtempScreenExp), vscale = as.numeric(YtempScreenExp))
-  
-  if (exists('YtempScreenExp')) {rm(YtempScreenExp)}
-  if (exists('XtempScreenExp')) {rm(XtempScreenExp)}
   
   #GWSDAT_Options[['SiteName']] <- 'Basic Example'
   #GWSDAT_Options[['WellDataFilename']] <- 'data/BasicExample_WellData.csv'
   #GWSDAT_Options[['WellCoordsFilename']] <- 'data/BasicExample_WellCoords.csv'
-  GWSDAT_Options[['ShapeFileNames']] <- NULL
   
   #GWSDAT_Options[['SiteName']] <- 'Comprehensive Example'
   #GWSDAT_Options[['WellDataFilename']] <- 'data/ComprehensiveExample_WellData.csv'
@@ -62,11 +48,7 @@ createOptions <- function(site_name = NULL) {
   #GWSDAT_Options[['ShapeFileNames']] <- c(GWSDAT_Options[['ShapeFileNames']],'data/GIS_Files/GWSDATex2.shp')
   
   
-        
-  if (!is.null(site_name))
-    GWSDAT_Options[['SiteName']] <- site_name
-  
-  
+  if (!is.null(site_name)) GWSDAT_Options[['SiteName']] <- site_name
   
   return(GWSDAT_Options)
 }

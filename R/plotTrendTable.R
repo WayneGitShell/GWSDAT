@@ -274,41 +274,53 @@ plotTrendTableLegend <- function() {
   
   
 
+#
+# Trend Table Animation is disabled because the format of the table
+#  changed to HTML.  (MIGHT DELETE THIS AT SOME POINT)
+#
+# plotTrendTablePPT <- function(csite, timepoint, display_type, color_type,
+#                               subset = FALSE, width = 7, height = 5){
+#   
+#   # Create temporary wmf file. 
+#   mytemp <- tempfile(fileext = ".wmf")
+#   
+#   win.metafile(mytemp, width = width, height = height) 
+#   plotTrendTable(csite, timepoint, display_type, color_type)
+#   dev.off()
+#   
+#   # Put into powerpoint slide.
+#   AddPlotPPV2(mytemp, width, height) 
+#   
+#   try(file.remove(mytemp))
+#   
+#   
+# }
 
-plotTrendTablePPT <- function(csite, timepoint, display_type, color_type,
-                              subset = FALSE, width = 7, height = 5){
-  
-  # Create temporary wmf file. 
-  mytemp <- tempfile(fileext = ".wmf")
-  
-  win.metafile(mytemp, width = width, height = height) 
-  plotTrendTable(csite, timepoint, display_type, color_type)
-  dev.off()
-  
-  # Put into powerpoint slide.
-  AddPlotPPV2(mytemp, width, height) 
-  
-  try(file.remove(mytemp))
-  
-  
-}
-
-makeTrendTableAnimation <- function(csite, display_type, color_type, width = 7, height = 5){
-  
-  # Loop over each time point. 
-  for (i in 1:length(csite$All.Data$All_Agg_Dates)) {
-
-    timepoint <- csite$All.Data$All_Agg_Dates[i]
-    # Create temporary wmf file. 
-    mytemp <- tempfile(fileext = ".wmf")
-    
-    win.metafile(mytemp, width = width, height = height) 
-    plotTrendTable(csite, timepoint, display_type, color_type)
-    dev.off()
-    
-    AddPlotPPV2(mytemp, width, height) 
-    
-  }
-  
-}
+#
+# Trend Table Animation is disabled because the format of the table
+#  changed to HTML. (MIGHT DELETE THIS AT SOME POINT)
+#
+# This was the call from server():
+#   makeTrendTableAnimation(csite, input$trend_or_threshold, input$color_select_tt)
+#
+#
+#
+# makeTrendTableAnimation <- function(csite, display_type, color_type, width = 7, height = 5){
+#   
+#   # Loop over each time point. 
+#   for (i in 1:length(csite$All.Data$All_Agg_Dates)) {
+# 
+#     timepoint <- csite$All.Data$All_Agg_Dates[i]
+#     # Create temporary wmf file. 
+#     mytemp <- tempfile(fileext = ".wmf")
+#     
+#     win.metafile(mytemp, width = width, height = height) 
+#     plotTrendTable(csite, timepoint, display_type, color_type)
+#     dev.off()
+#     
+#     AddPlotPPV2(mytemp, width, height) 
+#     
+#   }
+#   
+# }
 

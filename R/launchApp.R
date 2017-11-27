@@ -11,13 +11,14 @@ options(warn = 1)
 #' 
 #' @import stats grDevices graphics MASS shiny shinycssloaders geometry zoo readxl rhandsontable sf
 #' @importFrom shinyjs show hide delay onclick useShinyjs
-#' @importFrom utils sessionInfo write.csv
+#' @importFrom utils sessionInfo write.csv packageVersion
 launchApp <- function(GWSDAT_Options, session_file) {
 
-    # Need this here or shinyjs breaks if operating as package, e.g. shinyjs::show() 
-    # in server() does nothing.
-    # As a standard, this call goes into the ui but when the package is build 
-    # something with the order messes up. 
+    # For R package: Need this here or shinyjs won't work and the connection 
+    # breaks - reason unknown. 
+    # The Browser log will say: SCRIPT5009: 'shinyjs' is undefined.
+    # The index.html will look fine. did put shinyjs::useShinyjs() into the the 
+    # start of the ui() function where it belongs on default.
     shinyjs::useShinyjs()
 
     

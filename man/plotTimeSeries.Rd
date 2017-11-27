@@ -5,7 +5,7 @@
 \title{Display concentration time-series for contaminant at specific well.}
 \usage{
 plotTimeSeries(csite, substance = NULL, location = NULL,
-  show_thresh = FALSE, showvline = FALSE)
+  show_thresh = FALSE)
 }
 \arguments{
 \item{csite}{monitoring site object.}
@@ -14,7 +14,7 @@ plotTimeSeries(csite, substance = NULL, location = NULL,
 
 \item{location}{well name}
 
-\item{showvline}{show position in time (not used)}
+\item{show_thresh}{show the threshold line if TRUE}
 }
 \description{
 Display concentration time-series for contaminant at specific well.

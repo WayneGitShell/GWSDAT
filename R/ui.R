@@ -32,25 +32,24 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   ),
   
   shinydashboard::dashboardBody(
-                      shinyjs::useShinyjs(), 
-                      
-                      # Not using includeScript because it wraps <script> tags
-                      # around which doesn't work with the GA js directives.
-                      tags$head(includeHTML("inst/www/google-analytics.js")),
-                      
-                      # Laden des .js Codes funktioniert im R Packet.
-                      # Der Code sollte alo auch laden.
-                      tags$head(includeScript("inst/www/jump_to_tsplot.js")),
-                      
-                      #shinyjs::extendShinyjs(text = jsCode),
-                      #path_to_extdata <- system.file("extdata", package = "GWSDAT"),
-                      #cat("* adding ", path_to_extdata, " as resource\n"),
-                      #shiny::singleton(tags$head(tags$script(src = system.file("www", "trafficlight.js", package = "GWSDAT")))),
-                      #shiny::singleton(tags$head(tags$link(href = "extdata/trafficlight.css", rel = "stylesheet"))),
-                      #includeScript("extdata/trafficlight.js"),
-                      #includeHTML("inst/www/trafficlight.js"),
-                      #shiny::singleton(tags$head(tags$script(src = "inst/extdata/trafficlight.js"))),
-                      
+    shinyjs::useShinyjs(), 
+    
+    # Not using includeScript because it wraps <script> tags
+    # around which doesn't work with the GA js directives.
+    tags$head(includeHTML("inst/www/google-analytics.js")),
+    
+    # Load .js Code that jumps from trend table to time-series table.
+    tags$head(includeScript("inst/www/jump_to_tsplot.js")),
+    
+    # Makes the sidebar minimize to icons only.
+    tags$script(HTML("$('body').addClass('sidebar-mini');")),
+    
+    
+    #path_to_extdata <- system.file("extdata", package = "GWSDAT"),
+    #cat("* adding ", path_to_extdata, " as resource\n"),
+    #shiny::singleton(tags$head(tags$script(src = system.file("www", "trafficlight.js", package = "GWSDAT")))),
+    #shiny::singleton(tags$head(tags$link(href = "extdata/trafficlight.css", rel = "stylesheet"))),
+    
                  
     shinydashboard::tabItems(
       shinydashboard::tabItem(tabName = "menu_data_manager", 

@@ -213,13 +213,13 @@ plotPlumeTimeSeries <- function(plume_stats) {
 
 
 
-plotPlumeTimeSeriesPPT <- function(plume_stats, width = 9, height = 5){
+plotPlumeTimeSeriesPPT <- function(plume_stats, width = 800, height = 500){
   
   # Create temporary wmf file. 
-  mytemp <- tempfile(fileext = ".wmf")
+  mytemp <- tempfile(fileext = ".png")
   
  
-  win.metafile(mytemp, width = width, height = height) 
+  png(mytemp, width = width, height = height) 
   plotPlumeTimeSeries(plume_stats)
   dev.off()
  

@@ -3,8 +3,7 @@
 plotSTPredictions <- function(csite, substance = NULL, Wells.to.Plot = NULL,  
                               UseLogScale = FALSE, solute_unit = "ug/l") {
   
-  #on.exit(palette("default"))
-  
+ 
   # Maybe show message that nothing is selected
   if (is.null(substance) || is.null(Wells.to.Plot))
     return(NULL)
@@ -219,12 +218,12 @@ plotModelPredictions <- function(csite, Cont.Data, SiteName = "", se.fit = FALSE
 
 plotSTPredictionsPPT <- function(csite, substance = NULL, Wells.to.Plot = NULL,  
                               UseLogScale = FALSE, solute_unit = "ug/l",
-                              width = 9, height = 5) {
+                              width = 900, height = 500) {
   
   # Create temporary wmf file. 
-  mytemp <- tempfile(fileext = ".wmf")
+  mytemp <- tempfile(fileext = ".png")
   
-  win.metafile(mytemp, width = width, height = height) 
+  png(mytemp, width = width, height = height) 
   plotSTPredictions(csite, substance, Wells.to.Plot, UseLogScale, solute_unit)
   dev.off()
   

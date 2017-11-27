@@ -1,14 +1,23 @@
 
 
 
-plotSpatialImage <- function(csite, substance, timepoint = NULL) {
+plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log) {
   
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
   
-  # make interpolation
+  # Make Prediction.
+  start.time <- Sys.time()
   interp.pred <- interpConc(csite, substance, timepoint)
   
+  # Measure time to see if interpConc() should be moved elsewhere (background, startup)
+  end.time <- Sys.time()
+  time.passed <- (end.time - start.time) * 1000
+  time.passed <- round(time.passed, digits = 0)
+  time.log <- paste0("[TIME_MEASURE] interpConc(): ", time.passed, " milliseconds.\n")
+  alog <- isolate(app_log())
+  app_log(paste0(alog, time.log))
+ 
   
   
   # Create plume statistics if needed.
@@ -22,6 +31,7 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL) {
   
   plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
 
+  
 }
   
 
@@ -369,14 +379,16 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 
 
 plotSpatialImagePPT <- function(csite, substance, timepoint,
-                           width = 7, height = 5){
+                           width = 700, height = 500){
  
   # Create temporary wmf file. 
-  mytemp <- tempfile(fileext = ".wmf")
+  mytemp <- tempfile(fileext = ".png")
   
-  win.metafile(mytemp, width = width, height = height) 
+  png(mytemp, width = width, height = height) 
   plotSpatialImage(csite, substance, timepoint)
   dev.off()
+  
+  
    
   # Put into powerpoint slide.
   if (is.null(ppt_lst <- initPPT())) {
@@ -393,10 +405,10 @@ plotSpatialImagePPT <- function(csite, substance, timepoint,
 
 
 makeSpatialAnimation <- function(csite, substance,
-                                 width = 7,
-                                 height = 5,
-                                 width_plume = 9, 
-                                 height_plume = 5) {
+                                 width = 800,
+                                 height = 600,
+                                 width_plume = 1200, 
+                                 height_plume = 600) {
   
   full_plume_stats <- NULL 
  
@@ -441,9 +453,9 @@ makeSpatialAnimation <- function(csite, substance,
     }
 
     # Make the plot and add to powerpoint.
-    mytemp <- tempfile(fileext = ".wmf")
-   
-    win.metafile(mytemp, width = width, height = height) 
+    mytemp <- tempfile(fileext = ".png")
+    
+    png(mytemp, width = width, height = height)
     plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
     dev.off()
     
@@ -454,9 +466,14 @@ makeSpatialAnimation <- function(csite, substance,
   } # end of for
   
   
+  
   # Add slide with plume statistics on last page.
   if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
-    win.metafile(mytemp, width = width_plume, height = height_plume) 
+    
+    # Make the plot and add to powerpoint.
+    mytemp <- tempfile(fileext = ".png")
+    
+    png(mytemp, width = width_plume, height = height_plume)
     plotPlumeTimeSeries(full_plume_stats)
     dev.off()
     

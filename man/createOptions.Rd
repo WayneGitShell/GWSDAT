@@ -2,7 +2,7 @@
 % Please edit documentation in R/createOptions.R
 \name{createOptions}
 \alias{createOptions}
-\title{Create a start options list.}
+\title{Create start options list.}
 \usage{
 createOptions(site_name = NULL)
 }
@@ -13,7 +13,7 @@ createOptions(site_name = NULL)
 List containing essential model parameters and start options.
 }
 \description{
-Create a start options list.
+Create start options list.
 }
 \examples{
 opt <- createOptions("New Site 1")

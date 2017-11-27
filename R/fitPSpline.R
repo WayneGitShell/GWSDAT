@@ -72,13 +72,13 @@ GWSDAT.bbase <- function(x, xl = min(x), xr = max(x), nseg = 10, deg = 3) {
 
 
 
-#' Truncated p-th power function.
+# Truncated p-th power function.
 GWSDAT.tpower <- function(x, t, p){
     (x - t) ^ p * (x > t)
 }
 
-#' Recompute the huge Xtinv following loading a GWSDAT session. 
-GWSDAT.RecomputeXtinv <- function(ContData,GWSDAT_Options) {
+# Recompute the huge Xtinv following loading a GWSDAT session. 
+GWSDAT.RecomputeXtinv <- function(ContData, GWSDAT_Options) {
   cat("* in GWSDAT.RecomputeXtinv()\n")
   
   # Prepare Data  
@@ -122,7 +122,7 @@ GWSDAT.RecomputeXtinv <- function(ContData,GWSDAT_Options) {
 
 }
 
-#' Computes the coefficient vector for the MAP estimate of lambda.
+# Computes the coefficient vector for the MAP estimate of lambda.
 GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, prior=function(lambda) 1) {
 
   # Prepare and do the fancy linear algebra

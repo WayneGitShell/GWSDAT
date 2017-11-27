@@ -158,7 +158,7 @@ uiImportNewData <- function(valid_data_name) {
                            
                            tabPanel("Shape Files", {
                              shiny::tagList(
-                               HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                               HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files.<br /><b>Important:</b>Make sure to add all files associated with a .shp shape file, e.g. .dbf, .sbn, .sbx, .shx."),
                                shinyjs::hidden(div(id = "removeshp_nd", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_nd", label = "Remove All Files"))),
                               rhandsontable::rHandsontableOutput("tbl_shape_nd")
                              )
@@ -228,7 +228,7 @@ uiImportCSVData <- function(valid_data_name) {
                            #tabPanel("Shape Files", tableOutput("tbl_shape_csv"))
                            tabPanel("Shape Files", {
                               shiny::tagList(
-                                HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                                HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files.<br /><b>Important:</b>Make sure to add all files associated with a .shp shape file, e.g. .dbf, .sbn, .sbx, .shx."),
                                 shinyjs::hidden(div(id = "removeshp_csv", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_csv", label = "Remove All Files"))),
                                 rhandsontable::rHandsontableOutput("tbl_shape_csv")
                               )
@@ -274,7 +274,7 @@ uiImportExcelData <- function(csite_list) {
                            ),
                            tabPanel("Shape Files", {
                              shiny::tagList(
-                               HTML("<b>Note</b>: Shape files specified in the Excel file will not be automatically uploaded. Please use the <b>Add Shape Files</b> control in the left panel to upload files."),
+                               HTML("<b>Note</b>: Please use the <b>Add Shape Files</b> control in the left panel to upload files.<br /><b>Important:</b>Make sure to add all files associated with a .shp shape file, e.g. .dbf, .sbn, .sbx, .shx."),
                                shinyjs::hidden(div(id = "removeshp_xls", style = "margin-top: 5px; margin-bottom: 5px", actionButton("remove_shapefiles_xls", label = "Remove All Files"))),
                                rhandsontable::rHandsontableOutput("tbl_shape_xls")
                               )

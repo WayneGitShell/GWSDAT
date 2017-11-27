@@ -1,5 +1,6 @@
 
 uiAnalyseOptions <- function(csite) {
+  
   fluidRow(
     tags$head(
       tags$style(HTML('#save_analyse_options{background-color: #6dc0ff;
@@ -79,6 +80,18 @@ uiAnalyseOptions <- function(csite) {
       div(style = "display: inline-block;", 
           numericInput("img_height_px_wide", label = "Height (pixel)", value = csite$ui_attr$img_height_px_wide, width = "100px") 
       ),
+      
+      
+      ## DPI for PDF and Postscript files ######################################
+      # [MIGHT GO HERE BUT NOT MANY USERS WILL REQUIRE THIS.]
+      #
+      #div(style = "margin-top:30px, margin-bottom:10px", 
+      #    p("Dots per inch for PDF and Postscript files.")
+      #),
+      #
+      #div(style = "display: inline-block;", 
+      #    numericInput("img_width_px_wide", label = "Width (pixel)", value = csite$ui_attr$img_width_px_wide, width = "100px")
+      #),
       
       # Disabled because it does not work, yet.
       shinyjs::disabled(div(style = "display: inline-block;", 
