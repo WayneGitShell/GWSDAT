@@ -3,15 +3,14 @@
 
 
 
-#' Display concentration time-series for contaminant at specific well.
-#'
-#' @param csite monitoring site object.
-#' @param substance contaminant name
-#' @param location  well name
-#' @param show_thresh show the threshold line if TRUE
-#' 
-#' @export
-#'
+# Display concentration time-series for contaminant at specific well.
+#
+# @param csite monitoring site object.
+# @param substance contaminant name
+# @param location  well name
+# @param show_thresh show the threshold line if TRUE
+# 
+#
 #' @importFrom sm sm.regression
 plotTimeSeries <- function(csite, 
                            substance = NULL, 
@@ -401,7 +400,7 @@ makeTimeSeriesPPT <- function(csite, substance, location, width = 600, height = 
   
   # Put into powerpoint slide.
   if (is.null(ppt_lst <- initPPT())) {
-    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
     return(NULL)
   }
   

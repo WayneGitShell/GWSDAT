@@ -1,10 +1,10 @@
 
 
-#' Display the time-series data of a plume. 
-#'
-#' @param plume_stats Plume statistics data frame.
-#' 
-#' @export
+# Display the time-series data of a plume. 
+#
+# @param plume_stats Plume statistics data frame.
+# 
+# @export
 #' @importFrom Kendall Kendall
 plotPlumeTimeSeries <- function(plume_stats) {
   
@@ -226,7 +226,7 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, width = 800, height = 500){
   
   # Put into powerpoint slide.
   if (is.null(ppt_lst <- initPPT())) {
-    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
     return(NULL)
   }
   

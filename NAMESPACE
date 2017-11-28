@@ -2,8 +2,6 @@
 
 export(createOptions)
 export(launchApp)
-export(plotPlumeTimeSeries)
-export(plotTimeSeries)
 import(MASS)
 import(geometry)
 import(grDevices)

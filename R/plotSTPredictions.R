@@ -229,7 +229,7 @@ plotSTPredictionsPPT <- function(csite, substance = NULL, Wells.to.Plot = NULL,
   
   # Put into powerpoint slide.
   if (is.null(ppt_lst <- initPPT())) {
-    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
     return(NULL)
   }
   

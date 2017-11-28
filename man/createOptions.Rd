@@ -2,19 +2,26 @@
 % Please edit documentation in R/createOptions.R
 \name{createOptions}
 \alias{createOptions}
-\title{Create start options list.}
+\title{Create a list with default start options.}
 \usage{
 createOptions(site_name = NULL)
 }
 \arguments{
-\item{site_name}{The name of the monitoring site.}
+\item{site_name}{An arbitrary string containing the name of the monitoring site.}
 }
 \value{
-List containing essential model parameters and start options.
+A list containing essential model parameters and start options.
 }
 \description{
-Create start options list.
+\code{createOptions} creates a list with start options that can be modified 
+and passed as argument to \code{\link{launchApp}}.
 }
 \examples{
 opt <- createOptions("New Site 1")
+opt$PSplineVars$nseg <- 10  # modify model parameter for p-splines.
+opt$WellDataFilename <- 'path_to_concentration_file.csv'
+opt$WellCoordsFilename <- 'path_to_well_coordinate_file.csv'
+\dontrun{
+launchApp(opt)
+}
 }

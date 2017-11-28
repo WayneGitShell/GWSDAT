@@ -35,17 +35,17 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
 }
 
 
-#' Calculate the plume statistics including mass, area, center, and average concentration for a specific time point.
-#'
-#' @param csite         GWSDAT data object.
-#' @param substance     Name of the contaminant.
-#' @param timepoint     Time point (Date) for which to calculate the plume.
-#' @param predicted_val Predicted concentration values of the contaminant. 
-#' @param plume_thresh  Concentration limit defining the plume. 
-#' @param ground_porosity Porosity of the ground in percent. 
-#' 
-#' @return A data frame containing the plume statistics. 
-#'
+# Calculate the plume statistics including mass, area, center, and average concentration for a specific time point.
+#
+# @param csite         GWSDAT data object.
+# @param substance     Name of the contaminant.
+# @param timepoint     Time point (Date) for which to calculate the plume.
+# @param predicted_val Predicted concentration values of the contaminant. 
+# @param plume_thresh  Concentration limit defining the plume. 
+# @param ground_porosity Porosity of the ground in percent. 
+# 
+# @return A data frame containing the plume statistics. 
+#
 #' @importFrom splancs areapl
 getPlumeStats <- function(csite, 
                           substance, 

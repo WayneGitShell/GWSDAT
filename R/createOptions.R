@@ -1,14 +1,26 @@
  
  
 
-#' Create start options list.
+#' Create a list with default start options.
 #'
-#' @return List containing essential model parameters and start options.
-#' @param site_name The name of the monitoring site. 
+#' \code{createOptions} creates a list with start options that can be modified 
+#' and passed as argument to \code{\link{launchApp}}.   
+#'
+#' 
+#' @param site_name An arbitrary string containing the name of the monitoring site.
+#'
+#' @return A list containing essential model parameters and start options.
 #'
 #' @export 
 #'
-#' @examples opt <- createOptions("New Site 1")
+#' @examples 
+#' opt <- createOptions("New Site 1")
+#' opt$PSplineVars$nseg <- 10  # modify model parameter for p-splines.
+#' opt$WellDataFilename <- 'path_to_concentration_file.csv'
+#' opt$WellCoordsFilename <- 'path_to_well_coordinate_file.csv'
+#' \dontrun{
+#' launchApp(opt)
+#' }
 createOptions <- function(site_name = NULL) {
   
   GWSDAT_Options <- list()

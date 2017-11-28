@@ -1,7 +1,7 @@
 
 
 
-plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log) {
+plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL) {
   
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
@@ -15,8 +15,11 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log) {
   time.passed <- (end.time - start.time) * 1000
   time.passed <- round(time.passed, digits = 0)
   time.log <- paste0("[TIME_MEASURE] interpConc(): ", time.passed, " milliseconds.\n")
-  alog <- isolate(app_log())
-  app_log(paste0(alog, time.log))
+  
+  if (!is.null(app_log)) {
+    alog <- isolate(app_log())
+    app_log(paste0(alog, time.log))
+  }
  
   
   
@@ -381,6 +384,11 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 plotSpatialImagePPT <- function(csite, substance, timepoint,
                            width = 700, height = 500){
  
+  # Initialize Powerpoint file.
+  if (is.null(ppt_lst <- initPPT())) {
+    return(NULL)
+  }
+  
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".png")
   
@@ -388,13 +396,6 @@ plotSpatialImagePPT <- function(csite, substance, timepoint,
   plotSpatialImage(csite, substance, timepoint)
   dev.off()
   
-  
-   
-  # Put into powerpoint slide.
-  if (is.null(ppt_lst <- initPPT())) {
-    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
-    return(NULL)
-  }
   
   addPlotPPT(mytemp, ppt_lst, width, height) 
   
@@ -414,7 +415,7 @@ makeSpatialAnimation <- function(csite, substance,
  
   # Init powerpoint.
   if (is.null(ppt_lst <- initPPT())) {
-    showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
+    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
     return(NULL)
   }
   

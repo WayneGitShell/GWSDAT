@@ -2,15 +2,28 @@
 % Please edit documentation in R/launchApp.R
 \name{launchApp}
 \alias{launchApp}
-\title{Launch GWSDAT into server or ExcelMode.}
+\title{Launches the GWSDAT Shiny application.}
 \usage{
 launchApp(GWSDAT_Options, session_file)
 }
 \arguments{
-\item{GWSDAT_Options}{A list of start options (see createOptions).}
+\item{GWSDAT_Options}{A list of start options created with \code{\link{createOptions}}.}
 
-\item{session_file}{A .RData file with a GWSDAT analysis session.}
+\item{session_file}{Path to .rds file containing a GWSDAT analysis session.}
+}
+\value{
+None
 }
 \description{
-Launch GWSDAT into server or ExcelMode.
+The shiny application can run in multi or single data mode. If no parameter is 
+specified with \code{launchApp}, the application starts in multi data mode, which 
+includes a data manager and several data import facilities. If the parameter \code{session_file}
+was specified, the application launches in single data mode, which is limited to the 
+analysis of the data specified by \code{session_file}.
+}
+\examples{
+\dontrun{
+launchApp(session_file = "path_to_GWSDAT_session.rds") # launch in single data mode.
+launchApp()  # launch in multi data mode
+}
 }
