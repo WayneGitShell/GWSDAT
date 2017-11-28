@@ -2,6 +2,11 @@
 
 existsPPT <- function() {
   
+  # CRAN just doesn't like RDCOMClient so I turn it off for now.
+  return(FALSE)
+  
+  
+  
   # This would be the way to go, if RDCOMClient would be part of the 
   # official CRAN, but it is not (anymore), thus I can't put RDCOMClient
   # into the Suggests tag of the DESCRIPTIONS file and requireNamespace()
@@ -41,25 +46,27 @@ initPPT <- function() {
     #   71: RDCOMClient::COMCreate
     
     
+    #
+    # 
+    #
     
-    tryCatch(
-      #ppt <- RDCOMClient::COMCreate("PowerPoint.Application"),
-      ppt <- RDCOMClient::COMCreate("PowerPoint.Application"),
-      error = function(e) {
-        showNotification("Initializing RDCOMClient failed: Package is probably not loaded. Use require(RDCOMClient) before launching the app.", type = "error", duration = 10)    
-        
-      }
-    )
-    
-    # Variable 'ppt' will not exist if an error occurs in the tryCatch() above.
-    if (exists("ppt")) {  
-      ppt[["Visible"]] <- TRUE
-  
-      myPres <- ppt[["Presentations"]]$add()
-      mySlides <- myPres[["Slides"]]
-  
-      return(list(ppt = ppt, pres = myPres, slides = mySlides))
-    }
+    # tryCatch(
+    #   ppt <- RDCOMClient::COMCreate("PowerPoint.Application"),
+    #   error = function(e) {
+    #     showNotification("Initializing RDCOMClient failed: Package is probably not loaded. Use require(RDCOMClient) before launching the app.", type = "error", duration = 10)    
+    #     
+    #   }
+    # )
+    # 
+    # # Variable 'ppt' will not exist if an error occurs in the tryCatch() above.
+    # if (exists("ppt")) {  
+    #   ppt[["Visible"]] <- TRUE
+    # 
+    #   myPres <- ppt[["Presentations"]]$add()
+    #   mySlides <- myPres[["Slides"]]
+    # 
+    #   return(list(ppt = ppt, pres = myPres, slides = mySlides))
+    # }
   }
   
   return(NULL)
