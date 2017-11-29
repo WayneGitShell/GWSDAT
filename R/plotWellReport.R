@@ -221,8 +221,13 @@ GWSDAT.xyplotAllContbyWells <- function(csite, Cont.Data, SiteName = "", UseLogS
 
 
 
-plotWellReportPPT <- function(csite, substances, locations, use_log_scale,
+plotWellReportPPT <- function(csite, fileout, substances, locations, use_log_scale,
                               width = 900, height = 500){
+  
+  # Initialize Powerpoint file.
+  if (is.null(ppt_pres <- initPPT())) {
+    return(NULL)
+  }
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".png")
@@ -231,13 +236,11 @@ plotWellReportPPT <- function(csite, substances, locations, use_log_scale,
   plotWellReport(csite, substances, locations, use_log_scale)
   dev.off()
   
-  # Put into powerpoint slide.
-  if (is.null(ppt_lst <- initPPT())) {
-    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
-    return(NULL)
-  }
+  ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
   
-  addPlotPPT(mytemp, ppt_lst, width, height) 
+  print(ppt_pres, target = fileout) %>% invisible()
+  
+  try(file.remove(mytemp))
 
   try(file.remove(mytemp))
 }

@@ -213,7 +213,13 @@ plotPlumeTimeSeries <- function(plume_stats) {
 
 
 
-plotPlumeTimeSeriesPPT <- function(plume_stats, width = 800, height = 500){
+plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 500){
+  
+  
+  # Initialize Powerpoint file.
+  if (is.null(ppt_pres <- initPPT())) {
+    return(NULL)
+  }
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".png")
@@ -224,13 +230,9 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, width = 800, height = 500){
   dev.off()
  
   
-  # Put into powerpoint slide.
-  if (is.null(ppt_lst <- initPPT())) {
-    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
-    return(NULL)
-  }
+  ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
   
-  addPlotPPT(mytemp, ppt_lst, width, height) 
+  print(ppt_pres, target = fileout) %>% invisible()
  
   try(file.remove(mytemp))
   

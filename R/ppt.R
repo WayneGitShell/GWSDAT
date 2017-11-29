@@ -1,6 +1,12 @@
 
-
 existsPPT <- function() {
+
+  return(TRUE)
+
+}
+
+
+existsPPT_RDCOMClient <- function() {
   
   # CRAN just doesn't like RDCOMClient so I turn it off for now.
   return(FALSE)
@@ -32,23 +38,17 @@ existsPPT <- function() {
 
 initPPT <- function() {
   
+  #my_pres <- read_pptx()
+  
+  return(read_pptx())
+  
+}
+
+initPPT_RDCOMClient <- function() {
+  
   if (existsPPT()) {
-    
-    # Important: RDCOMClient needs to be loaded (require(RDCOMClient)) prior to
-    # running GWSDAT::launchApp() or the following code will fail with the error below.
-    #
-    # require(RDCOMClient) can not be called here, or GWSDAT will not pass CRAN submission.
-    #
-    # Warning: Error in createCOMReference: could not find function "createCOMReference"
-    # Stack trace (innermost first):
-    #   73: COMCreate
-    #   72: getCOMInstance
-    #   71: RDCOMClient::COMCreate
-    
-    
-    #
-    # 
-    #
+  
+  
     
     # tryCatch(
     #   ppt <- RDCOMClient::COMCreate("PowerPoint.Application"),
@@ -73,8 +73,18 @@ initPPT <- function() {
   
 }
 
+#' @import officer
+addPlotPPT <- function(imgfile, ppt_pres, width, height) {
+  
+  ppt_pres <- officer::add_slide(ppt_pres, layout = "Title and Content", master = "Office Theme")
+  
+  ppt_pres <- officer::ph_with_img(ppt_pres, src = imgfile, height = height / 90 * 0.7, width = width / 90 * 0.7 )
+  
+  return(ppt_pres)
 
-addPlotPPT <- function(imgfile, ppt_lst, width, height) {
+}
+
+addPlotPPT_RDCOMClient <- function(imgfile, ppt_lst, width, height) {
   
   slide <- ppt_lst$pres[["Slides"]]$add(as.integer(max(1, ppt_lst$pres[["Slides"]]$Count() + 1)), 
                                         as.integer(12))

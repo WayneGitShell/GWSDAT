@@ -559,7 +559,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "pptx") {
         
-        makeTimeSeriesPPT(csite, input$solute_select_ts, input$sample_loc_select_ts,
+        makeTimeSeriesPPT(csite, file, input$solute_select_ts, input$sample_loc_select_ts,
                           width  = input$img_width_px, height = input$img_height_px)
         
       } else {
@@ -586,7 +586,7 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "pptx") {
         
-        plotSpatialImagePPT(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
+        plotSpatialImagePPT(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
                        width  = input$img_width_px, height = input$img_height_px)
       
         } else {
@@ -655,7 +655,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_wr == "pptx") {
         
-        plotWellReportPPT(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale,
+        plotWellReportPPT(csite, file, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale,
                        width  = input$img_width_px_wide, height = input$img_height_px_wide)
         
         
@@ -689,7 +689,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_pd == "pptx") {
         
-        plotPlumeTimeSeriesPPT(plume_stats, 
+        plotPlumeTimeSeriesPPT(plume_stats, file,
                                width = input$img_width_px_wide, height = input$img_height_px_wide)
         
       } else {
@@ -734,7 +734,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_stp == "pptx") {
         
-        plotSTPredictionsPPT(csite, input$solute_select_stp, input$sample_loc_select_stp, 
+        plotSTPredictionsPPT(csite, file, input$solute_select_stp, input$sample_loc_select_stp, 
                              use_log_scale, input$solute_conc_stp,
                              width = input$img_width_px_wide, 
                              height = input$img_height_px_wide)
@@ -792,14 +792,28 @@ server <- function(input, output, session) {
   
   
   # Generate PPT with spatial animation.
-  observeEvent(input$generate_spatial_anim_ppt, {
-    
-    makeSpatialAnimation(csite, input$solute_select_sp,
-                         input$img_width_px, input$img_height_px,
-                         input$img_width_px_wide, input$img_height_px_wide)
-    
-  })
+  #observeEvent(input$generate_spatial_anim_ppt, {
+  #  
+  #  makeSpatialAnimation(csite, input$solute_select_sp,
+  #                       input$img_width_px, input$img_height_px,
+  #                       input$img_width_px_wide, input$img_height_px_wide)
+  #  
+  #})
   
+  output$generate_spatial_anim_ppt <- downloadHandler(
+    
+    filename <- function() {
+      paste("spatial_anim.pptx")
+    },
+    
+    content <- function(file) {
+      
+      makeSpatialAnimation(csite, file, input$solute_select_sp,
+                           input$img_width_px, input$img_height_px,
+                           input$img_width_px_wide, input$img_height_px_wide)
+      
+    }
+  )
   
  
   
