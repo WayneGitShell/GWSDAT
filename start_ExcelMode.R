@@ -64,7 +64,14 @@ GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSD
 #GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellData.csv'
 #GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellCoords.csv'
 
-
+# require(RDCOMClient)
+# 
+# usePPT <- function() {
+# 
+#   ppt <- RDCOMClient::COMCreate("PowerPoint.Application")
+#  
+#   return(ppt)
+# }
 
 #devtools::install_github("andrejadd/GWSDAT")
 #library(GWSDAT)
