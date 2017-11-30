@@ -384,10 +384,11 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,
                            width = 700, height = 500){
  
+  # officer
   # Initialize Powerpoint file.
-  if (is.null(ppt_pres <- initPPT())) {
-    return(NULL)
-  }
+  #if (is.null(ppt_pres <- initPPT())) {
+  #  return(NULL)
+  #}
   
   # Create temporary wmf file. 
   mytemp <- tempfile(fileext = ".png")
@@ -396,10 +397,25 @@ plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,
   plotSpatialImage(csite, substance, timepoint)
   dev.off()
   
-  ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
+  # officer
+  #ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
+  #
+  #print(ppt_pres, target = fileout) %>% invisible()
   
-  print(ppt_pres, target = fileout) %>% invisible()
-  
+  # Set to NULL to make devtools::check() happy.
+  if (!exists("pptFct", envir = .GlobalEnv)) {
+    pptFct <- NULL
+  } 
+
+  if (!is.null(pptFct)) {
+    pptFct(mytemp, width, height)
+  } else {
+    
+    # use officer
+    # ..
+    cat("pptFct not available\n")
+  }
+
   try(file.remove(mytemp))
   
 }

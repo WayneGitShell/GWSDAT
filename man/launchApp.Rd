@@ -4,12 +4,14 @@
 \alias{launchApp}
 \title{Launches the GWSDAT Shiny application.}
 \usage{
-launchApp(GWSDAT_Options, session_file)
+launchApp(GWSDAT_Options, session_file, pptFct = NULL)
 }
 \arguments{
 \item{GWSDAT_Options}{A list of start options created with \code{\link{createOptions}}.}
 
 \item{session_file}{Path to .rds file containing a GWSDAT analysis session.}
+
+\item{pptFct}{Function that calls RDCOMClient methods.}
 }
 \value{
 None

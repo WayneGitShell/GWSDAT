@@ -63,8 +63,8 @@ server <- function(input, output, session) {
   # Remove pptx (powerpoint) if no support was found. 
   if (!existsPPT())
     img_frmt <- img_frmt[-which(img_frmt == "pptx")]
-   
-
+  
+  
   
   output$version_info <- renderPrint({
     

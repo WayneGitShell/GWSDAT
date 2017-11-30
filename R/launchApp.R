@@ -14,6 +14,7 @@ options(warn = 1)
 #'
 #' @param GWSDAT_Options A list of start options created with \code{\link{createOptions}}.
 #' @param session_file   Path to .rds file containing a GWSDAT analysis session.
+#' @param pptFct         Function that calls RDCOMClient methods.
 #'
 #' @return None
 #'   
@@ -28,7 +29,7 @@ options(warn = 1)
 #' launchApp(session_file = "path_to_GWSDAT_session.rds") # launch in single data mode.
 #' launchApp()  # launch in multi data mode
 #' }
-launchApp <- function(GWSDAT_Options, session_file) {
+launchApp <- function(GWSDAT_Options, session_file, pptFct = NULL) {
   
   # For R package: Need this here or shinyjs won't work and the connection 
   # breaks - reason unknown. 
@@ -37,6 +38,8 @@ launchApp <- function(GWSDAT_Options, session_file) {
   # start of the ui() function where it belongs on default.
   shinyjs::useShinyjs()
  
+  .GlobalEnv$pptFct <- pptFct
+  
   if (missing(GWSDAT_Options) && missing(session_file)) {
     
     .GlobalEnv$APP_RUN_MODE <- "MultiData"

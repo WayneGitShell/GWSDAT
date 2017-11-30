@@ -64,18 +64,34 @@ GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/GWSD
 #GWSDAT_Options[['WellDataFilename']]   <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellData.csv'
 #GWSDAT_Options[['WellCoordsFilename']] <- 'D:/1_Arbeit/1_GWSDAT/3_Shiny_Dev/2_Bugtesting/VBAF11FWellCoords.csv'
 
-# require(RDCOMClient)
-# 
-# usePPT <- function() {
-# 
-#   ppt <- RDCOMClient::COMCreate("PowerPoint.Application")
-#  
-#   return(ppt)
-# }
+
+ 
+addIMGtoPPT <- function(imgfile, width, height) {
+ 
+  require(RDCOMClient)
+  
+  ppt <- RDCOMClient::COMCreate("PowerPoint.Application")
+  
+  ppt[["Visible"]] <- TRUE
+   
+  pres <- ppt[["Presentations"]]$add()
+  #slides <- pres[["Slides"]]
+     
+  #return(list(ppt = ppt, pres = myPres, slides = mySlides))
+  
+  slide <- pres[["Slides"]]$add(as.integer(max(1, pres[["Slides"]]$Count() + 1)), as.integer(12))
+  shapes <- slide$Shapes()
+  
+  shapes$AddPicture(imgfile, LinkToFile = FALSE, SaveWithDocument = TRUE, 
+                    Top = 1, Left = 20, Width = width * 0.7, Height = height * 0.7)
+  slide$Select()
+  
+  #return(ppt)
+}
 
 #devtools::install_github("andrejadd/GWSDAT")
 #library(GWSDAT)
 devtools::load_all()
-launchApp(GWSDAT_Options)
+launchApp(GWSDAT_Options, pptFct = addIMGtoPPT)
 #launchApp(session_file = "data/GWSDAT_debug_shapefile.RData")
 
