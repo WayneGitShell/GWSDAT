@@ -3,3 +3,6 @@ cache: packages
 sudo: required
 apt_packages:
   - libudunits2-dev
+  - gdal-bin
+  - libgdal-dev
+  
