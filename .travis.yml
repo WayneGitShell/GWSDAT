@@ -5,4 +5,5 @@ apt_packages:
   - libudunits2-dev
   - gdal-bin
   - libgdal-dev
+  - libgdal20
   
