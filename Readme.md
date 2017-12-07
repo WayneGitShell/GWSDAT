@@ -1,31 +1,31 @@
 
 
-# GWSDAT (shiny)
+# GWSDAT![alt text](https://travis-ci.org/andrejadd/GWSDAT.svg?branch=shiny_testing)
 
-R package of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
+This is the R Shiny application of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
 
-This app can be deployed on a Shiny Server supporting multiple data sets and users, and a stand-alone mode (Excel Mode) that allows to explore a single data set.
+This app can be deployed on a Shiny Server supporting multiple data sets and users, and a stand-alone mode (Excel Mode), which is limited to a single data set.
 
 ## Install and Run
 
-Open an R session (requires R package `devtools`):
+For latest development version, install from github using the `devtools` R package:
 
 ```r
 devtools::install_github("andrejadd/GWSDAT")
 launchApp()
 ```
 
-As an alternative, download/clone the folder and change into it:
+Or install from CRAN: 
 
 ```r
-devtools::load_all()
+install.packages("GWSDAT")
 launchApp()
 ```
 
 
 ## Deploy on Shiny Server
 
-On the server, install the package with `devtools::install_github("andrejadd/GWSDAT")`. Create a directory `GWSDAT` inside the shiny app folder defined in `/etc/shiny-server/shiny-server.conf`. Create the file `GWSDAT/app.R` with the following content:
+On the server, install the package as shown above and create a directory `GWSDAT` inside the Shiny app folder defined in `/etc/shiny-server/shiny-server.conf`. Create the file `GWSDAT/app.R` with the following content:
 
 ```r
 library(GWSDAT)
@@ -44,7 +44,7 @@ library(GWSDAT)
 launchApp(GWSDAT_Options)
 ```
 
-The `GWSDAT_Options` list must define the elements `WellDataFilename` and `WellCoordsFilename`. A short-cut to creating `GWSDAT_Options` and these elements would be: 
+The `GWSDAT_Options` list must define the elements `WellDataFilename` and `WellCoordsFilename`. The method `GWSDAT::createOptions()` creates this `GWSDAT_Options` list.
 
 ```r
 library(GWSDAT)
@@ -56,14 +56,10 @@ launchApp(opt)
 
 ## Save & Load Session File
 
-A session can be saved in the Analysis panel, in the top navigation bar under _More_ -> _Save Session_.
+Inside the Shiny app, a data analysis session can be saved inside the Analysis panel, in the top navigation bar under _More_ -> _Save Session_. This creates a `.rds` file that can be loaded with the `launchApp()` method:
 
-To load the session start GWSDAT with
 
 ```r
-GWSDAT::launchApp(session_file = "path_to_file.RData")
+GWSDAT::launchApp(session_file = "path_to_file.rds")
 ``` 
-
-
-
 

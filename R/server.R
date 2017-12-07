@@ -8,6 +8,7 @@ server <- function(input, output, session) {
   
   DEBUG_MODE <- FALSE
 
+ 
   # Increase upload file size to 30MB (default: 5MB)
   options(shiny.maxRequestSize = 30*1024^2)
   

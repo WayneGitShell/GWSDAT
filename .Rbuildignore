@@ -7,3 +7,4 @@
 ^R/sliderValues.R
 ^start_ExcelMode.R
 ^data/*
+^.travis.yml

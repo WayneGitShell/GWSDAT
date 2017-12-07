@@ -1,6 +1,6 @@
 
 
-
+#' @importFrom readxl read_excel
 readExcelData <- function(filein, sheet, header = NULL, get_subset = TRUE, ign_first_head = "") {
     
     # Avoid reading column header (in first row) in order to have conform input
