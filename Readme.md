@@ -1,6 +1,6 @@
 
 
-# GWSDAT![alt text](https://travis-ci.org/andrejadd/GWSDAT.svg?branch=shiny_testing)
+# GWSDAT![alt text](https://travis-ci.org/andrejadd/GWSDAT.svg?branch=master)
 
 This is the R Shiny application of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
 

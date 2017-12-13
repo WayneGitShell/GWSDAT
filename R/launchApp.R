@@ -22,6 +22,7 @@ options(warn = 1)
 #' @import stats grDevices graphics MASS shiny shinycssloaders geometry zoo rhandsontable sf
 #' @importFrom shinyjs show hide delay onclick useShinyjs
 #' @importFrom utils sessionInfo write.csv packageVersion
+#' @importFrom readxl excel_sheets
 #' 
 #' @examples 
 #' \dontrun{

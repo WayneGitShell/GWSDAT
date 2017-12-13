@@ -42,7 +42,7 @@ server <- function(input, output, session) {
   
   # Default data set including the Basic and Comprehensive example. Loaded in
   # server mode. 
-  default_session_file <- "GWSDAT_Examples.RData"
+  default_session_file <- "GWSDAT_Examples.rds"
   
   # Default load options that will be overwritten by dialog boxes. 
   loadOptions <- list(aquifer = NULL, subst_napl = NULL)
@@ -2210,21 +2210,23 @@ server <- function(input, output, session) {
   
   
   loadDefaultSessions <- function() {
+    
     if (DEBUG_MODE)
       cat("* in loadDefaultSessions()\n")
     
     infile <- system.file("extdata", default_session_file, package = "GWSDAT")
-    
-    csite_list <- NULL
+
+    if (exists('csite_list_tmp'))    
+      rm('csite_list_tmp')
     
     # This should never trigger a warning, since I am putting the file there (only if package is broken).
-    tryCatch( load(infile),
+    tryCatch( csite_list_tmp <- readRDS(infile),
               warning = function(w) showNotification(paste0("Failed to load default_session_file \'", default_session_file, "\' from package GWSDAT."), type = "error", duration = 7))
 
-    if (is.null(csite_list))
+    if (!exists('csite_list_tmp'))
       return(NULL)
     
-    csite_list <<- csite_list
+    csite_list <<- csite_list_tmp
     csite <<- csite_list[[1]]
     csite_selected_idx <<- 1
     
@@ -2244,16 +2246,15 @@ server <- function(input, output, session) {
     # Load 'session_file' if specified in launchApp().
     #if (exists("session_file", envir = .GlobalEnv)) {
     if (!is.null(session_file)) {
-      csite_list <- NULL
-      
-      tryCatch( load(session_file), warning = function(w) 
+    
+      tryCatch( csite_list_tmp <- readRDS(session_file), warning = function(w) 
         showModal(modalDialog(title = "Error", w$message, easyClose = FALSE))
       )
       
-      if (is.null(csite_list))
+      if (!exists('csite_list_tmp'))
         return(FALSE)
       
-      csite_list <<- csite_list
+      csite_list <<- csite_list_tmp
       csite <<- csite_list[[1]]
       csite_selected_idx <<- 1
       
