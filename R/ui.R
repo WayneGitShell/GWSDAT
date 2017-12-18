@@ -27,7 +27,7 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
       shinydashboard::menuItem("Manage Data", tabName = "menu_data_manager", icon = icon("archive")),
       shinydashboard::menuItem("Analyse", tabName = "menu_analyse", icon = icon("bar-chart")),
-      shinydashboard::menuItem("Version", tabName = "menu_version")
+      shinydashboard::menuItem("Log and Jobs", tabName = "logs_jobs", icon = icon("wpforms"))
     )
   ),
   
@@ -72,8 +72,8 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
               )
       ),
      
-      shinydashboard::tabItem(tabName = "menu_version",
-                             verbatimTextOutput("version_info")
+      shinydashboard::tabItem(tabName = "logs_jobs",
+                              uiOutput("uiLogsJobs")
       )
       
     ) # end tabItems
@@ -86,7 +86,7 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
   dbHeader, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
     shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
-    shinydashboard::menuItem("Version", tabName = "menu_version")
+    shinydashboard::menuItem("Logs and Jobs", tabName = "logs_jobs", icon = icon("wpforms"))
     ),
     collapsed = TRUE
   ),
@@ -97,7 +97,7 @@ uiSimple <- shinydashboard::dashboardPage(skin = "black",
                       shiny::singleton(tags$head(tags$link(href = system.file("www", "trafficlight.css", package = "GWSDAT"), rel = "stylesheet"))),
                       shinydashboard::tabItems( 
                         shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse")),
-                        shinydashboard::tabItem(tabName = "menu_version", verbatimTextOutput("version_info"))
+                        shinydashboard::tabItem(tabName = "logs_jobs", uiOutput("uiLogsJobs"))
                       )
                       
   ) # end dashboardBody 

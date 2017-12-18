@@ -14,7 +14,7 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL)
   end.time <- Sys.time()
   time.passed <- (end.time - start.time) * 1000
   time.passed <- round(time.passed, digits = 0)
-  time.log <- paste0("[TIME_MEASURE] interpConc(): ", time.passed, " milliseconds.\n")
+  time.log <- paste0("[plotSpatialImage] Data prediction took ", time.passed, " milliseconds.\n")
   
   if (!is.null(app_log)) {
     alog <- isolate(app_log())

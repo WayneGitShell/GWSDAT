@@ -8,3 +8,4 @@
 ^start_ExcelMode.R
 ^data/*
 ^.travis.yml
+^TODO.txt

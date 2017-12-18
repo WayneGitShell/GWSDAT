@@ -65,17 +65,19 @@ server <- function(input, output, session) {
   if (!existsPPT())
     img_frmt <- img_frmt[-which(img_frmt == "pptx")]
    
-
+ 
   
-  output$version_info <- renderPrint({
     
-    cat(app_log())
+  
+  
+ 
+  
+  
+  
+ 
     
-      #cat("\n\n** Path to image logo: ", system.file("logo.gif", package = "GWSDAT"), "\n")
-      #cat("\n\n** Content of .libPaths():\n\n")
-      #sapply(.libPaths(), list.files)
-  })
-    
+  
+  
   # Clean-up user session.
   session$onSessionEnded(function() {
     
@@ -196,6 +198,145 @@ server <- function(input, output, session) {
   })
 
   
+  ## Simple Background Process #################################################
+  
+  # Background-Process (BP) file name and reactive flag indicating progress.
+  BP_modelfit_outfile <- ""                 # Result from BP is written to this file.
+  BP_modelfit_running <- reactiveVal(FALSE) # Inform observer below that fitting is in progress.
+  BP_modelfit_done    <- reactiveVal(1)     # Inform all depending functions that fitting is done.
+  BP_simple_enabled <- TRUE                        # Is disabled (FALSE) if SQL jobqueue works (DBI installed)
+  
+  # This function is triggered on startup and whenever the reactive variable
+  # 'BP_modelfit_done()' changes its (boolean) value. As long as BP_modelfit_done == FALSE,
+  # a background process (BP) is running and the function is re-run in intervals (see invalidateLater).
+  # It checks if the BP produced its results into the file '  BP_modelfit_outfile'.
+  #fitPSplineChecker <- reactive({
+  observe({
+    
+    cat("** in fitPSplineChecker()\n")
+    
+    if (!BP_simple_enabled)
+      return()
+    
+    # For logging.
+    isolate(alog <- app_log())
+    
+    # Do not re-execute (invalidate) this function if reactive flag 
+    # 'BP_modelfit_done' is TRUE. Need 'BP_modelfit_done' to be reactive, so that
+    # fitPSplineChecker() executes whenever 'BP_modelfit_done' changes its value.
+    if (!BP_modelfit_running()) {
+      return(TRUE)
+    }
+    
+    # Re-execute this function every X milliseconds.
+    invalidateLater(2000)
+    
+    if (!file.exists(BP_modelfit_outfile)) {
+      app_log(paste0(alog, '[PSpline] Fitting in progress.\n'))
+      return(TRUE)
+    }
+    
+    # Attempt to read output file, 'x' will not exist if this fails (usually when 
+    # writing to the file was not completed by the external process).
+    try(fitdat <- readRDS(BP_modelfit_outfile), silent = TRUE)
+    
+    # Evaluates to TRUE if file above was read successful.
+    if (exists('fitdat')) { 
+      
+      
+      BP_modelfit_running(FALSE)               # Stops re-execution of this observer.
+      BP_modelfit_done(BP_modelfit_done() + 1) # Triggers render functions that depend on new model fit.
+      
+      app_log(paste0(alog, '[PSpline] Calcuation done. File read.\n'))
+      showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
+      
+    
+     
+      # On failure (fitdat == NULL), revert to previous settings.
+      if (is.null(fitdat)) {
+        showNotification("P-Splines: Fitting data with new number of knots failed.", type = "error", duration = 10)
+          
+        csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
+        updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
+        updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+      } else {
+           
+        
+        # Update the current data.
+        csite$Fitted.Data    <<- fitdat$Fitted.Data
+        csite$Traffic.Lights <<- fitdat$Traffic.Lights
+        
+        # Copy back the altered csite list.
+        # Write back the fitted data
+        # FIXME: Make sure to write to the right csite_list data set (use index or name)
+        # 1. Either remember csite_selected_idx (pass to BP and back)
+        #    Fails if content of csite_list changes (e.g. data deleted, index shifts).
+        # 2. By data name: lookup data name 
+        # 3. Use unique data ID, find it inside csite_list and update. <<--- Cleanest approach, would need to update other code too. 
+        #
+        csite_list[[csite_selected_idx]] <<- csite  
+           
+        # Save the current state, in case it is changed again and fails.
+        prev_psplines_resolution <<- input$psplines_resolution
+        prev_psplines_knots <<- input$psplines_knots
+      } 
+      
+      return(TRUE)
+    } 
+    
+    app_log(paste0(alog, '[PSpline] File exists but not completed.\n'))
+    return(FALSE)
+    
+  })
+  
+  
+  ## DBI Job Queue ##################################################################
+  
+  # Contains the name of the database file and the connection handle.
+  jq_db <- NULL
+  
+  # Find out if the Database packages are installed.
+  if (requireNamespace('DBI', quietly = TRUE) && requireNamespace('RSQLite', quietly = TRUE)) {
+
+    # Create job queue data base, currently also opens connection.
+    jq_db <- createJobQueue()
+    cat('jobqueue DB file: ', jq_db$dbPath, '\n')
+    
+    # Disable the simple background process.
+    BP_simple_enabled <- FALSE 
+    
+  }
+  
+  job_queue <- reactiveValues(new = NULL, run = NULL, done = NULL)
+  
+  # Periodically check the job queue and process new and finished jobs.
+  observe({
+    
+    # If not enabled, this observer will not invalidate anymore
+    if (is.null(jq_db))
+      return()
+    
+    invalidateLater(5000)
+    
+    # Check if connection to db is still open.
+    # .. (reconnect if not) --> move to watchQueue()
+    
+    evalQueue(jq_db)
+    
+    # Fetch content of job queue. 
+    queues <- infoQueue(con = jq_db$dbConn)  
+    job_queue$new <- queues$jq
+    job_queue$run <- queues$rq
+    job_queue$done <- queues$dq
+    
+ 
+    # Modify BP_modelfit_done() to trigger invalidation of dependent plot methods.
+    # This should be done inside the function that processes the modelfit results.
+    # BP_modelfit_done(BP_modelfit_done() + 1)
+  })
+  
+  
+  
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- reactive({
     # cat("* entering reaggregateData()\n")
@@ -260,7 +401,7 @@ server <- function(input, output, session) {
       csite$Fitted.Data[[cont]]$Cont.Data$AggDate <<- agg_col
     }
     
-    # Calculate Traffic Lights (depends on aggregation date input)
+    # Re-Calculate Traffic Lights (depends on aggregation date).
     csite$Traffic.Lights <<- NULL
     
     tryCatch(
@@ -270,24 +411,9 @@ server <- function(input, output, session) {
       }
     )
 
-    # Calculate groundwater flows (depends on aggregation date input)
-    csite$GW.Flows <<- NULL
+    # Re-Calculate groundwater flows (depends on aggregation date).
+    csite$GW.Flows <<- evalGWFlow(csite$All.Data$Agg_GW_Data)
     
-    if (!is.null(csite$All.Data$Agg_GW_Data)) {
-      
-      tryCatch(
-        csite$GW.Flows <<- do.call('rbind', by(csite$All.Data$Agg_GW_Data, csite$All.Data$Agg_GW_Data$AggDate, calcGWFlow)),
-        error = function(e) {
-          showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)
-        })
-      
-      if (!is.null(csite$GW.Flows)) {    
-        csite$GW.Flows$R <<- csite$GW.Flows$R/quantile(csite$GW.Flows$R, p = 0.9, na.rm = T)
-        csite$GW.Flows$R[csite$GW.Flows$R > 1] <<- 1
-        csite$GW.Flows <<- na.omit(csite$GW.Flows)    
-      }
-    }
-
         
     # Update UI time points of slider.
     dates_tmp <- format(csite$All.Data$All_Agg_Dates, "%d-%m-%Y")
@@ -354,8 +480,11 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
-    # cat("* entering image_plot()\n")
+    cat("* entering image_plot()\n")
     
+    # React to new fitted model.
+    BP_modelfit_done()
+
     # React to changes in the Options panel.
     optionsSaved() 
 
@@ -378,6 +507,7 @@ server <- function(input, output, session) {
     csite$ui_attr$gw_selected <<- input$gw_flows
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
+    
     
     #start.time = Sys.time()
     plotSpatialImage(csite, input$solute_select_sp, 
@@ -792,6 +922,11 @@ server <- function(input, output, session) {
   )
   
   
+  
+  
+  
+  
+  
   # Generate PPT with spatial animation.
   #observeEvent(input$generate_spatial_anim_ppt, {
   #  
@@ -808,6 +943,7 @@ server <- function(input, output, session) {
     },
     
     content <- function(file) {
+      
       
       makeSpatialAnimation(csite, file, input$solute_select_sp,
                            input$img_width_px, input$img_height_px,
@@ -2004,6 +2140,7 @@ server <- function(input, output, session) {
   #  saved in csite$ui_attr$plume_thresh.
   output$thres_plume_select <- renderUI({
    
+    dataLoaded() # Need this to re-execute whenever new data is loaded.
     num_subst <- length(csite$ui_attr$plume_thresh)
     
     lapply(1:num_subst, function(i) {
@@ -2026,6 +2163,8 @@ server <- function(input, output, session) {
   # These inputs will modify the concentration thresholds for each substance, 
   #  saved in csite$ui_attr$conc_thresh.
   output$thres_conc_select <- renderUI({
+    
+    dataLoaded()
     
     num_subst <- length(csite$ui_attr$conc_thres)
     
@@ -2071,44 +2210,60 @@ server <- function(input, output, session) {
   })
     
   
+  
+  
+  
+  
+  
   # Re-fit the model with the new model resolution setting, i.e. number of knots.
   observeEvent(input$okModSetting, {
     
-    if (new_psplines_knots == csite$GWSDAT_Options[['PSplineVars']][['nseg']]) 
-     return()
-    
-    
-    # Re-Fit the data with the new PSplines setting inside GWSDAT_Options.
-    # previous_knots <- csite$GWSDAT_Options[['PSplineVars']][['nseg']]
-    csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- new_psplines_knots
-    
-    fitdat = fitData(csite$All.Data, csite$GWSDAT_Options)
-    
-    # On failure, revert to previous settings
-    if (is.null(fitdat)) {
-     showNotification("Fitting data with updated model resolution failed. Reverting to previous resolution setting.", type = "error", duration = 10)
-     
-     csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
-     updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
-     updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
-    } else {
-      
-      # Update the current data.
-      csite$Fitted.Data    <<- fitdat$Fitted.Data
-      csite$Traffic.Lights <<- fitdat$Traffic.Lights
-      csite$GW.Flows       <<- fitdat$GW.Flows
-      
-      # Copy back the altered csite list.
-      csite_list[[csite_selected_idx]] <<- csite  
-      
-      # Save the current state, in case it is changed again and fails.
-      prev_psplines_resolution <<- input$psplines_resolution
-      prev_psplines_knots <<- input$psplines_knots
-    }      
-    
+    cat("* in observeEvent: okModSetting\n")
     
     removeModal()
+    
+    if (new_psplines_knots == csite$GWSDAT_Options[['PSplineVars']][['nseg']]) 
+      return()
+    
+    if (BP_simple_enabled) {
+      
+      # Create temporary file names
+      BP_modelfit_outfile <<- tempfile(pattern = "LC_", tmpdir = tempdir(), fileext = ".rds")
+      BP_modelfit_infile <- tempfile(pattern = "LC_", tmpdir = tempdir(), fileext = ".rds")
+      
+      # Save data object to file 
+      saveRDS(csite, file = BP_modelfit_infile)
+      
+      # Starts script as a background process, but completes instantaneously
+      run_script <- system.file("inst/application/simple_pspline_fit.R", package = "GWSDAT")
+      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_knots, ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
+      cat("Starting R process: ", Rcmd, "\n")
+      
+      shell(cmd = Rcmd, wait = FALSE)
+      
+      # This will cause the observer to execute which checks if results are ready.
+      BP_modelfit_running(TRUE)
+    } else {
+      
+      # Put processing job into job queue database
+      #FIXME: Consider passing only csite$All.Data and csite$GWSDAT_Options to
+      #       decrease infile size for job -> need csite for Traffic Light fit as well (!).
+      
+      # Set new number of knots for the P-Spline model.
+      csite$GWSDAT_Options[['PSplineVars']][['nseg']] <- new_psplines_knots
+      
+      # Retrieve full path of script which has to be located inside the package
+      # folder inst/application.
+      addQueueJob(jq_db, system.file("inst/application", 'jqdb_pspline_fit.R', package = "GWSDAT"), csite) 
+      
+    }
+    
+    showNotification("Started background process for P-Spline fit. This can take a view moments.", type = "message", duration = 10)
+    
+    
+    
   })
+  
   
   
   # Update the number of knots in the text field to reflect the resolution.
@@ -2140,9 +2295,10 @@ server <- function(input, output, session) {
         # is pressed inside the modal dialog.
         new_psplines_knots <<- input_knots
         showModal(changeModelSettingorNotModal())
-      
-        
       }
+      
+      
+      
     }
    
     
@@ -2279,7 +2435,7 @@ server <- function(input, output, session) {
     }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
     
     
-  
+    # Check if reading the data failed. 
     if (is.null(solute_data) || is.null(well_data))
       return(NULL)
     
@@ -2293,6 +2449,7 @@ server <- function(input, output, session) {
       return(Aq_list)
     }
     
+    # If no Aquifer was specified in loadOptions, pick the first one in the list. 
     if (is.null(Aq_sel)) 
       Aq_sel <- Aq_list[[1]]
 
@@ -2304,34 +2461,37 @@ server <- function(input, output, session) {
       return(pr_dat)
       
     
-    # Some Error occured.
+    # Check if something went wrong while processing the data.
     if (is.null(pr_dat))
       return(NULL)
     
-    fitdat = fitData(pr_dat, GWSDAT_Options)
+    # Fit the data and calculate the Traffic Lights (depends on fitting the data).
+    fitdat <- fitData(pr_dat, GWSDAT_Options)
     
     if (is.null(fitdat))
       return(NULL)
     
-    # Create UI attributes
+    # Calculate the Groundwater flows.
+    GW_flows <- evalGWFlow(pr_dat$Agg_GW_Data)
+    
+    # Create UI attributes.
     ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
     
     # Build list with all data.
-    csite <<- list(All.Data       = pr_dat,
-                  Fitted.Data    = fitdat$Fitted.Data,
-                  GWSDAT_Options = GWSDAT_Options,
-                  Traffic.Lights = fitdat$Traffic.Lights,
-                  GW.Flows       = fitdat$GW.Flows,
-                  ui_attr        = ui_attr,
-		              Aquifer        = Aq_sel,
-		              raw_contaminant_tbl = solute_data,
-		              raw_well_tbl   = well_data$data)
+    csite <<- list(All.Data      = pr_dat,
+                   GWSDAT_Options = GWSDAT_Options,
+                   Fitted.Data    = fitdat$Fitted.Data,
+                   Traffic.Lights = fitdat$Traffic.Lights,
+                   GW.Flows       = GW_flows,
+                   ui_attr        = ui_attr,
+		               Aquifer        = Aq_sel,
+		               raw_contaminant_tbl = solute_data,
+		               raw_well_tbl   = well_data$data)
     
     # Save csite to the list of csites and remember index.
     curr_idx <- length(csite_list) + 1
     csite_list[[curr_idx]] <<- csite 
     csite_selected_idx <<- curr_idx
-    
     
     # Flag that data was fully loaded.
     dataLoaded(LOAD_COMPLETE)
@@ -2784,6 +2944,19 @@ server <- function(input, output, session) {
     dataLoaded(dataLoaded() + 1)
   })
   
- 
+  
+  # Output the version and log info.
+  output$logs_view <- renderPrint({cat(app_log()) })
+  
+  # Maybe not use renderUI but standard client side ui????
+  output$uiLogsJobs <- renderUI({
+    uiLogsJobs()
+  })
+  
+  output$job_queue_table <- renderTable({if (DEBUG_MODE) cat('* job_queue_table()\n'); job_queue$new })
+  output$job_run_table   <- renderTable({if (DEBUG_MODE) cat('* job_run_table()\n'); job_queue$run })
+  output$job_done_table  <- renderTable({if (DEBUG_MODE) cat('* job_done_table()\n'); job_queue$done })
+  
+
 } # end server section
 

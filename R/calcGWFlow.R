@@ -52,3 +52,31 @@ calcGWFlow <- function(temp.GW) {
   
   return(temp.GW)
 }
+
+
+evalGWFlow <- function(Agg_GW_Data) {
+  
+
+  #if (showProgress) {
+  #  progress$set(value = PctDone, detail = paste("calculating groundwater"))
+  #} 
+
+  GW.Flows <- NULL
+
+  if (!is.null(Agg_GW_Data)) {
+    
+    tryCatch(
+      GW.Flows <- do.call('rbind', by(Agg_GW_Data, Agg_GW_Data$AggDate, calcGWFlow)),
+      error = function(e) {
+        showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)
+      })
+    
+    if (!is.null(GW.Flows)) {    
+      GW.Flows$R <- GW.Flows$R/quantile(GW.Flows$R, p = 0.9, na.rm = T)
+      GW.Flows$R[GW.Flows$R > 1] <- 1
+      GW.Flows <- na.omit(GW.Flows)    
+    }
+  }
+
+  return(GW.Flows)
+}

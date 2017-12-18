@@ -1,20 +1,24 @@
  
+#' @export
+fitData <- function(All.Data, GWSDAT_Options, showProgress = TRUE) {
 
-fitData <- function(All.Data, GWSDAT_Options) {
-
-  progress <- shiny::Progress$new()
-  progress$set(message = "Fitting data", value = 0)
-  on.exit(progress$close())
-
+  if (showProgress) {
+    progress <- shiny::Progress$new()
+    progress$set(message = "Fitting data", value = 0)
+    on.exit(progress$close())
+  }
+  
   Fitted.Data <- list()
 
   NumConts = length(All.Data$cont_names)
 
   # Progress bar value indicator.
-  PctDone = 1 / (NumConts + 3)
+  PctDone = 1 / (NumConts + 2)
   
  
-  if (!tolower(GWSDAT_Options$ModelMethod) %in% c("svm","pspline")) {
+  # Check if requested fitting method is supported. Pick 'pspline' if not. 
+  # "svm" was taken out because fitSVM() is not working.
+  if (!tolower(GWSDAT_Options$ModelMethod) %in% c("pspline")) {
     
     msg <- "No valid modelling method selected. Assuming pspline. (Choice will be added)"
     showNotification(msg, duration = 10 )
@@ -29,24 +33,19 @@ fitData <- function(All.Data, GWSDAT_Options) {
   for (i in 1:NumConts) {
     
     # Show progress of fitting.
-    if (!is.null(progress)) {
+    if (showProgress) { # if (!is.null(progress)) {
       progress$set(value = PctDone, detail = paste("contaminant ", All.Data$cont_names[i]))
     }
     
     # fitSVM() not working..
-    #if (tolower(GWSDAT_Options$ModelMethod) == "svm") {
-    #  
+    #if (tolower(GWSDAT_Options$ModelMethod) == "svm") 
     #  temp.fit <- try(fitSVM(All.Data, All.Data$cont_names[i], GWSDAT_Options))
-    #  
-    #} else {
+    
+
     ContData <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$Constituent) == All.Data$cont_names[i],]
     ContData <- na.omit(ContData)
     
     temp.fit <- fitPSpline(ContData, GWSDAT_Options)
-    
-    # temp.fit_new <- fitPSpline_new(ContData, GWSDAT_Options)
-       
-    #}
     
     
     if (inherits(temp.fit, 'try-error')) {
@@ -59,7 +58,7 @@ fitData <- function(All.Data, GWSDAT_Options) {
     }
     
     # Progress the bar.
-    PctDone = (1 + i) / (NumConts + 3)
+    PctDone = (1 + i) / (NumConts + 2)
     
   }
   
@@ -75,8 +74,7 @@ fitData <- function(All.Data, GWSDAT_Options) {
   
   ################### Traffic Lights ###########################################
   
-  
-  if (!is.null(progress)) {
+  if (showProgress) {
     progress$set(value = PctDone, detail = paste("calculating trends"))
   }
   
@@ -89,37 +87,7 @@ fitData <- function(All.Data, GWSDAT_Options) {
     }
   )
 
-  
-  PctDone = (NumConts + 2) / (NumConts + 3)
-
- 
-  
-  ################### Groundwater Calc##########################################
-  
-  
-  if (!is.null(progress)) {
-    progress$set(value = PctDone, detail = paste("calculating groundwater"))
-  } 
-  
-  GW.Flows <- NULL
-  
-  if (!is.null(All.Data$Agg_GW_Data)) {
-    
-    tryCatch(
-      GW.Flows <- do.call('rbind', by(All.Data$Agg_GW_Data, All.Data$Agg_GW_Data$AggDate, calcGWFlow)),
-      error = function(e) {
-        showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)
-      })
-    
-    if (!is.null(GW.Flows)) {    
-      GW.Flows$R <- GW.Flows$R/quantile(GW.Flows$R, p = 0.9, na.rm = T)
-      GW.Flows$R[GW.Flows$R > 1] <- 1
-      GW.Flows <- na.omit(GW.Flows)    
-    }
-    
-  }
- 
-  return(list(Fitted.Data = Fitted.Data, Traffic.Lights = Traffic.Lights, GW.Flows = GW.Flows))
+  return(list(Fitted.Data = Fitted.Data, Traffic.Lights = Traffic.Lights))
 
 }
 
