@@ -8,8 +8,8 @@ uiAnalyse <- function(csite, img_frmt, APP_RUN_MODE) {
   
   # If in MultiData mode, include a BACK button.
   if (APP_RUN_MODE == "MultiData")
-    corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name, " - ", csite$Aquifer)) 
-  
+    #corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name, " - ", csite$Aquifer)) 
+    corner_element <- HTML(paste0(actionButton("GoToDataSelect", "", icon = icon("arrow-left"), style = "height: 30px"), "&nbsp;&nbsp;&nbsp", csite$ui_attr$site_name, " - ", csite$data_id)) 
   
   
   # tags$a(id = "GoToDataSelect", "<- Back", href = "#"), " ", csite$ui_attr$site_name)) 

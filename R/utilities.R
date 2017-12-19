@@ -88,6 +88,37 @@ getValidDataName <- function(csite_list = NULL, template = "Area", propose_name 
 }
 
 
+getDataIndexByID <- function(csite_list, data_id) {
+  
+  for (i in 1:length(csite_list))
+    if (csite_list[[i]]$data_id == data_id)
+      return(i)
+  
+  return(-1)
+}
+
+createDataID <- function(csite_list) {
+  
+  new_id <- 0
+  
+  # Loop as long as no unique data id can be found. 
+  while (1) {
+    new_id <- sample.int(100000, 1)
+    
+    # Check if the new id already exists.
+    for (i in 1:length(csite_list))
+      if (csite_list[[i]]$data_id == new_id) 
+        new_id = -1  # flag as existing   
+        
+    if (new_id != -1)
+      break  # leave while
+  }
+  
+  return(new_id)
+}
+
+
+
 excelDate2Date <- function(excelDate) {
 
   Date <- excelDate + as.Date("1900-01-01") - 2

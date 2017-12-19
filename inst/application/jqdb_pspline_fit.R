@@ -15,13 +15,14 @@ jobtype = 'pspline_fit.R' # Necessary to identify the result evaluation procedur
 
 vargs <- commandArgs(TRUE)
 
-if (length(vargs) == 4) {
+if (length(vargs) == 5) {
 
   # load the data from temp file
-  jobid <- as.integer(vargs[1])
-  infile <- vargs[2]
-  outfile <- vargs[3]
-  dbPath <- vargs[4]
+  job_id <- as.integer(vargs[1])
+  data_id <- as.integer(vargs[2])
+  infile <- vargs[3]
+  outfile <- vargs[4]
+  dbPath <- vargs[5]
   
   
   cat("infile:  ", infile, "\n")
@@ -40,15 +41,15 @@ if (length(vargs) == 4) {
   con <- dbConnect(drv, dbPath)
   
   # Create new record for 'done' table.
-  dt <- data.frame('jobid' = jobid, 'job_type' = jobtype, 'evaluated' = 0, 
+  dt <- data.frame('job_id' = job_id, 'data_id' = data_id,'job_type' = jobtype, 'evaluated' = 0, 
                    'outputfile' = outfile, stringsAsFactors = FALSE)
   
   print.table(dt)
   
   dbWriteTable(con, 'done', dt, append = TRUE)
   
-  # Delete job from 'running' table using the 'jobid'.
-  SQLcmd <- paste0('DELETE FROM running WHERE jobid=\'', jobid, '\';')
+  # Delete job from 'running' table using the 'job_id'.
+  SQLcmd <- paste0('DELETE FROM running WHERE job_id=\'', job_id, '\';')
   rs <- dbSendQuery(con, SQLcmd)
   dbClearResult(rs)  
   

@@ -236,6 +236,10 @@ server <- function(input, output, session) {
       return(TRUE)
     }
     
+    #
+    #FIXME: Use evalJobPspline() instead of job below.
+    #
+    
     # Attempt to read output file, 'x' will not exist if this fails (usually when 
     # writing to the file was not completed by the external process).
     try(fitdat <- readRDS(BP_modelfit_outfile), silent = TRUE)
@@ -309,6 +313,70 @@ server <- function(input, output, session) {
   
   job_queue <- reactiveValues(new = NULL, run = NULL, done = NULL)
   
+  
+  
+  #
+  # 
+  #
+  evalJobPspline <- function(data_id, result_file) {
+    
+    # Attempt to read output file, 'x' will not exist if this fails (usually when 
+    # writing to the file was not completed by the external process).
+    try(fitdat <- readRDS(result_file), silent = TRUE)
+  
+    # Evaluates to FALSE if file could not be read.
+    if (!exists('fitdat'))
+      return(NULL)
+    
+    #FIXME: Move notification of change to somewhere else (evalJobPspline(): BP_modelfit_done).
+    #BP_modelfit_running(FALSE)               # Stops re-execution of this observer.
+    #BP_modelfit_done(BP_modelfit_done() + 1) # Triggers render functions that depend on new model fit.
+    # app_log(paste0(alog, '[PSpline] Calcuation done. File read.\n'))
+    
+    # Lookup the affected data set by data_id, if it does not exist, raise a warning.
+    # The likely cause for this is that the data set was deleted while the job was still
+    # running.
+    csite_idx <- getDataIndexByID(csite_list, data_id)
+    if (csite_idx == -1) {
+      showNotification(paste0("Failed to identify data for data_id ", data_id, ". Data might have been deleted."), 
+                       type = "warning", duration = 10)
+      return(NULL)
+    }
+    
+
+    # On failure (fitdat == NULL), revert to previous settings.
+    if (is.null(fitdat)) {
+     
+      showNotification("P-Splines: Fitting data with new number of knots failed.", type = "error", duration = 10)
+      
+      #FIXME: I don't like reversing stuff like this. The parameter should be passed 
+      #       independently and the data should be updated when the operation was successful,
+      #       making the three statement below redundant. 
+      csite_list[[csite_idx]]$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
+      updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
+      updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+      
+    } else {
+      
+      showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
+      # Update the current data.
+      csite_list[[csite_idx]]$Fitted.Data    <<- fitdat$Fitted.Data
+      csite_list[[csite_idx]]$Traffic.Lights <<- fitdat$Traffic.Lights
+    
+      # If the altered data was the one that is currently selected, copy it back.
+      if (csite_idx == csite_selected_idx) {
+        csite <<- csite_list[[csite_selected_idx]]
+      }
+      
+      # Save the current state, in case it is changed again and fails.
+      prev_psplines_resolution <<- input$psplines_resolution
+      prev_psplines_knots <<- input$psplines_knots
+    } 
+    
+    return("Success")
+  }
+    
+    
   # Periodically check the job queue and process new and finished jobs.
   observe({
     
@@ -321,7 +389,28 @@ server <- function(input, output, session) {
     # Check if connection to db is still open.
     # .. (reconnect if not) --> move to watchQueue()
     
-    evalQueue(jq_db)
+    done_jobs <- evalQueue(jq_db)
+    
+    # Each element in the list 'done_jobs' is a job that requires evaluation.
+    if (!is.null(done_jobs)) {
+      
+      for (job in done_jobs) {
+        
+        # Evaluate the job
+        
+        if (job$job_type == "pspline_fit.R")
+          
+          evalJobPspline(job$data_id, job$outputfile)
+        
+        else {
+            cat("No routine for evaluating job_type.. fix this.")
+        }
+              
+        
+      }
+      
+      
+    }
     
     # Fetch content of job queue. 
     queues <- infoQueue(con = jq_db$dbConn)  
@@ -914,7 +1003,6 @@ server <- function(input, output, session) {
         
         class(csite_list) <- "GWSDAT_DATA_LIST"
         
-        #save(file = file, "csite_list")
         saveRDS(csite_list, file = file)
       }
     }
@@ -1030,13 +1118,14 @@ server <- function(input, output, session) {
       
       # Build list with all data.
       csite <- list(All.Data       = pr_dat,
-                     Fitted.Data    = NULL,
-                     GWSDAT_Options = GWSDAT_Options,
-                     Traffic.Lights = NULL,
-                     ui_attr        = ui_attr,
-                     Aquifer        = Aq_sel,
-                     raw_contaminant_tbl = import_tables$DF_conc,
-                     raw_well_tbl = import_tables$DF_well
+                    Fitted.Data    = NULL,
+                    GWSDAT_Options = GWSDAT_Options,
+                    Traffic.Lights = NULL,
+                    ui_attr        = ui_attr,
+                    Aquifer        = Aq_sel,
+                    raw_contaminant_tbl = import_tables$DF_conc,
+                    raw_well_tbl = import_tables$DF_well,
+                    data_id = createDataID(csite_list)
       )
       
       csite_list[[length(csite_list) + 1]] <<- csite 
@@ -1192,6 +1281,10 @@ server <- function(input, output, session) {
     csite_tmp[[1]]$GWSDAT_Options$SiteName <- new_name
     
     updateTextInput(session, "dname_sess", value = new_name)
+    
+    # Create a unique data ID if the one inside the new data set is already taken.
+    if (getDataIndexByID(csite_list, csite_tmp[[1]]$data_id) != -1)
+      csite_tmp[[1]]$data_id <- createDataID(csite_list)
     
     # Make it possible to delete this from the data manager. 
     csite_tmp[[1]]$DO_NOT_MODIFY <- FALSE
@@ -2254,7 +2347,8 @@ server <- function(input, output, session) {
       
       # Retrieve full path of script which has to be located inside the package
       # folder inst/application.
-      addQueueJob(jq_db, system.file("inst/application", 'jqdb_pspline_fit.R', package = "GWSDAT"), csite) 
+      
+      addQueueJob(jq_db, system.file("inst/application", 'jqdb_pspline_fit.R', package = "GWSDAT"), csite$data_id, csite) 
       
     }
     
