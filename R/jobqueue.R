@@ -1,6 +1,6 @@
 
 
-infoQueue <- function(dbPath = NULL, con = NULL, verbose = TRUE) {
+infoQueue <- function(dbPath = NULL, con = NULL, verbose = FALSE) {
     
     if (!is.null(dbPath)) { 
         drv <- DBI::dbDriver("SQLite")
@@ -11,7 +11,7 @@ infoQueue <- function(dbPath = NULL, con = NULL, verbose = TRUE) {
     rq <- DBI::dbReadTable(con, 'running')
     dq <- DBI::dbReadTable(con, 'done')
     
-    cat("  Info: jobqueue (", nrow(jq), " records), running (", nrow(rq), " records), done (", nrow(dq), ").\n")
+    if (verbose) cat("  Info: jobqueue (", nrow(jq), " records), running (", nrow(rq), " records), done (", nrow(dq), ").\n")
     
     # Only disconnect if dbPath was specified.
     if (!is.null(dbPath)) { 
@@ -153,7 +153,7 @@ createUniqueJobID <- function(dbConn) {
   
   # Extract all 'job_id' from the the tables.
   # ..
-  tables <- infoQueue(con = dbConn, verbose = FALSE)
+  tables <- infoQueue(con = dbConn)
   
   
   all_job_ids <- c(tables$jq$job_id, tables$rq$job_id, tables$dq$job_id)

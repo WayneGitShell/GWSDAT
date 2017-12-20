@@ -130,7 +130,7 @@ server <- function(input, output, session) {
     return(val)
   })
   
-  
+
   output$plume_diagn_msg <- renderUI({
     #cat("* plume_diagn_msg <- renderUI()\n")
     
@@ -2215,13 +2215,111 @@ server <- function(input, output, session) {
     renderRHandsonWell(renderRHandsonWell() + 1)
     
   })
+
+  
+  ## Login Panel ###############################################################
+
+  userid <- reactiveValues(authenticated = FALSE, email = "")
+  
+  #FIXME: Replace with DBI/RSQLite db file.
+  if (!file.exists("users.RData")) {
+    users <- data.frame(id = numeric(), email = character(), password = character())
+    save(users, file = "users.RData")
+  } else {
+    load("users.RData")
+  }
+  
+  #output$wrongPasswordMsg <- renderText({'wrong password'})
+  output$wrongPasswordMsg <- renderText({''})
+  
+  observeEvent(input$signup, {
+    success <- TRUE
+    
+    if (input$signup_password != input$signup_password2) {
+      #output$display <- renderText({"Passwords do not match."})
+      #shinyjs::show('wrongPasswordMsg')
+      output$wrongPasswordMsg <- renderText({'Passwords do not match.'})
+      success <- FALSE
+    } 
+    
+    if (length(input$signup_password) < 6) {
+      output$wrongPasswordMsg <- renderText({'Password must have a minimum length of 6.'})
+      success <- FALSE
+    } 
+  
+    if (nchar(input$signup_password) == 0 || nchar(input$signup_email) == 0) {
+      output$wrongPasswordMsg <- renderText({'Empty email or passwords are not allowed.'})
+      success <- FALSE
+    }
+
+    if (tolower(input$signup_email) %in% users$email) {
+      output$wrongPasswordMsg <- renderText({'You have already registered.'})
+      success <- FALSE
+    }
+    
+    if (success) {
+      newid <- max(0,max(users$id)) + 1
+      
+      # Add to data base (replace with SQL)
+      users <<- rbind(users, data.frame(id = newid, email = tolower(input$signup_email), 
+                                        password = digest::digest(input$signup_password)))
+      
+      #FIXME: Save to db.
+      save(users, file = "users.RData")
+      
+      userid$authenticated <- TRUE
+      userid$email <- input$signup_email
+      userid$id <- newid
+      userid$history <- ""
+  
+      #FIXME: Either directly login, or show a message that registration was successful 
+      # and redisplay the loginPanel
+      removeModal()
+    }
+  })
+  
+  # Close login panel.
+  observeEvent(input$cancelLogin, removeModal() )
+  
+  LoginRegisterPanel <- function() {
+    modalDialog(
+      #div(style = 'text-align:center;',
+      h3('Login'),
+      
+        textInput("email", "Email:"),    
+        passwordInput("password", "Password:"),
+        actionButton("doLogin", "Login", icon = icon("sign-in")),
+      
+      hr(),
+      h3('Sign-up'),
+      
+        div(style = "margin-top: 25px; margin-bottom: 25px", 'If not already registered, sign-up by specifying an e-mail and password.'),
+        textInput("signup_email", "Email:"),    
+        passwordInput("signup_password", "Password:"),
+        passwordInput("signup_password2", "Password:"),
+        # shinyjs::hidden(textOutput('wrongPasswordMsg')),
+        div(style = 'color: red; margin-bottom: 5px', textOutput('wrongPasswordMsg')),  
+      actionButton("signup","Sign up", icon = icon("user-plus")),
+      #),
+      
+      footer = tagList(
+        actionButton("cancelLogin", "Cancel")
+        #actionButton("okModSetting", "Proceed")
+      )
+    )
+  }
+  
+  # Follow link to 'Boundary Estimate' tabPanel.
+  shinyjs::onclick("login_panel", {
+   
+    showModal(LoginRegisterPanel())
+  })
   
   
   ## Analyis Panel #############################################################
   
     
  
-  
   
   # Follow link to 'Boundary Estimate' tabPanel.
   shinyjs::onclick("togglePlumeBoundary", {

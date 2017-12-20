@@ -9,3 +9,4 @@
 ^data/*
 ^.travis.yml
 ^TODO.txt
+^users.RData
