@@ -36,9 +36,9 @@ server <- function(input, output, session) {
   csite_selected_idx <- 0
   
   # PSplines settings
-  new_psplines_knots <- 0
-  prev_psplines_resolution <- "Default"
-  prev_psplines_knots <- 6
+  new_psplines_nseg <- 0
+  #prev_psplines_resolution <- "Default"
+  #prev_psplines_knots <- 6
   
   # Default data set including the Basic and Comprehensive example. Loaded in
   # server mode. 
@@ -98,7 +98,10 @@ server <- function(input, output, session) {
   ## Plume Diagnostics Panel ###################################################
   
   checkPlumeStats <- reactive({
-    #cat("\n* checkPlumeStats()\n")
+    cat("\n* checkPlumeStats()\n")
+    
+    # Detect when model fit changed.
+    BP_modelfit_done()
     
     # Create a Progress object
     progress <- shiny::Progress$new()
@@ -152,9 +155,11 @@ server <- function(input, output, session) {
   
   
   output$plume_estimate_plot <- renderPlot({
-    #cat("plume_estimate_plot <- renderPlot()\n")
+    cat("plume_estimate_plot <- renderPlot()\n")
     
-    #isolate(plotPlumeEst(csite, input$solute_select_pd, input$plume_thresh_pd))
+    # Detect with model fit changed.
+    BP_modelfit_done()
+    
     plotPlumeEst(csite, input$solute_select_pd, input$plume_thresh_pd)
   })
   
@@ -322,10 +327,10 @@ server <- function(input, output, session) {
     
     # Attempt to read output file, 'x' will not exist if this fails (usually when 
     # writing to the file was not completed by the external process).
-    try(fitdat <- readRDS(result_file), silent = TRUE)
+    try(results <- readRDS(result_file), silent = TRUE)
   
     # Evaluates to FALSE if file could not be read.
-    if (!exists('fitdat'))
+    if (!exists('results'))
       return(NULL)
     
     #FIXME: Move notification of change to somewhere else (evalJobPspline(): BP_modelfit_done).
@@ -337,43 +342,41 @@ server <- function(input, output, session) {
     # The likely cause for this is that the data set was deleted while the job was still
     # running.
     csite_idx <- getDataIndexByID(csite_list, data_id)
+  
     if (csite_idx == -1) {
-      showNotification(paste0("Failed to identify data for data_id ", data_id, ". Data might have been deleted."), 
+      showNotification(paste0("P-Splines: Failed to identify data set with ID ", data_id, ". Data might have been deleted."), 
                        type = "warning", duration = 10)
-      return(NULL)
+      return(FALSE)
     }
     
-
+    fitdat <- results$fitdat
+    params <- results$params
+    
     # On failure (fitdat == NULL), revert to previous settings.
     if (is.null(fitdat)) {
-     
       showNotification("P-Splines: Fitting data with new number of knots failed.", type = "error", duration = 10)
-      
-      #FIXME: I don't like reversing stuff like this. The parameter should be passed 
-      #       independently and the data should be updated when the operation was successful,
-      #       making the three statement below redundant. 
-      csite_list[[csite_idx]]$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
-      updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
-      updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
-      
-    } else {
-      
-      showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
-      # Update the current data.
-      csite_list[[csite_idx]]$Fitted.Data    <<- fitdat$Fitted.Data
-      csite_list[[csite_idx]]$Traffic.Lights <<- fitdat$Traffic.Lights
+      return(FALSE)
+    }
     
-      # If the altered data was the one that is currently selected, copy it back.
-      if (csite_idx == csite_selected_idx) {
-        csite <<- csite_list[[csite_selected_idx]]
-      }
-      
-      # Save the current state, in case it is changed again and fails.
-      prev_psplines_resolution <<- input$psplines_resolution
-      prev_psplines_knots <<- input$psplines_knots
-    } 
+    # Update the current data.
+    csite_list[[csite_idx]]$Fitted.Data    <<- fitdat$Fitted.Data
+    csite_list[[csite_idx]]$Traffic.Lights <<- fitdat$Traffic.Lights
+    csite_list[[csite_idx]]$GWSDAT_Options$PSplineVars$nseg <<- params$PSplineVars$nseg
     
-    return("Success")
+    # If the altered data was the one that is currently selected, copy it back.
+    if (csite_idx == csite_selected_idx) {
+      csite <<- csite_list[[csite_selected_idx]]
+    }
+     
+    # Update the inputs ... to this better!!!
+    #updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
+    #updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+    
+    # Save the current state, in case it is changed again and fails.
+    #prev_psplines_resolution <<- input$psplines_resolution
+    #prev_psplines_knots <<- input$psplines_knots
+   
+    return(TRUE)
   }
     
     
@@ -394,34 +397,41 @@ server <- function(input, output, session) {
     # Each element in the list 'done_jobs' is a job that requires evaluation.
     if (!is.null(done_jobs)) {
       
+      # Loop over the jobs..
       for (job in done_jobs) {
         
-        # Evaluate the job
-        
-        if (job$job_type == "pspline_fit.R")
+        # Select the proper evaluation method.
+        if (job$job_type == "jqdb_pspline_fit.R") {
           
-          evalJobPspline(job$data_id, job$outputfile)
-        
-        else {
-            cat("No routine for evaluating job_type.. fix this.")
+          # Attempt to evaluate result data, if it succeeds notify user and invalidate observers.
+          if (evalJobPspline(job$data_id, job$outputfile)) {
+            showNotification(paste0("P-Splines: Fit completed successfully for job ID ", job$job_id, "."), type = "message", duration = 10)
+            BP_modelfit_done(BP_modelfit_done() + 1) # Notify observers that fitting took place.  
+          }
+          
+        } else {
+          stop("No evaluation routine found for job_type = ", job$job_type, ". Fix Me!\n")
         }
-              
-        
       }
-      
-      
     }
     
     # Fetch content of job queue. 
     queues <- infoQueue(con = jq_db$dbConn)  
+    
+    # Take out some columns to clean up display.
+    queues$jq$inputfile <- NULL
+    queues$jq$outputfile <- NULL
+    queues$jq$Rcmd <- NULL
+    
+    queues$rq$inputfile <- NULL
+    queues$rq$outputfile <- NULL
+    queues$rq$Rcmd <- NULL
+    
+    # Update reactive variable, if it changes it changes it will trigger the job queue display.
     job_queue$new <- queues$jq
     job_queue$run <- queues$rq
     job_queue$done <- queues$dq
-    
- 
-    # Modify BP_modelfit_done() to trigger invalidation of dependent plot methods.
-    # This should be done inside the function that processes the modelfit results.
-    # BP_modelfit_done(BP_modelfit_done() + 1)
+
   })
   
   
@@ -494,12 +504,14 @@ server <- function(input, output, session) {
     csite$Traffic.Lights <<- NULL
     
     tryCatch(
-      csite$Traffic.Lights <<- calcTrafficLights(csite$All.Data, csite$Fitted.Data, csite$GWSDAT_Options),
+      csite$Traffic.Lights <<- calcTrafficLights(csite$All.Data, csite$Fitted.Data, 
+                                                 csite$GWSDAT_Options$smThreshSe, 
+                                                 csite$GWSDAT_Options$smMethod),
       error = function(e) {
         showNotification(paste0("Failed to calculate trend table: ", e$message), type = "error", duration = 10)
       }
     )
-
+    
     # Re-Calculate groundwater flows (depends on aggregation date).
     csite$GW.Flows <<- evalGWFlow(csite$All.Data$Agg_GW_Data)
     
@@ -619,7 +631,10 @@ server <- function(input, output, session) {
   
   output$trend_table <- renderUI({
     
-    # cat("* entering trend_table()\n")
+    cat("* entering trend_table()\n")
+    
+    # Detect changes in the Traffic.Lights (depends on model fit).
+    BP_modelfit_done()
     
     # React to changes in the Options panel.
     optionsSaved() 
@@ -648,6 +663,9 @@ server <- function(input, output, session) {
     
     use_log_scale    <- if (input$logscale_wr == "Yes") {TRUE} else {FALSE}
     
+    # Detect changes in Traffic.Lights (depends on model fit). 
+    BP_modelfit_done()
+    
     plotWellReport(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale)
     
   })
@@ -658,6 +676,9 @@ server <- function(input, output, session) {
   output$stpredictions_plot <- renderPlot({
     
     use_log_scale <- if (input$logscale_stp == "Yes") {TRUE} else {FALSE}
+    
+    # Detect changes in model fit.
+    BP_modelfit_done()
     
     plotSTPredictions(csite, input$solute_select_stp, input$sample_loc_select_stp, use_log_scale, input$solute_conc_stp)
     
@@ -965,7 +986,6 @@ server <- function(input, output, session) {
         if (input$export_format_stp == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_stp == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_stp == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
-        #if (input$export_format_stp == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
         plotSTPredictions(csite, input$solute_select_stp, input$sample_loc_select_stp, use_log_scale, input$solute_conc_stp)
         
@@ -2219,13 +2239,14 @@ server <- function(input, output, session) {
     # Update session file name with current time stamp.
     if (input$analyse_panel == "Save Session")
       updateTextInput(session, "session_filename", value = paste0("GWSDAT_", gsub(":", "_", gsub(" ", "_", Sys.time())), ".rds"))
-      
-    if (input$analyse_panel == "Options") {
+    
+    cat('FIXME: Check what this is doing: line 2239.\n')
+    #if (input$analyse_panel == "Options") {
       # Save parameters that might have to be restored later if they are invalid.
-      prev_psplines_resolution <<- input$psplines_resolution
-      prev_psplines_knots <<- input$psplines_knots
+      #prev_psplines_resolution <<- input$psplines_resolution
+      #prev_psplines_knots <<- input$psplines_knots
       
-    }
+    #}
   })
   
   
@@ -2279,18 +2300,20 @@ server <- function(input, output, session) {
   
   
   
-  changeModelSettingorNotModal <- function(sheet_lst) {
+  changeModelSettingorNotModal <- function() {
     modalDialog(
-      #selectInput("excelsheet", "Choose data sheet", choices = sheet_lst),
-      span('You changed the model resolution. This will cause the model to be re-fitted. Do you want to continue?'),
-      #if (failed)
-      #    div(tags$b("Invalid name of data object", style = "color: red;")),
+      span('The settings for the model resolution has changed and the model requires refitting. This process can take some time and will be done in the background.'),
+      div(style = "margin-top: 25px;", 
+          'You will be notified about the progress and the model settings will be updated as soon as the calculation is completed.'),
+      div(style = "margin-top: 25px;", 
+          'Do you like to continue?'),
+  
       
       footer = tagList(
         actionButton("cancelModSetting", "Cancel"),
         actionButton("okModSetting", "Proceed")
       )
-      )
+    )
   }
   
   observeEvent(input$cancelModSetting, {
@@ -2315,7 +2338,7 @@ server <- function(input, output, session) {
     
     removeModal()
     
-    if (new_psplines_knots == csite$GWSDAT_Options[['PSplineVars']][['nseg']]) 
+    if (new_psplines_nseg == csite$GWSDAT_Options$PSplineVars$nseg) 
       return()
     
     if (BP_simple_enabled) {
@@ -2329,7 +2352,7 @@ server <- function(input, output, session) {
       
       # Starts script as a background process, but completes instantaneously
       run_script <- system.file("inst/application/simple_pspline_fit.R", package = "GWSDAT")
-      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_knots, ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
+      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_nseg, ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
       cat("Starting R process: ", Rcmd, "\n")
       
       shell(cmd = Rcmd, wait = FALSE)
@@ -2338,17 +2361,15 @@ server <- function(input, output, session) {
       BP_modelfit_running(TRUE)
     } else {
       
-      # Put processing job into job queue database
-      #FIXME: Consider passing only csite$All.Data and csite$GWSDAT_Options to
-      #       decrease infile size for job -> need csite for Traffic Light fit as well (!).
-      
       # Set new number of knots for the P-Spline model.
-      csite$GWSDAT_Options[['PSplineVars']][['nseg']] <- new_psplines_knots
+      tmp_opt <- csite$GWSDAT_Options
+      tmp_opt$PSplineVars$nseg <- new_psplines_nseg
       
-      # Retrieve full path of script which has to be located inside the package
-      # folder inst/application.
-      
-      addQueueJob(jq_db, system.file("inst/application", 'jqdb_pspline_fit.R', package = "GWSDAT"), csite$data_id, csite) 
+      # Add job to queue.
+      # Uses system.file() to retrieve full path of target script. 
+      # Note: This script loads GWSDAT itself, so it can't be located inside the R folder.
+      addQueueJob(jq_db, 'jqdb_pspline_fit.R', info = paste0('Fit P-Splines with ', new_psplines_nseg, ' segments.'),
+                  data_name = csite$ui_attr$site_name, data_id = csite$data_id, pdata = csite, params = tmp_opt) 
       
     }
     
@@ -2376,22 +2397,23 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_analyse_options, {
    
-    input_knots <- as.numeric(input$psplines_knots)
+    new_psplines_nseg <<- as.numeric(input$psplines_knots)
+    
     # Check if the value changed, if so, refit all data.
-    if ( input_knots != csite$GWSDAT_Options[['PSplineVars']][['nseg']]) {
+    if ( new_psplines_nseg != csite$GWSDAT_Options$PSplineVars$nseg) {
       
       # Check if value is in boundaries.
-      if (input_knots < 2 || input_knots > 12) {
+      if (new_psplines_nseg < 2 || new_psplines_nseg > 12) {
         showNotification("Number of segments for the model is out of bounds. Minimum: 2, Maximum: 12.", type = "error", duration = 10)
-        updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
       } else {
         # Ask if to change it. The actual fit is calculated when the actionButton
         # is pressed inside the modal dialog.
-        new_psplines_knots <<- input_knots
         showModal(changeModelSettingorNotModal())
       }
       
-      
+      # Change the value back to the original one. Only update it when re-fitting
+      # is completed which is done in the background.
+      updateTextInput(session, "psplines_knots", value = csite$GWSDAT_Options$PSplineVars$nseg)
       
     }
    

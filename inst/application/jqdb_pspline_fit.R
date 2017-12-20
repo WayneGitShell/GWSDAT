@@ -8,54 +8,76 @@ if (!require(DBI))
 if (!require(RSQLite))
   stop("Missing the RSQLite package. Please install it.")
 
-jobtype = 'pspline_fit.R' # Necessary to identify the result evaluation procedure 
+# jobtype = 'pspline_fit.R' # Necessary to identify the result evaluation procedure 
                           # inside the main app. 
                           #FIXME: Would be better, though, to pass this information from the main app (FIXME). 
 
 
 vargs <- commandArgs(TRUE)
 
-if (length(vargs) == 5) {
+cat('Number of args: ', length(vargs), '\n')
+
+if (length(vargs) == 3) {
 
   # load the data from temp file
-  job_id <- as.integer(vargs[1])
-  data_id <- as.integer(vargs[2])
-  infile <- vargs[3]
-  outfile <- vargs[4]
-  dbPath <- vargs[5]
-  
-  
+  infile <- vargs[1]
+  outfile <- vargs[2]
+  dbPath <- vargs[3]
+
   cat("infile:  ", infile, "\n")
   cat("outfile: ", outfile, "\n")
+  cat("dbPath:  ", dbPath,  "\n")
+    
+  fcontent <- readRDS(infile)
+  params   <- fcontent$params
+  csite    <- fcontent$data
+  job_id   <- fcontent$job_id 
   
-  csite <- readRDS(infile)
+  cat("job_id: ", job_id, ", refitting pslines with ", params$PSplineVars$nseg, " segments.\n")
+  
+  fitdat <- fitData(csite$All.Data, params, showProgress = FALSE)
 
-  cat("n_spline_knots: ", csite$GWSDAT_Options[['PSplineVars']][['nseg']], "\n")
+  # Pass the used parameters back, so they can update the data set parameters 
+  # as soon as the modifications take effect.
+  results <- list(fitdat = fitdat, params = params)
   
-  fitdat <- fitData(csite$All.Data, csite$GWSDAT_Options, showProgress = FALSE)
-
-  saveRDS(fitdat, file = outfile)
+  saveRDS(results, file = outfile)
   
-  # Write to DB: Enter job into 'done' table and remove from 'running' table.
+  #
+  #FIXME: Consider moving the DB bit below to jobqueue.R to make it cleaner.
+  #
+  
+  
+  # Modify DB: Enter job into 'done' table and remove from 'running' table.
   drv <- dbDriver("SQLite")
   con <- dbConnect(drv, dbPath)
   
-  # Create new record for 'done' table.
-  dt <- data.frame('job_id' = job_id, 'data_id' = data_id,'job_type' = jobtype, 'evaluated' = 0, 
-                   'outputfile' = outfile, stringsAsFactors = FALSE)
   
-  print.table(dt)
+  # Get record from 'running' table.
+  res <- dbGetQuery(con, paste0("SELECT * FROM running where job_id = ", job_id, ";"))
   
-  dbWriteTable(con, 'done', dt, append = TRUE)
+  # If not exactly one row could be extracted, something is wrong with the table.
+  # One possibility is that the main app deleted the job from running after it 
+  # exceeded a time-out.
+  if (nrow(res) == 1) {
+    
+    # Create new record for 'done' table.
+    dt <- data.frame('info' = res$info, 'job_id' = job_id, 'job_type' = res$job_type,
+                     'data_set' = res$data_set, 'data_id' = res$data_id, 'evaluated' = 0, 
+                     'outputfile' = outfile, stringsAsFactors = FALSE)
   
-  # Delete job from 'running' table using the 'job_id'.
-  SQLcmd <- paste0('DELETE FROM running WHERE job_id=\'', job_id, '\';')
-  rs <- dbSendQuery(con, SQLcmd)
-  dbClearResult(rs)  
+    print.table(dt)
+    
+    dbWriteTable(con, 'done', dt, append = TRUE)
+    
+    # Delete job from 'running' table using the 'job_id'.
+    SQLcmd <- paste0('DELETE FROM running WHERE job_id=\'', job_id, '\';')
+    rs <- dbSendQuery(con, SQLcmd)
+    dbClearResult(rs)  
+  }  
   
   dbDisconnect(con)
   
 } else {
-  
   stop("Wrong number of arguments specified.")
 }

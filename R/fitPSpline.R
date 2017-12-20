@@ -1,14 +1,8 @@
-########################################################################################################################
-GWSDAT.Prior<- function(lambda)
-{
-return(1)
- 
+
+GWSDAT.Prior <- function(lambda) {
+  return(1)
 }
-#----------------------------------------------------------------------------------------------------------------------#
 
-
-
-########################################################################################################################
 
 GWSDAT.st.matrices <- function(x, xrange, ndims, nseg, bdeg = 3, pord = 2, computeP = TRUE) {
 
@@ -52,11 +46,6 @@ GWSDAT.st.matrices <- function(x, xrange, ndims, nseg, bdeg = 3, pord = 2, compu
     }
     invisible(result)
 }
-#----------------------------------------------------------------------------------------------------------------------#
-
-
-
-########################################################################################################################
 
 GWSDAT.bbase <- function(x, xl = min(x), xr = max(x), nseg = 10, deg = 3) {
 # Construct B-spline basis
@@ -77,50 +66,7 @@ GWSDAT.tpower <- function(x, t, p){
     (x - t) ^ p * (x > t)
 }
 
-# Recompute the huge Xtinv following loading a GWSDAT session. 
-GWSDAT.RecomputeXtinv <- function(ContData, GWSDAT_Options) {
-  cat("* in GWSDAT.RecomputeXtinv()\n")
-  
-  # Prepare Data  
-  names(ContData)[names(ContData) == "AggDate"] <- "AggDatekeep"
-  names(ContData)[names(ContData) == "SampleDate"] <- "AggDate"
-  
-  form <- log(Result.Corr.ND)~XCoord+YCoord+AggDate-1
-  X <- model.matrix(form,ContData)
-  colnames(X) <- c("XCoord","YCoord","AggDate")
-  center <- colMeans(X, na.rm = TRUE)
-  X <- sweep(X, 2L, center)
-  scale <- apply(X,2,sd)
-  scale[1:2] <- rep(min(scale[1:2]),2)
-  X <- sweep(X, 2L, scale, "/")
-  Y <- model.response(model.frame(form,ContData))
-  
-  
-  # Initialise 
-  NIG.a		<- GWSDAT_Options$PSplineVars$NIG.a       
-  NIG.b		<- GWSDAT_Options$PSplineVars$NIG.b   
-  nseg 		<- GWSDAT_Options$PSplineVars$nseg
-  pord 		<- GWSDAT_Options$PSplineVars$pord
-  bdeg		<- GWSDAT_Options$PSplineVars$bdeg
-  Trial.Lambda 	<- GWSDAT_Options$PSplineVars$Trial.Lambda
-  
 
-  mat    <- GWSDAT.st.matrices(X, xrange = xrange <- t(apply(X, 2, range)), 
-                               ndims = 3, nseg = rep(nseg,3), pord = pord, bdeg = bdeg)
-  
-  B <- mat$B
-  DtD <- mat$P
- 
-  BtB <- t(B) %*% B
-  P.eigen <- eigen(BtB + DtD)
-  Mt <- t(P.eigen$vectors)*(1/sqrt(P.eigen$values))
-  Q.svd <- svd(B %*% t(Mt), nu = ncol(B), nv = ncol(B))
-  d <- c(pmin(Q.svd$d,1), rep(0, ncol(B) - length(Q.svd$d)))^2
-  e <- 1 - d
-  Xtinv <- t(t(P.eigen$vectors)*sqrt(1/P.eigen$values)) %*% Q.svd$v
-  return(Xtinv)
-
-}
 
 # Computes the coefficient vector for the MAP estimate of lambda.
 GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, prior=function(lambda) 1) {
@@ -170,12 +116,13 @@ GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, pr
 
 }
 
-GWSDAT.PSplinetune <- function(ContData, GWSDAT_Options, verbose = interactive()){
+tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, 
+                         pord, bdeg, Trial.Lambda, verbose = interactive()) {
 
 
   # Prepare Data  
-
   form <- log(Result.Corr.ND) ~ XCoord + YCoord + AggDate - 1
+  #FIXME: what is variable 'form' for inside tunePSpline()?
   X <- model.matrix(form,ContData)
   
   colnames(X) <- c("XCoord","YCoord","AggDate")
@@ -187,17 +134,11 @@ GWSDAT.PSplinetune <- function(ContData, GWSDAT_Options, verbose = interactive()
   Y <- model.response(model.frame(form, ContData))
 
 
-  # Initialise 
-  NIG.a		<- GWSDAT_Options$PSplineVars$NIG.a       
-  NIG.b		<- GWSDAT_Options$PSplineVars$NIG.b   
-  nseg 		<- GWSDAT_Options$PSplineVars$nseg
-  pord 		<- GWSDAT_Options$PSplineVars$pord
-  bdeg		<- GWSDAT_Options$PSplineVars$bdeg
-  Trial.Lambda 	<- GWSDAT_Options$PSplineVars$Trial.Lambda
+  mat <- GWSDAT.st.matrices(X, xrange = t(apply(X, 2, range)), ndims = 3, 
+                            nseg = rep(nseg,3), pord = pord, bdeg = bdeg)
   
-
-  mat <- GWSDAT.st.matrices(X, xrange = xrange <- t(apply(X, 2, range)), ndims = 3, nseg = rep(nseg,3), pord=pord, bdeg=bdeg)
-  BestModel <- GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas=Trial.Lambda , ig.a=NIG.a, ig.b=NIG.b, prior= GWSDAT.Prior)
+  BestModel <- GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas = Trial.Lambda, 
+                                       ig.a = NIG.a, ig.b = NIG.b, prior = GWSDAT.Prior)
   
   if (verbose) {
   
@@ -229,93 +170,128 @@ GWSDAT.PSplinetune <- function(ContData, GWSDAT_Options, verbose = interactive()
   
   class(best.model) <- "GWSDAT.PSpline"
   
-  Model.tune <- list(Trial.Lambda = Trial.Lambda,best.model=best.model)
+  Model.tune <- list(Trial.Lambda = Trial.Lambda,best.model = best.model)
   
   return(Model.tune)
 }
 
-fitPSpline <- function(ContData,GWSDAT_Options){
+
+
+fitPSplines <- function(ContData, params){
 
   #cat("* in fitPSpline()\n")
 
   names(ContData)[names(ContData) == "AggDate"]    <- "AggDatekeep"
   names(ContData)[names(ContData) == "SampleDate"] <- "AggDate"
-
-
-  Model.tune <- try(GWSDAT.PSplinetune(ContData,GWSDAT_Options))
-
+  
+  Model.tune <- try(tunePSplines(ContData, params$NIG.a, params$NIG.b, params$nseg, 
+                                 params$pord, params$bdeg, params$Trial.Lambda))
 
 
   if (!inherits(Model.tune, "try-error")) {
 
-
-	#pred<-predict(Model.tune$best.model,newdata=ContData,se=TRUE)
-	#ContData$ModelPred<-exp(pred$predicted)
-	#ContData$Upper95<-exp(pred$predicted+1.96*pred$predicted.sd)
-	#ContData$Lower95<-exp(pred$predicted-1.96*pred$predicted.sd)
+  	#pred<-predict(Model.tune$best.model,newdata=ContData,se=TRUE)
+  	#ContData$ModelPred<-exp(pred$predicted)
+  	#ContData$Upper95<-exp(pred$predicted+1.96*pred$predicted.sd)
+  	#ContData$Lower95<-exp(pred$predicted-1.96*pred$predicted.sd)
 	
-	#Alternative to SEs
-	pred<-predict(Model.tune$best.model,newdata=ContData,se=FALSE)
-	ContData$ModelPred<-exp(pred$predicted)
-	ContData$Upper95<-ContData$Lower95<-rep(NA,nrow(ContData))
+  	#Alternative to SEs
+  	pred <- predict(Model.tune$best.model, newdata = ContData, se = FALSE)
+  	ContData$ModelPred <- exp(pred$predicted)
+  	ContData$Upper95 <- ContData$Lower95 <- rep(NA,nrow(ContData))
 	
-
-	
-	
-
   } else{
-  
   	ContData$ModelPred <- rep(NA,nrow(ContData))
   	ContData$Upper95 <- rep(NA,nrow(ContData))
   	ContData$Lower95 <- rep(NA,nrow(ContData))
-  
-  
   }
   
-  names(ContData)[names(ContData)=="AggDate"]<-"SampleDate"
-  names(ContData)[names(ContData)=="AggDatekeep"]<-"AggDate"
+  names(ContData)[names(ContData) == "AggDate"] <- "SampleDate"
+  names(ContData)[names(ContData) == "AggDatekeep"] <- "AggDate"
   
   #### Legacy func from GWSDAT SVM.R. Need to check for NAPL only data sets. 
-  ContData$Result.Corr.ND[!is.finite(ContData$Result.Corr.ND)]<-NA #Wayne V3 coerce -inf to NA for NAPL only data sets. 
+  ContData$Result.Corr.ND[!is.finite(ContData$Result.Corr.ND)] <- NA #Wayne V3 coerce -inf to NA for NAPL only data sets. 
   
-  list(Cont.Data=ContData,Model.tune=Model.tune)
+  list(Cont.Data = ContData, Model.tune = Model.tune)
 
 }
 
 
 predict.GWSDAT.PSpline <- function(mod,newdata,se=FALSE) {
 
-X <- model.matrix(~XCoord+YCoord+AggDate-1,newdata)
-X <- sweep(X, 2L, mod$center)
-X <- sweep(X, 2L, mod$scale, "/")
+  X <- model.matrix(~XCoord+YCoord+AggDate-1,newdata)
+  X <- sweep(X, 2L, mod$center)
+  X <- sweep(X, 2L, mod$scale, "/")
+  
+  
+  mat <- GWSDAT.st.matrices(x = X, xrange = mod$xrange, ndims = mod$ndims,
+                            nseg = rep(mod$nseg,mod$ndims), bdeg = mod$bdeg, 
+                            pord = mod$pord, computeP = FALSE)
+  B <- mat$B
+  
+  result <- list(predicted.sd = rep(NA,nrow(B)))
+  
+  
+  if (se) {
+  
+    post.ig.a <- mod$post.ig.a
+    post.ig.b <- mod$post.ig.b
+  
+    if (post.ig.a <= 2) {
+      result$predicted.sd <- rep(Inf, nrow(B))
+    } else {
+  	  result$predicted.sd <- sqrt((post.ig.b / (post.ig.a-2)) * ((B%*%mod$Xtinv)^2  %*% (1 / (mod$d + mod$Lambda * mod$e))))
+    }
+  	
+  	result$predicted.sd <- drop(result$predicted.sd)
+  }
 
-
-mat<-GWSDAT.st.matrices(x=X, xrange=mod$xrange, ndims=mod$ndims,nseg=rep(mod$nseg,mod$ndims), bdeg = mod$bdeg, pord = mod$pord, computeP = FALSE)
-B<-mat$B
-
-result=list(predicted.sd=rep(NA,nrow(B)))
-
-
-if(se){
-
-	
-     post.ig.a <- mod$post.ig.a
-     post.ig.b <- mod$post.ig.b
-
-     if (post.ig.a<=2) {
-        result$predicted.sd <- rep(Inf, nrow(B))
-     } else {
-	result$predicted.sd <- sqrt((post.ig.b / (post.ig.a-2)) * ((B%*%mod$Xtinv)^2  %*% (1 / (mod$d + mod$Lambda * mod$e))))
-
-     }
-	
-	result$predicted.sd<-drop(result$predicted.sd)
+  result$predicted <- as.numeric(B %*% mod$alpha)
+  return(result)
 }
 
+# NOT CALLED BY ANY METHOD:
+# Recompute the huge Xtinv following loading a GWSDAT session. 
+# GWSDAT.RecomputeXtinv <- function(ContData, GWSDAT_Options) {
+#   cat("* in GWSDAT.RecomputeXtinv()\n")
+#   
+#   # Prepare Data  
+#   names(ContData)[names(ContData) == "AggDate"] <- "AggDatekeep"
+#   names(ContData)[names(ContData) == "SampleDate"] <- "AggDate"
+#   
+#   form <- log(Result.Corr.ND)~XCoord+YCoord+AggDate-1
+#   X <- model.matrix(form,ContData)
+#   colnames(X) <- c("XCoord","YCoord","AggDate")
+#   center <- colMeans(X, na.rm = TRUE)
+#   X <- sweep(X, 2L, center)
+#   scale <- apply(X,2,sd)
+#   scale[1:2] <- rep(min(scale[1:2]),2)
+#   X <- sweep(X, 2L, scale, "/")
+#   Y <- model.response(model.frame(form,ContData))
+#   
+#   
+#   # Initialise 
+#   NIG.a		<- GWSDAT_Options$PSplineVars$NIG.a       
+#   NIG.b		<- GWSDAT_Options$PSplineVars$NIG.b   
+#   nseg 		<- GWSDAT_Options$PSplineVars$nseg
+#   pord 		<- GWSDAT_Options$PSplineVars$pord
+#   bdeg		<- GWSDAT_Options$PSplineVars$bdeg
+#   Trial.Lambda 	<- GWSDAT_Options$PSplineVars$Trial.Lambda
+# 
+#   mat    <- GWSDAT.st.matrices(X, xrange = xrange <- t(apply(X, 2, range)), 
+#                                ndims = 3, nseg = rep(nseg,3), pord = pord, bdeg = bdeg)
+#   
+#   B <- mat$B
+#   DtD <- mat$P
+#  
+#   BtB <- t(B) %*% B
+#   P.eigen <- eigen(BtB + DtD)
+#   Mt <- t(P.eigen$vectors)*(1/sqrt(P.eigen$values))
+#   Q.svd <- svd(B %*% t(Mt), nu = ncol(B), nv = ncol(B))
+#   d <- c(pmin(Q.svd$d,1), rep(0, ncol(B) - length(Q.svd$d)))^2
+#   e <- 1 - d
+#   Xtinv <- t(t(P.eigen$vectors)*sqrt(1/P.eigen$values)) %*% Q.svd$v
+#   return(Xtinv)
+# 
+# }
 
-
-result$predicted=as.numeric(B %*% mod$alpha)
-return(result)
-
-}
-#----------------------------------------------------------------------------------------------------------------------#

@@ -47,10 +47,6 @@ plotTimeSeries <- function(csite,
   #if (csite$ui_attr$trend_thresh_selected == "Trend") { Stat.Lim = NA }
   if (!show_thresh) { Stat.Lim = NA }
   
-  #
-  #
-  # change this: "GWFlows" %in% names(attributes(csite$Fitted.Data))
-  #
   GWAxis <- csite$ui_attr$ts_options["Overlay GW levels"] && !is.null(csite$GW.Flows) && 
     any(as.character(csite$All.Data$GW.Data$WellName) == location)
   NAPLAxis <- (show_napl_thickness && NAPL.Present)

@@ -117,7 +117,7 @@ uiAnalyseOptions <- function(csite) {
                     selected = "Default", width = '150px', selectize = FALSE)),
       div(style = "display:inline-block; margin-right: 10px", "or"),
       div(style = "display:inline-block", 
-          textInput("psplines_knots", "Number of knots", value = csite$GWSDAT_Options[['PSplineVars']][['nseg']], width = '150px')
+          textInput("psplines_knots", "Number of segments", value = csite$GWSDAT_Options[['PSplineVars']][['nseg']], width = '150px')
       )
         
     )
