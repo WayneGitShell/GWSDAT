@@ -37,8 +37,8 @@ server <- function(input, output, session) {
   
   # PSplines settings
   new_psplines_nseg <- 0
-  #prev_psplines_resolution <- "Default"
-  #prev_psplines_knots <- 6
+  prev_psplines_resolution <- "Default"
+  prev_psplines_knots <- 6
   
   # Default data set including the Basic and Comprehensive example. Loaded in
   # server mode. 
@@ -67,16 +67,6 @@ server <- function(input, output, session) {
    
  
   
-    
-  
-  
- 
-  
-  
-  
- 
-    
-  
   
   # Clean-up user session.
   session$onSessionEnded(function() {
@@ -94,6 +84,173 @@ server <- function(input, output, session) {
   })
   
   
+  
+  
+  ## Login Logout ###############################################################
+  
+  user_id <- reactiveValues(id = -1, authenticated = FALSE, file = "")
+  users_dbPath <- 'users.db'
+  
+  output$wrongPasswordMsg1 <- renderText({''})
+  output$wrongPasswordMsg2 <- renderText({''})
+  
+  
+  observeEvent(input$doLogin, {
+    
+    if (!user_id$authenticated) {
+      
+      user_info <- verifyUser(users_dbPath, input$login_email, input$login_password)
+      
+      if (is.null(user_info)) {
+        output$wrongPasswordMsg1 <- renderText({'Login failed. Email or password do not match.'})
+        return(NULL)
+      }
+      
+      user_id$authenticated <- TRUE
+      user_id$id <- user_info$id
+      user_id$email <- user_info$email
+      user_id$file <- user_info$data_path
+      
+      # Load the data and overwrite current data set.
+      if (file.exists(user_id$file))
+        csite_list <<- readRDS(user_id$file)
+      else {
+        # In case it was deleted on accident.
+        file.copy(system.file("extdata", default_session_file, package = "GWSDAT"), user_id$file)
+        showNotification("User data not found. Re-creating it from Example data set.", type = "warning", duration = 7)
+        csite_list <<- readRDS(user_id$file)
+      }        
+        
+        
+      dataLoaded(dataLoaded() + 1)
+      
+      output$wrongPasswordMsg1 <- renderText({''})
+      
+      removeModal()
+      
+      showNotification('Successfully logged in with email ', user_id$email, '.', type = 'message', duration = 7 )
+    }           
+  })
+  
+  observeEvent(input$doSignup, {
+    
+    success <- TRUE
+    new_email <- tolower(input$signup_email)
+    
+    if (input$signup_password != input$signup_password2) {
+      output$wrongPasswordMsg2 <- renderText({'Passwords do not match.'})
+      success <- FALSE
+    } 
+    
+    #FIXME: Change to checking mda string equivalent to emptry string.
+    if (nchar(input$signup_password) == 0 || nchar(new_email) == 0) {
+      output$wrongPasswordMsg2 <- renderText({'Empty email or passwords are not allowed.'})
+      success <- FALSE
+    }
+    
+    if (userExists(users_dbPath, new_email)) {
+      output$wrongPasswordMsg2 <- renderText({'You have already registered.'})
+      success <- FALSE
+    }
+    
+    if (success) {
+      
+      # Check if user data base file exists and open the data base.
+      if (!file.exists(users_dbPath)) {
+        con <- createUserDB(users_dbPath)
+      } else {
+        con <- DBI::dbConnect(DBI::dbDriver("SQLite"), users_dbPath)
+      }
+      
+      # Create the user id and the its data file path.
+      new_id <- createUserID(con)
+      user_file <- paste0('user_data_', new_id, '.rds' )
+      
+      # Copy content Example data to the new user file.
+      file.copy(system.file("extdata", default_session_file, package = "GWSDAT"), user_file)
+      
+      # Create new record for user and append to user data base. 
+      user_rec <- data.frame(id = new_id, email = new_email, 
+                             password = digest::digest(input$signup_password),
+                             data_path = user_file)
+      
+      DBI::dbWriteTable(con, "users", user_rec, append = TRUE)
+      DBI::dbDisconnect(con)
+      
+      user_id$authenticated <- TRUE
+      user_id$id <- new_id
+      user_id$email <- new_email
+      user_id$file <- user_file
+      
+      # Load the data and overwrite current data set.
+      csite_list <<- readRDS(user_id$file)
+      dataLoaded(dataLoaded() + 1)
+      
+      output$wrongPasswordMsg2 <- renderText({''})
+      
+      #FIXME: Either directly login, or show a message that registration was successful 
+      # and redisplay the loginPanel
+      removeModal()
+      
+      showNotification('Signed up and logged in with email ', user_id$email, '.', type = 'message', duration = 7 )
+    }
+  })
+  
+  # Close login panel.
+  observeEvent(input$cancelLogin, {
+    output$wrongPasswordMsg1 <- renderText({''})
+    output$wrongPasswordMsg2 <- renderText({''})
+    removeModal() 
+  })
+  
+  # Follow link to 'Boundary Estimate' tabPanel.
+  shinyjs::onclick("doLogin", showModal(LoginRegisterPanel()) )
+  
+  shinyjs::onclick("doLogout", {
+    
+    # Deal with background processes? 
+    # (terminate processes if requested)
+    
+    # Save user data back to disk.
+    saveRDS(csite_list, user_id$file)
+    
+    # Load default session.
+    infile <- system.file("extdata", default_session_file, package = "GWSDAT")
+    csite_list <- readRDS(infile)
+    
+    if (length(csite_list) > 0) {
+      csite <- csite_list[[1]]
+      csite_selected_idx <- 1
+    } else {
+      csite <- NULL
+    }
+    
+    dataLoaded(dataLoaded() + 1)
+    
+    # Set user information to logged out.
+    user_id$authenticated <- FALSE
+    user_id$id <- 0
+    user_id$email <- ""
+    user_id$file <- ""
+    
+    showModal(modalDialog(
+      title = "Logged out",
+      "You have been logged out successfully. The temporary session was restored.",
+      easyClose = TRUE
+    ))
+    
+    
+  })
+  
+  # React to data load events: If a user is logged in, save the data set to his file.
+  observe({
+    dataLoaded()
+    
+    if (user_id$authenticated) {
+      saveRDS(csite_list, user_id$file)
+      if (DEBUG_MODE) cat(" --> saving user data to .rds file: ", user_id$file, ".\n")
+    }
+  })
   
   ## Plume Diagnostics Panel ###################################################
   
@@ -218,7 +375,7 @@ server <- function(input, output, session) {
   #fitPSplineChecker <- reactive({
   observe({
     
-    cat("** in fitPSplineChecker()\n")
+    #cat("** in fitPSplineChecker()\n")
     
     if (!BP_simple_enabled)
       return()
@@ -1152,7 +1309,6 @@ server <- function(input, output, session) {
       
     }
     
-    
     # Flag that the data was loaded.
     isolate(lstate <- dataLoaded())
     
@@ -1160,6 +1316,7 @@ server <- function(input, output, session) {
       dataLoaded(lstate + 1)
     else 
       dataLoaded(LOAD_COMPLETE)
+    
     
     # Go back to Data Manager.
     shinyjs::show(id = "uiDataManager")
@@ -1186,7 +1343,6 @@ server <- function(input, output, session) {
     
   }
   
-  
   # Go to Load Session Data (Button click).
   observeEvent(input$add_session_data,  {
     if (DEBUG_MODE) cat("* in observeEvent: add_session_data (line 1189)\n")
@@ -1201,6 +1357,32 @@ server <- function(input, output, session) {
   shinyjs::onclick("gotoDataManager_c", showDataMng())
   shinyjs::onclick("gotoDataManager_d", showDataMng())
   shinyjs::onclick("gotoDataManager_e", showDataMng())
+
+  shinyjs::onclick("restore_examples", {
+    
+    
+    # Read Example Data
+    ctmp <- readRDS(system.file("extdata", default_session_file, package = "GWSDAT"))
+    
+    # Extract data IDs from the current data set.
+    data_ids <- c()
+    for (ct in csite_list) {
+      data_ids <- c(data_ids, ct$data_id)    
+    }
+
+    data_set_changes <- FALSE
+    
+    # Check if any Examples are already in the data set.
+    for (ct in ctmp) {
+      
+      if (!(ct$data_id %in% data_ids)) {
+        data_set_changes <- TRUE
+        dataLoaded(dataLoaded() + 1)
+        csite_list[[length(csite_list) + 1]] <- ct
+      }
+    }
+
+  })
   
   
   ## Load Session Data ().rds ##################################################
@@ -1305,10 +1487,7 @@ server <- function(input, output, session) {
     # Create a unique data ID if the one inside the new data set is already taken.
     if (getDataIndexByID(csite_list, csite_tmp[[1]]$data_id) != -1)
       csite_tmp[[1]]$data_id <- createDataID(csite_list)
-    
-    # Make it possible to delete this from the data manager. 
-    csite_tmp[[1]]$DO_NOT_MODIFY <- FALSE
-    
+   
     # Set the preview tables displayed on the right of the import panel.
     import_tables$new_csite <- csite_tmp[[1]] 
     import_tables$DF_conc   <- csite_tmp[[1]]$All.Data$Cont.Data
@@ -2217,103 +2396,6 @@ server <- function(input, output, session) {
   })
 
   
-  ## Login Panel ###############################################################
-
-  userid <- reactiveValues(authenticated = FALSE, email = "")
-  
-  #FIXME: Replace with DBI/RSQLite db file.
-  if (!file.exists("users.RData")) {
-    users <- data.frame(id = numeric(), email = character(), password = character())
-    save(users, file = "users.RData")
-  } else {
-    load("users.RData")
-  }
-  
-  #output$wrongPasswordMsg <- renderText({'wrong password'})
-  output$wrongPasswordMsg <- renderText({''})
-  
-  observeEvent(input$signup, {
-    success <- TRUE
-    
-    if (input$signup_password != input$signup_password2) {
-      #output$display <- renderText({"Passwords do not match."})
-      #shinyjs::show('wrongPasswordMsg')
-      output$wrongPasswordMsg <- renderText({'Passwords do not match.'})
-      success <- FALSE
-    } 
-    
-    if (length(input$signup_password) < 6) {
-      output$wrongPasswordMsg <- renderText({'Password must have a minimum length of 6.'})
-      success <- FALSE
-    } 
-  
-    if (nchar(input$signup_password) == 0 || nchar(input$signup_email) == 0) {
-      output$wrongPasswordMsg <- renderText({'Empty email or passwords are not allowed.'})
-      success <- FALSE
-    }
-
-    if (tolower(input$signup_email) %in% users$email) {
-      output$wrongPasswordMsg <- renderText({'You have already registered.'})
-      success <- FALSE
-    }
-    
-    if (success) {
-      newid <- max(0,max(users$id)) + 1
-      
-      # Add to data base (replace with SQL)
-      users <<- rbind(users, data.frame(id = newid, email = tolower(input$signup_email), 
-                                        password = digest::digest(input$signup_password)))
-      
-      #FIXME: Save to db.
-      save(users, file = "users.RData")
-      
-      userid$authenticated <- TRUE
-      userid$email <- input$signup_email
-      userid$id <- newid
-      userid$history <- ""
-  
-      #FIXME: Either directly login, or show a message that registration was successful 
-      # and redisplay the loginPanel
-      removeModal()
-    }
-  })
-  
-  # Close login panel.
-  observeEvent(input$cancelLogin, removeModal() )
-  
-  LoginRegisterPanel <- function() {
-    modalDialog(
-      #div(style = 'text-align:center;',
-      h3('Login'),
-      
-        textInput("email", "Email:"),    
-        passwordInput("password", "Password:"),
-        actionButton("doLogin", "Login", icon = icon("sign-in")),
-      
-      hr(),
-      h3('Sign-up'),
-      
-        div(style = "margin-top: 25px; margin-bottom: 25px", 'If not already registered, sign-up by specifying an e-mail and password.'),
-        textInput("signup_email", "Email:"),    
-        passwordInput("signup_password", "Password:"),
-        passwordInput("signup_password2", "Password:"),
-        # shinyjs::hidden(textOutput('wrongPasswordMsg')),
-        div(style = 'color: red; margin-bottom: 5px', textOutput('wrongPasswordMsg')),  
-      actionButton("signup","Sign up", icon = icon("user-plus")),
-      #),
-      
-      footer = tagList(
-        actionButton("cancelLogin", "Cancel")
-        #actionButton("okModSetting", "Proceed")
-      )
-    )
-  }
-  
-  # Follow link to 'Boundary Estimate' tabPanel.
-  shinyjs::onclick("login_panel", {
-   
-    showModal(LoginRegisterPanel())
-  })
   
   
   ## Analyis Panel #############################################################
@@ -2894,11 +2976,15 @@ server <- function(input, output, session) {
     output$uiDataAddExcel <- renderUI(uiImportExcelData(csite_list))                             
   })
   
+  
+  # These are the observer lists that will hold the button click actions for 
+  # the Delete and Edit button.
   obsDelBtnList <- list()
   obsEditBtnList <- list()
   
   
   createDelBtnObserver <- function(btns) {
+    #cat("* creating Delete Buttons.\n")
     
     # Check if a Delete button was created.
     if (length(btns) > 0) {
@@ -2937,7 +3023,6 @@ server <- function(input, output, session) {
             
             # Need this to trigger observer that re-displays the new data list.
             dataLoaded(dataLoaded() + 1)
-            
             
           })
         } else {
@@ -3072,7 +3157,7 @@ server <- function(input, output, session) {
     ret <- uiDataManagerList(csite_list, del_btns = names(obsDelBtnList),
                              edit_btns = names(obsEditBtnList))
     
-    
+   
     createDelBtnObserver(ret$del_btns)
     
     createEditBtnObserver(ret$edit_btns)
@@ -3170,6 +3255,42 @@ server <- function(input, output, session) {
   output$job_queue_table <- renderTable({if (DEBUG_MODE) cat('* job_queue_table()\n'); job_queue$new })
   output$job_run_table   <- renderTable({if (DEBUG_MODE) cat('* job_run_table()\n'); job_queue$run })
   output$job_done_table  <- renderTable({if (DEBUG_MODE) cat('* job_done_table()\n'); job_queue$done })
+  
+  ## Dashboard Menu ############################################################
+  
+  output$welcomeMsg <- shinydashboard::renderMenu({
+    
+    # If a user is logged in, greet him with his email.
+    if (user_id$authenticated) {
+      tags$li(class = "dropdown",
+        tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                          h4(paste0("Welcome ", user_id$email))))
+    } else {
+      tags$li(class = "dropdown",
+              tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                       h4("This is a temporary session.")))
+    }
+    
+    
+  })
+  
+  output$logAction <- shinydashboard::renderMenu({
+    
+    # If a user is not logged in, show the 'LOG IN' link.
+    if (!user_id$authenticated) {
+      tags$li(class = "dropdown",
+              tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                       tags$a(id = "doLogin", h4("LOG IN"), href = "#"))
+      )
+    } else {
+      # .. otherwise show the 'LOG OUT' link.
+      tags$li(class = "dropdown",
+              tags$div(style = 'margin-top: 15px; margin-right: 10px;',
+                       tags$a(id = "doLogout", h4("LOG OUT"), href = "#"))
+      )
+      
+    }
+  })
   
 
 } # end server section

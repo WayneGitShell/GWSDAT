@@ -8,6 +8,8 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
   html_out <- tagList(
     #shinydashboard::box(width = 3, 
     div(style = "float : right; margin-bottom: 5px",
+        actionButton("restore_examples", label = "Restore Examples", icon = icon("refresh"), 
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("add_session_data", label = "Load Data", icon = icon("plus"), 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("add_new_data", label = "Add New Data", icon = icon("plus"), 
@@ -17,7 +19,7 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
         actionButton("add_excel_data", label = "Import Excel File", icon = icon("arrow-down"), 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
     ),
-    h2("Data Manager")
+     h2("Data Manager")
   )
 
   
@@ -33,8 +35,9 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
     
     for (set_name in names(data_sets)) {
       
-      # If data set can be modified, create a 'Delete' am 'Edit' button.
-      if (!data_sets[[set_name]]$do_not_del) {
+      # Previously Example data could not be deleted. It can now, and it is possible
+      # to restore it. 
+      #if (!data_sets[[set_name]]$do_not_del) {
         
         # Create the name of the button but make sure it does not exists yet.
         # The button name will be passed back to create an observer in the calling function.
@@ -59,7 +62,7 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
                                                    csite_name = set_name) 
         
         
-      }
+      #}
       
       html_out <- tagList(html_out, fluidRow(
         shinydashboard::box(width = 7, status = "primary", collapsible = TRUE,
@@ -70,11 +73,11 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
                                 HTML(paste("<b>Aquifer</b>: ", paste(data_sets[[set_name]]$Aquifer, collapse = ", ")))
                                 ),
                             
-                            if (!data_sets[[set_name]]$do_not_del) { 
+                            #if (!data_sets[[set_name]]$do_not_del) { 
                               div(style = "display: inline-block; float : right", 
                                   actionButton(del_btn_name, "Delete"),
                                   actionButton(edit_btn_name, "Edit"))
-                            }
+                            #}
                             #if (data_sets[[set_name]]$do_not_del) { 
                             #  div(style = "display: inline-block; float : right", actionButton(edit_btn_name, "Delete"))
                             #}

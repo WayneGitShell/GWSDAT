@@ -152,10 +152,7 @@ createJobQueue <- function() {
 createUniqueJobID <- function(dbConn) {
   
   # Extract all 'job_id' from the the tables.
-  # ..
   tables <- infoQueue(con = dbConn)
-  
-  
   all_job_ids <- c(tables$jq$job_id, tables$rq$job_id, tables$dq$job_id)
   
   new_id <- 0

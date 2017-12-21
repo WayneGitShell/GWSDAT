@@ -6,28 +6,21 @@
 dbHeader <- shinydashboard::dashboardHeader(title = "GWSDAT.beta",
                                             tags$li(class = "dropdown",
                                                     tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                                                             tags$a(id = "login_panel", h4("Login"), href = "#"))
+                                                             tags$a(id = "login_panel", h4("LOG IN"), href = "#"))
                                             ),
                                            
              tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
                        icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
             )
-                  
-                            # Not using the image because can't get the resource to load:
-                            # tags$li(class = "dropdown", 
-                            #         tags$a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
-                            #           target = '_blank',
-                            #           tags$img(src = "extdata/gwsdat_logo.png", 
-                            #                    title = "GWSDAT Homepage", height = "40px"),
-                            #                    style = "padding-top:5px; padding-bottom:5px;")
-                            #         ))
 
-
+dbHeader_exp <- shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
+                                                shinydashboard::dropdownMenuOutput("welcomeMsg"), 
+                                                shinydashboard::dropdownMenuOutput("logAction"))
 
 
 uiFull <- shinydashboard::dashboardPage(skin = "black",
   
-  dbHeader, 
+  dbHeader_exp, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
       shinydashboard::menuItem("Manage Data", tabName = "menu_data_manager", icon = icon("archive")),
       shinydashboard::menuItem("Analyse", tabName = "menu_analyse", icon = icon("bar-chart")),

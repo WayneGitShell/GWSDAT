@@ -10,3 +10,5 @@
 ^.travis.yml
 ^TODO.txt
 ^users.RData
+^app.R
+^users.db

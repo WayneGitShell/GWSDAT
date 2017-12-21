@@ -5,7 +5,7 @@ Author: Wayne W Jones <wayne.w.jones@shell.com>, Andrej Aderhold <andrej.aderhol
 Maintainer: Andrej Aderhold <andrej.aderhold@protonmail.com>
 Description: Shiny application for the analysis of groundwater monitoring data, designed to work with simple time-series data for solute concentration and ground water elevation, but can also plot non-aqueous phase liquid (NAPL) thickness if required. Also provides the import of a site basemap in GIS shapefile format.
 Depends: R (>= 3.2.2)
-Imports: shiny, shinyjs, shinydashboard, shinycssloaders, sm, zoo, splancs, Kendall, deldir, geometry, Matrix, readxl, MASS, lattice, rhandsontable, sp, officer, sf 
+Imports: shiny, shinyjs, shinydashboard, shinycssloaders, sm, zoo, splancs, Kendall, deldir, geometry, Matrix, readxl, MASS, lattice, rhandsontable, sp, officer, sf, digest 
 Suggests: DBI, RSQLite
 License: GPL-3
 Encoding: UTF-8
