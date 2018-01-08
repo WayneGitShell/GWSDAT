@@ -1,8 +1,6 @@
  
 #' @export
-fitData <- function(All.Data, params, 
-                    model = 'pspline', # <- not used right now because no other model except pspline works.
-                    showProgress = TRUE) {
+fitData <- function(All.Data, params, model = 'pspline', showProgress = TRUE) {
 
   if (showProgress) {
     progress <- shiny::Progress$new()

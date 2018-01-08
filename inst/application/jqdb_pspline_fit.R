@@ -1,6 +1,12 @@
 
-# This will cause trouble inside the package (move to inst/application )
-library(GWSDAT)
+
+# library(GWSDAT)
+
+cat('[FIXME] jqdb_pspline_fit.R: Load GWSDAT with library(GWSDAT) instead of devtools::load_all()\n')
+cat('[FIXME] jqdb_pspline_fit.R: Using load_all() in Dev version.\n')
+devtools::load_all()
+
+
 
 if (!require(DBI))
   stop("Missing the DBI package. Please install it.")
@@ -8,9 +14,6 @@ if (!require(DBI))
 if (!require(RSQLite))
   stop("Missing the RSQLite package. Please install it.")
 
-# jobtype = 'pspline_fit.R' # Necessary to identify the result evaluation procedure 
-                          # inside the main app. 
-                          #FIXME: Would be better, though, to pass this information from the main app (FIXME). 
 
 
 vargs <- commandArgs(TRUE)
@@ -44,7 +47,7 @@ if (length(vargs) == 3) {
   saveRDS(results, file = outfile)
   
   #
-  #FIXME: Consider moving the DB bit below to jobqueue.R to make it cleaner.
+  #FIXME: Consider moving the DB code below to jobqueue.R to make it cleaner.
   #
   
   

@@ -58,8 +58,10 @@ evalQueue <- function(jq_db, max_workers = 2, max_done_jobs = 1e10) {
       
       
       cat("start process: ", Rcmd, "\n")
-      shell(cmd = Rcmd, wait = FALSE)
+      #shell(cmd = Rcmd, wait = FALSE)
       
+      system(Rcmd, wait = FALSE, invisible = TRUE)
+
       # Add a progress field to the job record and append to 'running' table.
       newjob$progress <- 0
       DBI::dbWriteTable(con, "running", newjob, append = TRUE)
