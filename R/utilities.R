@@ -97,10 +97,14 @@ getDataIndexByID <- function(csite_list, data_id) {
   return(-1)
 }
 
-createDataID <- function(csite_list) {
+createDataID <- function(csite_list = NULL) {
   
+  # If no data list was specified, just return a random integer.   
+  if (is.null(csite_list))
+    return(sample.int(100000, 1))
+
   new_id <- 0
-  
+
   # Loop as long as no unique data id can be found. 
   while (1) {
     new_id <- sample.int(100000, 1)

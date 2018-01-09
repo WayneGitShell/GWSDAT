@@ -35,6 +35,13 @@ server <- function(input, output, session) {
   csite <- NULL
   csite_selected_idx <- 0
   
+  # Background-Process (BP) related variables. 
+  BP_method <- 'simple'                     # Allowed values: 'simple', 'none', 'queue'
+  BP_modelfit_outfile <- ""                 # Result from BP is written to this file.
+  BP_modelfit_running <- reactiveVal(FALSE) # Inform observers that fitting is in progress.
+  BP_modelfit_done    <- reactiveVal(1)     # Inform all depending functions that fitting is done.
+  
+  
   # PSplines settings
   new_psplines_nseg <- 0
   prev_psplines_resolution <- "Default"
@@ -66,7 +73,6 @@ server <- function(input, output, session) {
     img_frmt <- img_frmt[-which(img_frmt == "pptx")]
    
  
-  
   
   # Clean-up user session.
   session$onSessionEnded(function() {
@@ -353,8 +359,6 @@ server <- function(input, output, session) {
     csite$ui_attr$ts_options[input$ts_true_options] <<- TRUE
     
     
-    #cat("--> input$sample_loc_select_ts: ", input$sample_loc_select_ts, "\n")
-    
     plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts, input$check_threshold)
     
   })
@@ -362,12 +366,7 @@ server <- function(input, output, session) {
   
   ## Simple Background Process #################################################
   
-  # Background-Process (BP) file name and reactive flag indicating progress.
-  BP_modelfit_outfile <- ""                 # Result from BP is written to this file.
-  BP_modelfit_running <- reactiveVal(FALSE) # Inform observer below that fitting is in progress.
-  BP_modelfit_done    <- reactiveVal(1)     # Inform all depending functions that fitting is done.
-  BP_simple_enabled <- TRUE                        # Is disabled (FALSE) if SQL jobqueue works (DBI installed)
-  
+ 
   # This function is triggered on startup and whenever the reactive variable
   # 'BP_modelfit_done()' changes its (boolean) value. As long as BP_modelfit_done == FALSE,
   # a background process (BP) is running and the function is re-run in intervals (see invalidateLater).
@@ -375,9 +374,9 @@ server <- function(input, output, session) {
   #fitPSplineChecker <- reactive({
   observe({
     
-    #cat("** in fitPSplineChecker()\n")
+    cat("** in fitPSplineChecker()\n")
     
-    if (!BP_simple_enabled)
+    if (BP_method != 'simple')
       return()
     
     # For logging.
@@ -398,61 +397,71 @@ server <- function(input, output, session) {
       return(TRUE)
     }
     
-    #
-    #FIXME: Use evalJobPspline() instead of job below.
-    #
+    # Only pass the file name. The data_id is saved inside this file, which is read by evalJobPspline.
+    evalJobPspline(BP_modelfit_outfile)
     
-    # Attempt to read output file, 'x' will not exist if this fails (usually when 
-    # writing to the file was not completed by the external process).
-    try(fitdat <- readRDS(BP_modelfit_outfile), silent = TRUE)
+    showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
     
-    # Evaluates to TRUE if file above was read successful.
-    if (exists('fitdat')) { 
-      
-      
-      BP_modelfit_running(FALSE)               # Stops re-execution of this observer.
-      BP_modelfit_done(BP_modelfit_done() + 1) # Triggers render functions that depend on new model fit.
-      
-      app_log(paste0(alog, '[PSpline] Calcuation done. File read.\n'))
-      showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
-      
+    BP_modelfit_running(FALSE)
     
-     
-      # On failure (fitdat == NULL), revert to previous settings.
-      if (is.null(fitdat)) {
-        showNotification("P-Splines: Fitting data with new number of knots failed.", type = "error", duration = 10)
-          
-        csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
-        updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
-        updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
-      } else {
-           
-        
-        # Update the current data.
-        csite$Fitted.Data    <<- fitdat$Fitted.Data
-        csite$Traffic.Lights <<- fitdat$Traffic.Lights
-        
-        # Copy back the altered csite list.
-        # Write back the fitted data
-        # FIXME: Make sure to write to the right csite_list data set (use index or name)
-        # 1. Either remember csite_selected_idx (pass to BP and back)
-        #    Fails if content of csite_list changes (e.g. data deleted, index shifts).
-        # 2. By data name: lookup data name 
-        # 3. Use unique data ID, find it inside csite_list and update. <<--- Cleanest approach, would need to update other code too. 
-        #
-        csite_list[[csite_selected_idx]] <<- csite  
-           
-        # Save the current state, in case it is changed again and fails.
-        prev_psplines_resolution <<- input$psplines_resolution
-        prev_psplines_knots <<- input$psplines_knots
-      } 
-      
-      return(TRUE)
-    } 
     
-    app_log(paste0(alog, '[PSpline] File exists but not completed.\n'))
-    return(FALSE)
-    
+    # 
+    # OLD_Version <- FALSE
+    # 
+    # if (OLD_Version) {
+    #   # Attempt to read output file, 'x' will not exist if this fails (usually when 
+    #   # writing to the file was not completed by the external process).
+    #   try(fitdat <- readRDS(BP_modelfit_outfile), silent = TRUE)
+    #   
+    #   # Evaluates to TRUE if file above was read successful.
+    #   if (exists('fitdat')) { 
+    #     
+    #     
+    #     BP_modelfit_running(FALSE)               # Stops re-execution of this observer.
+    #     BP_modelfit_done(BP_modelfit_done() + 1) # Triggers render functions that depend on new model fit.
+    #     
+    #     app_log(paste0(alog, '[PSpline] Calcuation done. File read.\n'))
+    #     showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
+    #     
+    #   
+    #    
+    #     # On failure (fitdat == NULL), revert to previous settings.
+    #     if (is.null(fitdat)) {
+    #       showNotification("P-Splines: Fitting data with new number of segments failed.", type = "error", duration = 10)
+    #         
+    #       csite$GWSDAT_Options[['PSplineVars']][['nseg']] <<- prev_psplines_knots
+    #       updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
+    #       updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+    #     } else {
+    #          
+    #       
+    #       # Update the current data.
+    #       csite$Fitted.Data    <<- fitdat$Fitted.Data
+    #       csite$Traffic.Lights <<- fitdat$Traffic.Lights
+    #       
+    #       # Copy back the altered csite list.
+    #       # Write back the fitted data
+    #       # FIXME: Make sure to write to the right csite_list data set (use index or name)
+    #       # 1. Either remember csite_selected_idx (pass to BP and back)
+    #       #    Fails if content of csite_list changes (e.g. data deleted, index shifts).
+    #       # 2. By data name: lookup data name 
+    #       # 3. Use unique data ID, find it inside csite_list and update. <<--- Cleanest approach, would need to update other code too. 
+    #       #
+    #       csite_list[[csite_selected_idx]] <<- csite  
+    #          
+    #       # Save the current state, in case it is changed again and fails.
+    #       prev_psplines_resolution <<- input$psplines_resolution
+    #       prev_psplines_knots <<- input$psplines_knots
+    #     } 
+    #     
+    #     return(TRUE)
+    #   } 
+    # 
+    #   app_log(paste0(alog, '[PSpline] File exists but not completed.\n'))
+    # }
+    # 
+    # return(FALSE)
+    # 
   })
   
   
@@ -466,34 +475,33 @@ server <- function(input, output, session) {
 
     # Create job queue data base, currently also opens connection.
     jq_db <- createJobQueue()
-    cat('jobqueue DB file: ', jq_db$dbPath, '\n')
+    cat('Background process set to \'queue\' using DBI and RSQLite with DB file: ', jq_db$dbPath, '\n')
     
-    # Disable the simple background process.
-    BP_simple_enabled <- FALSE 
+    # Set background process method to queue based.
+    BP_method <- 'queue'
     
   }
-  
+
+  # Contains a reactive data.frame for each job type.
   job_queue <- reactiveValues(new = NULL, run = NULL, done = NULL)
   
   
   
-  #
-  # 
-  #
-  evalJobPspline <- function(data_id, result_file) {
+  evalJobPspline <- function(result_file, data_id = 0) {
+    
+    cat('* inside evalJobPspline\n')
     
     # Attempt to read output file, 'x' will not exist if this fails (usually when 
     # writing to the file was not completed by the external process).
     try(results <- readRDS(result_file), silent = TRUE)
-  
+    
     # Evaluates to FALSE if file could not be read.
     if (!exists('results'))
       return(NULL)
     
-    #FIXME: Move notification of change to somewhere else (evalJobPspline(): BP_modelfit_done).
-    #BP_modelfit_running(FALSE)               # Stops re-execution of this observer.
-    #BP_modelfit_done(BP_modelfit_done() + 1) # Triggers render functions that depend on new model fit.
-    # app_log(paste0(alog, '[PSpline] Calcuation done. File read.\n'))
+    # Extract data_id from 'results' in case it was not passed to this function.
+    # The BP_method == 'simple' procedure uses this approach.
+    if (data_id == 0) data_id <- results$data_id
     
     # Lookup the affected data set by data_id, if it does not exist, raise a warning.
     # The likely cause for this is that the data set was deleted while the job was still
@@ -525,9 +533,9 @@ server <- function(input, output, session) {
       csite <<- csite_list[[csite_selected_idx]]
     }
      
-    # Update the inputs ... to this better!!!
+    # Update the inputs.
     #updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
-    #updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
+    updateTextInput(session, "psplines_knots", value = params$PSplineVars$nseg)
     
     # Save the current state, in case it is changed again and fails.
     #prev_psplines_resolution <<- input$psplines_resolution
@@ -561,7 +569,7 @@ server <- function(input, output, session) {
         if (job$job_type == "jqdb_pspline_fit.R") {
           
           # Attempt to evaluate result data, if it succeeds notify user and invalidate observers.
-          if (evalJobPspline(job$data_id, job$outputfile)) {
+          if (evalJobPspline(job$outputfile, job$data_id)) {
             showNotification(paste0("P-Splines: Fit completed successfully for job ID ", job$job_id, "."), type = "message", duration = 10)
             BP_modelfit_done(BP_modelfit_done() + 1) # Notify observers that fitting took place.  
           }
@@ -2497,7 +2505,7 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$cancelModSetting, {
-    
+    cat('* in observeEvent: input$cancelModSetting\n')
     # Revert input to previous resolution setting
     updateSelectInput(session, "psplines_resolution", selected = prev_psplines_resolution)
     updateTextInput(session, "psplines_knots", value = prev_psplines_knots)
@@ -2521,7 +2529,7 @@ server <- function(input, output, session) {
     if (new_psplines_nseg == csite$GWSDAT_Options$PSplineVars$nseg) 
       return()
     
-    if (BP_simple_enabled) {
+    if (BP_method == 'simple') {
       
       # Create temporary file names
       BP_modelfit_outfile <<- tempfile(pattern = "LC_", tmpdir = tempdir(), fileext = ".rds")
@@ -2530,17 +2538,21 @@ server <- function(input, output, session) {
       # Save data object to file 
       saveRDS(csite, file = BP_modelfit_infile)
       
-      # Starts script as a background process, but completes instantaneously
+      # Starts script as a background process.
       run_script <- system.file("inst/application/simple_pspline_fit.R", package = "GWSDAT")
-      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_nseg, ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
+      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_nseg, ' ', csite$data_id, 
+                     ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
       cat("Starting R process: ", Rcmd, "\n")
       
-      shell(cmd = Rcmd, wait = FALSE)
+      system(Rcmd, wait = FALSE, invisible = TRUE)
       
       # This will cause the observer to execute which checks if results are ready.
       BP_modelfit_running(TRUE)
-    } else {
       
+    }
+    
+    if (BP_method == 'queue') {
+
       # Set new number of knots for the P-Spline model.
       tmp_opt <- csite$GWSDAT_Options
       tmp_opt$PSplineVars$nseg <- new_psplines_nseg
@@ -2554,8 +2566,6 @@ server <- function(input, output, session) {
     }
     
     showNotification("Started background process for P-Spline fit. This can take a view moments.", type = "message", duration = 10)
-    
-    
     
   })
   
@@ -2694,7 +2704,7 @@ server <- function(input, output, session) {
   loadDataSet <- function() {
   
     if (DEBUG_MODE) cat("* in loadDataSet()\n")
-    
+   
     # Load 'session_file' if specified in launchApp().
     #if (exists("session_file", envir = .GlobalEnv)) {
     if (!is.null(session_file)) {
@@ -2782,7 +2792,8 @@ server <- function(input, output, session) {
                    ui_attr        = ui_attr,
 		               Aquifer        = Aq_sel,
 		               raw_contaminant_tbl = solute_data,
-		               raw_well_tbl   = well_data$data)
+		               raw_well_tbl   = well_data$data,
+		               data_id        = createDataID())
     
     # Save csite to the list of csites and remember index.
     curr_idx <- length(csite_list) + 1

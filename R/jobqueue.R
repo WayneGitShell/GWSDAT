@@ -135,8 +135,6 @@ createJobQueue <- function() {
                        stringsAsFactors = FALSE)
     
     if (!("jobqueue" %in% tables)) {
-        
-      cat("Create tables: jobqueue and running\n")
       
       DBI::dbWriteTable(con, "jobqueue", jobqueue)
       DBI::dbWriteTable(con, "running", running)
