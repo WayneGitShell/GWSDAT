@@ -1,5 +1,5 @@
 
-# This will cause trouble inside the package (move to inst/application )
+
 library(GWSDAT)
 
 

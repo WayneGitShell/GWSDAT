@@ -1,10 +1,10 @@
 
 
-# library(GWSDAT)
+library(GWSDAT)
 
-cat('[FIXME] jqdb_pspline_fit.R: Load GWSDAT with library(GWSDAT) instead of devtools::load_all()\n')
-cat('[FIXME] jqdb_pspline_fit.R: Using load_all() in Dev version.\n')
-devtools::load_all()
+#cat('[FIXME] jqdb_pspline_fit.R: Load GWSDAT with library(GWSDAT) instead of devtools::load_all()\n')
+#cat('[FIXME] jqdb_pspline_fit.R: Using load_all() in Dev version.\n')
+#devtools::load_all()
 
 
 
