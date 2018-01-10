@@ -2,11 +2,6 @@
 
 library(GWSDAT)
 
-#cat('[FIXME] jqdb_pspline_fit.R: Load GWSDAT with library(GWSDAT) instead of devtools::load_all()\n')
-#cat('[FIXME] jqdb_pspline_fit.R: Using load_all() in Dev version.\n')
-#devtools::load_all()
-
-
 
 if (!require(DBI))
   stop("Missing the DBI package. Please install it.")
@@ -65,7 +60,7 @@ if (length(vargs) == 3) {
   if (nrow(res) == 1) {
     
     # Create new record for 'done' table.
-    dt <- data.frame('info' = res$info, 'job_id' = job_id, 'job_type' = res$job_type,
+    dt <- data.frame('info' = res$info, 'job_id' = job_id, 'script' = res$script,
                      'data_set' = res$data_set, 'data_id' = res$data_id, 'evaluated' = 0, 
                      'outputfile' = outfile, stringsAsFactors = FALSE)
   

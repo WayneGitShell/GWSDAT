@@ -50,15 +50,14 @@ evalQueue <- function(jq_db, max_workers = 2, max_done_jobs = 1e10) {
       # Remove job by id. 
       SQLcmd <- paste0('DELETE FROM jobqueue WHERE job_id=\'', newjob$job_id, '\';')
       rs <- DBI::dbSendQuery(con, SQLcmd)
-      DBI::dbClearResult(rs)        # without this, dbWriteTable will complain.
+      DBI::dbClearResult(rs)       
     
-      # Note: file newjob$inputfile includes all necessary information to identify
-      # the job and data.
-      Rcmd <- paste0(newjob$Rcmd, ' ', newjob$inputfile, ' ', newjob$outputfile, ' ',  dbPath)
+      # Note: File newjob$inputfile should contain all necessary information to 
+      # identify the job and the data. 
+      scriptPath <- system.file("application", newjob$script, package = "GWSDAT")
+      Rcmd <- paste0('Rscript ', scriptPath, ' ', newjob$inputfile, ' ', newjob$outputfile, ' ',  dbPath)
       
-      
-      cat("start process: ", Rcmd, "\n")
-      #shell(cmd = Rcmd, wait = FALSE)
+      cat("Start BG process: ", Rcmd, "\n")
       
       system(Rcmd, wait = FALSE, invisible = TRUE)
 
@@ -91,7 +90,7 @@ evalQueue <- function(jq_db, max_workers = 2, max_done_jobs = 1e10) {
         
         # Do job evaluation. 
         done_jobs[[length(done_jobs) + 1]] <- list(job_id = job_id, data_id = not_eval[row, "data_id"], 
-                                                   job_type = not_eval[row, "job_type"], 
+                                                   script = not_eval[row, "script"], 
                                                    outputfile = not_eval[row, "outputfile"])
         
         # Flag the 'evaluated' field as TRUE (1). This can be later deleted.
@@ -122,15 +121,15 @@ createJobQueue <- function() {
     tables <- DBI::dbListTables(con)
     
     # Setup the jobqueue table.
-    jobqueue <- data.frame('info' = character(), 'job_id' = integer(), 'job_type' = character(), 
-                           'data_set' = character(),'data_id' = integer(), 'Rcmd' = character(), 'inputfile' = character(), 
+    jobqueue <- data.frame('info' = character(), 'job_id' = integer(), 'script' = character(), 
+                           'data_set' = character(),'data_id' = integer(), 'inputfile' = character(), 
                            'outputfile' = character(), stringsAsFactors = FALSE)
     
-    running <- data.frame('info' = character(), 'job_id' = integer(), 'job_type' = character(), 
-                          'data_set' = character(), 'data_id' = integer(), 'Rcmd' = character(), 'inputfile' = character(), 
+    running <- data.frame('info' = character(), 'job_id' = integer(), 'script' = character(), 
+                          'data_set' = character(), 'data_id' = integer(), 'inputfile' = character(), 
                           'outputfile' = character(), 'progress' = integer(), stringsAsFactors = FALSE)
     
-    done <- data.frame('info' = character(), 'job_id' = integer(), 'job_type' = character(), 
+    done <- data.frame('info' = character(), 'job_id' = integer(), 'script' = character(), 
                        'data_set' = character(), 'data_id' = integer(), 'evaluated' = integer(), 'outputfile' = character(), 
                        stringsAsFactors = FALSE)
     
@@ -173,7 +172,6 @@ createUniqueJobID <- function(dbConn) {
 addQueueJob <- function(jq, script_name, info = 'short job description', data_name, 
                         data_id, pdata, params) {
 
-  scriptPath <- system.file("inst/application", script_name, package = "GWSDAT")
   
   finput  <- tempfile(pattern = "filein_", tmpdir = tempdir(), fileext = ".rds")
   foutput <- tempfile(pattern = "fileout_", tmpdir = tempdir(), fileext = ".rds")
@@ -186,8 +184,8 @@ addQueueJob <- function(jq, script_name, info = 'short job description', data_na
   saveRDS(input_data, file = finput)
   
   # Create record for the 'jobqueue' table and append to table.
-  newjob <- data.frame('info' = info, 'job_id' = job_id, 'job_type' = script_name, 
-                       'data_set' = data_name, 'data_id' = data_id, 'Rcmd' = paste0('Rscript ', scriptPath), 
+  newjob <- data.frame('info' = info, 'job_id' = job_id, 'script' = script_name, 
+                       'data_set' = data_name, 'data_id' = data_id,  
                        'inputfile' = finput, 'outputfile' = foutput, stringsAsFactors = FALSE)
   
   DBI::dbWriteTable(jq$dbConn, "jobqueue", newjob, append = TRUE)

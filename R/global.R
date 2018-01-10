@@ -1,26 +1,12 @@
 
-#ppt <- NULL
-#myPres <- NULL
-#mySlides <- NULL
 
-## Not loading on library(GWSDAT), only on install. Also not loading 
-#  in a start script such as launchApp() to my suprise. Where is this 
-#  effective?
+# This is the place in Shiny to define global _constant_ variables. 
+# Note that these variables become locked if the software is packaged. 
+# 
+# The binding can be unlocked, but instead of doing this rather complicated step
+# I put all non-constant variables into the server() function (non-global) and pass them to 
+# the functions that needs it.
 #
-#path_to_extdata <- system.file("extdata", package = "GWSDAT")
-#cat("* adding ", path_to_extdata, " as resource\n")
-#addResourcePath("extdata", path_to_extdata)
-
-
-## Can't change from outside, as a package the binding is locked
-#  (using .GlobalEnv instead)
-#sessfile <- ""
-#APP_RUN_MODE <- "MultiData"
-
-# If I can unlock these binding, see output$rndAnalyse <- renderUI().
-#  I could use them here.
-#img_formats <- list("png", "jpg", "pdf", "ps", "wmf", "pptx")
-#img_formats_use <- img_formats
 
 coord_units <- c("metres", "feet")
 conc_units  <- c("ng/l", "ug/l", "mg/l", "Level", 

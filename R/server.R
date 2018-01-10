@@ -566,7 +566,7 @@ server <- function(input, output, session) {
       for (job in done_jobs) {
         
         # Select the proper evaluation method.
-        if (job$job_type == "jqdb_pspline_fit.R") {
+        if (job$script == "jqdb_pspline_fit.R") {
           
           # Attempt to evaluate result data, if it succeeds notify user and invalidate observers.
           if (evalJobPspline(job$outputfile, job$data_id)) {
@@ -575,7 +575,7 @@ server <- function(input, output, session) {
           }
           
         } else {
-          stop("No evaluation routine found for job_type = ", job$job_type, ". Fix Me!\n")
+          stop("No evaluation routine found for script = ", job$script, ". Fix Me!\n")
         }
       }
     }
@@ -2539,7 +2539,7 @@ server <- function(input, output, session) {
       saveRDS(csite, file = BP_modelfit_infile)
       
       # Starts script as a background process.
-      run_script <- system.file("inst/application/simple_pspline_fit.R", package = "GWSDAT")
+      run_script <- system.file("application", "simple_pspline_fit.R", package = "GWSDAT")
       Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_nseg, ' ', csite$data_id, 
                      ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
       cat("Starting R process: ", Rcmd, "\n")
