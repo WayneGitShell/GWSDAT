@@ -1,26 +1,19 @@
-
-
+# This is the main UI file that defines the two types of interfaces: 
+#  1. uiFull : running on a server with multiple data sets.
+#  2. uiSimple : running  locally on a single data set (a.k.a. 'ExcelMode') 
 #
-# Define the Shiny dashboard header
-#
-dbHeader <- shinydashboard::dashboardHeader(title = "GWSDAT.beta",
-                                            tags$li(class = "dropdown",
-                                                    tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                                                             tags$a(id = "login_panel", h4("LOG IN"), href = "#"))
-                                            ),
-                                           
-             tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
-                       icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
-            )
 
-dbHeader_exp <- shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
+
+
+dbHeaderFull <- shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
                                                 shinydashboard::dropdownMenuOutput("welcomeMsg"), 
-                                                shinydashboard::dropdownMenuOutput("logAction"))
+                                                shinydashboard::dropdownMenuOutput("logAction"),
+                                                shinydashboard::dropdownMenuOutput("signupAction"))
 
 
 uiFull <- shinydashboard::dashboardPage(skin = "black",
   
-  dbHeader_exp, 
+  dbHeaderFull, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
       shinydashboard::menuItem("Manage Data", tabName = "menu_data_manager", icon = icon("archive")),
       shinydashboard::menuItem("Analyse", tabName = "menu_analyse", icon = icon("bar-chart")),
@@ -78,9 +71,18 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
 ) # end ui
 
 
+
+# Define the Shiny dashboard header
+dbHeaderSimple <- shinydashboard::dashboardHeader(title = "GWSDAT.beta",
+    tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
+              icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
+)
+
+
+
 uiSimple <- shinydashboard::dashboardPage(skin = "black",
 
-  dbHeader, 
+  dbHeaderSimple, 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
     shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
     shinydashboard::menuItem("Logs and Jobs", tabName = "logs_jobs", icon = icon("wpforms"))

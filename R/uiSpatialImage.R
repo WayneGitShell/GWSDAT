@@ -53,6 +53,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                         
                       #)
     ),
+    # This draggable panel contains the time slider for the spatial heatmap plot.s
     absolutePanel(id = "timecontrol_sp", class = "panel panel-default", 
                 fixed = TRUE, draggable = TRUE, top = "auto", 
                 left = "auto", right = 20, bottom = 20,

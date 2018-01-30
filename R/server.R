@@ -204,13 +204,23 @@ server <- function(input, output, session) {
   
   # Close login panel.
   observeEvent(input$cancelLogin, {
+    # Remove the message informing about a bad password.
     output$wrongPasswordMsg1 <- renderText({''})
+    removeModal() 
+  })
+  
+  # Close Sign-up panel.
+  observeEvent(input$cancelSignup, {
+    # Remove the message informing about a bad password.
     output$wrongPasswordMsg2 <- renderText({''})
     removeModal() 
   })
   
+  
+  
   # Follow link to 'Boundary Estimate' tabPanel.
-  shinyjs::onclick("doLogin", showModal(LoginRegisterPanel()) )
+  shinyjs::onclick("gotoLogin", showModal(uiLoginModal()) )
+  shinyjs::onclick("gotoSignup", showModal(uiSignupModal()) )
   
   shinyjs::onclick("doLogout", {
     
@@ -713,16 +723,12 @@ server <- function(input, output, session) {
   # Update the label of the time slider, when slider changes.
   #
   observeEvent(input$timepoint_sp_idx, {
-    #cat("* in observeEvent: timepoint_sp_idx\n")
-    
-    # Not updating here, because 'input$timepoint_sp_idx' is directly used for
-    # plotting. Saving to 'csite$ui_attr$timepoint_sp_idx' is only used in 
-    # 'Save Session' and reading from it inside rndAnalyse <- renderUI().
-    #
-    #csite$ui_attr$timepoint_sp_idx <<- input$timepoint_sp_idx
-    
+    cat("* in observeEvent: timepoint_sp_idx\n")
+   
+    # Retrieve date and convert to the aggregation time interval. 
     timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
+    
     updateSliderInput(session, "timepoint_sp_idx", label = paste0("Time: ", outp))
   })
 
@@ -754,17 +760,7 @@ server <- function(input, output, session) {
     # React to changes in the Options panel.
     optionsSaved() 
 
-    if (reaggregateData()) {
-      #cat("  + (sp) aggregation took place, exiting image_plot()\n")
-      return(NULL)
-    }
-    
-    # cat(" + right after reaggregateData()\n")
-   
-    #Fixme: WHAT IS THIS FOR, NEED THIS HERE
-    #plume threshold affects the plot, should detect here if it changes
-    # However, commenting this out seems to make it work anyway.
-    #val <- plumeThreshChange()
+    if (reaggregateData()) { return(NULL) }
     
     # Update control attributes from reactive variables (Possibly integrate this
     # into function arguments of plotSpatialImage()?).
@@ -2045,12 +2041,10 @@ server <- function(input, output, session) {
     shinyjs::show("removeshp_xls")
   })
   
-  #
-  #FIXME: Move this to readData.R or excel related file?
-  #
+  
+  # Read a Excel file and set reactive data.frames 'import_tables' 
+  # that contain the Excel data.
   readExcelSheet <- function(filein, sheet) {
-    if (DEBUG_MODE)
-      cat("* in readExcelSheet\n")
     
     dtmp <- readExcel(filein, sheet)
     
@@ -2255,7 +2249,7 @@ server <- function(input, output, session) {
     }
      
     #FIXME: Do I really need to update everything when only the coordinate unit changes?
-    # Force update to be on the save side.
+    # Force update to be on the safe side.
     needs_processing <- FALSE
     if (input$coord_unit_ed != csite$All.Data$sample_loc$coord_unit)
       needs_processing <- TRUE
@@ -2419,16 +2413,14 @@ server <- function(input, output, session) {
 
 
     
-  #
-  # Display the "Generate PPT Animation" button if Powerpoint is available.
-  #
+  # Triggers each time one of the tabs is clicked inside the 'Analyse' panel. 
   observeEvent(input$analyse_panel, {
-    
-    # Update session file name with current time stamp.
+  
+    # If 'Save Session' is selected, update the session file name with the current time stamp.
     if (input$analyse_panel == "Save Session")
       updateTextInput(session, "session_filename", value = paste0("GWSDAT_", gsub(":", "_", gsub(" ", "_", Sys.time())), ".rds"))
     
-    cat('FIXME: Check what this is doing: line 2239.\n')
+    cat('FIXME: Check what this is doing: line 2423.\n')
     #if (input$analyse_panel == "Options") {
       # Save parameters that might have to be restored later if they are invalid.
       #prev_psplines_resolution <<- input$psplines_resolution
@@ -2650,10 +2642,13 @@ server <- function(input, output, session) {
   
   observeEvent(input$sidebar_menu, {
     
-    if (input$sidebar_menu == "menu_analyse") {
-      shinyjs::hide("analyse_page")
-      shinyjs::show("data_select_page")
-    }
+    # If the 'Analyse' side menu is clicked, always show
+    # the data select landing page (disabled because it is counter
+    # intuitive when a data set was previously selected).
+    #if (input$sidebar_menu == "menu_analyse") {
+    #  shinyjs::hide("analyse_page")
+    #  shinyjs::show("data_select_page")
+    #}
     
     # Click on side bar menu, shows main data manager and hides everything else.
     if (input$sidebar_menu == "menu_data_manager") {
@@ -3291,7 +3286,7 @@ server <- function(input, output, session) {
     if (!user_id$authenticated) {
       tags$li(class = "dropdown",
               tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                       tags$a(id = "doLogin", h4("LOG IN"), href = "#"))
+                       tags$a(id = "gotoLogin", h4("LOG IN"), href = "#"))
       )
     } else {
       # .. otherwise show the 'LOG OUT' link.
@@ -3303,6 +3298,22 @@ server <- function(input, output, session) {
     }
   })
   
-
+  output$signupAction <- shinydashboard::renderMenu({
+   
+    # If a user is not logged in, show the 'SIGN UP' link.
+    if (!user_id$authenticated) {
+      tags$li(class = "dropdown",
+              tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                       tags$a(id = "gotoSignup", h4("SIGN UP"), href = "#"))
+      )
+    } else {
+      # Use this as a placeholder, will keep the space empty in the state of 
+      # being logged in.
+      tags$li(class = "dropdown",
+              tags$div(style = 'margin-top: 15px; margin-right: 10px;')
+      )
+    } 
+  })
+  
 } # end server section
 
