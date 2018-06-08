@@ -19,7 +19,7 @@ options(warn = 1)
 #'   
 #' @export
 #' 
-#' @import stats grDevices graphics MASS shiny shinycssloaders geometry zoo rhandsontable sf
+#' @import stats grDevices graphics MASS shiny shinydashboard shinycssloaders geometry zoo rhandsontable sf
 #' @importFrom shinyjs show hide delay onclick useShinyjs
 #' @importFrom utils sessionInfo write.csv packageVersion
 #' @importFrom readxl excel_sheets
