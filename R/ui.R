@@ -5,15 +5,15 @@
 
 
 
-dbHeaderFull <- shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
+dbHeaderFull <- function() shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
                                                 shinydashboard::dropdownMenuOutput("welcomeMsg"), 
                                                 shinydashboard::dropdownMenuOutput("logAction"),
                                                 shinydashboard::dropdownMenuOutput("signupAction"))
 
 
-uiFull <- shinydashboard::dashboardPage(skin = "black",
+uiFull <- function() shinydashboard::dashboardPage(skin = "black",
   
-  dbHeaderFull, 
+  dbHeaderFull(), 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(id = "sidebar_menu",
       shinydashboard::menuItem("Manage Data", tabName = "menu_data_manager", icon = icon("archive")),
       shinydashboard::menuItem("Analyse", tabName = "menu_analyse", icon = icon("bar-chart")),
@@ -26,10 +26,11 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
     
     # Not using includeScript because it wraps <script> tags
     # around which doesn't work with the GA js directives.
-    tags$head(includeHTML("inst/www/google-analytics.js")),
+    #tags$head(includeHTML("inst/www/google-analytics.js")),
+    tags$head(includeHTML(system.file("www/google-analytics.js", package="GWSDAT"))),
     
     # Load .js Code that jumps from trend table to time-series table.
-    tags$head(includeScript("inst/www/jump_to_tsplot.js")),
+    tags$head(includeScript(system.file("inst/www/jump_to_tsplot.js", package="GWSDAT"))),
     
     # Makes the sidebar minimize to icons only.
     tags$script(HTML("$('body').addClass('sidebar-mini');")),
@@ -73,16 +74,16 @@ uiFull <- shinydashboard::dashboardPage(skin = "black",
 
 
 # Define the Shiny dashboard header
-dbHeaderSimple <- shinydashboard::dashboardHeader(title = "GWSDAT.beta",
+dbHeaderSimple <- function() shinydashboard::dashboardHeader(title = "GWSDAT.beta",
     tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
               icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
 )
 
 
 
-uiSimple <- shinydashboard::dashboardPage(skin = "black",
+uiSimple <- function() shinydashboard::dashboardPage(skin = "black",
 
-  dbHeaderSimple, 
+  dbHeaderSimple(), 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
     shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
     shinydashboard::menuItem("Logs and Jobs", tabName = "logs_jobs", icon = icon("wpforms"))

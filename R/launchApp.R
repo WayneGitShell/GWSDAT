@@ -42,7 +42,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
     
     .GlobalEnv$APP_RUN_MODE <- "MultiData"
     
-    shinyApp(ui = uiFull, server = server)
+    shinyApp(ui = uiFull(), server = server)
     
   } else {
     
@@ -57,7 +57,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
     
     options(shiny.launch.browser = TRUE)
     
-    shinyApp(ui = uiSimple, server = server)
+    shinyApp(ui = uiSimple(), server = server)
   }
   
 }
