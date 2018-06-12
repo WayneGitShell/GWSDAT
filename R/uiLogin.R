@@ -1,7 +1,7 @@
 
-uiLoginModal <- function() {
+uiLoginDialog <- function() {
   modalDialog(
-    #div(style = 'text-align:center;',
+    
     h3('Login'),
     
     textInput("login_email", "Email:"),    
@@ -14,6 +14,8 @@ uiLoginModal <- function() {
     )
   )
 }
+
+
 
 uiSignupModal <- function() {
   modalDialog(

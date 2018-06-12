@@ -219,7 +219,7 @@ server <- function(input, output, session) {
   
   
   # Follow link to 'Boundary Estimate' tabPanel.
-  shinyjs::onclick("gotoLogin", showModal(uiLoginModal()) )
+  shinyjs::onclick("gotoLogin", showModal(uiLoginDialog()) )
   shinyjs::onclick("gotoSignup", showModal(uiSignupModal()) )
   
   shinyjs::onclick("doLogout", {

@@ -1,5 +1,4 @@
- 
-#' @export
+
 fitData <- function(All.Data, params, model = 'pspline', showProgress = TRUE) {
 
   if (showProgress) {
