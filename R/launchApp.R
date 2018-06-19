@@ -19,13 +19,13 @@ options(warn = 1)
 #'   
 #' @export
 #' 
-#' @import stats grDevices graphics MASS shiny shinydashboard shinycssloaders geometry zoo rhandsontable sf
+#' @import stats grDevices graphics MASS shiny shinycssloaders geometry zoo rhandsontable sf
 #' @importFrom shinyjs show hide delay onclick useShinyjs
 #' @importFrom utils sessionInfo write.csv packageVersion
 #' @importFrom readxl excel_sheets
 #' 
 #' @examples 
-#' \dontrun{
+#' if(interactive()) {
 #' launchApp(session_file = "path_to_GWSDAT_session.rds") # launch in single data mode.
 #' launchApp()  # launch in multi data mode
 #' }

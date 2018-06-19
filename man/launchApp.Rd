@@ -22,7 +22,7 @@ was specified, the application launches in single data mode, which is limited to
 analysis of the data specified by \code{session_file}.
 }
 \examples{
-\dontrun{
+if(interactive()) {
 launchApp(session_file = "path_to_GWSDAT_session.rds") # launch in single data mode.
 launchApp()  # launch in multi data mode
 }

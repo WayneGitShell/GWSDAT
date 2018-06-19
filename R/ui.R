@@ -5,6 +5,9 @@
 
 
 
+
+
+
 dbHeaderFull <- function() shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
                                                 shinydashboard::dropdownMenuOutput("welcomeMsg"), 
                                                 shinydashboard::dropdownMenuOutput("logAction"),
@@ -102,4 +105,56 @@ uiSimple <- function() shinydashboard::dashboardPage(skin = "black",
                       
   ) # end dashboardBody 
 ) # end ui
+
+
+
+#
+# Note: The following two functions (uiLoginModal and uiLoginSignup) where originally placed in the file uiLogin.R. There were moved here to bypass the following CRAN Note (using R CMD check --as-cran <GWSDAT_X.X.X.tar.gz>):
+#
+# * checking R code for possible problems ... NOTE
+# server: no visible global function definition for ‘uiLoginModal’
+# server: no visible global function definition for ‘uiLoginSignup’
+# Undefined global functions or variables:
+#  uiLoginModal uiLoginSignup
+#
+# As the message says, they are called from server() but they can't be seen.
+# Other ui functions are handled in the same way but can be seen in their respective ui*.R files. It is not clear why this happens. Please move these functions to an appropriate script file when this is resolved.
+#
+
+
+
+uiLoginModal <- function() {
+  return(shiny::modalDialog(
+    
+    h3('Login'),
+    
+    textInput("login_email", "Email:"),    
+    passwordInput("login_password", "Password:"),
+    div(style = 'color: red; margin-bottom: 5px', textOutput('wrongPasswordMsg1')),  
+    actionButton("doLogin", "Login", icon = icon("sign-in")),
+   
+    footer = tagList(
+      actionButton("cancelLogin", "Cancel")
+    )
+  ))
+}
+
+uiSignupModal <- function() {
+    return(modalDialog(
+
+    h3('Sign-up'),
+  
+    div(style = "margin-top: 25px; margin-bottom: 25px", 'If not already registered, sign-up by specifying an e-mail and password.'),
+    textInput("signup_email", "Email:"),    
+    passwordInput("signup_password", "Password:"),
+    passwordInput("signup_password2", "Repeat password:"),
+    div(style = 'color: red; margin-bottom: 5px', textOutput('wrongPasswordMsg2')),  
+    actionButton("doSignup","Sign up", icon = icon("user-plus")),
+    
+    
+    footer = tagList(
+      actionButton("cancelSignup", "Cancel")
+    )
+  ))
+}
 

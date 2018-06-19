@@ -125,7 +125,5 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$sd_lev_cut <- 100 * c(seq(0,3,by = 0.25),10000000)
   
   
-  return(ui_attr)
-  
-  
+  return(ui_attr)  
 }

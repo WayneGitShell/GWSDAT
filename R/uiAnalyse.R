@@ -1,7 +1,5 @@
 
 
-# Gives conflict with graphics::box:
-# #' @importFrom shinydashboard box 
 uiAnalyse <- function(csite, img_frmt, APP_RUN_MODE) {
   
   corner_element = paste0(csite$ui_attr$site_name, " - ", csite$Aquifer)

@@ -18,7 +18,7 @@
 #' opt$PSplineVars$nseg <- 10  # modify model parameter for p-splines.
 #' opt$WellDataFilename <- 'path_to_concentration_file.csv'
 #' opt$WellCoordsFilename <- 'path_to_well_coordinate_file.csv'
-#' \dontrun{
+#' if(interactive()) {
 #' launchApp(opt)
 #' }
 createOptions <- function(site_name = NULL) {
