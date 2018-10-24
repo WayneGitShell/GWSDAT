@@ -20,8 +20,6 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL)
     alog <- isolate(app_log())
     app_log(paste0(alog, time.log))
   }
- 
-  
   
   # Create plume statistics if needed.
   plume_stats <- NULL
@@ -33,12 +31,7 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL)
   }
   
   plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
-
-  
 }
-  
-
-
 
 
 plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL, 
@@ -77,11 +70,9 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   if (temp.time.frac == 1) temp.time.frac = .999 # to avoid plot issue with wmf format!
   if (temp.time.frac == 0) {temp.time.frac = .001}
   if (as.numeric(diff(range(csite$All.Data$All_Agg_Dates))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
-  
 
   # Create the string for the date or date range to print
   date_to_print <- pasteAggLimit(timepoint, csite$GWSDAT_Options$Aggby)
-
   
   model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
   temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
@@ -110,7 +101,6 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     temp.Cont.Data$Result <- temp.res
     rm(temp.res)
   }
-  
 
   #
   # Identify "Bad" Wells. 
@@ -118,17 +108,13 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   Bad.Wells <- as.character(temp.Cont.Data$WellName[which(temp.Cont.Data$log.Resid > 1.75)])
   Bad.Wells <- Well.Coords[Well.Coords$WellName %in% Bad.Wells,]
   if (nrow(Bad.Wells) > 0) {Bad.Wells$WellName <- paste("<",Bad.Wells$WellName,">",sep = "")}
-  
-  
  
   lev_cut <- csite$ui_attr$lev_cut
   if (csite$ui_attr$pred_interval == "% sd") {
     lev_cut <- csite$ui_attr$sd_lev_cut
   } else {
-  
     if (csite$ui_attr$conc_unit_selected == "mg/l") {lev_cut <- lev_cut/10}
     if (csite$ui_attr$conc_unit_selected == "ng/l") {lev_cut <- lev_cut*10}
-    
   } 
   
   n.col <- length(lev_cut) - 1 #should be n.col-1
@@ -160,16 +146,11 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
         }
     }
   }
-  
-
- 
-  
-  GWSDAT.Terrain <- function(n){
-    
-    terrain.colors(n + 1)[1:n] # to avoid white in extreme conc.
+   
+  GWSDAT.Terrain <- function(n) {
+    terrain.colors(n + 1)[1:n] # to avoid white in extreme concentrations
   }
-  
-  
+   
   if(csite$ui_attr$contour_selected == "Conc-Terrain" & Col.Option){
     col.palette <- terrain.colors
   }
@@ -188,10 +169,6 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   if(csite$ui_attr$contour_selected=="Conc-GreyScale" & !Col.Option){
     col.palette <- GWSDAT.GrayScale(n.col)
   }
-  
-  
-  
-  
   if(csite$ui_attr$contour_selected == "Conc-Terrain-Circles"){
     
     col.palette <- GWSDAT.Terrain(n.col)
@@ -202,13 +179,10 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     my.cex<-.8*log(temp.Cont.Data$Result.Corr.ND)
     if(csite$ui_attr$conc_unit_selected=="mg/l"){my.cex<-.5*log(1000*temp.Cont.Data$Result.Corr.ND)}
     if(csite$ui_attr$conc_unit_selected=="ng/l"){my.cex<-.5*log(0.001*temp.Cont.Data$Result.Corr.ND)}
-    
-    
+      
     my.cex[my.cex<1.5]<-1.5
-    
   }
-  
-  
+    
   if(csite$ui_attr$contour_selected=="Conc-Topo-Circles"){
     
     col.palette <- topo.colors(n.col)
@@ -221,10 +195,8 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     my.cex<-.8*log(temp.Cont.Data$Result.Corr.ND)
     if(csite$ui_attr$conc_unit_selected=="mg/l"){my.cex<-.5*log(1000*temp.Cont.Data$Result.Corr.ND)}
     if(csite$ui_attr$conc_unit_selected=="ng/l"){my.cex<-.5*log(0.001*temp.Cont.Data$Result.Corr.ND)}
-    
-    
+      
     my.cex[my.cex<1.5]<-1.5
-    
   }
   
   if(csite$ui_attr$contour_selected=="Conc-GreyScale-Circles"){
@@ -271,9 +243,6 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
                     date_to_print,
                     if (csite$Aquifer != "") {paste(": Aquifer-",csite$Aquifer, sep = "")} else {""}
               )
-    
-    
-
     
     plotFilledContour(interp.pred, asp = 1,
                       shape_data = if (Show.ShapeFile) {csite$All.Data$shape_data} else {NULL},
@@ -492,7 +461,9 @@ makeSpatialAnimation <- function(csite, fileout, substance,
   
 }
 
-
+#
+# Delete ? Because RDCOMClient not used anymore for creating plots for PowerPoint.
+#
 makeSpatialAnimation_RDCOMClient <- function(csite, substance,
                                  width = 800,
                                  height = 600,
@@ -575,9 +546,6 @@ makeSpatialAnimation_RDCOMClient <- function(csite, substance,
 }
 
 
-
-
-
 #' @importFrom sp point.in.polygon
 GWSDAT.GW.Contour <- function(temp.GW.Flows){
   
@@ -621,114 +589,122 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
                               xaxs = "i", yaxs = "i", las = 1, axes = TRUE, frame.plot = axes, 
                               shape_data = NULL, fixedConcScale = FALSE, PlumeDetails=NULL, ...) {
   
-  
-  if (missing(z)) {
-    if (!missing(x)) {
-      if (is.list(x)) {
-        z <- x$z
+    print('in plotFilledContour')
+    
+    if (missing(z)) {
+        if (!missing(x)) {
+            if (is.list(x)) {
+                z <- x$z
+                y <- x$y
+                x <- x$x
+            }
+            else {
+                z <- x
+                x <- seq(0, 1, len = nrow(z))
+            }
+        }
+        else stop("no 'z' matrix specified")
+    }
+    else if (is.list(x)) {
         y <- x$y
         x <- x$x
-      }
-      else {
-        z <- x
-        x <- seq(0, 1, len = nrow(z))
-      }
     }
-    else stop("no 'z' matrix specified")
-  }
-  else if (is.list(x)) {
-    y <- x$y
-    x <- x$x
-  }
-  
-  
-  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
-    stop("increasing 'x' and 'y' values expected")
-  mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
-  on.exit(par(par.orig))
-  w <- (3 + mar.orig[2]) * par("csi") * 2.54
-  layout(matrix(c(2, 1), ncol = 2), widths = c(1, lcm(w)))
-  par(las = las)
-  mar <- mar.orig
-  mar[4] <- mar[2]
-  mar[2] <- 1
-  par(mar = mar)
-  
-  plot.new()
-  
-  plot.window(xlim = c(0, 1), ylim = range(levels), xaxs = "i", yaxs = "i")
-  
-  
-  equal.cuts <- seq(range(levels)[1], range(levels)[2], length = length(levels))
-  rect(0, equal.cuts[-length(equal.cuts)],1,equal.cuts[-1],col = col) 
-  
-  if (fixedConcScale) { 
     
-    my.at   <- equal.cuts[-length(equal.cuts)]
-    my.at   <- c(my.at,0.4*equal.cuts[length(equal.cuts) - 1] + .6*equal.cuts[length(equal.cuts)])
-    my.labs <- paste(" ",levels[-length(levels)], sep = "")
-    my.labs <- c(my.labs,paste(">",levels[length(levels) - 1], sep = ""))
+  
+    if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
+        stop("increasing 'x' and 'y' values expected")
+    
+    mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
 
-  } else {
+    # Execute this expression when function is exited: recover plot dimensions.
+    on.exit(par(par.orig))
     
-    my.at <- equal.cuts
-    my.labs <- as.numeric(levels)
-    
-  }
-  
-  
-  axis(side = 4, at = my.at, labels = my.labs)
-  
-  
-  if (missing(key.axes)) {
-    if (axes) 
-      NULL 
-  }
-  else key.axes
-  graphics::box()
-  if (!missing(key.title)) 
-    key.title
-  mar <- mar.orig
-  mar[4] <- 1
-  par(mar = mar)
-  
-  
-  plot.new()
-  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
-  if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
-    stop("no proper 'z' matrix specified")
-  if (!is.double(z)) 
-    storage.mode(z) <- "double"
-  
-  .filled.contour(x, y, z, levels, col)
+    w <- (3 + mar.orig[2]) * par("csi") * 2.54
 
+    layout(matrix(c(2, 1), ncol = 2), widths = c(1, lcm(w)))
+    
+    par(las = las)
+
+    # Define margins
+    mar <- mar.orig
+    mar[4] <- mar[2]
+    mar[2] <- 1
+
+    ## debugging
+    #mar[2] <- 0 
+    
+    par(mar = mar)
+    print(mar)  # 2.0 1.0 2.0 4.1 (bottom, left, top, right)
+    
+    plot.new()
+    plot.window(xlim = c(0, 1), ylim = range(levels), xaxs = "i", yaxs = "i")
+    
+    equal.cuts <- seq(range(levels)[1], range(levels)[2], length = length(levels))
+    rect(0, equal.cuts[-length(equal.cuts)],1,equal.cuts[-1], col = col) 
   
-  ################## ShapeFile Plotting ########################################
-  if (!is.null(shape_data)) {
-    for (i in 1:length(shape_data)) {
-      plot(shape_data[[i]], add = TRUE, col = "lightblue", max.plot = 1)
-      # Maybe this is faster ?
-      # plot(st_geometry(shape_data[[i]]), add = TRUE, max.plot = 1)
+    if (fixedConcScale) { 
+        my.at   <- equal.cuts[-length(equal.cuts)]
+        my.at   <- c(my.at,0.4*equal.cuts[length(equal.cuts) - 1] + .6*equal.cuts[length(equal.cuts)])
+        my.labs <- paste(" ",levels[-length(levels)], sep = "")
+        my.labs <- c(my.labs,paste(">",levels[length(levels) - 1], sep = ""))
+    } else {
+        my.at <- equal.cuts
+        my.labs <- as.numeric(levels)
     }
-  }
-  
-  
-  if (missing(plot.axes)) {
-    if (axes) {
-      title(main = "", xlab = "", ylab = "")
-      Axis(x, side = 1)
-      Axis(y, side = 2)
+      
+    axis(side = 4, at = my.at, labels = my.labs)
+      
+    if (missing(key.axes)) {
+        if (axes) 
+            NULL
+    } else
+        key.axes
+
+    if (!missing(key.title)) 
+        key.title
+
+    mar <- mar.orig
+    mar[4] <- 1
+    par(mar = mar)
+    
+    plot.new()
+    plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+
+    if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
+        stop("no proper 'z' matrix specified")
+    if (!is.double(z)) 
+        storage.mode(z) <- "double"
+    
+    .filled.contour(x, y, z, levels, col)
+    
+    
+    ################## ShapeFile Plotting ########################################
+    if (!is.null(shape_data)) {
+        for (i in 1:length(shape_data)) {
+
+            # This fixes issue #251 and might be even faster (because of st_geometry)
+            plot(st_geometry(shape_data[[i]]), add = TRUE, max.plot = 1, col = "lightblue")
+
+            # Using this will produce github issue #215
+            #plot(shape_data[[i]], add = TRUE, col = "lightblue", max.plot = 1)
+        }
     }
-  } else plot.axes
-  
-  if (frame.plot) 
-    graphics::box()
-  
-  if (missing(plot.title)) 
-    title(...)
-  else plot.title
-  
- 
+    
+    if (missing(plot.axes)) {
+        if (axes) {
+            title(main = "", xlab = "", ylab = "")
+            Axis(x, side = 1)
+            Axis(y, side = 2)
+        }
+    } else plot.axes
+    
+    if (frame.plot) 
+        graphics::box()
+    
+    if (missing(plot.title)) 
+        title(...)
+    else plot.title
+    
 }
 
 
