@@ -37,7 +37,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
   # The index.html will look fine. did put shinyjs::useShinyjs() into the the 
   # start of the ui() function where it belongs on default.
   shinyjs::useShinyjs()
- 
+  shiny::addResourcePath("www", system.file("www", package = "GWSDAT")) 
   if (missing(GWSDAT_Options) && missing(session_file)) {
     
     .GlobalEnv$APP_RUN_MODE <- "MultiData"

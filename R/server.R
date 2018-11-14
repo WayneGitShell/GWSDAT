@@ -22,6 +22,10 @@ server <- function(input, output, session) {
     APP_RUN_MODE <- "MultiData"
   
   # This is set inside launchApp()
+  if (!exists("APP_LOGIN_MODE", envir = .GlobalEnv)) 
+    APP_LOGIN_MODE <- FALSE
+
+  # This is set inside launchApp()
   if (!exists("session_file", envir = .GlobalEnv)) {
     session_file <- NULL
   }
@@ -3266,53 +3270,63 @@ server <- function(input, output, session) {
   
   output$welcomeMsg <- shinydashboard::renderMenu({
     
-    # If a user is logged in, greet him with his email.
-    if (user_id$authenticated) {
-      tags$li(class = "dropdown",
-        tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                          h4(paste0("Welcome ", user_id$email))))
-    } else {
-      tags$li(class = "dropdown",
+                                        # If a user is logged in, greet him with his email.
+    if (APP_LOGIN_MODE) {
+        if (user_id$authenticated) {
+            tags$li(class = "dropdown",
               tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                       h4("This is a temporary session.")))
+                          h4(paste0("Welcome ", user_id$email))))
+        } else {
+            tags$li(class = "dropdown",
+                    tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                             h4("This is a temporary session.")))
+        }
+    } else {
+        list()
     }
-    
-    
   })
   
   output$logAction <- shinydashboard::renderMenu({
     
-    # If a user is not logged in, show the 'LOG IN' link.
-    if (!user_id$authenticated) {
-      tags$li(class = "dropdown",
-              tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                       tags$a(id = "gotoLogin", h4("LOG IN"), href = "#"))
-      )
-    } else {
-      # .. otherwise show the 'LOG OUT' link.
-      tags$li(class = "dropdown",
-              tags$div(style = 'margin-top: 15px; margin-right: 10px;',
-                       tags$a(id = "doLogout", h4("LOG OUT"), href = "#"))
-      )
+    if (APP_LOGIN_MODE) {
+                                        # If a user is not logged in, show the 'LOG IN' link.
+        if (!user_id$authenticated) {
+            tags$li(class = "dropdown",
+                    tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                             tags$a(id = "gotoLogin", h4("LOG IN"), href = "#"))
+                    )
+        } else {
+                                        # .. otherwise show the 'LOG OUT' link.
+            tags$li(class = "dropdown",
+                    tags$div(style = 'margin-top: 15px; margin-right: 10px;',
+                             tags$a(id = "doLogout", h4("LOG OUT"), href = "#"))
+                    )
       
-    }
+        }
+    } else {
+        list()
+    }  
   })
   
   output$signupAction <- shinydashboard::renderMenu({
    
-    # If a user is not logged in, show the 'SIGN UP' link.
-    if (!user_id$authenticated) {
-      tags$li(class = "dropdown",
-              tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
-                       tags$a(id = "gotoSignup", h4("SIGN UP"), href = "#"))
-      )
-    } else {
-      # Use this as a placeholder, will keep the space empty in the state of 
-      # being logged in.
-      tags$li(class = "dropdown",
-              tags$div(style = 'margin-top: 15px; margin-right: 10px;')
-      )
-    } 
+      if (APP_LOGIN_MODE) {
+          # If a user is not logged in, show the 'SIGN UP' link.
+          if (!user_id$authenticated) {
+              tags$li(class = "dropdown",
+                      tags$div(style = 'margin-top: 15px; margin-right: 10px;', 
+                               tags$a(id = "gotoSignup", h4("SIGN UP"), href = "#"))
+                      )
+          } else {
+              # Use this as a placeholder, will keep the space empty in the state of 
+              # being logged in.
+              tags$li(class = "dropdown",
+                      tags$div(style = 'margin-top: 15px; margin-right: 10px;')
+                      )
+          }
+      } else {
+          list()
+      }
   })
   
 } # end server section
