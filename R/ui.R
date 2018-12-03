@@ -4,11 +4,19 @@
 #
 
 
+createLogoCSS <- function() {
+    tags$head(tags$style(HTML('
+      .main-header .logo {
+        background-image: url("www/logo.png");
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: left;
+      }
+    ')))
+}
 
 
-
-
-dbHeaderFull <- function() shinydashboard::dashboardHeader(title = "GWSDAT Beta", 
+dbHeaderFull <- function() shinydashboard::dashboardHeader(title = "GWSDAT", 
                                                 shinydashboard::dropdownMenuOutput("welcomeMsg"), 
                                                 shinydashboard::dropdownMenuOutput("logAction"),
                                                 shinydashboard::dropdownMenuOutput("signupAction"))
@@ -26,6 +34,9 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
   
   shinydashboard::dashboardBody(
     shinyjs::useShinyjs(), 
+    createLogoCSS(),
+    if (exists("APP_CUSTOM_COMPONENT", envir = .GlobalEnv)) 
+        APP_CUSTOM_COMPONENT(),
     
     # Not using includeScript because it wraps <script> tags
     # around which doesn't work with the GA js directives.
@@ -78,7 +89,7 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
 
 # Define the Shiny dashboard header
 dbHeaderSimple <- function() shinydashboard::dashboardHeader(title = "GWSDAT.beta",
-    tags$li(a(href = 'http://www.api.org/oil-and-natural-gas/environment/clean-water/ground-water/gwsdat',
+    tags$li(a(href = 'http://gwsdat.net',
               icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
 )
 
@@ -96,6 +107,7 @@ uiSimple <- function() shinydashboard::dashboardPage(skin = "black",
   
   shinydashboard::dashboardBody(
                       shinyjs::useShinyjs(),
+                      createLogoCSS(),
                       shiny::singleton(tags$head(tags$script(src = system.file("www", "trafficlight.js", package = "GWSDAT")))),
                       shiny::singleton(tags$head(tags$link(href = system.file("www", "trafficlight.css", package = "GWSDAT"), rel = "stylesheet"))),
                       shinydashboard::tabItems( 
