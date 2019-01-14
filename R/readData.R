@@ -184,44 +184,6 @@ readExcel <- function(filein, sheet = NULL) {
 }
 
 
-# validateShapeFiles <- function(fstrings, sheet) {
-#     
-#     # Attempt to tranform to data.frame (from tibble, vector of characters)
-#     tryCatch(
-#         fstrings <- as.data.frame(fstrings),
-#         error = function(e) {
-#             showNotification(paste0("Sheet \'", sheet, "\': Could not transform shape file entries into data frame."), type = "message", duration = 10)
-#             return(NULL)
-#         }
-#     )
-#     
-#     if (ncol(fstrings) != 1) {
-#         showNotification(paste0("Sheet \'", sheet, "\': Shape file data should have single column, multiple row entries."), type = "message", duration = 10)
-#         return(NULL)
-#     }
-#     
-#     # Valid shape file strings go into here (array of strings)    
-#     outfstr <- c()
-#     
-#     # Loop through rows and check each string.
-#     for (i in 1:nrow(fstrings)) {
-#         if (is.na(fstrings[i,1]))
-#             next
-#         
-#         # Might check if the file really exists on the system (problem when running server?)
-#         # ...
-#         
-#         outfstr <- c(outfstr, fstrings[i,1])
-#     }
-#     
-#     return(outfstr)
-#         
-# }
-
-
-
-
-
 #' @importFrom utils read.csv
 readConcData <- function(input_file, valid_header, ...) {
 
@@ -285,9 +247,17 @@ readConcData <- function(input_file, valid_header, ...) {
   # NA values (if factor). formatData() will later convert it to numeric values.
   DF$Result <- as.character(DF$Result) 
   DF$Result[is.na(DF$Result)] <- "0"
-  
-  DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
-  
+    
+  # Transform the 'SampleDate' column into 'Date' class.  
+  if (class(DF$SampleDate) == "integer")
+      # An integer value indicates Excel time. This is _not_ Unix time!
+      DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
+  else
+      # Expects string input with format "yyyy-mm-dd" or "yyyy/mm/dd".
+      #   Possibly extend to "dd-mm-yyyy" or "mm-dd-yyyy" since they are more common.
+      #   But this requires an additional package such as 'lubridate' or 'anytime'.
+      DF$SampleDate <- as.Date(DF$SampleDate)
+          
   return(DF)
   
 }

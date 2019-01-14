@@ -1,9 +1,8 @@
 #' @import sf 
-readShapeFiles_sf <- function(ShapeFileNames) {
-  
+readShapeFiles <- function(ShapeFileNames) {
   
   shdat <- list()
-  
+
   if (!is.null(ShapeFileNames)) {
     for (filein in ShapeFileNames) {
       

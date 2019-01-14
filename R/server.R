@@ -1,13 +1,11 @@
 
 
 
-
 server <- function(input, output, session) {
   
   time.log <- ''
   
   DEBUG_MODE <- FALSE
-
  
   # Increase upload file size to 30MB (default: 5MB)
   options(shiny.maxRequestSize = 30*1024^2)
@@ -388,8 +386,6 @@ server <- function(input, output, session) {
   #fitPSplineChecker <- reactive({
   observe({
     
-    cat("** in fitPSplineChecker()\n")
-    
     if (BP_method != 'simple')
       return()
     
@@ -407,8 +403,8 @@ server <- function(input, output, session) {
     invalidateLater(2000)
     
     if (!file.exists(BP_modelfit_outfile)) {
-      app_log(paste0(alog, '[PSpline] Fitting in progress.\n'))
-      return(TRUE)
+        app_log(paste0(alog, '[PSpline] Fitting in progress.\n'))
+        return(TRUE)
     }
     
     # Only pass the file name. The data_id is saved inside this file, which is read by evalJobPspline.
@@ -417,7 +413,8 @@ server <- function(input, output, session) {
     showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
     
     BP_modelfit_running(FALSE)
-    
+
+    cat("** end of fitPSplineChecker()\n")
     
     # 
     # OLD_Version <- FALSE
@@ -727,12 +724,11 @@ server <- function(input, output, session) {
   # Update the label of the time slider, when slider changes.
   #
   observeEvent(input$timepoint_sp_idx, {
-    cat("* in observeEvent: timepoint_sp_idx\n")
-   
+       
     # Retrieve date and convert to the aggregation time interval. 
     timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
-    
+        
     updateSliderInput(session, "timepoint_sp_idx", label = paste0("Time: ", outp))
   })
 
@@ -1191,14 +1187,9 @@ server <- function(input, output, session) {
         saveRDS(csite_list, file = file)
       }
     }
-    
   )
   
-  
-  
-  
-  
-  
+    
   
   # Generate PPT with spatial animation.
   #observeEvent(input$generate_spatial_anim_ppt, {
@@ -1289,13 +1280,12 @@ server <- function(input, output, session) {
                          type = "error", duration = 10) 
       }  
     }
-    
+
     
     # Create a unique data set 'csite' for each Aquifer.
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
       
-      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
-                            Aq_sel)
+      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel)
       
       if (is.null(pr_dat)) next
       
@@ -2424,7 +2414,7 @@ server <- function(input, output, session) {
     if (input$analyse_panel == "Save Session")
       updateTextInput(session, "session_filename", value = paste0("GWSDAT_", gsub(":", "_", gsub(" ", "_", Sys.time())), ".rds"))
     
-    cat('FIXME: Check what this is doing: line 2423.\n')
+    #cat('FIXME: Check what this is doing: line 2423.\n')
     #if (input$analyse_panel == "Options") {
       # Save parameters that might have to be restored later if they are invalid.
       #prev_psplines_resolution <<- input$psplines_resolution
@@ -2910,7 +2900,7 @@ server <- function(input, output, session) {
           # altered csite objects, which are copies, not references).
           csite <<- csite_list[[j]]
           csite_selected_idx <<- j
-
+          
               
           shinyjs::hide("data_select_page")
           shinyjs::show("analyse_page")

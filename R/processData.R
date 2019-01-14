@@ -88,7 +88,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
                         subst_napl_vals = "yes",
                         verbose = TRUE) {
 
-
+    cat("* processData()")
   #Pick up Electron Acceptors before deleting non-aquifer wells. 
   ElecAccepts <- unique(as.character(solute_data[ tolower(as.character(solute_data$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
  
@@ -433,9 +433,10 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
 
   # If reading the shape files is not successful, set 'GWSDAT_Options$ShapeFileNames'
   #  to NULL. This will cause the 'Overlay ShapeFiles' option to be hidden.
-  if (is.null(shape_file_data <- readShapeFiles_sf(GWSDAT_Options$ShapeFileNames)))
+  if (is.null(shape_file_data <- readShapeFiles(GWSDAT_Options$ShapeFileNames)))
     GWSDAT_Options$ShapeFileNames <- NULL
-    
+
+
   
   # This list is a little big. Continue making it slimmer.
   All.Data <- list(GW.Data = GW.Data,
