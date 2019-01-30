@@ -723,30 +723,44 @@ server <- function(input, output, session) {
   #  
   # Update the label of the time slider, when slider changes.
   #
-  observeEvent(input$timepoint_sp_idx, {
-       
-    # Retrieve date and convert to the aggregation time interval. 
+#  observeEvent(input$timepoint_sp_idx, {
+#       
+#    # Retrieve date and convert to the aggregation time interval. 
+#    timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
+#    outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
+        
+# #   updateSliderInput(session, "timepoint_sp_idx", label = paste0("Time: ", outp))
+#  })
+    
+ output$timepoint_sp_idx_label <- renderText({
     timep <- csite$ui_attr$timepoints[input$timepoint_sp_idx]
     outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
-        
-    updateSliderInput(session, "timepoint_sp_idx", label = paste0("Time: ", outp))
-  })
+    paste0("Time: ", outp)
+ })
 
-  observeEvent(input$timepoint_tt_idx, {
-    # cat("* in observeEvent: timepoint_tt_idx\n")
-    
-    # Not updating here, because 'input$timepoint_sp_idx' is directly used for
-    # plotting. Saving to 'csite$ui_attr$timepoint_sp_idx' is only used in 
-    # 'Save Session' and reading from it inside rndAnalyse <- renderUI().
-    #
-    #csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
-    
-    timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
-    outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
-    updateSliderInput(session, "timepoint_tt_idx", label = paste0("Time: ", outp))
-  })
+ # observeEvent(input$timepoint_tt_idx, {
+ #   # cat("* in observeEvent: timepoint_tt_idx\n")
+ #   
+ #   # Not updating here, because 'input$timepoint_sp_idx' is directly used for
+ #   # plotting. Saving to 'csite$ui_attr$timepoint_sp_idx' is only used in 
+ #   # 'Save Session' and reading from it inside rndAnalyse <- renderUI().
+ #   #
+ #   #csite$ui_attr$timepoint_tt_idx <<- input$timepoint_tt_idx
+ #   
+ #   timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
+ #   outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
+ #   update
+#    updateSliderInput(session, "timepoint_tt_idx", label = paste0("Time: ", outp))
+ # })
   
 
+    output$timepoint_tt_idx_label = renderText( {
+        timep <- csite$ui_attr$timepoints[input$timepoint_tt_idx]
+        outp <- pasteAggLimit(timep, csite$GWSDAT_Options$Aggby)
+        paste0("Time: ", outp)
+    })
+ 
+    
   #
   # Plot ImagePlot
   #
