@@ -69,7 +69,7 @@ plotModelPredictions <- function(csite, Cont.Data, SiteName = "", se.fit = FALSE
   Cont <- as.character(unique(Cont.Data$Constituent))
   
   
-  my.xlim <- range(c(csite$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate)) 
+  my.xlim <- as.Date(range(c(csite$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate)))
   my.xlim.orig = my.xlim
   my.xlim[1] <- my.xlim.orig[1] - 0.025*as.numeric(diff(my.xlim.orig))
   my.xlim[2] <- my.xlim.orig[2] + 0.025*as.numeric(diff(my.xlim.orig))
