@@ -71,7 +71,7 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     
     if (!inherits(dn, "try-error")) {
       tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
-                     predred.df[,"YCoord"], bary = T) 
+                     predred.df[,"YCoord"], method = "orig",bary = T) 
       active <- dn[tri$idx,] 
       
       
