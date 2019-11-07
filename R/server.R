@@ -68,7 +68,7 @@ server <- function(input, output, session) {
   renderRHandsonWell <- reactiveVal(0)
   
   # Define supported image formats for saving plots.
-  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx")
+  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx","tif")
         
   # Remove pptx (powerpoint) if no support was found. 
   if (!existsPPT())
@@ -978,7 +978,8 @@ server <- function(input, output, session) {
         makeTimeSeriesPPT(csite, file, input$solute_select_ts, input$sample_loc_select_ts,
                           width  = input$img_width_px, height = input$img_height_px)
         
-      } else {
+      } 
+      else {
         
         if (input$export_format_ts == "png") png(file, width = input$img_width_px, height = input$img_height_px)
         if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
@@ -1005,7 +1006,12 @@ server <- function(input, output, session) {
         plotSpatialImagePPT(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
                        width  = input$img_width_px, height = input$img_height_px)
       
-        } else {
+        } else if (input$export_format_sp == "tif"){
+         
+          PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+          
+        }
+      else {
           
           if (input$export_format_sp == "png") png(file, width = input$img_width_px, height = input$img_height_px)
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 

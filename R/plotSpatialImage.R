@@ -708,3 +708,27 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
 }
 
 
+#' @importFrom raster raster, rasterize, writeRaster
+
+PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint){
+  
+  csite<<-csite
+  fileout<<-fileout
+  substance<<-substance
+  timepoint<<-timepoint
+  print("here")
+  dat<-interpConc(csite,substance,timepoint)$data
+  
+  dat1<-expand.grid(x=dat$x,y=dat$y)
+  dat1$z<-as.numeric(t(dat$z))
+  dat1<-data.frame(x=dat1$x,y=dat1$y,z=dat1$z)
+  r <- raster(extent(dat1[,c("x","y")]), ncol=100, nrow=100)
+  r <- rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
+  
+  writeRaster(r,fileout,overwrite=TRUE)
+  
+}
+
+
+
+
