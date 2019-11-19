@@ -188,7 +188,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     col.palette <- topo.colors(n.col)
     Do.Image<-FALSE
     interp.pred$z[,]<-NA
-    my.palette<-col.palette[(as.numeric(cut(temp.Cont.Data$Result.Corr.ND,breaks=csite$lev_cut)))]
+    my.palette<-col.palette[(as.numeric(cut(temp.Cont.Data$Result.Corr.ND,breaks=lev_cut)))]
     #my.cex<-.5*as.numeric(cut(temp.Cont.Data$Result.Corr.ND,breaks=my.lev_cut))
     #my.cex<-if(csite$ui_attr$conc_unit_selected=="mg/l"){.5*log(1000*temp.Cont.Data$Result.Corr.ND)}else{.8*log(temp.Cont.Data$Result.Corr.ND)}
     
