@@ -703,10 +703,12 @@ server <- function(input, output, session) {
     outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
     
     updateSliderInput(session, "timepoint_sp_idx", value = new_timepoint_idx,
-                      min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
+                      #min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
+                      min = 1, max = length(csite$ui_attr$timepoints), label ="", step = 1)
     
     updateSliderInput(session, "timepoint_tt_idx", value = new_timepoint_idx,
-                      min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
+                      #min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
+                      min = 1, max = length(csite$ui_attr$timepoints), label = "", step = 1)    
     
     
     # Update select input: Aggregation in other panel.
