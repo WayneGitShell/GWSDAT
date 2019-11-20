@@ -295,7 +295,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       tempUnitHandle <- PlumeUnitHandlingFunc(csite$GWSDAT_Options$WellCoordsLengthUnits, csite$ui_attr$conc_unit_selected, plume_stats$mass, plume_stats$area)
       
       tp <- paste("Plume Mass=", signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
-      mtext(tp,side = 1,adj = -0.1, line = 2,cex = 0.85)
+      mtext(tp,side = 1,adj = 0, line = 2,cex = 0.85)
       
     }
     
@@ -340,7 +340,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       tempUnitHandle <- PlumeUnitHandlingFunc(csite$GWSDAT_Options$WellCoordsLengthUnits,csite$ui_attr$conc_unit_selected,plume_stats$mass,plume_stats$area)
       
         tp <- paste("Plume Mass=",signif(tempUnitHandle$PlumeMass,5),tempUnitHandle$PlumeMassUnits,";  Plume Area=",signif(tempUnitHandle$PlumeArea,5),tempUnitHandle$PlumeAreaUnits,sep = "")
-      mtext(tp,side = 1,adj = -0.1,line = 2, cex = 0.85)
+      mtext(tp,side = 1,adj = 0,line = 2, cex = 0.85)
       
     }
     
