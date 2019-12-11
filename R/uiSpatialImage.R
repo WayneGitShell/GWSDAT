@@ -30,8 +30,10 @@ uiSpatialImage <- function(csite, img_frmt) {
                       
                       
     ),
-    shinydashboard::box(width = 9, status = "primary",
-                      plotOutput("image_plot", height = 500),
+    shinydashboard::tabBox(width = 9, id = "plume_tab_box",#status = "primary",
+                      
+                        tabPanel("Spatial Image", plotOutput("image_plot", height = 500),
+                      #plotOutput("image_plot", height = 500),
                       
                       
                       div(style = "display: inline-block;", 
@@ -51,7 +53,31 @@ uiSpatialImage <- function(csite, img_frmt) {
                             #actionButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
                         ) }
                         
-                      #)
+                      ),
+                      tabPanel("Mass, Area & Concentration",
+                               
+                               div(id = "plume_diagn_plot_div", withSpinner(plotOutput("plume_diagn_plot"))),
+                               shinyjs::hidden(div(id = "plume_diagn_msg_div", htmlOutput("plume_diagn_msg"))),
+                               
+                               div(id = "plume_save_btn_div",
+                                   div(style = "display: inline-block;",
+                                       selectInput("export_format_pd", label = "Image format", 
+                                                   choices = img_frmt, 
+                                                   selected = img_frmt[[1]])
+                                   ),
+                                   
+                                   div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
+                                       downloadButton("save_plumestats_plot", label = "Save Plot")
+                                   ),
+                                   div(style = "display: inline-block; vertical-align:top; margin-top: 25px", 
+                                       downloadButton("save_plumestats_csv", label = "Save as .CSV")
+                                   )
+                               ),numericInput("plume_thresh_pd", label = "Plume Threshold (ug/l)", 
+                                              value = csite$ui_attr$plume_thresh_pd)),
+                               
+                      tabPanel("Estimate Boundary", value = "plume_pnl_2",
+                               withSpinner(plotOutput("plume_estimate_plot"))#, numericInput("plume_thresh_pd", label = "Plume Threshold (ug/l)", value = csite$ui_attr$plume_thresh_pd)
+                      )
     ),
     # This draggable panel contains the time slider for the spatial heatmap plot.s
     absolutePanel(id = "timecontrol_sp", class = "panel panel-default", 

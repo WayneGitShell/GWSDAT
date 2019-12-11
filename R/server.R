@@ -285,9 +285,9 @@ server <- function(input, output, session) {
     
     
     val <- getFullPlumeStats(csite, 
-                             substance = input$solute_select_pd, 
+                             substance = input$solute_select_sp, 
                              plume_thresh = input$plume_thresh_pd,
-                             ground_porosity = (input$ground_porosity_pd / 100),
+                             ground_porosity = (input$ground_porosity / 100),
                              progressBar = progress
                             )
     
@@ -317,7 +317,7 @@ server <- function(input, output, session) {
     
     # Isolate the inputs (so a change in the sidebar does not trigger this fct.)
     isolate(
-     HTML(paste0(tags$b(input$solute_select_pd), 
+     HTML(paste0(tags$b(input$solute_select_sp), 
                  ": Unable to calculate plume statistics for a threshold value of ",
                  "<b>", input$plume_thresh_pd, " ug/l</b>. ",
                  # "Select a different plume threshold and retry.",
@@ -335,7 +335,7 @@ server <- function(input, output, session) {
     # Detect with model fit changed.
     BP_modelfit_done()
     
-    plotPlumeEst(csite, input$solute_select_pd, input$plume_thresh_pd)
+    plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd)
   })
   
   

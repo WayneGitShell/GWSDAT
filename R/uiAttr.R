@@ -6,7 +6,7 @@ saveUIAttr <- function(csite, input) {
   csite$ui_attr$solute_select_ts  <- input$solute_select_ts
   csite$ui_attr$solute_select_sp  <- input$solute_select_sp
   csite$ui_attr$solute_select_stp <- input$solute_select_stp
-  csite$ui_attr$solute_select_pd  <- input$solute_select_pd
+  #csite$ui_attr$solute_select_pd  <- input$solute_select_pd
   csite$ui_attr$solute_select_wr  <- input$solute_select_wr
 
   csite$ui_attr$sample_loc_select_ts  <- input$sample_loc_select_ts
@@ -23,7 +23,7 @@ saveUIAttr <- function(csite, input) {
   csite$ui_attr$logscale_stp <- input$logscale_stp
   csite$ui_attr$plume_thresh_pd <- input$plume_thresh_pd
   csite$ui_attr$ground_porosity <- input$ground_porosity
-  csite$ui_attr$ground_porosity_pd <- input$ground_porosity_pd
+  #csite$ui_attr$ground_porosity_pd <- input$ground_porosity_pd
   csite$ui_attr$solute_conc_stp <- input$solute_conc_stp
   
   return(csite)
@@ -46,7 +46,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$solute_select_ts    <- ui_attr$solute_names[1]
   ui_attr$solute_select_sp    <- ui_attr$solute_names[1]
   ui_attr$solute_select_stp   <- ui_attr$solute_names[1]
-  ui_attr$solute_select_pd    <- ui_attr$solute_names[1]
+  #ui_attr$solute_select_pd    <- ui_attr$solute_names[1]
   ui_attr$solute_select_wr    <- ui_attr$solute_names
   
   ui_attr$conc_unit_list      <- list("ng/l","ug/l","mg/l")
@@ -106,7 +106,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
 
   # Related to plume model; read by 'uiPlumeTimeSeries.R'.
   ui_attr$ground_porosity <- GWSDAT_Options$DefPorosity
-  ui_attr$ground_porosity_pd <- ui_attr$ground_porosity * 100
+  #ui_attr$ground_porosity_pd <- ui_attr$ground_porosity * 100
   
   # Related to plume model; read by 'uiPlumeTimeSeries.R'.
   ui_attr$plume_thresh <- rep(GWSDAT_Options$DefPlumeThresh, length(ui_attr$solute_names))

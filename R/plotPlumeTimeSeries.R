@@ -56,19 +56,21 @@ plotPlumeTimeSeries <- function(plume_stats) {
   my.ylab <- paste("Plume Mass", tempUnitHandle$PlumeMassUnits, sep = "")
   
   
+  
   plot(plume_stats$Agg.Date, plume_stats$mass,
        ylim = my.ylim,
-       cex.main = 1.3,
+       cex.main = 1.5,
+       cex.axis=1.5,
        type = "b",
        main = paste(substance, "\nPlume Mass", sep = ""),
        xlab = "Date",
-       cex.lab = 1.4,
+       cex.lab = 1.5,
        pch = 19,
        cex = 1.5,
        ylab = my.ylab)
   
   mtext(paste("Plume Threshold = ", plume_thresh, "ug/l, Ground Porosity = ", (ground_porosity * 100), "%", sep = ""),
-            side = 3, line = -1, cex = 0.75)
+            side = 3, line = -1.1, cex = 0.95)
   
   
   if (!inherits(lmmass,"try-error")) {
@@ -120,18 +122,19 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
   plot(plume_stats$Agg.Date, plume_stats$area,
        ylim = my.ylim, 
-       cex.main = 1.3, 
+       cex.main = 1.5,
+       cex.axis=1.5,
        type = "b",
        main = paste(substance, "\nPlume Area", sep = ""),
        xlab = "Date",
-       cex.lab = 1.4,
+       cex.lab = 1.5,
        pch = 19, 
        cex = 1.5, 
        ylab = my.ylab
       )
       
   
-  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""), side = 3, line = -1, cex = 0.75))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""), side = 3, line = -1.1, cex = 0.95))
   
   if (!inherits(lmarea,"try-error")) {
     
@@ -179,16 +182,17 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
   plot(plume_stats$Agg.Date, plume_stats$avg_conc,
            ylim = my.ylim,
-           cex.main = 1.3,
+           cex.main = 1.5,
+           cex.axis=1.5,
            type = "b",
            main = paste(substance, "\nAverage Plume Concentration", sep = ""),
            xlab = "Date",
-           cex.lab = 1.4,
+           cex.lab = 1.5,
            pch = 19,
            cex = 1.5,
            ylab = my.ylab)
   
-  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""),side = 3, line = -1, cex = 0.75))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""),side = 3, line = -1.1, cex = 0.95))
   
   if (!inherits(lmavg_conc,"try-error")) {
     
@@ -355,6 +359,9 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
   temp.df$MaxInteriorConc[max_larger_row] <- temp.df$MaxConc[max_larger_row]
   
   my.ylim = c(min(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T), max(temp.df[,c("MaxInteriorConc","MaxConc")], na.rm = T))
+  my.ylim[1]<-min(my.ylim[1],plume_thresh)
+  my.ylim[2]<-max(my.ylim[2],plume_thresh)
+  
  
   plot(MaxInteriorConc ~ Time.Eval, data = temp.df,
        log  = "y", type = "b", ylim = my.ylim, xlab = "Date", 
