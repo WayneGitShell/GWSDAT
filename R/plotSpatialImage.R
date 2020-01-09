@@ -708,7 +708,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
 }
 
 
-#' @importFrom raster raster, rasterize, writeRaster
+#' @importFrom raster raster rasterize writeRaster extent
 
 PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint){
   
