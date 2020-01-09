@@ -1,4 +1,4 @@
-# GWSDAT![alt text](https://travis-ci.org/andrejadd/GWSDAT.svg?branch=master)
+# GWSDAT
 
 This is the R Shiny application of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. 
 
@@ -10,14 +10,14 @@ For latest development version, install from github using the `devtools` R packa
 
 ```r
 devtools::install_github("andrejadd/GWSDAT")
-launchApp()
+GWSDAT::launchApp()
 ```
 
 Or install from CRAN: 
 
 ```r
 install.packages("GWSDAT")
-launchApp()
+GWSDAT::launchApp()
 ```
 
 
@@ -26,17 +26,16 @@ launchApp()
 On the server, install the package as shown above and create a directory `GWSDAT` inside the Shiny app folder defined in `/etc/shiny-server/shiny-server.conf`. Create the file `GWSDAT/app.R` with the following content:
 
 ```r
-library(GWSDAT)
+library("GWSDAT")
 launchApp()
 ```
-
 
 ## Run in Stand-Alone Mode (ExcelMode)
 
 The Stand-Alone Mode provides a slim version of the UI for exploring a single data set. Install the package as above and pass a `GWSDAT_Options` list to `launchApp()`. 
 
 ```r
-library(GWSDAT)
+library("GWSDAT")
 # Define GWSDAT_Options
 # ..
 launchApp(GWSDAT_Options)
