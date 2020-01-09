@@ -1,3 +1,6 @@
+#' @importFrom utils globalVariables
+globalVariables("APP_CUSTOM_COMPONENT")
+
 # This is the main UI file that defines the two types of interfaces: 
 #  1. uiFull : running on a server with multiple data sets.
 #  2. uiSimple : running  locally on a single data set (a.k.a. 'ExcelMode') 
