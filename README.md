@@ -9,7 +9,7 @@ This app can be deployed on a Shiny Server supporting multiple data sets and use
 For latest development version, install from github using the `devtools` R package:
 
 ```r
-devtools::install_github("andrejadd/GWSDAT")
+devtools::install_github("levvers/GWSDAT")
 GWSDAT::launchApp()
 ```
 
