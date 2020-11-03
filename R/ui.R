@@ -91,7 +91,7 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
 
 
 # Define the Shiny dashboard header
-dbHeaderSimple <- function() shinydashboard::dashboardHeader(title = "GWSDAT.beta",
+dbHeaderSimple <- function() shinydashboard::dashboardHeader(title = "GWSDAT",
     tags$li(a(href = 'http://gwsdat.net',
               icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
 )
