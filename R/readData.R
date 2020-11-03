@@ -249,7 +249,7 @@ readConcData <- function(input_file, valid_header, ...) {
   DF$Result[is.na(DF$Result)] <- "0"
     
   # Transform the 'SampleDate' column into 'Date' class.  
-  if (class(DF$SampleDate) == "numeric")
+  if (class(DF$SampleDate) == "numeric" | class(DF$SampleDate) == "integer")
       # An integer value indicates Excel time. This is _not_ Unix time!
       DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
   else
