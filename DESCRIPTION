@@ -1,10 +1,10 @@
 Package: GWSDAT
 Title: GroundWater Spatiotemporal Data Analysis Tool (GWSDAT)
-Version: 3.0.3.9001
-Author: Wayne W Jones <wayne.w.jones@shell.com>, Ludger Evers
+Version: 3.0.4
+Author: Wayne Jones <wayne.w.jones@shell.com>, Ludger Evers
     <ludger.evers@glasgow.ac.uk>, Andrej Aderhold
     <andrej.aderhold@protonmail.com>
-Maintainer: Ludger Evers <ludger.evers@glasgow.ac.uk>
+Maintainer: Wayne Jones <wayne.w.jones@shell.com>
 Description: Shiny application for the analysis of groundwater
     monitoring data, designed to work with simple time-series data for
     solute concentration and ground water elevation, but can also plot
