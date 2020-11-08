@@ -185,6 +185,7 @@ readExcel <- function(filein, sheet = NULL) {
 
 
 #' @importFrom utils read.csv
+#' @importFrom lubridate parse_date_time
 readConcData <- function(input_file, valid_header, ...) {
 
   
@@ -256,8 +257,8 @@ readConcData <- function(input_file, valid_header, ...) {
       # Expects string input with format "yyyy-mm-dd" or "yyyy/mm/dd".
       #   Possibly extend to "dd-mm-yyyy" or "mm-dd-yyyy" since they are more common.
       #   But this requires an additional package such as 'lubridate' or 'anytime'.
-      DF$SampleDate <- as.Date(DF$SampleDate)
-          
+      #DF$SampleDate <- as.Date(DF$SampleDate)
+      DF$SampleDate <- as.Date(parse_date_time(as.character(DF$SampleDate),orders=c("dmy", "mdy", "ymd")))    
   return(DF)
   
 }
