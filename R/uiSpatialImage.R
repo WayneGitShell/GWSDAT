@@ -31,9 +31,14 @@ uiSpatialImage <- function(csite, img_frmt) {
                            ), 
                            
                            tabPanel("Well Redundancy Analysis",
-                           
-                                    selectInput("sample_Omitted_Wells", 'Omitted Wells', choices = csite$ui_attr$sample_loc_names,
-                                    selected = csite$ui_attr$sample_loc_select_stp, multiple = TRUE, selectize = TRUE)
+                                    
+                                    checkboxInput("ImplementReducedWellSet", label = "Use reduced set of wells?", value = FALSE), 
+                                    
+                                    selectInput("sample_Omitted_Wells", "Select wells to be omitted from analysis", choices = csite$ui_attr$sample_loc_names,
+                                    selected = NULL, multiple = TRUE, selectize = TRUE),
+                                    
+                                    actionButton("UpdateReducedWellFittedModel", "Update Model")
+                                    
                            
                            )
                            

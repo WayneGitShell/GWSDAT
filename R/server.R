@@ -355,6 +355,14 @@ server <- function(input, output, session) {
     
   })
   
+  ########### Well Redundancy Analysis Section #######################
+  observeEvent(input$UpdateReducedWellFittedModel,{
+    print("Updating Reduced Model\n")
+    csite<<-RefitModel(csite)
+  })
+  #------------------------------------------------------------------#
+  
+  
   
   ## Time-Series Panel #########################################################
   
@@ -786,6 +794,8 @@ server <- function(input, output, session) {
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
     
+    ## Make Spatial plot reactive to Well Redunancy Analysis
+    input$UpdateReducedWellFittedModel
     
     #start.time = Sys.time()
     plotSpatialImage(csite, input$solute_select_sp, 
@@ -3340,6 +3350,9 @@ server <- function(input, output, session) {
           list()
       }
   })
+  
+  
+
   
 } # end server section
 
