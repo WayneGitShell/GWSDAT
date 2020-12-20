@@ -336,7 +336,7 @@ server <- function(input, output, session) {
     # Detect with model fit changed.
     BP_modelfit_done()
     
-    plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd)
+    plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd,input$ImplementReducedWellSet)
   })
   
   
@@ -363,7 +363,12 @@ server <- function(input, output, session) {
   
   observeEvent(input$ImplementReducedWellSet,{
     
-
+    #If no wells selceted in the first instance copy over existing fitted model - save times. 
+    if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet & is.null(input$sample_Omitted_Wells)){
+      csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
+    }
+    
+    # Refit the spline model to all solutes with selectd wells omitted. 
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
     }

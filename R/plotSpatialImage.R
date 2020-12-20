@@ -30,12 +30,12 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,
                                 csite$ui_attr$ground_porosity)
   }
   
-  plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
+  plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet)
 }
 
 
 plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL, 
-                                  pred = NULL, plume_stats = NULL) { 
+                                  pred = NULL, plume_stats = NULL,UseReducedWellSet) { 
   
   interp.pred  <- pred$data
   Do.Image     <- pred$Do.Image
@@ -74,10 +74,15 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   # Create the string for the date or date range to print
   date_to_print <- pasteAggLimit(timepoint, csite$GWSDAT_Options$Aggby)
   
-  model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
-  temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
-  temp.Cont.Data <- temp.Cont.Data[temp.Cont.Data$AggDate == timepoint,]
+  if(UseReducedWellSet){
+    model.tune <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]
+    temp.Cont.Data <- csite$Reduced.Fitted.Data[[substance]]$Cont.Data
+  }else{
+    model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
+    temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
+  }
   
+  temp.Cont.Data <- temp.Cont.Data[temp.Cont.Data$AggDate == timepoint,]
   temp.Cont.Data$log.Resid <- log(temp.Cont.Data$Result.Corr.ND) - log(temp.Cont.Data$ModelPred)
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") {
@@ -431,7 +436,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
     mytemp <- tempfile(fileext = ".png")
     
     png(mytemp, width = width, height = height)
-    plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
+    plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet)
     dev.off()
     
     ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 

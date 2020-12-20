@@ -276,7 +276,7 @@ printPlumeStatsCSV <- function(plume_stats) {
 }
 
 #' @importFrom splancs gridpts
-plotPlumeEst <- function(csite, substance, plume_thresh){
+plotPlumeEst <- function(csite, substance, plume_thresh,UseReducedWellSet){
   
   
   #### Get Hull data points function ########
@@ -317,7 +317,11 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
   temp.df$MaxConc <- rep(NA,nrow(temp.df))
   temp.df$MaxInteriorConc <- rep(NA,nrow(temp.df))
   
-  model <- csite$Fitted.Data[[substance]][["Model.tune"]]$best.model
+  if(UseReducedWellSet){
+    model <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]$best.model
+  }else{
+    model <- csite$Fitted.Data[[substance]][["Model.tune"]]$best.model
+  }
   
   
   
@@ -325,10 +329,13 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
     
     temp.time.eval <- csite$All.Data$All_Agg_Dates[i]
     
-    Good.Wells <- as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
-
-    Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
-    
+    if(UseReducedWellSet){
+      Good.Wells <- as.character(unique(csite$Reduced.Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Reduced.Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+      Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Reduced.Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Reduced.Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+    }else{
+      Good.Wells <- as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+      Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+    }
     if (length(Good.Wells) > 2) {
 
       ### Calculate Max Conc on hull boundary
