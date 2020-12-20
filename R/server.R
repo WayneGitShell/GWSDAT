@@ -288,7 +288,8 @@ server <- function(input, output, session) {
                              substance = input$solute_select_sp, 
                              plume_thresh = input$plume_thresh_pd,
                              ground_porosity = (input$ground_porosity / 100),
-                             progressBar = progress
+                             progressBar = progress,
+                             UseReducedWellSet=input$ImplementReducedWellSet
                             )
     
     # If there is any plume mass, show the plot and hide the message text, and vice versa. 
@@ -357,9 +358,19 @@ server <- function(input, output, session) {
   
   ########### Well Redundancy Analysis Section #######################
   observeEvent(input$UpdateReducedWellFittedModel,{
-    print("Updating Reduced Model\n")
-    csite<<-RefitModel(csite)
+    csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
   })
+  
+  observeEvent(input$ImplementReducedWellSet,{
+    
+
+    if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
+      csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
+    }
+    
+  })
+  
+  
   #------------------------------------------------------------------#
   
   
@@ -798,9 +809,9 @@ server <- function(input, output, session) {
     input$UpdateReducedWellFittedModel
     
     #start.time = Sys.time()
-    plotSpatialImage(csite, input$solute_select_sp, 
-                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                     app_log)
+    plotSpatialImage(csite=csite, substance =input$solute_select_sp, 
+                     timepoint=as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
+                     app_log=app_log,UseReducedWellSet=input$ImplementReducedWellSet)
                      
     #end.time <- Sys.time()
     
@@ -1016,11 +1027,12 @@ server <- function(input, output, session) {
       if (input$export_format_sp == "pptx") {
         
         plotSpatialImagePPT(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                       width  = input$img_width_px, height = input$img_height_px)
+                       width  = input$img_width_px, height = input$img_height_px,UseReducedWellSet=input$ImplementReducedWellSet)
       
         } else if (input$export_format_sp == "tif"){
          
-          PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+          print("I am ere....")
+          PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
           
         }
       else {
@@ -1029,8 +1041,9 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-           
-          plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+          
+          plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
+         
           dev.off()
       }
       
@@ -1243,7 +1256,7 @@ server <- function(input, output, session) {
       
       makeSpatialAnimation(csite, file, input$solute_select_sp,
                            input$img_width_px, input$img_height_px,
-                           input$img_width_px_wide, input$img_height_px_wide)
+                           input$img_width_px_wide, input$img_height_px_wide,input$ImplementReducedWellSet)
       
     }
   )
@@ -2797,6 +2810,7 @@ server <- function(input, output, session) {
     
     if (is.null(fitdat))
       return(NULL)
+    
     
     # Calculate the Groundwater flows.
     GW_flows <- evalGWFlow(pr_dat$Agg_GW_Data)

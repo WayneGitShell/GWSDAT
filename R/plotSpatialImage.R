@@ -1,14 +1,14 @@
 
 
 
-plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL) {
+plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet) {
   #print("* in plotSpatialImage()")
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
   
   # Make Prediction.
   start.time <- Sys.time()
-  interp.pred <- interpConc(csite, substance, timepoint)
+  interp.pred <- interpConc(csite, substance, timepoint,UseReducedWellSet)
   
   # Measure time to see if interpConc() should be moved elsewhere (background, startup)
   end.time <- Sys.time()
@@ -350,8 +350,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 }
 
 
-plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,
-                           width = 700, height = 500){
+plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,width = 700, height = 500,UseReducedWellSet){
  
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -362,7 +361,7 @@ plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotSpatialImage(csite, substance, timepoint)
+  plotSpatialImage(csite=csite, substance=substance, timepoint=timepoint,UseReducedWellSet=UseReducedWellSet)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
@@ -378,7 +377,8 @@ makeSpatialAnimation <- function(csite, fileout, substance,
                                  width = 800,
                                  height = 600,
                                  width_plume = 1200, 
-                                 height_plume = 600) {
+                                 height_plume = 600,
+                                 UseReducedWellSet) {
   
   full_plume_stats <- NULL 
   
@@ -399,7 +399,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
     timepoint <- csite$All.Data$All_Agg_Dates[i]
     
     # Do the interpolation.
-    interp.pred <- interpConc(csite, substance, timepoint)
+    interp.pred <- interpConc(csite, substance, timepoint,UseReducedWellSet)
     
     # Create plume statistics if needed.
     #
@@ -710,14 +710,13 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
 
 #' @importFrom raster raster rasterize writeRaster extent
 
-PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint){
+PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWellSet){
   
   csite<<-csite
   fileout<<-fileout
   substance<<-substance
   timepoint<<-timepoint
-  print("here")
-  dat<-interpConc(csite,substance,timepoint)$data
+  dat<-interpConc(csite,substance,timepoint,UseReducedWellSet)$data
   
   dat1<-expand.grid(x=dat$x,y=dat$y)
   dat1$z<-as.numeric(t(dat$z))

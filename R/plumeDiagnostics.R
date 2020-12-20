@@ -1,6 +1,5 @@
 
-getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
-                              progressBar = NULL) {
+getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,progressBar = NULL,UseReducedWellSet) {
 
   # This will become a data frame containing in each row the plume statistics 
   # of each date.
@@ -14,7 +13,7 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
     
     progressBar$set(value = (i/nr_timesteps), detail = paste("time point ", i, " / ", nr_timesteps))
     
-    interp.pred <- interpConc(csite, substance, datetmp)
+    interp.pred <- interpConc(csite, substance, datetmp,UseReducedWellSet)
     
     plume_stats <- getPlumeStats(csite, substance, datetmp, 
                                  interp.pred$data, plume_thresh, ground_porosity)

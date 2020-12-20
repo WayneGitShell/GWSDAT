@@ -1,8 +1,13 @@
 
 #' @importFrom splancs gridpts areapl
-interpConc <- function(csite, substance, timepoint) {
+interpConc <- function(csite, substance, timepoint,UseReducedWellSet) {
   
-  model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
+  if(UseReducedWellSet){
+       model.tune     <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]
+    }else{
+       model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
+    }
+  
   Well.Coords    <- csite$All.Data$sample_loc$data
   Col.Option     <- csite$ui_attr$spatial_options["Scale colours to Data"]
   
