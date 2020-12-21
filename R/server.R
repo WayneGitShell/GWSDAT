@@ -284,14 +284,29 @@ server <- function(input, output, session) {
     on.exit(progress$close())
     
     
-    val <- getFullPlumeStats(csite, 
+    val <-                   getFullPlumeStats(csite, 
                              substance = input$solute_select_sp, 
                              plume_thresh = input$plume_thresh_pd,
                              ground_porosity = (input$ground_porosity / 100),
                              progressBar = progress,
-                             UseReducedWellSet=input$ImplementReducedWellSet
-                            )
+                             UseReducedWellSet=FALSE
+                             )
     
+    if(input$ImplementReducedWellSet){
+      
+      valreducedWellSet<-                getFullPlumeStats(csite, 
+                                         substance = input$solute_select_sp, 
+                                         plume_thresh = input$plume_thresh_pd,
+                                         ground_porosity = (input$ground_porosity / 100),
+                                         progressBar = progress,
+                                         UseReducedWellSet=input$ImplementReducedWellSet
+                            )
+      
+  }else{
+    
+    valreducedWellSet<-NULL
+    
+  }  
     # If there is any plume mass, show the plot and hide the message text, and vice versa. 
     if (all(is.na(val$mass))) {
       shinyjs::show("plume_diagn_msg_div")
@@ -303,7 +318,7 @@ server <- function(input, output, session) {
       shinyjs::hide("plume_diagn_msg_div", anim = FALSE)
     }
 
-    return(val)
+    return(list(plume_stats=val,plume_statsreducedWellSet=valreducedWellSet))
   })
   
 
@@ -375,7 +390,7 @@ server <- function(input, output, session) {
     
   })
   
-  
+  ##observeEvent(input$sample_Omitted_Wells,{print("I should update the pllot now...")})
   #------------------------------------------------------------------#
   
   

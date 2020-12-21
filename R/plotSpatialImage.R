@@ -421,6 +421,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
                                    csite$ui_attr$plume_thresh[substance], 
                                    csite$ui_attr$ground_porosity)
       
+  
       # Add date. 
       plume_stats = cbind(plume_stats, "Agg.Date" = timepoint)
       
@@ -454,7 +455,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
     mytemp <- tempfile(fileext = ".png")
     
     png(mytemp, width = width_plume, height = height_plume)
-    plotPlumeTimeSeries(full_plume_stats)
+    plotPlumeTimeSeries(list(plume_stats=full_plume_stats))
     dev.off()
     
     ppt_pres <- addPlotPPT(mytemp, ppt_pres, width = width_plume, height = height_plume)
