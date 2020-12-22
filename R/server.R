@@ -1184,8 +1184,6 @@ server <- function(input, output, session) {
       
       plume_stats <- checkPlumeStats()
       
-      plume_statskeep<<-plume_stats
-      
       tmp_out <- printPlumeStatsCSV(plume_stats$plume_stats)
       
       if(!is.null(plume_stats$plume_statsreducedWellSet)){
