@@ -136,8 +136,17 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   } else {
   
     temp.GW.Flows <- csite$GW.Flows[as.numeric(csite$GW.Flows$AggDate) == timepoint,]
+
     
-    if (!is.null(csite$ui_attr$gw_selected) && csite$ui_attr$gw_selected != "None") {
+    if(UseReducedWellSet & !is.null(temp.GW.Flows)){
+      
+      temp.GW.Flows<-temp.GW.Flows[!temp.GW.Flows$WellName %in% sample_Omitted_Wells,]
+      temp.GW.Flows<-evalGWFlow(temp.GW.Flows)
+    
+      }
+    
+    
+    if (!is.null(temp.GW.Flows) & !is.null(csite$ui_attr$gw_selected) && csite$ui_attr$gw_selected != "None") {
       
       L <- 0.05 * sqrt(diff(Contour.xlim)^2 + diff(Contour.ylim)^2)
 
@@ -289,7 +298,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
         if (Show.Well.Labels) text(Well.Coords$XCoord, Well.Coords$YCoord, Well.Coords$WellName, cex = 0.75, pos = 1)
         if (Show.Well.Labels & UseReducedWellSet & !is.null(sample_Omitted_Wells)) text(Reduced.Well.Coords$XCoord, Reduced.Well.Coords$YCoord, Reduced.Well.Coords$WellName, cex = 0.75, pos = 1,col="grey")
         if (Show.GW.Contour) {
-            contour(GWSDAT.GW.Contour(temp.GW.Flows), add = T, labcex = .8)
+            try(contour(GWSDAT.GW.Contour(temp.GW.Flows), add = T, labcex = .8))
         }
         if (Show.Values & length(as.character(temp.Cont.Data$Result)) > 0) {
           try(text(temp.Cont.Data$XCoord, temp.Cont.Data$YCoord, as.character(temp.Cont.Data$Result),
