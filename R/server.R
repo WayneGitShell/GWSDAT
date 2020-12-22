@@ -1181,11 +1181,22 @@ server <- function(input, output, session) {
     },
     
     content <- function(file) {
+      
       plume_stats <- checkPlumeStats()
       
-      tmp_out <- printPlumeStatsCSV(plume_stats)
+      plume_statskeep<<-plume_stats
       
-      write.csv(tmp_out, file) 
+      tmp_out <- printPlumeStatsCSV(plume_stats$plume_stats)
+      
+      if(!is.null(plume_stats$plume_statsreducedWellSet)){
+        tmp_out$DataSet="Full"
+        tmp_outreducedWellSet <- printPlumeStatsCSV(plume_stats$plume_statsreducedWellSet)
+        tmp_outreducedWellSet$DataSet<-"Well Reduced"
+        tmp_out<-rbind(tmp_out,tmp_outreducedWellSet)
+      }
+      
+      write.csv(tmp_out, file,row.names=FALSE)
+      
     }
   )
   

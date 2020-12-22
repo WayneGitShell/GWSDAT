@@ -68,7 +68,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                       ) }
                                     
                            ),
-                           tabPanel("Mass, Area & Concentration",
+                           tabPanel("Plume Mass, Area & Conc.",
                                     
                                     div(id = "plume_diagn_plot_div", withSpinner(plotOutput("plume_diagn_plot"))),
                                     shinyjs::hidden(div(id = "plume_diagn_msg_div", htmlOutput("plume_diagn_msg"))),

@@ -8,8 +8,7 @@
 #' @importFrom Kendall Kendall
 plotPlumeTimeSeries <- function(plume_stats) {
   
-  #plume_stats<<-plume_stats; print("jkkjskjsdksdj")
-  
+ 
   
   plume_statsreducedWellSet<-plume_stats$plume_statsreducedWellSet
   plume_stats<-plume_stats$plume_stats
@@ -92,7 +91,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
   if(!is.null(plume_statsreducedWellSet)){ 
   points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$mass,type="b",lty=1,pch = 19,cex = 1.5,col="green")
-    legend("bottomleft",c("Full Data Set","Reduced Data Set"),pch=19,lty=1,col=c("black","green"))
+    legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }
   
   
@@ -169,7 +168,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
   if(!is.null(plume_statsreducedWellSet)){ 
      points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$area,type="b",lty=1,pch = 19,cex = 1.5,col="green")
-     legend("bottomleft",c("Full Data Set","Reduced Data Set"),pch=19,lty=1,col=c("black","green"))
+     legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }    
   
   try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""), side = 3, line = -1.1, cex = 0.95))
@@ -240,7 +239,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
   if(!is.null(plume_statsreducedWellSet)){ 
     points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$avg_conc,type="b",lty=1,pch = 19,cex = 1.5,col="green")
-    legend("bottomleft",c("Full Data Set","Reduced Data Set"),pch=19,lty=1,col=c("black","green"))
+    legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }    
   
   
@@ -297,6 +296,7 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 5
 
 
 printPlumeStatsCSV <- function(plume_stats) {
+  
   
   # Copy, in case it is passed by reference.
   stats_tbl <- plume_stats
