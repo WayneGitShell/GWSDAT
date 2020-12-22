@@ -831,7 +831,7 @@ server <- function(input, output, session) {
     #start.time = Sys.time()
     plotSpatialImage(csite=csite, substance =input$solute_select_sp, 
                      timepoint=as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                     app_log=app_log,UseReducedWellSet=input$ImplementReducedWellSet)
+                     app_log=app_log,UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
                      
     #end.time <- Sys.time()
     

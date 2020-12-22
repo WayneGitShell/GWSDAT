@@ -1,7 +1,7 @@
 
 
 
-plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet) {
+plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet,sample_Omitted_Wells) {
   #print("* in plotSpatialImage()")
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
@@ -10,6 +10,7 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,
   start.time <- Sys.time()
   interp.pred <- interpConc(csite, substance, timepoint,UseReducedWellSet)
   
+  #temp.interp.pred<<-interpConc(csite, substance, timepoint,UseReducedWellSet,sample_Omitted_Wells)
   # Measure time to see if interpConc() should be moved elsewhere (background, startup)
   end.time <- Sys.time()
   time.passed <- (end.time - start.time) * 1000
@@ -30,12 +31,16 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,
                                 csite$ui_attr$ground_porosity)
   }
   
-  plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet)
+  plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet,sample_Omitted_Wells)
 }
 
 
+
+
+
+
 plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL, 
-                                  pred = NULL, plume_stats = NULL,UseReducedWellSet) { 
+                                  pred = NULL, plume_stats = NULL,UseReducedWellSet,sample_Omitted_Wells) { 
   
   interp.pred  <- pred$data
   Do.Image     <- pred$Do.Image
@@ -77,6 +82,8 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   if(UseReducedWellSet){
     model.tune <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]
     temp.Cont.Data <- csite$Reduced.Fitted.Data[[substance]]$Cont.Data
+    Reduced.Well.Coords<- Well.Coords[Well.Coords$WellName %in% sample_Omitted_Wells,]
+    
   }else{
     model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
     temp.Cont.Data <- csite$Fitted.Data[[substance]]$Cont.Data
@@ -274,10 +281,13 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
           points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)
         }
         points(Well.Coords$XCoord, Well.Coords$YCoord, pch = 19, cex = .7);
+        if (UseReducedWellSet & !is.null(sample_Omitted_Wells)) points(Reduced.Well.Coords$XCoord, Reduced.Well.Coords$YCoord, pch = 19, cex = .7,col="grey")
+        
         if (csite$ui_attr$contour_selected == "NAPL-Circles") {
             points(Well.Coords[as.character(Well.Coords$WellName) %in% attributes(NAPL.Thickness.Data)$NAPL.Wells,c("XCoord","YCoord")],col="red",pch=19,cex=0.7)
         }
         if (Show.Well.Labels) text(Well.Coords$XCoord, Well.Coords$YCoord, Well.Coords$WellName, cex = 0.75, pos = 1)
+        if (Show.Well.Labels & UseReducedWellSet & !is.null(sample_Omitted_Wells)) text(Reduced.Well.Coords$XCoord, Reduced.Well.Coords$YCoord, Reduced.Well.Coords$WellName, cex = 0.75, pos = 1,col="grey")
         if (Show.GW.Contour) {
             contour(GWSDAT.GW.Contour(temp.GW.Flows), add = T, labcex = .8)
         }
@@ -319,7 +329,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
                       plot.axes  = {axis(1); axis(2,las=3); axis(3, at = par("usr")[1] + temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName, cex = 0.75, pos = 1)
-                            
+                            if (Show.Well.Labels & UseReducedWellSet & !is.null(sample_Omitted_Wells)) text(Reduced.Well.Coords$XCoord, Reduced.Well.Coords$YCoord, Reduced.Well.Coords$WellName, cex = 0.75, pos = 1,col="grey")
                             if (Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8), silent = T)
                             if (Show.Values & length(as.character(temp.Cont.Data$Result)) > 0) try(text(temp.Cont.Data$XCoord,temp.Cont.Data$YCoord,as.character(temp.Cont.Data$Result),
                                                                                                     cex = 0.75, col = c("red","black")[as.numeric(temp.Cont.Data$ND)+1],pos=3),silent=T)
@@ -355,7 +365,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 }
 
 
-plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,width = 700, height = 500,UseReducedWellSet){
+plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,width = 700, height = 500,UseReducedWellSet,sample_Omitted_Wells){
  
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -366,7 +376,7 @@ plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,width = 700
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotSpatialImage(csite=csite, substance=substance, timepoint=timepoint,UseReducedWellSet=UseReducedWellSet)
+  plotSpatialImage(csite=csite, substance=substance, timepoint=timepoint,UseReducedWellSet=UseReducedWellSet,sample_Omitted_Wells)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
@@ -437,7 +447,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
     mytemp <- tempfile(fileext = ".png")
     
     png(mytemp, width = width, height = height)
-    plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet)
+    plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet,sample_Omitted_Wells)
     dev.off()
     
     ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
@@ -718,10 +728,11 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
 
 PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWellSet){
   
-  csite<<-csite
-  fileout<<-fileout
-  substance<<-substance
-  timepoint<<-timepoint
+  #csite<<-csite
+  #fileout<<-fileout
+  #substance<<-substance
+  #timepoint<<-timepoint
+  
   dat<-interpConc(csite,substance,timepoint,UseReducedWellSet)$data
   
   dat1<-expand.grid(x=dat$x,y=dat$y)

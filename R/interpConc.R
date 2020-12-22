@@ -4,8 +4,10 @@ interpConc <- function(csite, substance, timepoint,UseReducedWellSet) {
   
   if(UseReducedWellSet){
        model.tune     <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]
+       tmp_cont <- csite$Reduced.Fitted.Data[[substance]]$Cont.Data
     }else{
        model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
+       tmp_cont <- csite$Fitted.Data[[substance]]$Cont.Data
     }
   
   Well.Coords    <- csite$All.Data$sample_loc$data
@@ -14,7 +16,7 @@ interpConc <- function(csite, substance, timepoint,UseReducedWellSet) {
   #
   # Extract useable wells for given substance and timestep.
   #
-  tmp_cont <- csite$Fitted.Data[[substance]]$Cont.Data
+  
   
   tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= timepoint,]$WellName)
   tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= timepoint,]$WellName)
