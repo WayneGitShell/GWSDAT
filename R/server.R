@@ -831,7 +831,7 @@ server <- function(input, output, session) {
     #start.time = Sys.time()
     plotSpatialImage(csite=csite, substance =input$solute_select_sp, 
                      timepoint=as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                     app_log=app_log,UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
+                     app_log=app_log,UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=isolate(input$sample_Omitted_Wells))
                      
     #end.time <- Sys.time()
     
@@ -1046,12 +1046,13 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "pptx") {
         
+
         plotSpatialImagePPT(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                       width  = input$img_width_px, height = input$img_height_px,UseReducedWellSet=input$ImplementReducedWellSet)
+                       width  = input$img_width_px, height = input$img_height_px,UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
       
         } else if (input$export_format_sp == "tif"){
          
-          print("I am ere....")
+          
           PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
           
         }
@@ -1062,7 +1063,7 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
           
-          plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
+          plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
          
           dev.off()
       }
@@ -1285,7 +1286,7 @@ server <- function(input, output, session) {
       
       makeSpatialAnimation(csite, file, input$solute_select_sp,
                            input$img_width_px, input$img_height_px,
-                           input$img_width_px_wide, input$img_height_px_wide,input$ImplementReducedWellSet)
+                           input$img_width_px_wide, input$img_height_px_wide,input$ImplementReducedWellSet,input$sample_Omitted_Wells)
       
     }
   )

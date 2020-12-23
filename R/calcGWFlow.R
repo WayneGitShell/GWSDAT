@@ -54,7 +54,7 @@ calcGWFlow <- function(temp.GW) {
 }
 
 
-evalGWFlow <- function(Agg_GW_Data) {
+evalGWFlow <- function(Agg_GW_Data,showErrorMessage=TRUE) {
   
 
   #if (showProgress) {
@@ -68,7 +68,7 @@ evalGWFlow <- function(Agg_GW_Data) {
     tryCatch(
       GW.Flows <- do.call('rbind', by(Agg_GW_Data, Agg_GW_Data$AggDate, calcGWFlow)),
       error = function(e) {
-        showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)
+        if(showErrorMessage){showNotification(paste0("Failed to calculate groundwater flows: ", e$message), type = "error", duration = 10)}
       })
     
     if (!is.null(GW.Flows)) {    

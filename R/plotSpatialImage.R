@@ -141,7 +141,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     if(UseReducedWellSet & !is.null(temp.GW.Flows)){
       
       temp.GW.Flows<-temp.GW.Flows[!temp.GW.Flows$WellName %in% sample_Omitted_Wells,]
-      temp.GW.Flows<-evalGWFlow(temp.GW.Flows)
+      temp.GW.Flows<-evalGWFlow(temp.GW.Flows,showErrorMessage=FALSE)
     
       }
     
@@ -385,7 +385,7 @@ plotSpatialImagePPT <- function(csite, fileout, substance, timepoint,width = 700
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotSpatialImage(csite=csite, substance=substance, timepoint=timepoint,UseReducedWellSet=UseReducedWellSet,sample_Omitted_Wells)
+  plotSpatialImage(csite=csite, substance=substance, timepoint=timepoint,UseReducedWellSet=UseReducedWellSet,sample_Omitted_Wells=sample_Omitted_Wells)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
@@ -402,7 +402,8 @@ makeSpatialAnimation <- function(csite, fileout, substance,
                                  height = 600,
                                  width_plume = 1200, 
                                  height_plume = 600,
-                                 UseReducedWellSet) {
+                                 UseReducedWellSet,
+                                 sample_Omitted_Wells) {
   
   full_plume_stats <- NULL 
   
@@ -614,7 +615,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
                               xaxs = "i", yaxs = "i", las = 1, axes = TRUE, frame.plot = axes, 
                               shape_data = NULL, fixedConcScale = FALSE, PlumeDetails=NULL, ...) {
   
-    print('in plotFilledContour')
+    #print('in plotFilledContour')
     
     if (missing(z)) {
         if (!missing(x)) {
@@ -659,7 +660,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
     #mar[2] <- 0 
     
     par(mar = mar)
-    print(mar)  # 2.0 1.0 2.0 4.1 (bottom, left, top, right)
+    #print(mar)  # 2.0 1.0 2.0 4.1 (bottom, left, top, right)
     
     plot.new()
     plot.window(xlim = c(0, 1), ylim = range(levels), xaxs = "i", yaxs = "i")
