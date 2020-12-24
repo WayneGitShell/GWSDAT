@@ -1,7 +1,7 @@
 
 pasteAggLimit <- function(timep, aggr_by, fchrin = "%d-%m-%Y", fout = "%d-%b-%Y") {
   
-  
+ 
   aggr_by <- tolower(aggr_by)
   
   if (is.character(timep))

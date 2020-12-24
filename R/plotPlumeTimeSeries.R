@@ -6,11 +6,13 @@
 # 
 # @export
 #' @importFrom Kendall Kendall
-plotPlumeTimeSeries <- function(plume_stats) {
+plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
   
  
-  
-  plume_statsreducedWellSet<-plume_stats$plume_statsreducedWellSet
+  # if(ImplementReducedWellSet & is.null(plume_stats$plume_statsreducedWellSet)){
+  #   showNotification("No plume statistics detected for Reduced Well Data set. Try updating the model?")
+  #   }
+  if(ImplementReducedWellSet){plume_statsreducedWellSet<-plume_stats$plume_statsreducedWellSet}else{plume_statsreducedWellSet<-NULL}
   plume_stats<-plume_stats$plume_stats
   
   if (is.null(plume_stats))
@@ -59,7 +61,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
 
   
-  if(!is.null(plume_statsreducedWellSet)){ 
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
     
     reducedWellSettempUnitHandle <- PlumeUnitHandlingFunc(plume_statsreducedWellSet$coord_unit[1],
                                             plume_statsreducedWellSet$conc_unit[1],
@@ -89,7 +91,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
        yaxs="i",
        ylab = my.ylab)
   
-  if(!is.null(plume_statsreducedWellSet)){ 
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
   points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$mass,type="b",lty=1,pch = 19,cex = 1.5,col="green")
     legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }
@@ -125,7 +127,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
   
   
   
-  if(!is.null(plume_statsreducedWellSet)){ 
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
     my.ylim <- 1.2*range(plume_statsreducedWellSet$area,plume_stats$area,na.rm=T)
   }else{
     my.ylim <- 1.2*range(plume_stats$area,na.rm=T)
@@ -166,7 +168,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
        ylab = my.ylab
       )
   
-  if(!is.null(plume_statsreducedWellSet)){ 
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
      points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$area,type="b",lty=1,pch = 19,cex = 1.5,col="green")
      legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }    
@@ -268,7 +270,7 @@ plotPlumeTimeSeries <- function(plume_stats) {
 
 
 
-plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 500){
+plotPlumeTimeSeriesPPT <- function(plume_stats,ImplementReducedWellSet, fileout, width = 800, height = 500){
   
   
   # Initialize Powerpoint file.
@@ -281,7 +283,7 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 5
   
  
   png(mytemp, width = width, height = height) 
-  plotPlumeTimeSeries(plume_stats)
+  plotPlumeTimeSeries(plume_stats,ImplementReducedWellSet)
   dev.off()
  
   

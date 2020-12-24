@@ -277,7 +277,9 @@ server <- function(input, output, session) {
     
     # Detect when model fit changed.
     BP_modelfit_done()
-    
+    input$UpdateReducedWellFittedModel
+    input$aggregate_select_sp
+
     # Create a Progress object
     progress <- shiny::Progress$new()
     progress$set(message = "Calculating Plume", value = 0)
@@ -292,14 +294,14 @@ server <- function(input, output, session) {
                              UseReducedWellSet=FALSE
                              )
     
-    if(input$ImplementReducedWellSet){
+    if(isolate(input$ImplementReducedWellSet)){
       
       valreducedWellSet<-                getFullPlumeStats(csite, 
                                          substance = input$solute_select_sp, 
                                          plume_thresh = input$plume_thresh_pd,
                                          ground_porosity = (input$ground_porosity / 100),
                                          progressBar = progress,
-                                         UseReducedWellSet=input$ImplementReducedWellSet
+                                         UseReducedWellSet=isolate(input$ImplementReducedWellSet)
                             )
       
   }else{
@@ -347,9 +349,12 @@ server <- function(input, output, session) {
   
   output$plume_estimate_plot <- renderPlot({
     cat("plume_estimate_plot <- renderPlot()\n")
-    
+    cat("KJKJ\n")
     # Detect with model fit changed.
     BP_modelfit_done()
+    reaggregateData()
+    input$UpdateReducedWellFittedModel
+    
     
     plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd,input$ImplementReducedWellSet)
   })
@@ -364,9 +369,10 @@ server <- function(input, output, session) {
     # Re-evaluate plume statistics if any reactive expression changes. 
     # The return value is the full plume statistics (for all timesteps). 
     #isolate(plume_stats <- checkPlumeStats())
+    #input$UpdateReducedWellFittedModel
+    reaggregateData()
     plume_stats <- checkPlumeStats()
-    
-    plotPlumeTimeSeries(plume_stats)
+    plotPlumeTimeSeries(plume_stats,input$ImplementReducedWellSet)
     
     
   })
@@ -374,16 +380,17 @@ server <- function(input, output, session) {
   ########### Well Redundancy Analysis Section #######################
   observeEvent(input$UpdateReducedWellFittedModel,{
     csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
+    mycsite<<-csite
   })
   
   observeEvent(input$ImplementReducedWellSet,{
     
-    #If no wells selceted in the first instance copy over existing fitted model - save times. 
+    #If no wells selected in the first instance copy over existing fitted model - save times. 
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet & is.null(input$sample_Omitted_Wells)){
       csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
     }
     
-    # Refit the spline model to all solutes with selectd wells omitted. 
+    # Refit the spline model to all solutes with selected wells omitted. 
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
     }
@@ -653,7 +660,7 @@ server <- function(input, output, session) {
   
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- reactive({
-    # cat("* entering reaggregateData()\n")
+    cat("* entering reaggregateData()\n")
     
     # If 'input$aggregate_select_tt' is not put here, reaggregateData() will not
     # react for the trend table if: 
@@ -1154,10 +1161,13 @@ server <- function(input, output, session) {
 
       plume_stats <- checkPlumeStats()
       
+      print("here")
+      print(input$UseReducedWellSet)
+      print("here2")
       
       if (input$export_format_pd == "pptx") {
         
-        plotPlumeTimeSeriesPPT(plume_stats, file,
+        plotPlumeTimeSeriesPPT(plume_stats, input$ImplementReducedWellSet, file,
                                width = input$img_width_px_wide, height = input$img_height_px_wide)
         
       } else {
@@ -1168,7 +1178,7 @@ server <- function(input, output, session) {
         if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
         #if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
-        plotPlumeTimeSeries(plume_stats)
+        plotPlumeTimeSeries(plume_stats,input$ImplementReducedWellSet)
         dev.off()
       }
       

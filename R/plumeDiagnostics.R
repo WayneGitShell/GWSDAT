@@ -16,7 +16,7 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,pr
     interp.pred <- interpConc(csite, substance, datetmp,UseReducedWellSet)
     
     plume_stats <- getPlumeStats(csite, substance, datetmp, 
-                                 interp.pred$data, plume_thresh, ground_porosity)
+                                 interp.pred$data, plume_thresh, ground_porosity,UseReducedWellSet)
     
     # Add date. 
     plume_stats = cbind(plume_stats, "Agg.Date" = datetmp)
@@ -51,14 +51,14 @@ getPlumeStats <- function(csite,
                           timepoint, 
                           predicted_val, 
                           plume_thresh, 
-                          ground_porosity ) {
+                          ground_porosity,UseReducedWellSet) {
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") {plume_thresh <- plume_thresh/1000}
   if (csite$ui_attr$conc_unit_selected == "ng/l") {plume_thresh <- plume_thresh*1000}
   
   cL <- contourLines(predicted_val, levels = plume_thresh)
   
-  model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
+  model.tune <- if(UseReducedWellSet){csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]}else{csite$Fitted.Data[[substance]][["Model.tune"]]}
   
   PlumeDetails = list()
   

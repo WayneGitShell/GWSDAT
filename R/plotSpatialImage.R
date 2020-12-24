@@ -28,7 +28,7 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,
 
     plume_stats <- getPlumeStats(csite, substance, timepoint, interp.pred$data, 
                                 csite$ui_attr$plume_thresh[substance], 
-                                csite$ui_attr$ground_porosity)
+                                csite$ui_attr$ground_porosity,UseReducedWellSet)
   }
   
   plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats,UseReducedWellSet,sample_Omitted_Wells)
@@ -439,7 +439,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
       
       plume_stats <- getPlumeStats(csite, substance, timepoint, interp.pred$data, 
                                    csite$ui_attr$plume_thresh[substance], 
-                                   csite$ui_attr$ground_porosity)
+                                   csite$ui_attr$ground_porosity,UseReducedWellSet)
       
       # Add date. 
       plume_stats = cbind(plume_stats, "Agg.Date" = timepoint)
@@ -474,7 +474,7 @@ makeSpatialAnimation <- function(csite, fileout, substance,
     mytemp <- tempfile(fileext = ".png")
     
     png(mytemp, width = width_plume, height = height_plume)
-    plotPlumeTimeSeries(list(plume_stats=full_plume_stats))
+    plotPlumeTimeSeries(list(plume_stats=full_plume_stats),UseReducedWellSet)
     dev.off()
     
     try(ppt_pres <- addPlotPPT(mytemp, ppt_pres, width = width_plume, height = height_plume))
@@ -524,7 +524,7 @@ makeSpatialAnimation_RDCOMClient <- function(csite, substance,
       
       plume_stats <- getPlumeStats(csite, substance, timepoint, interp.pred$data, 
                                    csite$ui_attr$plume_thresh[substance], 
-                                   csite$ui_attr$ground_porosity)
+                                   csite$ui_attr$ground_porosity,UseReducedWellSet)
     
       # Add date. 
       plume_stats = cbind(plume_stats, "Agg.Date" = timepoint)
@@ -559,7 +559,7 @@ makeSpatialAnimation_RDCOMClient <- function(csite, substance,
     mytemp <- tempfile(fileext = ".png")
     
     png(mytemp, width = width_plume, height = height_plume)
-    plotPlumeTimeSeries(full_plume_stats)
+    plotPlumeTimeSeries(full_plume_stats,UseReducedWellSet)
     dev.off()
     
     addPlotPPT(mytemp, ppt_lst, width = width_plume, height = height_plume)
