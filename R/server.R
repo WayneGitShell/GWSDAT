@@ -352,11 +352,11 @@ server <- function(input, output, session) {
     cat("KJKJ\n")
     # Detect with model fit changed.
     BP_modelfit_done()
-    reaggregateData()
+    if (reaggregateData()) { return(NULL) }# Stops calling reaggregation twice...
     input$UpdateReducedWellFittedModel
     
-    
     plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd,input$ImplementReducedWellSet)
+    
   })
   
   
@@ -395,6 +395,28 @@ server <- function(input, output, session) {
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
     }
     
+  })
+  
+  
+  ## Update corresponding plume threshold values in UIOptions when updated in Spatial Plot. 
+  observeEvent(input$plume_thresh_pd, {
+    print("Updating Plume threshold")
+    print(paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)))
+    print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]])
+    print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]]<<-input$plume_thresh_pd)
+    #input$plume_thresh_pd
+    stop()
+    
+    updateNumericInput(session,paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)),value=input$plume_thresh_pd)
+    #input$save_analyse_options
+    
+  })
+  
+  observeEvent(input$solute_select_sp, {
+    updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
+    tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
+    updateNumericInput(session,"plume_thresh_pd",value=tr)
+    print(csite$ui_attr$plume_thresh)
   })
   
   ##observeEvent(input$sample_Omitted_Wells,{print("I should update the pllot now...")})
