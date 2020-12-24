@@ -1,6 +1,6 @@
 
 uiAnalyseOptions <- function(csite) {
-  
+ 
   fluidRow(
     tags$head(
       tags$style(HTML('#save_analyse_options{background-color: #6dc0ff;

@@ -349,7 +349,7 @@ server <- function(input, output, session) {
   
   output$plume_estimate_plot <- renderPlot({
     cat("plume_estimate_plot <- renderPlot()\n")
-    cat("KJKJ\n")
+    #cat("KJKJ\n")
     # Detect with model fit changed.
     BP_modelfit_done()
     if (reaggregateData()) { return(NULL) }# Stops calling reaggregation twice...
@@ -400,14 +400,16 @@ server <- function(input, output, session) {
   
   ## Update corresponding plume threshold values in UIOptions when updated in Spatial Plot. 
   observeEvent(input$plume_thresh_pd, {
-    print("Updating Plume threshold")
-    print(paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)))
-    print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]])
-    print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]]<<-input$plume_thresh_pd)
+    #print("Updating Plume threshold")
+    #print(paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)))
+    #print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]])
+    #print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]]<<-input$plume_thresh_pd)
     #input$plume_thresh_pd
-    stop()
+    #stop()
     
     updateNumericInput(session,paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)),value=input$plume_thresh_pd)
+    print("here about to save analyse options")
+    shinyjs::click("save_analyse_options")
     #input$save_analyse_options
     
   })
@@ -1183,9 +1185,6 @@ server <- function(input, output, session) {
 
       plume_stats <- checkPlumeStats()
       
-      print("here")
-      print(input$UseReducedWellSet)
-      print("here2")
       
       if (input$export_format_pd == "pptx") {
         
@@ -2534,7 +2533,7 @@ server <- function(input, output, session) {
   # These inputs will modify the plume threshold for each substance, 
   #  saved in csite$ui_attr$plume_thresh.
   output$thres_plume_select <- renderUI({
-   
+ 
     dataLoaded() # Need this to re-execute whenever new data is loaded.
     num_subst <- length(csite$ui_attr$plume_thresh)
     
@@ -2554,6 +2553,9 @@ server <- function(input, output, session) {
     })
   })
   
+  ##Force evaluation of ui plume thresholds so it can be updated without being activated. 
+  ## 
+  outputOptions(output, "thres_plume_select", suspendWhenHidden = FALSE)
   
   # These inputs will modify the concentration thresholds for each substance, 
   #  saved in csite$ui_attr$conc_thresh.
@@ -2579,7 +2581,7 @@ server <- function(input, output, session) {
     })
   })
   
-  
+  outputOptions(output, "thres_conc_select", suspendWhenHidden = FALSE)
   
   changeModelSettingorNotModal <- function() {
     modalDialog(
@@ -2680,8 +2682,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_analyse_options, {
    
+
     new_psplines_nseg <<- as.numeric(input$psplines_knots)
-    
+
     # Check if the value changed, if so, refit all data.
     if ( new_psplines_nseg != csite$GWSDAT_Options$PSplineVars$nseg) {
       
@@ -2699,7 +2702,6 @@ server <- function(input, output, session) {
       updateTextInput(session, "psplines_knots", value = csite$GWSDAT_Options$PSplineVars$nseg)
       
     }
-   
     
     # Retrieve the substance concentration thresholds
     num_subst <- length(csite$ui_attr$conc_thresh)
@@ -2709,7 +2711,6 @@ server <- function(input, output, session) {
       input_var <- paste("input$conc_thresh_", i, sep = "")
       csite$ui_attr$conc_thresh[i] <<- eval(parse(text = input_var))
     }
-    
     
     # Retrieve the plume concentration thresholds
     num_subst <- length(csite$ui_attr$plume_thresh)
