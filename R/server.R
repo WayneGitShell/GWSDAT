@@ -380,7 +380,6 @@ server <- function(input, output, session) {
   ########### Well Redundancy Analysis Section #######################
   observeEvent(input$UpdateReducedWellFittedModel,{
     csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
-    mycsite<<-csite
   })
   
   observeEvent(input$ImplementReducedWellSet,{
@@ -406,10 +405,17 @@ server <- function(input, output, session) {
     #print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]]<<-input$plume_thresh_pd)
     #input$plume_thresh_pd
     #stop()
-    
+    print("Iaak asnk an")
+    print(input$plume_thresh_pd)
+    print(input$plume_thresh_7)
     updateNumericInput(session,paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)),value=input$plume_thresh_pd)
-    print("here about to save analyse options")
-    shinyjs::click("save_analyse_options")
+    #print("here about to save analyse options")
+    #print(input$plume_thresh_1)
+    #shinyjs::click("save_analyse_options")
+    #print(input$plume_thresh_1)
+    #### Make sure plume_thresh UI attr is updated - bit ugly but immediate save doesnt work as numeric input not updated immediately 
+    csite$ui_attr$plume_thresh[input$solute_select_sp]<<-input$plume_thresh_pd
+    #mycsite<<-csite
     #input$save_analyse_options
     
   })
@@ -418,7 +424,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
-    print(csite$ui_attr$plume_thresh)
+    #print(sort(names(csite$ui_attr)))#plume_thresh)
   })
   
   ##observeEvent(input$sample_Omitted_Wells,{print("I should update the pllot now...")})
@@ -839,7 +845,8 @@ server <- function(input, output, session) {
   output$image_plot <- renderPlot({
     
     cat("* entering image_plot()\n")
-    
+    print(input$plume_thresh_1)
+    mycsite<<-csite
     # React to new fitted model.
     BP_modelfit_done()
 
@@ -2710,6 +2717,7 @@ server <- function(input, output, session) {
       # Create input variable name and evaluate the string as variable. 
       input_var <- paste("input$conc_thresh_", i, sep = "")
       csite$ui_attr$conc_thresh[i] <<- eval(parse(text = input_var))
+      
     }
     
     # Retrieve the plume concentration thresholds

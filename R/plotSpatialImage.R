@@ -2,7 +2,8 @@
 
 
 plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet,sample_Omitted_Wells) {
-  #print("* in plotSpatialImage()")
+  print("* in plotSpatialImage()")
+  #print(csite$ui_attr$plume_thresh)
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
   
@@ -486,89 +487,6 @@ makeSpatialAnimation <- function(csite, fileout, substance,
   
 }
 
-#
-# Delete ? Because RDCOMClient not used anymore for creating plots for PowerPoint.
-#
-makeSpatialAnimation_RDCOMClient <- function(csite, substance,
-                                 width = 800,
-                                 height = 600,
-                                 width_plume = 1200, 
-                                 height_plume = 600) {
-  
-  full_plume_stats <- NULL 
- 
-  # Init powerpoint.
-  if (is.null(ppt_lst <- initPPT())) {
-    # showNotification("Unable to initialize Powerpoint: package RDCOMClient might not be installed.", type = "error", duration = 10)
-    return(NULL)
-  }
-  
-  # Loop over each time step.. 
-  for (i in 1:length(csite$All.Data$All_Agg_Dates)) {
-    
-    timepoint <- csite$All.Data$All_Agg_Dates[i]
-    
-    # Do the interpolation.
-    interp.pred <- interpConc(csite, substance, timepoint)
-    
-    # Create plume statistics if needed.
-    #
-    # Note: This is a duplicate from function getFullPlumeStats(). It could be called 
-    #       separately and before plotSpatialImage_main(). However, both functions
-    #       depend on interpConc() and I don't like to call it twice.
-    #       Fixme: Call interpConc() separately, and pass results for each timepoint
-    #              to getPlumeStats() and plotSpatialImage_main().
-    #
-    plume_stats <- NULL
-    if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
-      
-      plume_stats <- getPlumeStats(csite, substance, timepoint, interp.pred$data, 
-                                   csite$ui_attr$plume_thresh[substance], 
-                                   csite$ui_attr$ground_porosity,UseReducedWellSet)
-    
-      # Add date. 
-      plume_stats = cbind(plume_stats, "Agg.Date" = timepoint)
-      
-      # Append to full plume stats table.
-      if (is.null(full_plume_stats))
-        full_plume_stats <- plume_stats
-      else
-        full_plume_stats <- rbind(full_plume_stats, plume_stats)
-      
-    }
-
-    # Make the plot and add to powerpoint.
-    mytemp <- tempfile(fileext = ".png")
-    
-    png(mytemp, width = width, height = height)
-    plotSpatialImage_main(csite, substance, timepoint, interp.pred, plume_stats)
-    dev.off()
-    
-    ppt_lst <- addPlotPPT(mytemp, ppt_lst, width, height) 
-    
-    try(file.remove(mytemp))
-    
-  } # end of for
-  
-  
-  
-  # Add slide with plume statistics on last page.
-  if (csite$ui_attr$spatial_options["Plume Diagnostics"]) {
-    
-    # Make the plot and add to powerpoint.
-    mytemp <- tempfile(fileext = ".png")
-    
-    png(mytemp, width = width_plume, height = height_plume)
-    plotPlumeTimeSeries(full_plume_stats,UseReducedWellSet)
-    dev.off()
-    
-    addPlotPPT(mytemp, ppt_lst, width = width_plume, height = height_plume)
-    
-    try(file.remove(mytemp))
-  }
-  
- 
-}
 
 
 #' @importFrom sp point.in.polygon
