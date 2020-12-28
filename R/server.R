@@ -294,7 +294,7 @@ server <- function(input, output, session) {
                              UseReducedWellSet=FALSE
                              )
     
-    if(isolate(input$ImplementReducedWellSet)){
+  if(isolate(input$ImplementReducedWellSet)){
       
       valreducedWellSet<-                getFullPlumeStats(csite, 
                                          substance = input$solute_select_sp, 
@@ -378,9 +378,12 @@ server <- function(input, output, session) {
   })
   
   ########### Well Redundancy Analysis Section #######################
+  
+  ### Refit the spline model to all solutes with selected wells omitted.
   observeEvent(input$UpdateReducedWellFittedModel,{
     csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
-  })
+  
+    })
   
   observeEvent(input$ImplementReducedWellSet,{
     
@@ -389,7 +392,7 @@ server <- function(input, output, session) {
       csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
     }
     
-    # Refit the spline model to all solutes with selected wells omitted. 
+    # Refit the spline model on initial selection of ReducedWellset implementation
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
     }
@@ -399,35 +402,20 @@ server <- function(input, output, session) {
   
   ## Update corresponding plume threshold values in UIOptions when updated in Spatial Plot. 
   observeEvent(input$plume_thresh_pd, {
-    #print("Updating Plume threshold")
-    #print(paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)))
-    #print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]])
-    #print(mycsite$ui_attr$plume_thresh[[which(input$solute_select_sp==csite$ui_attr$solute_names)]]<<-input$plume_thresh_pd)
-    #input$plume_thresh_pd
-    #stop()
-    print("Iaak asnk an")
-    print(input$plume_thresh_pd)
-    print(input$plume_thresh_7)
+
     updateNumericInput(session,paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)),value=input$plume_thresh_pd)
-    #print("here about to save analyse options")
-    #print(input$plume_thresh_1)
-    #shinyjs::click("save_analyse_options")
-    #print(input$plume_thresh_1)
     #### Make sure plume_thresh UI attr is updated - bit ugly but immediate save doesnt work as numeric input not updated immediately 
     csite$ui_attr$plume_thresh[input$solute_select_sp]<<-input$plume_thresh_pd
-    #mycsite<<-csite
-    #input$save_analyse_options
-    
+
   })
   
   observeEvent(input$solute_select_sp, {
     updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
-    #print(sort(names(csite$ui_attr)))#plume_thresh)
+    
   })
   
-  ##observeEvent(input$sample_Omitted_Wells,{print("I should update the pllot now...")})
   #------------------------------------------------------------------#
   
   
