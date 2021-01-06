@@ -279,7 +279,11 @@ server <- function(input, output, session) {
     BP_modelfit_done()
     input$UpdateReducedWellFittedModel
     input$aggregate_select_sp
-
+    
+    #input$solute_conc_contour
+    csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
+    print("react to change in units")
+    
     # Create a Progress object
     progress <- shiny::Progress$new()
     progress$set(message = "Calculating Plume", value = 0)
@@ -370,7 +374,10 @@ server <- function(input, output, session) {
     # The return value is the full plume statistics (for all timesteps). 
     #isolate(plume_stats <- checkPlumeStats())
     #input$UpdateReducedWellFittedModel
+    #input$solute_conc_contour  - replot when units are changed...
     reaggregateData()
+   
+    
     plume_stats <- checkPlumeStats()
     plotPlumeTimeSeries(plume_stats,input$ImplementReducedWellSet)
     
@@ -961,9 +968,9 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select_sp", selected = input$solute_select_ts ) 
   })
   
-  observeEvent(input$solute_select_sp, {
-    updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )  
-  })
+  #observeEvent(input$solute_select_sp, {
+  #  updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )  
+  #})
   
   
   #
