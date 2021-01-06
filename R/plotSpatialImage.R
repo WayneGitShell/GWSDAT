@@ -132,19 +132,25 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   
   n.col <- length(lev_cut) - 1 #should be n.col-1
   
-  if (is.null(csite$GW.Flows)) {
+  if (is.null(csite$GW.Flows) | (UseReducedWellSet & is.null(csite$Reduced.Fitted.Data.GW.Flows) )) {
     Show.GW.Contour <- FALSE
   } else {
   
-    temp.GW.Flows <- csite$GW.Flows[as.numeric(csite$GW.Flows$AggDate) == timepoint,]
-
+    if(UseReducedWellSet){
     
-    if(UseReducedWellSet & !is.null(temp.GW.Flows)){
-      
-      temp.GW.Flows<-temp.GW.Flows[!temp.GW.Flows$WellName %in% sample_Omitted_Wells,]
-      temp.GW.Flows<-evalGWFlow(temp.GW.Flows,showErrorMessage=FALSE)
+      temp.GW.Flows <- csite$Reduced.Fitted.Data.GW.Flows[as.numeric(csite$Reduced.Fitted.Data.GW.Flows$AggDate) == timepoint,]
     
-      }
+    }else{
+    
+      temp.GW.Flows <- csite$GW.Flows[as.numeric(csite$GW.Flows$AggDate) == timepoint,]
+    }
+    
+    # if(UseReducedWellSet & !is.null(temp.GW.Flows)){
+    #   
+    #   temp.GW.Flows<-temp.GW.Flows[!temp.GW.Flows$WellName %in% sample_Omitted_Wells,]
+    #   temp.GW.Flows<-evalGWFlow(temp.GW.Flows,showErrorMessage=FALSE)
+    # 
+    #   }
     
     
     if (!is.null(temp.GW.Flows) & !is.null(csite$ui_attr$gw_selected) && csite$ui_attr$gw_selected != "None") {

@@ -390,6 +390,7 @@ server <- function(input, output, session) {
     #If no wells selected in the first instance copy over existing fitted model - save times. 
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet & is.null(input$sample_Omitted_Wells)){
       csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
+      csite[["Reduced.Fitted.Data.GW.Flows"]]<<-csite[["GW.Flows"]]
     }
     
     # Refit the spline model on initial selection of ReducedWellset implementation
