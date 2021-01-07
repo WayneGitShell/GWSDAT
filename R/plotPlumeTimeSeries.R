@@ -262,6 +262,7 @@ printPlumeStatsCSV <- function(plume_stats) {
   names(stats_tbl)[names(stats_tbl) == "mass_centre_y"] <- "Centre of Mass (y)"
   names(stats_tbl)[names(stats_tbl) == "volume"] <- "Volume"
   names(stats_tbl)[names(stats_tbl) == "conc_thresh"] <- "Plume Threshold Conc (ug/l)"
+  stats_tbl$ground_porosity<-100*stats_tbl$ground_porosity
   names(stats_tbl)[names(stats_tbl) == "ground_porosity"] <- "Ground Porosity (%)"
   
   
