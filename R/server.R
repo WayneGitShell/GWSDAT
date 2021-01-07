@@ -274,7 +274,7 @@ server <- function(input, output, session) {
   
   checkPlumeStats <- reactive({
     cat("\n* checkPlumeStats()\n")
-    
+    cat("input$ground_porosity",input$ground_porosity)
     # Detect when model fit changed.
     BP_modelfit_done()
     input$UpdateReducedWellFittedModel
@@ -293,7 +293,7 @@ server <- function(input, output, session) {
     val <-                   getFullPlumeStats(csite, 
                              substance = input$solute_select_sp, 
                              plume_thresh = input$plume_thresh_pd,
-                             ground_porosity = (input$ground_porosity / 100),
+                             ground_porosity = (input$ground_porosity / 1),
                              progressBar = progress,
                              UseReducedWellSet=FALSE
                              )
@@ -303,7 +303,7 @@ server <- function(input, output, session) {
       valreducedWellSet<-                getFullPlumeStats(csite, 
                                          substance = input$solute_select_sp, 
                                          plume_thresh = input$plume_thresh_pd,
-                                         ground_porosity = (input$ground_porosity / 100),
+                                         ground_porosity = (input$ground_porosity / 1),
                                          progressBar = progress,
                                          UseReducedWellSet=isolate(input$ImplementReducedWellSet)
                             )

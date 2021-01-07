@@ -8,7 +8,8 @@
 #' @importFrom Kendall Kendall
 plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
   
- 
+  plume_stats<<-plume_stats
+  print("plume_stats<<-plume_stats")
   # if(ImplementReducedWellSet & is.null(plume_stats$plume_statsreducedWellSet)){
   #   showNotification("No plume statistics detected for Reduced Well Data set. Try updating the model?")
   #   }
@@ -97,8 +98,8 @@ plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
   }
   
   
-  mtext(paste("Plume Threshold = ", plume_thresh, "ug/l, Ground Porosity = ", (ground_porosity * 100), "%", sep = ""),
-            side = 3, line = -1.1, cex = 0.95)
+   mtext(paste("Plume Threshold = ", plume_thresh, plume_stats$conc_unit[1],", Ground Porosity = ", (ground_porosity * 100), "%", sep = ""),
+        side = 3, line = -1.1, cex = 0.95)
   
   
   #if (!inherits(lmmass,"try-error")) {
@@ -173,7 +174,7 @@ plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
      legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }    
   
-  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""), side = 3, line = -1.1, cex = 0.95))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, plume_stats$conc_unit[1], sep = ""), side = 3, line = -1.1, cex = 0.95))
   
   #if (!inherits(lmarea,"try-error")) {
     
@@ -245,7 +246,7 @@ plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
   }    
   
   
-  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""),side = 3, line = -1.1, cex = 0.95))
+  try(mtext(paste("Plume Threshold = ", plume_thresh, plume_stats$conc_unit[1], sep = ""),side = 3, line = -1.1, cex = 0.95))
   
   #if (!inherits(lmavg_conc,"try-error")) {
     
@@ -315,7 +316,8 @@ printPlumeStatsCSV <- function(plume_stats) {
   names(stats_tbl)[names(stats_tbl) == "mass_centre_x"] <- "Centre of Mass (x)"
   names(stats_tbl)[names(stats_tbl) == "mass_centre_y"] <- "Centre of Mass (y)"
   names(stats_tbl)[names(stats_tbl) == "volume"] <- "Volume"
-  names(stats_tbl)[names(stats_tbl) == "conc_thresh"] <- "Plume Threshold Conc (ug/l)"
+  names(stats_tbl)[names(stats_tbl) == "conc_thresh"] <- paste0("Plume Threshold Conc (",stats_tbl$conc_unit[1],")")
+  stats_tbl$ground_porosity<-100*stats_tbl$ground_porosity
   names(stats_tbl)[names(stats_tbl) == "ground_porosity"] <- "Ground Porosity (%)"
   
   
