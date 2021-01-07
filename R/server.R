@@ -2804,6 +2804,7 @@ server <- function(input, output, session) {
   #
   loadDataSet <- function() {
   
+    print("In load Data set")
     if (DEBUG_MODE) cat("* in loadDataSet()\n")
    
     # Load 'session_file' if specified in launchApp().
@@ -2824,6 +2825,7 @@ server <- function(input, output, session) {
       dataLoaded(LOAD_COMPLETE)
       return(TRUE)  
     }
+    
     
     # Create Options in case they don't exist.
     if (!exists("GWSDAT_Options", envir = .GlobalEnv)) 
@@ -2884,7 +2886,7 @@ server <- function(input, output, session) {
     
     # Create UI attributes.
     ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
-    
+
     # Build list with all data.
     csite <<- list(All.Data      = pr_dat,
                    GWSDAT_Options = GWSDAT_Options,

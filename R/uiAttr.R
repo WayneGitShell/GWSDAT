@@ -6,7 +6,6 @@ saveUIAttr <- function(csite, input) {
   csite$ui_attr$solute_select_ts  <- input$solute_select_ts
   csite$ui_attr$solute_select_sp  <- input$solute_select_sp
   csite$ui_attr$solute_select_stp <- input$solute_select_stp
-  #csite$ui_attr$solute_select_pd  <- input$solute_select_pd
   csite$ui_attr$solute_select_wr  <- input$solute_select_wr
 
   csite$ui_attr$sample_loc_select_ts  <- input$sample_loc_select_ts
@@ -26,6 +25,9 @@ saveUIAttr <- function(csite, input) {
   #csite$ui_attr$ground_porosity_pd <- input$ground_porosity_pd
   csite$ui_attr$solute_conc_stp <- input$solute_conc_stp
   
+  ##Well Redundancy
+  csite$ui_attr$ImplementReducedWellSet<-input$ImplementReducedWellSet
+  csite$ui_attr$sample_Omitted_Wells_selected<-input$sample_Omitted_Wells
   return(csite)
 }
 
@@ -124,6 +126,8 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$lev_cut <-  c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
   ui_attr$sd_lev_cut <- 100 * c(seq(0,3,by = 0.25),10000000)
   
-  
+  ##Well Redundancy
+  ui_attr$ImplementReducedWellSet<-FALSE
+  ui_attr$sample_Omitted_Wells_selected<-NULL
   return(ui_attr)  
 }
