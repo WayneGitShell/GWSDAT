@@ -155,8 +155,7 @@ CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
   
   cL.Tri.Points  <- data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(plume_thresh,length(cL$x)))
   Vol.Tri.Points <- unique(rbind(Plume.Tri.Points[,c("XCoord","YCoord","z")],cL.Tri.Points))
-  Vol.Tri.Points<<-Vol.Tri.Points
-  print("Vol.Tri.Points")
+
   mydeldir  <- deldir::deldir(x=Vol.Tri.Points$XCoord, y = Vol.Tri.Points$YCoord, z = Vol.Tri.Points$z)
   mytriangs <- deldir::triang.list(mydeldir)
   PlumeVol  <- sum(unlist(lapply(mytriangs, VolIndTri)))
