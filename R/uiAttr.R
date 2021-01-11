@@ -28,6 +28,8 @@ saveUIAttr <- function(csite, input) {
   ##Well Redundancy
   csite$ui_attr$ImplementReducedWellSet<-input$ImplementReducedWellSet
   csite$ui_attr$sample_Omitted_Wells_selected<-input$sample_Omitted_Wells
+  
+  
   return(csite)
 }
 

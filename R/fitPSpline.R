@@ -117,7 +117,7 @@ GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, pr
 }
 
 tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, 
-                         pord, bdeg, Trial.Lambda, verbose = interactive()) {
+                         pord, bdeg, Trial.Lambda, verbose = FALSE) {
 
 
   # Prepare Data  
