@@ -98,6 +98,10 @@ uiAnalyseOptions <- function(csite) {
                    checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
       )),
       
+      ##
+      #rHandsontableOutput("hot"),
+      ##
+      
       ## Image Quality #########################################################
       div(style = "margin-top:20px", 
           sliderInput("img_jpg_quality", "JPEG Quality (%)",

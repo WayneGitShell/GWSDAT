@@ -128,8 +128,24 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$lev_cut <-  c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
   ui_attr$sd_lev_cut <- 100 * c(seq(0,3,by = 0.25),10000000)
   
+  #ui_attr$lev_cut_by_solute<-as.data.frame(matrix(rep(ui_attr$lev_cut[-length(ui_attr$lev_cut)],length(ui_attr$solute_names)),ncol=length(ui_attr$solute_names)))
+  #names(ui_attr$lev_cut_by_solute)<-ui_attr$solute_names
+  #ui_attr$lev_cut_by_solute<-as.list(ui_attr$lev_cut_by_solute)
+  
+  ui_attr$lev_cut_by_solute<-create_lev_cut_by_solute(ui_attr$lev_cut,ui_attr$solute_names)
   ##Well Redundancy
   ui_attr$ImplementReducedWellSet<-FALSE
   ui_attr$sample_Omitted_Wells_selected<-NULL
   return(ui_attr)  
+}
+
+
+
+#### Function to create a solute by solute threshold concs. 
+create_lev_cut_by_solute<-function(lev_cut,solute_names){
+  
+  lev_cut_by_solute<-as.data.frame(matrix(rep(lev_cut[-length(lev_cut)],length(solute_names)),ncol=length(solute_names)))
+  names(lev_cut_by_solute)<-solute_names
+  return(as.list(lev_cut_by_solute))
+  
 }

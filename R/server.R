@@ -88,7 +88,8 @@ server <- function(input, output, session) {
   
   # Reactive element that will trigger inside an observer when Options are saved.
   optionsSaved <- reactive({ 
-    input$save_analyse_options 
+    input$save_analyse_options
+    input$save_Colour_Key
   })
   
   
@@ -2727,7 +2728,6 @@ server <- function(input, output, session) {
     csite$ui_attr$ground_porosity <<- input$ground_porosity
     
     shinyjs::show(id = "options_save_msg", anim = TRUE, animType = "fade")
-    
     shinyjs::delay(2000, shinyjs::hide(id = "options_save_msg", anim = TRUE, animType = "fade"))
     # Retrieve image settings .. 
     # I might only have to use this when saving a session. Right now the 
@@ -2739,7 +2739,37 @@ server <- function(input, output, session) {
   
   output$options_saved <- renderText({paste("Changes Saved") })
       
+  # output$ColourKeyRHandsontable <- renderRHandsontable({
+  #   #rhandsontable(data.frame(lev_cut=csite$ui_attr$lev_cut[-length(csite$ui_attr$lev_cut)]),rowHeaders = NULL,digits=0)
+  #   rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
+  # })
+  
+  output$ColourKeyRHandsontable <- renderRHandsontable({
     
+  if(is.null(csite$ui_attr$lev_cut_by_solute)){
+    
+    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names)),rowHeaders = NULL,digits=0)
+    
+  }else{
+    
+    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
+    
+  }
+  })
+  
+  output$options_saved_Colour_Key <- renderText({paste("Changes Saved") })
+  
+  observeEvent(input$save_Colour_Key, {
+    
+  shinyjs::show(id = "options_save_msg_Colour_Key", anim = TRUE, animType = "fade")
+  shinyjs::delay(2000, shinyjs::hide(id = "options_save_msg_Colour_Key", anim = TRUE, animType = "fade"))
+  
+  #csite$ui_attr$lev_cut<<-c(sort(hot_to_r(input$ColourKeyRHandsontable)$lev_cut),50000)
+  csite$ui_attr$lev_cut_by_solute<<-as.list(hot_to_r(input$ColourKeyRHandsontable))
+  
+  })
+  
+  
   shinyjs::onclick("GoToDataSelect", {
     shinyjs::hide("analyse_page")
     shinyjs::show("data_select_page")

@@ -29,6 +29,8 @@ uiAnalyse <- function(csite, img_frmt, APP_RUN_MODE) {
                   tabPanel("Spatiotemporal Predictions", fluid = TRUE, 
                            uiSTPredictions(csite, img_frmt) ),
                   "----",
+                  tabPanel("Customise Colour Key", fluid = TRUE,
+                           uiCustomColourKey(csite) ),
                   tabPanel("Save Session", fluid = TRUE,
                            uiSession() ),  
                   tabPanel("Options", fluid = TRUE,

@@ -3,7 +3,7 @@
 
 plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet,sample_Omitted_Wells) {
   print("* in plotSpatialImage()")
-  #print(csite$ui_attr$plume_thresh)
+  
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
   
@@ -121,7 +121,19 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
   Bad.Wells <- Well.Coords[Well.Coords$WellName %in% Bad.Wells,]
   if (nrow(Bad.Wells) > 0) {Bad.Wells$WellName <- paste("<",Bad.Wells$WellName,">",sep = "")}
  
-  lev_cut <- csite$ui_attr$lev_cut
+  
+  if(!is.null(csite$ui_attr$lev_cut_by_solute)){
+    
+    lev_cut<-csite$ui_attr$lev_cut_by_solute[[substance]]
+    lev_cut[lev_cut>10^6]<-10^6
+    lev_cut<-sort(unique(c(na.omit(lev_cut),10^6)))
+
+  }else{
+  
+    lev_cut <- csite$ui_attr$lev_cut
+  }
+  
+  
   if (csite$ui_attr$pred_interval == "% sd") {
     lev_cut <- csite$ui_attr$sd_lev_cut
   } else {
@@ -144,12 +156,6 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       temp.GW.Flows <- csite$GW.Flows[as.numeric(csite$GW.Flows$AggDate) == timepoint,]
     }
     
-    # if(UseReducedWellSet & !is.null(temp.GW.Flows)){
-    #   
-    #   temp.GW.Flows<-temp.GW.Flows[!temp.GW.Flows$WellName %in% sample_Omitted_Wells,]
-    #   temp.GW.Flows<-evalGWFlow(temp.GW.Flows,showErrorMessage=FALSE)
-    # 
-    #   }
     
     
     if (!is.null(temp.GW.Flows) & !is.null(csite$ui_attr$gw_selected) && csite$ui_attr$gw_selected != "None") {
