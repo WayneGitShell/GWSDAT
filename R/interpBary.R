@@ -44,8 +44,7 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     temppred<-predict(model,newdata=eval.df,se=type!="Predicted")
     eval.df$pred<-temppred$predicted
     eval.df$pred.sd<-temppred$predicted.sd
-    #eval.df<<-eval.df
-    #print("eval.df<<-eval.df")
+    
     if(type=="Lower 95% CI"){eval.df$pred<-eval.df$pred-1.96*eval.df$pred.sd}
     if(type=="Upper 95% CI"){eval.df$pred<-eval.df$pred+1.96*eval.df$pred.sd}
     if(type=="% sd")   {eval.df$pred<-100*(exp(eval.df$pred.sd)-1)}

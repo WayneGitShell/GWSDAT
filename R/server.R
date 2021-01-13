@@ -841,8 +841,7 @@ server <- function(input, output, session) {
   output$image_plot <- renderPlot({
     
     cat("* entering image_plot()\n")
-    print(input$plume_thresh_1)
-    mycsite<<-csite
+
     # React to new fitted model.
     BP_modelfit_done()
 

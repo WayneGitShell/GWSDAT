@@ -11,7 +11,6 @@ plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,
   start.time <- Sys.time()
   interp.pred <- interpConc(csite, substance, timepoint,UseReducedWellSet)
   
-  #temp.interp.pred<<-interpConc(csite, substance, timepoint,UseReducedWellSet,sample_Omitted_Wells)
   # Measure time to see if interpConc() should be moved elsewhere (background, startup)
   end.time <- Sys.time()
   time.passed <- (end.time - start.time) * 1000
@@ -270,6 +269,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
                     if (substance != " ") {":"} else {""},
                     date_to_print,
                     if (csite$Aquifer != "") {paste(": Aquifer-",csite$Aquifer, sep = "")} else {""}
+                    
               )
     
     plotFilledContour(interp.pred, asp = 1,
@@ -329,6 +329,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       mtext(tp,side = 1,adj = 0, line = 2,cex = 0.85)
       
     }
+    if(UseReducedWellSet){mtext("Note: Well Redundancy Activated.",side = 3,adj = 0,line = -1,font=2,col=4)}
     
     
   } else {
@@ -374,6 +375,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
       mtext(tp,side = 1,adj = 0,line = 2, cex = 0.85)
       
     }
+    if(UseReducedWellSet){mtext("Note: Well Redundancy Activated.",side = 3,adj = 0,line = -1,font=2,col=4)}
     
     
   }
@@ -661,10 +663,6 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
 
 PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWellSet){
   
-  #csite<<-csite
-  #fileout<<-fileout
-  #substance<<-substance
-  #timepoint<<-timepoint
   
   dat<-interpConc(csite,substance,timepoint,UseReducedWellSet)$data
   
