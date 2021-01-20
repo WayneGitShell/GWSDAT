@@ -2003,7 +2003,7 @@ server <- function(input, output, session) {
     import_tables$DF_conc <<- DF 
     
     # Switch to tabPanel with table
-    updateTabsetPanel(session, "tabbox_csv_import", selected = "Contaminant Data")
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Monitoring Data")
   })
   
   
@@ -2161,7 +2161,7 @@ server <- function(input, output, session) {
     # Disabled for now, because Shape Files are manually uploaded.
     # import_tables$shape_files <<- dtmp$shape_files
     # Switch to tabPanel with table
-    updateTabsetPanel(session, "tabbox_xls_import", selected = "Contaminant Data")
+    updateTabsetPanel(session, "tabbox_xls_import", selected = "Monitoring Data")
     
     return(TRUE)
   }

@@ -113,7 +113,7 @@ uiImportSessionData <- function(valid_data_name) {
     ),
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_sess")), 
+                           tabPanel("Monitoring Data", rhandsontable::rHandsontableOutput("tbl_conc_sess")), 
                            tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_sess"))
     )
   )
@@ -145,7 +145,7 @@ uiImportNewData <- function(valid_data_name) {
     ),
     
     shinydashboard::tabBox(title = "", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", shiny::tagList(
+                           tabPanel("Monitoring Data", shiny::tagList(
                              div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_nd", "Clear Table")),
                              div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_nd", "Add Row", icon = icon("plus") )),
                              rhandsontable::rHandsontableOutput("tbl_conc_nd"),
@@ -181,11 +181,11 @@ uiImportCSVData <- function(valid_data_name) {
                         
                         
                         h3("Import CSV Data"),
-                        "Select the contaminant data and well coordinate files in CSV format (see setting below).",
+                        "Select the monitoring data and well coordinate files in CSV format (see setting below).",
                         hr(),
                         
                         textInput("dname_csv", label = "Data Name", value = valid_data_name),
-                        fileInput('well_data_csv', 'Contaminant Data File',
+                        fileInput('well_data_csv', 'Monitoring Data File',
                                   accept = c('text/csv', 
                                              'text/comma-separated-values,text/plain', 
                                              '.csv')),
@@ -222,7 +222,7 @@ uiImportCSVData <- function(valid_data_name) {
     ), # end box
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_csv_import",
-                           tabPanel("Contaminant Data", 
+                           tabPanel("Monitoring Data", 
                                     rhandsontable::rHandsontableOutput("tbl_conc_csv")
                            ), 
                            tabPanel("Well Coordinates", 
@@ -267,7 +267,7 @@ uiImportExcelData <- function(csite_list) {
     ),
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_xls_import",
-                           tabPanel("Contaminant Data", {
+                           tabPanel("Monitoring Data", {
                              shiny::tagList(
                                HTML("<b>Note</b>: Only the first 1000 rows are displayed to speed up the table view given large data sets."),
                                rhandsontable::rHandsontableOutput("tbl_conc_xls")
@@ -313,7 +313,7 @@ uiEditData <- function(csite) {
     ),
     
     shinydashboard::tabBox(title = "", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", shiny::tagList(
+                           tabPanel("Monitoring Data", shiny::tagList(
                              #div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_ed", "Clear Table")),
                              div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_ed", "Add Row", icon = icon("plus") )),
                              rhandsontable::rHandsontableOutput("tbl_conc_ed"),
