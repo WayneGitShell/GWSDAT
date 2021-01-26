@@ -34,7 +34,7 @@ uiAnalyseOptions <- function(csite) {
       ## Plume Diagnostic ######################################################
       
       div(style = "margin-top:30px", 
-          h4("Plume Diagnostic")),
+          h4("Plume Diagnostic Settings")),
       p(style = "", paste("Specify plume threshold values in ug/l.", sep = "")),
       
       uiOutput("thres_plume_select"),
