@@ -6,7 +6,7 @@ uiCustomColourKey <- function(csite) {
     
     shinydashboard::box(width = 5, title = "Customise the Spatial Plot Colour Key", solidHeader = TRUE, status = "primary",
         
-      "Specify the solute concentration threshold values in ug/L",
+      "Specify the contouring intervals for each solute in ug/l.",
       
       #div(style = "margin-top:10px", "Customise the Spatial Plot Colour Key"),
       
