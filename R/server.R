@@ -458,7 +458,6 @@ server <- function(input, output, session) {
   # It checks if the BP produced its results into the file '  BP_modelfit_outfile'.
   #fitPSplineChecker <- reactive({
   observe({
-    
     if (BP_method != 'simple')
       return()
     

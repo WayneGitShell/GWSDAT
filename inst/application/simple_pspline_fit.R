@@ -20,7 +20,7 @@ if (length(vargs) == 4) {
   csite$GWSDAT_Options[['PSplineVars']][['nseg']] <- n_spline_segs
 
   # Do the fitting..  
-  fitdat <- fitData(csite$All.Data, csite$GWSDAT_Options, showProgress = FALSE)
+  fitdat <- GWSDAT:::fitData(csite$All.Data, csite$GWSDAT_Options, showProgress = FALSE)
 
   # Construct parameter set to be read by the server.
   params = list(PSplineVars = list(nseg = n_spline_segs))

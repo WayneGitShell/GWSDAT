@@ -33,7 +33,7 @@ if (length(vargs) == 3) {
   
   cat("job_id: ", job_id, ", refitting pslines with ", params$PSplineVars$nseg, " segments.\n")
   
-  fitdat <- fitData(csite$All.Data, params, showProgress = FALSE)
+  fitdat <- GWSDAT:::fitData(csite$All.Data, params, showProgress = FALSE)
 
   # Pass the used parameters back, so they can update the data set parameters 
   # as soon as the modifications take effect.
