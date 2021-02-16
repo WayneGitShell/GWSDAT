@@ -19,6 +19,10 @@ server <- function(input, output, session) {
   if (!exists("APP_RUN_MODE", envir = .GlobalEnv)) 
     APP_RUN_MODE <- "MultiData"
   
+  # Moved into server from ui due to modal conflicts
+  if (exists("APP_CUSTOM_COMPONENT", envir = .GlobalEnv)) 
+    shiny::showModal(APP_CUSTOM_COMPONENT())
+  
   # This is set inside launchApp()
   if (!exists("APP_LOGIN_MODE", envir = .GlobalEnv)) 
     APP_LOGIN_MODE <- FALSE
