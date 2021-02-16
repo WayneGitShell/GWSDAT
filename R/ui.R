@@ -38,8 +38,6 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
   shinydashboard::dashboardBody(
     shinyjs::useShinyjs(), 
     createLogoCSS(),
-    if (exists("APP_CUSTOM_COMPONENT", envir = .GlobalEnv)) 
-        APP_CUSTOM_COMPONENT(),
     
     # Not using includeScript because it wraps <script> tags
     # around which doesn't work with the GA js directives.
