@@ -659,6 +659,12 @@ server <- function(input, output, session) {
           if (evalJobPspline(job$outputfile, job$data_id)) {
             showNotification(paste0("P-Splines: Fit completed successfully for job ID ", job$job_id, "."), type = "message", duration = 10)
             BP_modelfit_done(BP_modelfit_done() + 1) # Notify observers that fitting took place.  
+            
+            if(isolate(input$ImplementReducedWellSet)){
+            updateCheckboxInput(session,"ImplementReducedWellSet",value=FALSE)
+            showNotification("Model resolution has been updated. Reselect Well Redundancy Analysis checkbox to update reduced well model.", type = "message", duration = 10)
+            }
+            
           }
           
         } else {
