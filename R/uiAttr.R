@@ -100,8 +100,8 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$logscale_stp    <- "Yes"
   
   # Define image save options.
-  ui_attr$img_width_px       <- 800 
-  ui_attr$img_height_px      <- 600  
+  ui_attr$img_width_px       <- 900 
+  ui_attr$img_height_px      <- 500  
   ui_attr$img_width_px_wide  <- 1100
   ui_attr$img_height_px_wide <- 500  
   ui_attr$img_jpg_quality    <- 90

@@ -62,9 +62,9 @@ uiAnalyseOptions <- function(csite) {
       ),
       
       # Disabled because it does not work, yet.
-      shinyjs::disabled(div(style = "display: inline-block;", 
-          checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
-      )),
+      # shinyjs::disabled(div(style = "display: inline-block;", 
+      #     checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
+      # )),
       
       
       ## Wide Image Resolution Settings ########################################
@@ -94,9 +94,10 @@ uiAnalyseOptions <- function(csite) {
       #),
       
       # Disabled because it does not work, yet.
-      shinyjs::disabled(div(style = "display: inline-block;", 
-                   checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
-      )),
+      # shinyjs::disabled(div(style = "display: inline-block;", 
+      #              checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
+      # )),
+      # 
       
       ##
       #rHandsontableOutput("hot"),
