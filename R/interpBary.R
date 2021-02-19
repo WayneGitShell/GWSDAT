@@ -70,8 +70,19 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
     
     if (!inherits(dn, "try-error")) {
-      tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
-                     predred.df[,"YCoord"], method = "orig",bary = T) 
+      
+       
+      ### Backwards compatibility for function tsearch in package geometry. 
+      if(utils::packageVersion("geometry")>'0.3.6'){
+        
+        tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
+                       predred.df[,"YCoord"], method = "orig",bary = T) 
+      }else{
+        
+        tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
+                       predred.df[,"YCoord"],bary = T) 
+      }
+      
       active <- dn[tri$idx,] 
       
       
