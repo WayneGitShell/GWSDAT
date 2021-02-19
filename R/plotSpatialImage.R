@@ -489,7 +489,14 @@ makeSpatialAnimation <- function(csite, fileout, substance,
     mytemp <- tempfile(fileext = ".png")
     
     png(mytemp, width = width_plume, height = height_plume)
-    plotPlumeTimeSeries(list(plume_stats=full_plume_stats),UseReducedWellSet)
+    if(UseReducedWellSet){
+      plotPlumeTimeSeries(list(plume_stats=full_plume_stats,plume_statsreducedWellSet=full_plume_stats),UseReducedWellSet)
+    }else{
+      plotPlumeTimeSeries(list(plume_stats=full_plume_stats),UseReducedWellSet)
+    }
+    
+    
+    
     dev.off()
     
     try(ppt_pres <- addPlotPPT(mytemp, ppt_pres, width = width_plume, height = height_plume))
