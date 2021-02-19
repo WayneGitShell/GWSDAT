@@ -712,11 +712,11 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
 
 PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint){
   
-  csite<<-csite
-  fileout<<-fileout
-  substance<<-substance
-  timepoint<<-timepoint
-  print("here")
+  # csite<<-csite
+  # fileout<<-fileout
+  # substance<<-substance
+  # timepoint<<-timepoint
+  # print("here")
   dat<-interpConc(csite,substance,timepoint)$data
   
   dat1<-expand.grid(x=dat$x,y=dat$y)
