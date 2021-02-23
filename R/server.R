@@ -927,7 +927,9 @@ server <- function(input, output, session) {
     # Detect changes in Traffic.Lights (depends on model fit). 
     BP_modelfit_done()
     
-    plotWellReport(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale)
+    input$update_wellreport_plot
+    
+    plotWellReport(csite, isolate(input$solute_select_wr), isolate(input$sample_loc_select_wr), use_log_scale)
     
   })
   
@@ -941,7 +943,8 @@ server <- function(input, output, session) {
     # Detect changes in model fit.
     BP_modelfit_done()
     
-    plotSTPredictions(csite, input$solute_select_stp, input$sample_loc_select_stp, use_log_scale, input$solute_conc_stp)
+    input$update_stpredictions_plot
+    plotSTPredictions(csite, input$solute_select_stp, isolate(input$sample_loc_select_stp), use_log_scale, input$solute_conc_stp)
     
   })
   
