@@ -3050,7 +3050,7 @@ server <- function(input, output, session) {
             
             csite_list[[j]]$Fitted.Data    <<- fitdat$Fitted.Data
             csite_list[[j]]$Traffic.Lights <<- fitdat$Traffic.Lights
-            csite_list[[j]]$GW.Flows       <<- fitdat$GW.Flows
+            csite_list[[j]]$GW.Flows       <<- evalGWFlow(csite_list[[j]]$All.Data$Agg_GW_Data)
           }
 
           # Make selected data set active and remember index (to save back 
