@@ -2773,7 +2773,10 @@ server <- function(input, output, session) {
   output$options_saved_Colour_Key <- renderText({paste("Changes Saved") })
   
   observeEvent(input$save_Colour_Key, {
-    
+  
+  ## Turn off Scale colours to data in Spatial plot to honour newly defined colour key.
+  updateCheckboxGroupInput(session, "imageplot_options",selected=setdiff(input$imageplot_options,"Scale colours to Data"))
+                             
   shinyjs::show(id = "options_save_msg_Colour_Key", anim = TRUE, animType = "fade")
   shinyjs::delay(2000, shinyjs::hide(id = "options_save_msg_Colour_Key", anim = TRUE, animType = "fade"))
   
