@@ -1344,7 +1344,7 @@ server <- function(input, output, session) {
   
   
   # Can I move parts (or all) of this function into importTables?
-  importData <- function(dname, dsource = "") {
+  importData <- function(dname, dsource = "",subst_napl_vals=NULL) {
     
     ptm <- proc.time()
     
@@ -1406,7 +1406,9 @@ server <- function(input, output, session) {
     # Create a unique data set 'csite' for each Aquifer.
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
       
-      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel)
+      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel,subst_napl_vals)
+      if (class(pr_dat) == "dialogBox")
+        return(pr_dat)
       
       if (is.null(pr_dat)) next
       
@@ -2064,7 +2066,39 @@ server <- function(input, output, session) {
     shinyjs::hide("removeshp_csv")  
   })
   
-  observeEvent(input$import_button_csv, importData(input$dname_csv))
+  
+  observeEvent(input$import_button_csv, {
+    
+    
+    ret<-importData(input$dname_csv)
+    
+    if(class(ret)=="dialogBox"){
+      
+      showModal(modalDialog(
+        span(ret$msg),    
+        footer = tagList(
+          actionButton("CsvImportNAPLSubsNo", "No"),
+          actionButton("CsvImportNAPLSubsYes", "Yes")
+        )
+      ))
+      
+    }
+    
+    
+    })
+  
+  observeEvent(input$CsvImportNAPLSubsNo, { 
+    removeModal()
+    importData(input$dname_csv, "",subst_napl_vals="no")
+  })
+  
+  observeEvent(input$CsvImportNAPLSubsYes, { 
+    removeModal()
+    importData(input$dname_csv, "",subst_napl_vals="yes")
+  })
+  
+  
+  
   
   
   ## Import Excel data #########################################################
@@ -2242,7 +2276,33 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$import_button_xls, importData(input$dname_xls, "excel"))
+  observeEvent(input$import_button_xls, {
+    
+    ret<-importData(input$dname_xls, "excel")
+    
+    if(class(ret)=="dialogBox"){
+      
+      showModal(modalDialog(
+        span(ret$msg),    
+          footer = tagList(
+          actionButton("ExcelImportNAPLSubsNo", "No"),
+          actionButton("ExcelImportNAPLSubsYes", "Yes")
+           )
+      ))
+      
+    }
+    
+  })
+  
+  observeEvent(input$ExcelImportNAPLSubsNo, { 
+    removeModal()
+    importData(input$dname_xls, "excel",subst_napl_vals="no")
+  })
+  
+  observeEvent(input$ExcelImportNAPLSubsYes, { 
+    removeModal()
+    importData(input$dname_xls, "excel",subst_napl_vals="yes")
+  })
   
   
   ## Edit Data #################################################################
