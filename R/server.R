@@ -2075,7 +2075,8 @@ server <- function(input, output, session) {
     if(class(ret)=="dialogBox"){
       
       showModal(modalDialog(
-        span(ret$msg),    
+        title="NAPL Value Substitution",
+        HTML(ret$msg),
         footer = tagList(
           actionButton("CsvImportNAPLSubsNo", "No"),
           actionButton("CsvImportNAPLSubsYes", "Yes")
@@ -2283,7 +2284,8 @@ server <- function(input, output, session) {
     if(class(ret)=="dialogBox"){
       
       showModal(modalDialog(
-        span(ret$msg),    
+        title="NAPL Value Substitution",
+        HTML(ret$msg),
           footer = tagList(
           actionButton("ExcelImportNAPLSubsNo", "No"),
           actionButton("ExcelImportNAPLSubsYes", "Yes")
@@ -3425,7 +3427,7 @@ server <- function(input, output, session) {
       return(div(style = "width: 80%; margin: 0 auto",
                       shinydashboard::box(
                         div(style = "margin-top: 10px; margin-bottom: 25px",
-                          paste0(ret$msg)),
+                          HTML(paste0(ret$msg))),
                         div(style = "float: right", 
                             actionButton("diag_no" , "No"),
                             actionButton("diag_yes", "Yes")),

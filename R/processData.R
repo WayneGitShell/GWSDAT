@@ -294,7 +294,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
     
     
     if (is.null(subst_napl_vals)) {
-      msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations? \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
+      msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations?<br>Note: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
       ask_user <- list(msg = msg, title = "NAPL Value Substitution")
 
       class(ask_user) <- "dialogBox"
