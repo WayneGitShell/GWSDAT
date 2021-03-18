@@ -104,7 +104,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   
   
   if (any(table(well_tmp_data$WellName) > 1)) {
-    msg = "Found non-unique well names in well coordinate table."
+    msg = "Found non-unique well names in well coordinate table. Please correct and re-run GWSDAT analysis."
     showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
     Sys.sleep(5)
     return(NULL)
@@ -274,6 +274,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
       
       msg = "Multiple units detected for NAPL thickness in input dataset. Please ensure same thickness units are used throughout."
       showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+      Sys.sleep(5)
       return(NULL)
     }
     
@@ -408,6 +409,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
     # "Units Error"
     msg <- "Multiple units detected for GroundWater elevation in input dataset. \nPlease ensure same elevation units are used throughout."
     showModal(modalDialog(title = "Units Error", msg))
+    Sys.sleep(5)
     return(NULL)
   }
   
