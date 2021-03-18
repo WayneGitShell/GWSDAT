@@ -106,6 +106,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   if (any(table(well_tmp_data$WellName) > 1)) {
     msg = "Found non-unique well names in well coordinate table."
     showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    Sys.sleep(5)
     return(NULL)
   }
   
@@ -168,8 +169,9 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   ########################## Units Checking ####################################
   if (any(!tolower(as.character(Cont.Data$Units[tolower(as.character(Cont.Data$Constituent)) != "napl"])) %in% c("ug/l","mg/l","ng/l"))) {
 
-    msg = "Solute data must be one of 'ng/l', 'ug/l' or 'mg/l'. Please correct and re-run GWSDAT analysis."
+    msg = "Solute data units must be one of 'ng/l', 'ug/l' or 'mg/l'. Please correct and re-run GWSDAT analysis."
     showModal(modalDialog(title = "Units Error", msg, easyClose = FALSE))
+    Sys.sleep(5)
     return(NULL)
   }
   
@@ -281,6 +283,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
         
         msg = "NAPL thickness units must be one of 'level', 'mm', 'cm', 'metres', 'inches' or 'feet'.\n\nPlease correct and re-run GWSDAT analysis."
         showModal(modalDialog(title = "Error", msg))
+        Sys.sleep(5)
         return(NULL)
       }
     }
@@ -414,6 +417,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
       
       msg <- "GroundWater elevation units must be one of 'level', 'mm', 'cm', 'metres', 'inches' or 'feet'.\n\nPlease correct and re-run GWSDAT analysis."
       showModal(modalDialog(title = "Units Error", msg))
+      Sys.sleep(5)
       return(NULL)
     }
   }
