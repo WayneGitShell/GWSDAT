@@ -2948,8 +2948,8 @@ server <- function(input, output, session) {
     tryCatch({
       solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
       well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
-    }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
-    
+    #}, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
+    }, error = function(w){showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)); Sys.sleep(5)})
     
     # Check if reading the data failed. 
     if (is.null(solute_data) || is.null(well_data))

@@ -220,15 +220,23 @@ readConcData <- function(input_file, valid_header, ...) {
     return(NULL)
   }
    
+  # Transform the 'SampleDate' column into 'Date' class.  
+  if (class(DF$SampleDate) == "numeric" | class(DF$SampleDate) == "integer")
+    # An integer value indicates Excel time. This is _not_ Unix time!
+    DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
+  else
+    # Expects string input with format "yyyy-mm-dd" or "yyyy/mm/dd".
+    #  Uses 'lubridate' 
+    DF$SampleDate <- as.Date(parse_date_time(as.character(DF$SampleDate),orders=c("dmy", "mdy", "ymd")))  
+  
   
   # Check the dates
   if (any(is.na(DF$SampleDate))) {
     
-    DF <- DF[!is.na(DF$SampleDate),]
-    
-    msg <- "Warning: Incorrect input date value(s) detected. Ommitting these values."
-    showNotification(msg, type = "warning", duration = 10)
+    msg <- paste("Warning: Incorrect input date value(s) detected. Ommitting ",sum(is.na(DF$SampleDate)),"row(s) of data.")
+    showNotification(msg, type = "error", duration = 10)
 
+    DF <- DF[!is.na(DF$SampleDate),]
     
     if (nrow(DF) == 0) {
       
@@ -249,16 +257,7 @@ readConcData <- function(input_file, valid_header, ...) {
   DF$Result <- as.character(DF$Result) 
   DF$Result[is.na(DF$Result)] <- "0"
     
-  # Transform the 'SampleDate' column into 'Date' class.  
-  if (class(DF$SampleDate) == "numeric" | class(DF$SampleDate) == "integer")
-      # An integer value indicates Excel time. This is _not_ Unix time!
-      DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
-  else
-      # Expects string input with format "yyyy-mm-dd" or "yyyy/mm/dd".
-      #   Possibly extend to "dd-mm-yyyy" or "mm-dd-yyyy" since they are more common.
-      #   But this requires an additional package such as 'lubridate' or 'anytime'.
-      #DF$SampleDate <- as.Date(DF$SampleDate)
-      DF$SampleDate <- as.Date(parse_date_time(as.character(DF$SampleDate),orders=c("dmy", "mdy", "ymd")))    
+
   return(DF)
   
 }

@@ -42,6 +42,7 @@ formatData <- function(solute_data, sample_loc) {
   #   return(NULL)
   # }
   
+
   solute_data$WellName <- factor(rm_spaces(as.character(solute_data$WellName)))
   solute_data$Units <- factor(rm_spaces(as.character(solute_data$Units)))
   solute_data$Constituent <- factor(rm_spaces(as.character(solute_data$Constituent)))
@@ -88,8 +89,16 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
                         subst_napl_vals = "yes",
                         verbose = TRUE) {
 
-    cat("* processData()")
+  cat("* processData()")
   #Pick up Electron Acceptors before deleting non-aquifer wells. 
+  
+  if (any(is.na(solute_data$SampleDate))) {
+    msg = "Incorrectly formatted date(s) detected. Please correct and re-run GWSDAT analysis."
+    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    Sys.sleep(5)
+    return(NULL)
+  }
+  
   ElecAccepts <- unique(as.character(solute_data[ tolower(as.character(solute_data$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
  
   well_tmp_data <- sample_loc$data[sample_loc$data$Aquifer == Aq_sel,]
