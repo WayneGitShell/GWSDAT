@@ -200,15 +200,14 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   
   if (length(zero_conc) > 0) {
     Cont.Data <- Cont.Data[-zero_conc,] 
-    if (verbose) showNotification(paste0("Ignoring ", length(zero_conc), "/", length(non_zero), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),
-                     duration = 10)
+    if (verbose) showNotification(paste0("Ignoring ", length(zero_conc), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),duration = 10) #"/", length(non_zero), 
   }
   
   bad_conc <-   which( is.na(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"  & !Cont.Data$ND]))
   
   if (length(bad_conc) > 0) {
     Cont.Data <- Cont.Data[-bad_conc,] 
-    if (verbose) showNotification(paste0("Ignoring ", length(bad_conc), "/", length(non_zero), " erroneous concentration entries for Aquifer \'", Aq_sel, "\'."),duration = 10)
+    if (verbose) showNotification(paste0("Ignoring ", length(bad_conc),  " erroneous concentration entries for Aquifer \'", Aq_sel, "\'."),duration = 15) #"/", length(non_zero),
   }
   
   if (nrow(Cont.Data) == 0)  {

@@ -88,7 +88,8 @@ readExcel <- function(filein, sheet = NULL) {
    
     conc_data <- NULL
     well_data <- NULL
-    coord_unit <- "metres"
+    #coord_unit <- "metres"
+    coord_unit <- ""
     
     # If no sheet was specified, extract them and try to find tables.
     if (is.null(sheet)) 
@@ -126,7 +127,7 @@ readExcel <- function(filein, sheet = NULL) {
         # Modify some columns in order to make it display nicely in the table view.
         if (!"flags" %in% tolower(names(ret))) { ret$Flags <- rep("",nrow(ret))}
         ret$Flags[is.na(ret$Flags)] <- ""
-        ret$Result[is.na(ret$Result)] <- 0
+        #ret$Result[is.na(ret$Result)] <- 0
         ret$SampleDate <- excelDate2Date(floor(as.numeric(as.character(ret$SampleDate)))) 
         
         conc_data <- ret
@@ -146,7 +147,9 @@ readExcel <- function(filein, sheet = NULL) {
         
         # Extract the coordinate unit (default: metres).
         coord_unit <- as.character(ret$CoordUnits[1])
-        if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- "metres"
+        #if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- "metres"
+        if (length(coord_unit) == 0 || is.na(coord_unit)) coord_unit <- ""
+        if(!coord_unit %in% c("","feet","metres")){coord_unit <- ""} #default to no units if erroneous unit entered.
         
         # Replace <NA> Aquifer with emptry string
         well_data$Aquifer[is.na(well_data$Aquifer)] <- ""
@@ -234,7 +237,7 @@ readConcData <- function(input_file, valid_header, ...) {
   if (any(is.na(DF$SampleDate))) {
     
     msg <- paste("Warning: Incorrect input date value(s) detected. Ommitting ",sum(is.na(DF$SampleDate)),"row(s) of data.")
-    showNotification(msg, type = "error", duration = 10)
+    showNotification(msg, type = "warning", duration = 15)
 
     DF <- DF[!is.na(DF$SampleDate),]
     
@@ -255,7 +258,7 @@ readConcData <- function(input_file, valid_header, ...) {
   # Converting it to character (from numeric or factor) makes it possible to replace
   # NA values (if factor). formatData() will later convert it to numeric values.
   DF$Result <- as.character(DF$Result) 
-  DF$Result[is.na(DF$Result)] <- "0"
+  #DF$Result[is.na(DF$Result)] <- "0"
     
 
   return(DF)
@@ -277,8 +280,11 @@ readWellCoords <- function(input_file, valid_header, ...) {
   coord_unit <- as.character(DF$CoordUnits[1])
   
   if (length(coord_unit) == 0 || is.na(coord_unit)) {
-    coord_unit <- "metres"
+    #coord_unit <- "metres"
+    coord_unit <- ""
+    
   }
+  if(!coord_unit %in% c("","feet","metres")){coord_unit <- ""} #default to no units if erroneous unit entered.
   
   # If no Aquifer field was found, add one with blank strings.
   if (!"aquifer" %in% tolower(names(DF))) {

@@ -171,7 +171,8 @@ CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
 
 PlumeUnitHandlingFunc <- function(LengthUnit, rgUnits, PlumeMass, PlumeArea){
   
-  if (is.null(LengthUnit)) {
+  
+  if (is.null(LengthUnit) || LengthUnit=="" ) {
     
     PlumeMass <- 1000*PlumeMass
     
