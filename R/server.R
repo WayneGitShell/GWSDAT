@@ -2395,7 +2395,7 @@ server <- function(input, output, session) {
     import_tables$Coord_unit <- input$coord_unit_ed
 
      if (!input$coord_unit_ed %in% coord_units) {
-      showNotification("Coordinate unit is not valid. Use \'metres\' or \'feet\'.", type = "error", duration = 10)
+      showNotification("Coordinate unit is not valid. Leave blank or use \'metres\' or \'feet\'.", type = "error", duration = 10)
       return(NULL)
     }
     
@@ -2491,7 +2491,8 @@ server <- function(input, output, session) {
                      ui_attr        = ui_attr,
                      Aquifer        = Aq_sel,
                      raw_contaminant_tbl = import_tables$DF_conc,
-                     raw_well_tbl = import_tables$DF_well
+                     raw_well_tbl = import_tables$DF_well,
+                     data_id = createDataID(csite_list)
         )
         
         csite_list[[length(csite_list) + 1]] <- ctmp 

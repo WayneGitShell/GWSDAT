@@ -8,7 +8,7 @@
 # the functions that needs it.
 #
 
-coord_units <- c("metres", "feet")
+coord_units <- c("","metres", "feet")
 conc_units  <- c("ng/l", "ug/l", "mg/l", "Level", 
                  "metres",  # for GW (groundwater depth)
                  "mm",      # for NAPL thickness
