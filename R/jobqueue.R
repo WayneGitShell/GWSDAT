@@ -54,12 +54,14 @@ evalQueue <- function(jq_db, max_workers = 2, max_done_jobs = 1e10) {
     
       # Note: File newjob$inputfile should contain all necessary information to 
       # identify the job and the data. 
-      scriptPath <- system.file("application", newjob$script, package = "GWSDAT")
-      Rcmd <- paste0('Rscript ', scriptPath, ' ', newjob$inputfile, ' ', newjob$outputfile, ' ',  dbPath)
+      scriptPath<-system.file("application", newjob$script, package = "GWSDAT")
+      ## Adding escaped double quotes to deal with spaces in file paths..
+      Rcmd <- paste0('Rscript ',"\"", scriptPath,"\"", ' ', "\"",newjob$inputfile,"\"", ' ', "\"",newjob$outputfile,"\"", ' ', "\"", dbPath,"\"")
       
       cat("Start BG process: ", Rcmd, "\n")
       
       system(Rcmd, wait = FALSE, invisible = TRUE)
+      #system(Rcmd, wait = T, invisible = FALSE)
 
       # Add a progress field to the job record and append to 'running' table.
       newjob$progress <- 0

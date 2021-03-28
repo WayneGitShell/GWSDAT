@@ -2702,6 +2702,7 @@ server <- function(input, output, session) {
     if (new_psplines_nseg == csite$GWSDAT_Options$PSplineVars$nseg) 
       return()
     
+   
     if (BP_method == 'simple') {
       
       # Create temporary file names
@@ -2713,8 +2714,8 @@ server <- function(input, output, session) {
       
       # Starts script as a background process.
       run_script <- system.file("application", "simple_pspline_fit.R", package = "GWSDAT")
-      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_nseg, ' ', csite$data_id, 
-                     ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
+      Rcmd <- paste0('Rscript ',"\"",run_script,"\"", ' ', new_psplines_nseg, ' ', csite$data_id, 
+                     ' ', "\"",BP_modelfit_infile,"\"", ' ', "\"",BP_modelfit_outfile,"\"")
       cat("Starting R process: ", Rcmd, "\n")
       
       system(Rcmd, wait = FALSE, invisible = TRUE)
