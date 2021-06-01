@@ -303,6 +303,10 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
           points(temp.NAPL.Data$XCoord,temp.NAPL.Data$YCoord,pch=1,col=1,cex=my.cex)
         }
         points(Well.Coords$XCoord, Well.Coords$YCoord, pch = 19, cex = .7);
+        
+        #Experimenting to avoid overlapping labels..
+        #plotrix::spread.labels(x=Well.Coords$XCoord,y=Well.Coords$YCoord,ony=FALSE,labels=as.character(Well.Coords$WellName),offsets=0.01)
+        
         if (UseReducedWellSet & !is.null(sample_Omitted_Wells)) points(Reduced.Well.Coords$XCoord, Reduced.Well.Coords$YCoord, pch = 19, cex = .7,col="grey")
         
         if (csite$ui_attr$contour_selected == "NAPL-Circles") {
@@ -353,6 +357,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
                       key.title  = title(main = csite$ui_attr$conc_unit_selected),
                       plot.axes  = {axis(1); axis(2,las=3); axis(3, at = par("usr")[1] + temp.time.frac*(diff(range(par("usr")[1:2]))),labels = "",col = "red",lwd=3,tck=-0.02);  
                             points(Well.Coords$XCoord,Well.Coords$YCoord,pch=19,cex=1.0);
+                            
                             if(Show.Well.Labels)text(Well.Coords$XCoord,Well.Coords$YCoord,Well.Coords$WellName, cex = 0.75, pos = 1)
                             if (Show.Well.Labels & UseReducedWellSet & !is.null(sample_Omitted_Wells)) text(Reduced.Well.Coords$XCoord, Reduced.Well.Coords$YCoord, Reduced.Well.Coords$WellName, cex = 0.75, pos = 1,col="grey")
                             if (Show.GW.Contour)try(contour(GWSDAT.GW.Contour(temp.GW.Flows),add=T,labcex=.8), silent = T)

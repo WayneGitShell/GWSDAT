@@ -9,9 +9,10 @@
 plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
   
 
-  # if(ImplementReducedWellSet & is.null(plume_stats$plume_statsreducedWellSet)){
-  #   showNotification("No plume statistics detected for Reduced Well Data set. Try updating the model?")
-  #   }
+   if(ImplementReducedWellSet & is.null(plume_stats$plume_statsreducedWellSet)){
+     showNotification("No plume statistics detected for Reduced Well Data set. Please update the model.")
+     }
+  
   if(ImplementReducedWellSet){plume_statsreducedWellSet<-plume_stats$plume_statsreducedWellSet}else{plume_statsreducedWellSet<-NULL}
   plume_stats<-plume_stats$plume_stats
   
