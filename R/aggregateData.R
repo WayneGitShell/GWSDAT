@@ -1,7 +1,7 @@
 
 pasteAggLimit <- function(timep, aggr_by, fchrin = "%d-%m-%Y", fout = "%d-%b-%Y") {
   
-  
+ 
   aggr_by <- tolower(aggr_by)
   
   if (is.character(timep))
@@ -17,7 +17,8 @@ pasteAggLimit <- function(timep, aggr_by, fchrin = "%d-%m-%Y", fout = "%d-%b-%Y"
     # The second element will be the last day of the month or quarter, year.
     #period <- seq.Date(timep, by = aggr_by, length.out = 2) - 1
     period <- seq.Date(timep, by = paste0("-1 ",aggr_by), length.out = 2) + 1
-    dout   <- paste0(dout, " to ", format.Date(period[2], fout))
+    dout   <- paste0(format.Date(period[2], fout), " to ", dout)
+    #dout   <- paste0(dout, " to ", format.Date(period[2], fout))
   }
   
   return(dout)

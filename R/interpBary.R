@@ -44,8 +44,7 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     temppred<-predict(model,newdata=eval.df,se=type!="Predicted")
     eval.df$pred<-temppred$predicted
     eval.df$pred.sd<-temppred$predicted.sd
-    #eval.df<<-eval.df
-    #print("eval.df<<-eval.df")
+    
     if(type=="Lower 95% CI"){eval.df$pred<-eval.df$pred-1.96*eval.df$pred.sd}
     if(type=="Upper 95% CI"){eval.df$pred<-eval.df$pred+1.96*eval.df$pred.sd}
     if(type=="% sd")   {eval.df$pred<-100*(exp(eval.df$pred.sd)-1)}
@@ -71,12 +70,11 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     
     if (!inherits(dn, "try-error")) {
       
-       
       ### Backwards compatibility for function tsearch in package geometry. 
       if(utils::packageVersion("geometry")>'0.3.6'){
-        
+      
         tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,
-                       predred.df[,"YCoord"], method = "orig",bary = T) 
+                     predred.df[,"YCoord"], method = "orig",bary = T) 
       }else{
         
         tri <- tsearch(eval.df[,"XCoord"], eval.df[,"YCoord"], dn ,predred.df[,"XCoord"] ,

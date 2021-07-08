@@ -1,15 +1,22 @@
 
 #' @importFrom splancs gridpts areapl
-interpConc <- function(csite, substance, timepoint) {
+interpConc <- function(csite, substance, timepoint,UseReducedWellSet) {
   
-  model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
+  if(UseReducedWellSet){
+       model.tune     <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]
+       tmp_cont <- csite$Reduced.Fitted.Data[[substance]]$Cont.Data
+    }else{
+       model.tune     <- csite$Fitted.Data[[substance]][["Model.tune"]]
+       tmp_cont <- csite$Fitted.Data[[substance]]$Cont.Data
+    }
+  
   Well.Coords    <- csite$All.Data$sample_loc$data
   Col.Option     <- csite$ui_attr$spatial_options["Scale colours to Data"]
   
   #
   # Extract useable wells for given substance and timestep.
   #
-  tmp_cont <- csite$Fitted.Data[[substance]]$Cont.Data
+  
   
   tmp_wells_earlier <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) <= timepoint,]$WellName)
   tmp_wells_later   <- unique(tmp_cont[as.numeric(tmp_cont$AggDate) >= timepoint,]$WellName)

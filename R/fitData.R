@@ -1,5 +1,5 @@
 
-fitData <- function(All.Data, params, model = 'pspline', showProgress = TRUE) {
+fitData <- function(All.Data, params, model = 'pspline', showProgress = TRUE, calcTrend=T) {
 
   if (showProgress) {
     progress <- shiny::Progress$new()
@@ -64,13 +64,17 @@ fitData <- function(All.Data, params, model = 'pspline', showProgress = TRUE) {
 
   Traffic.Lights <- NULL
   
-  tryCatch(
+  if(calcTrend){
+  
+    tryCatch(
     Traffic.Lights <- calcTrafficLights(All.Data, Fitted.Data, params$smThreshSe, params$smMethod),
     
     error = function(e) {
       showNotification(paste0("Failed to calculate trend table: ", e$message), type = "error", duration = 10)
     }
-  )
+    )
+    
+  }
 
   return(list(Fitted.Data = Fitted.Data, Traffic.Lights = Traffic.Lights))
 

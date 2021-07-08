@@ -1,6 +1,6 @@
 
 uiAnalyseOptions <- function(csite) {
-  
+ 
   fluidRow(
     tags$head(
       tags$style(HTML('#save_analyse_options{background-color: #6dc0ff;
@@ -34,7 +34,7 @@ uiAnalyseOptions <- function(csite) {
       ## Plume Diagnostic ######################################################
       
       div(style = "margin-top:30px", 
-          h4("Plume Diagnostic")),
+          h4("Plume Diagnostic Settings")),
       p(style = "", paste("Specify plume threshold values in ug/l.", sep = "")),
       
       uiOutput("thres_plume_select"),
@@ -62,9 +62,9 @@ uiAnalyseOptions <- function(csite) {
       ),
       
       # Disabled because it does not work, yet.
-      shinyjs::disabled(div(style = "display: inline-block;", 
-          checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
-      )),
+      # shinyjs::disabled(div(style = "display: inline-block;", 
+      #     checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
+      # )),
       
       
       ## Wide Image Resolution Settings ########################################
@@ -94,9 +94,14 @@ uiAnalyseOptions <- function(csite) {
       #),
       
       # Disabled because it does not work, yet.
-      shinyjs::disabled(div(style = "display: inline-block;", 
-                   checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
-      )),
+      # shinyjs::disabled(div(style = "display: inline-block;", 
+      #              checkboxInput("img_asp_px", label = "Keep Aspect Ratio", value = FALSE)
+      # )),
+      # 
+      
+      ##
+      #rHandsontableOutput("hot"),
+      ##
       
       ## Image Quality #########################################################
       div(style = "margin-top:20px", 

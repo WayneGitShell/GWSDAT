@@ -21,7 +21,11 @@ server <- function(input, output, session) {
   
   # Moved into server from ui due to modal conflicts
   if (exists("APP_CUSTOM_COMPONENT", envir = .GlobalEnv)) 
+<<<<<<< HEAD
+  shiny::showModal(APP_CUSTOM_COMPONENT())
+=======
     shiny::showModal(APP_CUSTOM_COMPONENT())
+>>>>>>> master
   
   # This is set inside launchApp()
   if (!exists("APP_LOGIN_MODE", envir = .GlobalEnv)) 
@@ -92,7 +96,8 @@ server <- function(input, output, session) {
   
   # Reactive element that will trigger inside an observer when Options are saved.
   optionsSaved <- reactive({ 
-    input$save_analyse_options 
+    input$save_analyse_options
+    input$save_Colour_Key
   })
   
   
@@ -278,9 +283,15 @@ server <- function(input, output, session) {
   
   checkPlumeStats <- reactive({
     cat("\n* checkPlumeStats()\n")
-    
+    cat("input$ground_porosity",input$ground_porosity)
     # Detect when model fit changed.
     BP_modelfit_done()
+    input$UpdateReducedWellFittedModel
+    input$aggregate_select_sp
+    
+    #input$solute_conc_contour
+    csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
+    print("react to change in units")
     
     # Create a Progress object
     progress <- shiny::Progress$new()
@@ -288,13 +299,33 @@ server <- function(input, output, session) {
     on.exit(progress$close())
     
     
-    val <- getFullPlumeStats(csite, 
+    val <-                   getFullPlumeStats(csite, 
                              substance = input$solute_select_sp, 
                              plume_thresh = input$plume_thresh_pd,
                              ground_porosity = (input$ground_porosity / 1),
-                             progressBar = progress
-                            )
+<<<<<<< HEAD
+                             progressBar = progress,
+                             UseReducedWellSet=FALSE
+                             )
     
+  if(isolate(input$ImplementReducedWellSet)){
+      
+      valreducedWellSet<-                getFullPlumeStats(csite, 
+                                         substance = input$solute_select_sp, 
+                                         plume_thresh = input$plume_thresh_pd,
+                                         ground_porosity = (input$ground_porosity / 1),
+                                         progressBar = progress,
+                                         UseReducedWellSet=isolate(input$ImplementReducedWellSet)
+=======
+                             progressBar = progress
+>>>>>>> master
+                            )
+      
+  }else{
+    
+    valreducedWellSet<-NULL
+    
+  }  
     # If there is any plume mass, show the plot and hide the message text, and vice versa. 
     if (all(is.na(val$mass))) {
       shinyjs::show("plume_diagn_msg_div")
@@ -306,7 +337,7 @@ server <- function(input, output, session) {
       shinyjs::hide("plume_diagn_msg_div", anim = FALSE)
     }
 
-    return(val)
+    return(list(plume_stats=val,plume_statsreducedWellSet=valreducedWellSet))
   })
   
 
@@ -335,11 +366,14 @@ server <- function(input, output, session) {
   
   output$plume_estimate_plot <- renderPlot({
     cat("plume_estimate_plot <- renderPlot()\n")
-    
+    #cat("KJKJ\n")
     # Detect with model fit changed.
     BP_modelfit_done()
+    if (reaggregateData()) { return(NULL) }# Stops calling reaggregation twice...
+    input$UpdateReducedWellFittedModel
     
-    plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd)
+    plotPlumeEst(csite, input$solute_select_sp, input$plume_thresh_pd,input$ImplementReducedWellSet)
+    
   })
   
   
@@ -352,12 +386,59 @@ server <- function(input, output, session) {
     # Re-evaluate plume statistics if any reactive expression changes. 
     # The return value is the full plume statistics (for all timesteps). 
     #isolate(plume_stats <- checkPlumeStats())
-    plume_stats <- checkPlumeStats()
+    #input$UpdateReducedWellFittedModel
+    #input$solute_conc_contour  - replot when units are changed...
+    reaggregateData()
+   
     
-    plotPlumeTimeSeries(plume_stats)
+    plume_stats <- checkPlumeStats()
+    plotPlumeTimeSeries(plume_stats,input$ImplementReducedWellSet)
     
     
   })
+  
+  ########### Well Redundancy Analysis Section #######################
+  
+  ### Refit the spline model to all solutes with selected wells omitted.
+  observeEvent(input$UpdateReducedWellFittedModel,{
+    csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
+  
+    })
+  
+  observeEvent(input$ImplementReducedWellSet,{
+    
+    #If no wells selected in the first instance copy over existing fitted model - save times. 
+    if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet & is.null(input$sample_Omitted_Wells)){
+      csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
+      csite[["Reduced.Fitted.Data.GW.Flows"]]<<-csite[["GW.Flows"]]
+    }
+    
+    # Refit the spline model on initial selection of ReducedWellset implementation
+    if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
+      csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
+    }
+    
+  })
+  
+  
+  ## Update corresponding plume threshold values in UIOptions when updated in Spatial Plot. 
+  observeEvent(input$plume_thresh_pd, {
+
+    updateNumericInput(session,paste0("plume_thresh_",which(input$solute_select_sp==csite$ui_attr$solute_names)),value=input$plume_thresh_pd)
+    #### Make sure plume_thresh UI attr is updated - bit ugly but immediate save doesnt work as numeric input not updated immediately 
+    csite$ui_attr$plume_thresh[input$solute_select_sp]<<-input$plume_thresh_pd
+
+  })
+  
+  observeEvent(input$solute_select_sp, {
+    updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
+    tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
+    updateNumericInput(session,"plume_thresh_pd",value=tr)
+    
+  })
+  
+  #------------------------------------------------------------------#
+  
   
   
   ## Time-Series Panel #########################################################
@@ -389,7 +470,6 @@ server <- function(input, output, session) {
   # It checks if the BP produced its results into the file '  BP_modelfit_outfile'.
   #fitPSplineChecker <- reactive({
   observe({
-    
     if (BP_method != 'simple')
       return()
     
@@ -587,6 +667,12 @@ server <- function(input, output, session) {
           if (evalJobPspline(job$outputfile, job$data_id)) {
             showNotification(paste0("P-Splines: Fit completed successfully for job ID ", job$job_id, "."), type = "message", duration = 10)
             BP_modelfit_done(BP_modelfit_done() + 1) # Notify observers that fitting took place.  
+            
+            if(isolate(input$ImplementReducedWellSet)){
+            updateCheckboxInput(session,"ImplementReducedWellSet",value=FALSE)
+            showNotification("Model resolution has been updated. Reselect Well Redundancy Analysis checkbox to update reduced well model.", type = "message", duration = 10)
+            }
+            
           }
           
         } else {
@@ -618,7 +704,7 @@ server <- function(input, output, session) {
   
   # Re-Aggregate the data in case the aggregation type was changed.
   reaggregateData <- reactive({
-    # cat("* entering reaggregateData()\n")
+    cat("* entering reaggregateData()\n")
     
     # If 'input$aggregate_select_tt' is not put here, reaggregateData() will not
     # react for the trend table if: 
@@ -773,7 +859,7 @@ server <- function(input, output, session) {
   output$image_plot <- renderPlot({
     
     cat("* entering image_plot()\n")
-    
+
     # React to new fitted model.
     BP_modelfit_done()
 
@@ -790,11 +876,13 @@ server <- function(input, output, session) {
     csite$ui_attr$contour_selected <<- input$imageplot_type
     csite$ui_attr$conc_unit_selected <<- input$solute_conc_contour
     
+    ## Make Spatial plot reactive to Well Redunancy Analysis
+    input$UpdateReducedWellFittedModel
     
     #start.time = Sys.time()
-    plotSpatialImage(csite, input$solute_select_sp, 
-                     as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                     app_log)
+    plotSpatialImage(csite=csite, substance =input$solute_select_sp, 
+                     timepoint=as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
+                     app_log=app_log,UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=isolate(input$sample_Omitted_Wells))
                      
     #end.time <- Sys.time()
     
@@ -847,7 +935,9 @@ server <- function(input, output, session) {
     # Detect changes in Traffic.Lights (depends on model fit). 
     BP_modelfit_done()
     
-    plotWellReport(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale)
+    input$update_wellreport_plot
+    
+    plotWellReport(csite, isolate(input$solute_select_wr), isolate(input$sample_loc_select_wr), use_log_scale)
     
   })
   
@@ -861,7 +951,8 @@ server <- function(input, output, session) {
     # Detect changes in model fit.
     BP_modelfit_done()
     
-    plotSTPredictions(csite, input$solute_select_stp, input$sample_loc_select_stp, use_log_scale, input$solute_conc_stp)
+    input$update_stpredictions_plot
+    plotSTPredictions(csite, input$solute_select_stp, isolate(input$sample_loc_select_stp), use_log_scale, input$solute_conc_stp)
     
   })
   
@@ -897,9 +988,9 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select_sp", selected = input$solute_select_ts ) 
   })
   
-  observeEvent(input$solute_select_sp, {
-    updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )  
-  })
+  #observeEvent(input$solute_select_sp, {
+  #  updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )  
+  #})
   
   
   #
@@ -1009,12 +1100,14 @@ server <- function(input, output, session) {
      
       if (input$export_format_sp == "pptx") {
         
+
         plotSpatialImagePPT(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
-                       width  = input$img_width_px, height = input$img_height_px)
+                       width  = input$img_width_px, height = input$img_height_px,UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
       
         } else if (input$export_format_sp == "tif"){
          
-          PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+          
+          PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
           
         }
       else {
@@ -1023,8 +1116,9 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-           
-          plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"))
+          
+          plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
+         
           dev.off()
       }
       
@@ -1117,7 +1211,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_pd == "pptx") {
         
-        plotPlumeTimeSeriesPPT(plume_stats, file,
+        plotPlumeTimeSeriesPPT(plume_stats, input$ImplementReducedWellSet, file,
                                width = input$img_width_px_wide, height = input$img_height_px_wide)
         
       } else {
@@ -1128,7 +1222,7 @@ server <- function(input, output, session) {
         if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
         #if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
-        plotPlumeTimeSeries(plume_stats)
+        plotPlumeTimeSeries(plume_stats,input$ImplementReducedWellSet)
         dev.off()
       }
       
@@ -1142,11 +1236,20 @@ server <- function(input, output, session) {
     },
     
     content <- function(file) {
+      
       plume_stats <- checkPlumeStats()
       
-      tmp_out <- printPlumeStatsCSV(plume_stats)
+      tmp_out <- printPlumeStatsCSV(plume_stats$plume_stats)
       
-      write.csv(tmp_out, file) 
+      if(!is.null(plume_stats$plume_statsreducedWellSet)){
+        tmp_out$DataSet="Full"
+        tmp_outreducedWellSet <- printPlumeStatsCSV(plume_stats$plume_statsreducedWellSet)
+        tmp_outreducedWellSet$DataSet<-"Well Reduced"
+        tmp_out<-rbind(tmp_out,tmp_outreducedWellSet)
+      }
+      
+      write.csv(tmp_out, file,row.names=FALSE)
+      
     }
   )
   
@@ -1237,7 +1340,7 @@ server <- function(input, output, session) {
       
       makeSpatialAnimation(csite, file, input$solute_select_sp,
                            input$img_width_px, input$img_height_px,
-                           input$img_width_px_wide, input$img_height_px_wide)
+                           input$img_width_px_wide, input$img_height_px_wide,input$ImplementReducedWellSet,input$sample_Omitted_Wells)
       
     }
   )
@@ -1249,7 +1352,7 @@ server <- function(input, output, session) {
   
   
   # Can I move parts (or all) of this function into importTables?
-  importData <- function(dname, dsource = "") {
+  importData <- function(dname, dsource = "",subst_napl_vals=NULL) {
     
     ptm <- proc.time()
     
@@ -1311,7 +1414,9 @@ server <- function(input, output, session) {
     # Create a unique data set 'csite' for each Aquifer.
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
       
-      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel)
+      pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel,subst_napl_vals)
+      if (class(pr_dat) == "dialogBox")
+        return(pr_dat)
       
       if (is.null(pr_dat)) next
       
@@ -1920,7 +2025,7 @@ server <- function(input, output, session) {
     import_tables$DF_conc <<- DF 
     
     # Switch to tabPanel with table
-    updateTabsetPanel(session, "tabbox_csv_import", selected = "Contaminant Data")
+    updateTabsetPanel(session, "tabbox_csv_import", selected = "Monitoring Data")
   })
   
   
@@ -1969,7 +2074,40 @@ server <- function(input, output, session) {
     shinyjs::hide("removeshp_csv")  
   })
   
-  observeEvent(input$import_button_csv, importData(input$dname_csv))
+  
+  observeEvent(input$import_button_csv, {
+    
+    
+    ret<-importData(input$dname_csv)
+    
+    if(class(ret)=="dialogBox"){
+      
+      showModal(modalDialog(
+        title="NAPL Value Substitution",
+        HTML(ret$msg),
+        footer = tagList(
+          actionButton("CsvImportNAPLSubsNo", "No"),
+          actionButton("CsvImportNAPLSubsYes", "Yes")
+        )
+      ))
+      
+    }
+    
+    
+    })
+  
+  observeEvent(input$CsvImportNAPLSubsNo, { 
+    removeModal()
+    importData(input$dname_csv, "",subst_napl_vals="no")
+  })
+  
+  observeEvent(input$CsvImportNAPLSubsYes, { 
+    removeModal()
+    importData(input$dname_csv, "",subst_napl_vals="yes")
+  })
+  
+  
+  
   
   
   ## Import Excel data #########################################################
@@ -2078,7 +2216,7 @@ server <- function(input, output, session) {
     # Disabled for now, because Shape Files are manually uploaded.
     # import_tables$shape_files <<- dtmp$shape_files
     # Switch to tabPanel with table
-    updateTabsetPanel(session, "tabbox_xls_import", selected = "Contaminant Data")
+    updateTabsetPanel(session, "tabbox_xls_import", selected = "Monitoring Data")
     
     return(TRUE)
   }
@@ -2147,7 +2285,34 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$import_button_xls, importData(input$dname_xls, "excel"))
+  observeEvent(input$import_button_xls, {
+    
+    ret<-importData(input$dname_xls, "excel")
+    
+    if(class(ret)=="dialogBox"){
+      
+      showModal(modalDialog(
+        title="NAPL Value Substitution",
+        HTML(ret$msg),
+          footer = tagList(
+          actionButton("ExcelImportNAPLSubsNo", "No"),
+          actionButton("ExcelImportNAPLSubsYes", "Yes")
+           )
+      ))
+      
+    }
+    
+  })
+  
+  observeEvent(input$ExcelImportNAPLSubsNo, { 
+    removeModal()
+    importData(input$dname_xls, "excel",subst_napl_vals="no")
+  })
+  
+  observeEvent(input$ExcelImportNAPLSubsYes, { 
+    removeModal()
+    importData(input$dname_xls, "excel",subst_napl_vals="yes")
+  })
   
   
   ## Edit Data #################################################################
@@ -2238,7 +2403,7 @@ server <- function(input, output, session) {
     import_tables$Coord_unit <- input$coord_unit_ed
 
      if (!input$coord_unit_ed %in% coord_units) {
-      showNotification("Coordinate unit is not valid. Use \'metres\' or \'feet\'.", type = "error", duration = 10)
+      showNotification("Coordinate unit is not valid. Leave blank or use \'metres\' or \'feet\'.", type = "error", duration = 10)
       return(NULL)
     }
     
@@ -2334,7 +2499,8 @@ server <- function(input, output, session) {
                      ui_attr        = ui_attr,
                      Aquifer        = Aq_sel,
                      raw_contaminant_tbl = import_tables$DF_conc,
-                     raw_well_tbl = import_tables$DF_well
+                     raw_well_tbl = import_tables$DF_well,
+                     data_id = createDataID(csite_list)
         )
         
         csite_list[[length(csite_list) + 1]] <- ctmp 
@@ -2453,7 +2619,7 @@ server <- function(input, output, session) {
   # These inputs will modify the plume threshold for each substance, 
   #  saved in csite$ui_attr$plume_thresh.
   output$thres_plume_select <- renderUI({
-   
+ 
     dataLoaded() # Need this to re-execute whenever new data is loaded.
     num_subst <- length(csite$ui_attr$plume_thresh)
     
@@ -2473,6 +2639,9 @@ server <- function(input, output, session) {
     })
   })
   
+  ##Force evaluation of ui plume thresholds so it can be updated without being activated. 
+  ## 
+  outputOptions(output, "thres_plume_select", suspendWhenHidden = FALSE)
   
   # These inputs will modify the concentration thresholds for each substance, 
   #  saved in csite$ui_attr$conc_thresh.
@@ -2498,7 +2667,7 @@ server <- function(input, output, session) {
     })
   })
   
-  
+  outputOptions(output, "thres_conc_select", suspendWhenHidden = FALSE)
   
   changeModelSettingorNotModal <- function() {
     modalDialog(
@@ -2541,6 +2710,7 @@ server <- function(input, output, session) {
     if (new_psplines_nseg == csite$GWSDAT_Options$PSplineVars$nseg) 
       return()
     
+   
     if (BP_method == 'simple') {
       
       # Create temporary file names
@@ -2552,8 +2722,8 @@ server <- function(input, output, session) {
       
       # Starts script as a background process.
       run_script <- system.file("application", "simple_pspline_fit.R", package = "GWSDAT")
-      Rcmd <- paste0('Rscript ', run_script, ' ', new_psplines_nseg, ' ', csite$data_id, 
-                     ' ', BP_modelfit_infile, ' ', BP_modelfit_outfile)
+      Rcmd <- paste0('Rscript ',"\"",run_script,"\"", ' ', new_psplines_nseg, ' ', csite$data_id, 
+                     ' ', "\"",BP_modelfit_infile,"\"", ' ', "\"",BP_modelfit_outfile,"\"")
       cat("Starting R process: ", Rcmd, "\n")
       
       system(Rcmd, wait = FALSE, invisible = TRUE)
@@ -2599,8 +2769,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_analyse_options, {
    
+
     new_psplines_nseg <<- as.numeric(input$psplines_knots)
-    
+
     # Check if the value changed, if so, refit all data.
     if ( new_psplines_nseg != csite$GWSDAT_Options$PSplineVars$nseg) {
       
@@ -2613,12 +2784,12 @@ server <- function(input, output, session) {
         showModal(changeModelSettingorNotModal())
       }
       
+      
       # Change the value back to the original one. Only update it when re-fitting
       # is completed which is done in the background.
       updateTextInput(session, "psplines_knots", value = csite$GWSDAT_Options$PSplineVars$nseg)
       
     }
-   
     
     # Retrieve the substance concentration thresholds
     num_subst <- length(csite$ui_attr$conc_thresh)
@@ -2627,8 +2798,8 @@ server <- function(input, output, session) {
       # Create input variable name and evaluate the string as variable. 
       input_var <- paste("input$conc_thresh_", i, sep = "")
       csite$ui_attr$conc_thresh[i] <<- eval(parse(text = input_var))
+      
     }
-    
     
     # Retrieve the plume concentration thresholds
     num_subst <- length(csite$ui_attr$plume_thresh)
@@ -2642,7 +2813,6 @@ server <- function(input, output, session) {
     csite$ui_attr$ground_porosity <<- input$ground_porosity
     
     shinyjs::show(id = "options_save_msg", anim = TRUE, animType = "fade")
-    
     shinyjs::delay(2000, shinyjs::hide(id = "options_save_msg", anim = TRUE, animType = "fade"))
     # Retrieve image settings .. 
     # I might only have to use this when saving a session. Right now the 
@@ -2654,7 +2824,40 @@ server <- function(input, output, session) {
   
   output$options_saved <- renderText({paste("Changes Saved") })
       
+  # output$ColourKeyRHandsontable <- renderRHandsontable({
+  #   #rhandsontable(data.frame(lev_cut=csite$ui_attr$lev_cut[-length(csite$ui_attr$lev_cut)]),rowHeaders = NULL,digits=0)
+  #   rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
+  # })
+  
+  output$ColourKeyRHandsontable <- renderRHandsontable({
     
+  if(is.null(csite$ui_attr$lev_cut_by_solute)){
+    
+    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names)),rowHeaders = NULL,digits=0)
+    
+  }else{
+    
+    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
+    
+  }
+  })
+  
+  output$options_saved_Colour_Key <- renderText({paste("Changes Saved") })
+  
+  observeEvent(input$save_Colour_Key, {
+  
+  ## Turn off Scale colours to data in Spatial plot to honour newly defined colour key.
+  updateCheckboxGroupInput(session, "imageplot_options",selected=setdiff(input$imageplot_options,"Scale colours to Data"))
+                             
+  shinyjs::show(id = "options_save_msg_Colour_Key", anim = TRUE, animType = "fade")
+  shinyjs::delay(2000, shinyjs::hide(id = "options_save_msg_Colour_Key", anim = TRUE, animType = "fade"))
+  
+  #csite$ui_attr$lev_cut<<-c(sort(hot_to_r(input$ColourKeyRHandsontable)$lev_cut),50000)
+  csite$ui_attr$lev_cut_by_solute<<-as.list(hot_to_r(input$ColourKeyRHandsontable))
+  
+  })
+  
+  
   shinyjs::onclick("GoToDataSelect", {
     shinyjs::hide("analyse_page")
     shinyjs::show("data_select_page")
@@ -2718,6 +2921,7 @@ server <- function(input, output, session) {
   #
   loadDataSet <- function() {
   
+    print("In load Data set")
     if (DEBUG_MODE) cat("* in loadDataSet()\n")
    
     # Load 'session_file' if specified in launchApp().
@@ -2739,6 +2943,7 @@ server <- function(input, output, session) {
       return(TRUE)  
     }
     
+    
     # Create Options in case they don't exist.
     if (!exists("GWSDAT_Options", envir = .GlobalEnv)) 
       GWSDAT_Options <-  createOptions()
@@ -2753,8 +2958,8 @@ server <- function(input, output, session) {
     tryCatch({
       solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
       well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
-    }, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
-    
+    #}, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
+    }, error = function(w){showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)); Sys.sleep(5)})
     
     # Check if reading the data failed. 
     if (is.null(solute_data) || is.null(well_data))
@@ -2792,12 +2997,13 @@ server <- function(input, output, session) {
     if (is.null(fitdat))
       return(NULL)
     
+    
     # Calculate the Groundwater flows.
     GW_flows <- evalGWFlow(pr_dat$Agg_GW_Data)
     
     # Create UI attributes.
     ui_attr <- createUIAttr(pr_dat, GWSDAT_Options)
-    
+
     # Build list with all data.
     csite <<- list(All.Data      = pr_dat,
                    GWSDAT_Options = GWSDAT_Options,
@@ -3231,7 +3437,7 @@ server <- function(input, output, session) {
       return(div(style = "width: 80%; margin: 0 auto",
                       shinydashboard::box(
                         div(style = "margin-top: 10px; margin-bottom: 25px",
-                          paste0(ret$msg)),
+                          HTML(paste0(ret$msg))),
                         div(style = "float: right", 
                             actionButton("diag_no" , "No"),
                             actionButton("diag_yes", "Yes")),
@@ -3344,6 +3550,9 @@ server <- function(input, output, session) {
           list()
       }
   })
+  
+  
+
   
 } # end server section
 

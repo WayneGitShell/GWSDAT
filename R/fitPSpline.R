@@ -117,7 +117,7 @@ GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, pr
 }
 
 tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, 
-                         pord, bdeg, Trial.Lambda, verbose = interactive()) {
+                         pord, bdeg, Trial.Lambda, verbose = FALSE) {
 
 
   # Prepare Data  
@@ -142,11 +142,11 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg,
   
   if (verbose) {
   
-    op <- par(no.readonly = TRUE);
-    par(mfrow = c(1,1))
-    plot(log(BestModel$trial.lambdas,base = 10), BestModel$logliks)
-    par(op)
-  
+    # op <- par(no.readonly = TRUE);
+    # par(mfrow = c(1,1))
+    # plot(log(BestModel$trial.lambdas,base = 10), BestModel$logliks)
+    # par(op)
+    # 
   }
 
 

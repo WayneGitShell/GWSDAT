@@ -6,7 +6,6 @@ saveUIAttr <- function(csite, input) {
   csite$ui_attr$solute_select_ts  <- input$solute_select_ts
   csite$ui_attr$solute_select_sp  <- input$solute_select_sp
   csite$ui_attr$solute_select_stp <- input$solute_select_stp
-  #csite$ui_attr$solute_select_pd  <- input$solute_select_pd
   csite$ui_attr$solute_select_wr  <- input$solute_select_wr
 
   csite$ui_attr$sample_loc_select_ts  <- input$sample_loc_select_ts
@@ -25,6 +24,11 @@ saveUIAttr <- function(csite, input) {
   csite$ui_attr$ground_porosity <- input$ground_porosity
   #csite$ui_attr$ground_porosity_pd <- input$ground_porosity_pd
   csite$ui_attr$solute_conc_stp <- input$solute_conc_stp
+  
+  ##Well Redundancy
+  csite$ui_attr$ImplementReducedWellSet<-input$ImplementReducedWellSet
+  csite$ui_attr$sample_Omitted_Wells_selected<-input$sample_Omitted_Wells
+  
   
   return(csite)
 }
@@ -96,8 +100,8 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$logscale_stp    <- "Yes"
   
   # Define image save options.
-  ui_attr$img_width_px       <- 800 
-  ui_attr$img_height_px      <- 600  
+  ui_attr$img_width_px       <- 900 
+  ui_attr$img_height_px      <- 500  
   ui_attr$img_width_px_wide  <- 1100
   ui_attr$img_height_px_wide <- 500  
   ui_attr$img_jpg_quality    <- 90
@@ -124,6 +128,24 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   ui_attr$lev_cut <-  c(0,5,10,25,50,75,100,200, 400, 800, 1500, 3000, 5000, 5000000)
   ui_attr$sd_lev_cut <- 100 * c(seq(0,3,by = 0.25),10000000)
   
+  #ui_attr$lev_cut_by_solute<-as.data.frame(matrix(rep(ui_attr$lev_cut[-length(ui_attr$lev_cut)],length(ui_attr$solute_names)),ncol=length(ui_attr$solute_names)))
+  #names(ui_attr$lev_cut_by_solute)<-ui_attr$solute_names
+  #ui_attr$lev_cut_by_solute<-as.list(ui_attr$lev_cut_by_solute)
   
+  ui_attr$lev_cut_by_solute<-create_lev_cut_by_solute(ui_attr$lev_cut,ui_attr$solute_names)
+  ##Well Redundancy
+  ui_attr$ImplementReducedWellSet<-FALSE
+  ui_attr$sample_Omitted_Wells_selected<-NULL
   return(ui_attr)  
+}
+
+
+
+#### Function to create a solute by solute threshold concs. 
+create_lev_cut_by_solute<-function(lev_cut,solute_names){
+  
+  lev_cut_by_solute<-as.data.frame(matrix(rep(lev_cut[-length(lev_cut)],length(solute_names)),ncol=length(solute_names)))
+  names(lev_cut_by_solute)<-solute_names
+  return(as.list(lev_cut_by_solute))
+  
 }

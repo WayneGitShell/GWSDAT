@@ -20,7 +20,9 @@ uiSTPredictions <- function(csite, img_frmt) {
                         
                         radioButtons("solute_conc_stp", label = "Solute Conc. Unit",
                                      choices = csite$ui_attr$conc_unit_list, 
-                                     selected = csite$ui_attr$solute_conc_stp)
+                                     selected = csite$ui_attr$solute_conc_stp),
+                        actionButton("update_stpredictions_plot" ,"Update Plot", icon("refresh"),
+                                     class = "btn btn-primary")
     ), # end box
     
     shinydashboard::box(width = 9, status = "primary", 

@@ -6,7 +6,15 @@
 # 
 # @export
 #' @importFrom Kendall Kendall
-plotPlumeTimeSeries <- function(plume_stats) {
+plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
+  
+
+   if(ImplementReducedWellSet & is.null(plume_stats$plume_statsreducedWellSet)){
+     showNotification("No plume statistics detected for Reduced Well Data set. Please update the model.")
+     }
+  
+  if(ImplementReducedWellSet){plume_statsreducedWellSet<-plume_stats$plume_statsreducedWellSet}else{plume_statsreducedWellSet<-NULL}
+  plume_stats<-plume_stats$plume_stats
   
   if (is.null(plume_stats))
     return(NULL)
@@ -19,7 +27,6 @@ plotPlumeTimeSeries <- function(plume_stats) {
   plume_thresh <- plume_stats$conc_thresh[1]
   ground_porosity <- plume_stats$ground_porosity[1]
   
- 
   tempUnitHandle <- PlumeUnitHandlingFunc(plume_stats$coord_unit[1],
                                           plume_stats$conc_unit[1],
                                           plume_stats$mass,
@@ -29,33 +36,28 @@ plotPlumeTimeSeries <- function(plume_stats) {
   plume_stats$area <- tempUnitHandle$PlumeArea
 
   par(mfrow = c(1,3), oma = c(1.5,0,0,0))
-
-      
-  # Calculate plume mass
-  my.ylim <- range(plume_stats$mass, na.rm = T)
-  
-  lmmass <- try(lm(mass ~ Agg.Date, plume_stats, na.action = na.omit))
-  
-  if (!inherits(lmmass,"try-error")) {
-    
-    lm.eval.points <- na.omit(plume_stats[,c("Agg.Date", "mass")])
-    lm.eval.points <- data.frame(Agg.Date=as.Date(seq(range(lm.eval.points$Agg.Date)[1],range(lm.eval.points$Agg.Date)[2],length=100)))
-    lm.pred <- predict(lmmass,newdata=lm.eval.points,interval = "confidence")
-    
-    lm.eval.points$fit <- lm.pred[,"fit"]
-    lm.eval.points$lwr <- lm.pred[,"lwr"]
-    lm.eval.points$upr <- lm.pred[,"upr"]
-    
-    
-    my.ylim <- c(min(c(lm.eval.points$lwr,my.ylim),na.rm=T),max(c(lm.eval.points$upr,my.ylim),na.rm=T))
-    my.ylim[1] <- max(my.ylim[1],0)
-    
-  }
-  
-  
+  my.ylim <- 1.2*range(plume_stats$mass, na.rm = T)
   my.ylab <- paste("Plume Mass", tempUnitHandle$PlumeMassUnits, sep = "")
   
   
+  ####################### Plume Mass ####################################################################################################
+  
+  # Calculate plume mass
+
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
+    
+    reducedWellSettempUnitHandle <- PlumeUnitHandlingFunc(plume_statsreducedWellSet$coord_unit[1],
+                                            plume_statsreducedWellSet$conc_unit[1],
+                                            plume_statsreducedWellSet$mass,
+                                            plume_statsreducedWellSet$area)
+    
+    plume_statsreducedWellSet$mass <- reducedWellSettempUnitHandle$PlumeMass
+    plume_statsreducedWellSet$area <- reducedWellSettempUnitHandle$PlumeArea
+    my.ylim <- 1.2*range(plume_statsreducedWellSet$mass,plume_stats$mass, na.rm = T)
+  }
+  
+  
+  my.ylim[1]<-0
   
   plot(plume_stats$Agg.Date, plume_stats$mass,
        ylim = my.ylim,
@@ -67,55 +69,34 @@ plotPlumeTimeSeries <- function(plume_stats) {
        cex.lab = 1.5,
        pch = 19,
        cex = 1.5,
+       yaxs="i",
        ylab = my.ylab)
   
-  mtext(paste("Plume Threshold = ", plume_thresh, "ug/l, Ground Porosity = ", (ground_porosity * 100), "%", sep = ""),
-            side = 3, line = -1.1, cex = 0.95)
-  
-  
-  if (!inherits(lmmass,"try-error")) {
-    
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$fit,lwd=2,col="green"))
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$lwr,lwd=2,col="green",lty=2))
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$upr,lwd=2,col="green",lty=2))
-    
-    
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
+  points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$mass,type="b",lty=1,pch = 19,cex = 1.5,col="green")
+    legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
   }
   
-  Mann.testPlumeMass <- try(Kendall::Kendall(plume_stats$Agg.Date,plume_stats$mass))
   
-  if(!inherits(Mann.testPlumeMass,"try-error")){
-    
-    temp.tex1<-paste("(Mann-Kendall P.Value=",format.pval(Mann.testPlumeMass$sl,digits=3,eps=0.01),")",sep="")
-    #try(mtext(temp.tex1,side=3,line=0.4,cex=0.75,col=if(Mann.testPlumeMass$sl<0.05 & Mann.testPlumeMass$tau<0.0){"darkgreen"}else{"red"}))
-    #try(mtext(temp.tex1,side=3,line=0.4,cex=0.75,col=if(Mann.testPlumeMass$sl<0.05){"darkgreen"}else{"red"}))
-    
-  }
+   mtext(paste("Plume Threshold = ", plume_thresh, plume_stats$conc_unit[1],", Ground Porosity = ", (ground_porosity * 100), "%", sep = ""),
+        side = 3, line = -1.1, cex = 0.95)
+  
+  
   
   #----------------------------------------------------------------------------------------------------------------------------------------#
   
   
   ####################### Plume Area #######################################################################################################
   
-  my.ylim <- range(plume_stats$area,na.rm=T)
   
-  lmarea <- try(lm(area ~ Agg.Date, plume_stats, na.action=na.omit))
   
-  if(!inherits(lmarea,"try-error")){
-    
-    lm.eval.points<-na.omit(plume_stats[,c("Agg.Date","area")])
-    lm.eval.points<-data.frame(Agg.Date=as.Date(seq(range(lm.eval.points$Agg.Date)[1],range(lm.eval.points$Agg.Date)[2],length=100)))
-    lm.pred<-predict(lmarea,newdata=lm.eval.points,interval="confidence")
-    
-    lm.eval.points$fit <- lm.pred[,"fit"]
-    lm.eval.points$lwr <- lm.pred[,"lwr"]
-    lm.eval.points$upr <- lm.pred[,"upr"]
-    
-    
-    my.ylim <- c(min(c(lm.eval.points$lwr,my.ylim), na.rm = T), max(c(lm.eval.points$upr,my.ylim),na.rm = T))
-    my.ylim[1] <- max(my.ylim[1],0)
-    
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
+    my.ylim <- 1.2*range(plume_statsreducedWellSet$area,plume_stats$area,na.rm=T)
+  }else{
+    my.ylim <- 1.2*range(plume_stats$area,na.rm=T)
   }
+  my.ylim[1]<-0
+  
   my.ylab <- paste("Plume Area", tempUnitHandle$PlumeAreaUnits, sep = "")
   
   
@@ -130,53 +111,31 @@ plotPlumeTimeSeries <- function(plume_stats) {
        cex.lab = 1.5,
        pch = 19, 
        cex = 1.5, 
+       yaxs="i",
        ylab = my.ylab
       )
-      
   
-  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""), side = 3, line = -1.1, cex = 0.95))
+  if(ImplementReducedWellSet & !is.null(plume_statsreducedWellSet)){ 
+     points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$area,type="b",lty=1,pch = 19,cex = 1.5,col="green")
+     legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
+  }    
   
-  if (!inherits(lmarea,"try-error")) {
-    
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$fit,lwd=2,col="green"))
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$lwr,lwd=2,col="green",lty=2))
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$upr,lwd=2,col="green",lty=2))
-    
-    
-  }
+  try(mtext(paste("Plume Threshold = ", plume_thresh, plume_stats$conc_unit[1], sep = ""), side = 3, line = -1.1, cex = 0.95))
   
-  Mann.testPlumeArea <- try(Kendall::Kendall(plume_stats$Agg.Date, plume_stats$area))
   
-  if (!inherits(Mann.testPlumeArea,"try-error")) {
-    
-    temp.tex1 <- paste("(Mann-Kendall P.Value=",format.pval(Mann.testPlumeArea$sl, digits = 3, eps = 0.01),")",sep="")
-    #try(mtext(temp.tex1,side=3,line=0.4,cex=0.75,col=if(Mann.testPlumeArea$sl<0.05 & Mann.testPlumeArea$tau<0.0){"darkgreen"}else{"red"}))
-    #try(mtext(temp.tex1,side=3,line=0.4,cex=0.75,col=if(Mann.testPlumeArea$sl<0.05){"darkgreen"}else{"red"}))
-    
-  }
   
   
   ####################### Plume Average ####################################################################################################
   
-  my.ylim <- range(plume_stats$avg_conc, na.rm = T)
-  
-  lmavg_conc <- try(lm(avg_conc ~ Agg.Date, plume_stats, na.action = na.omit))
-  
-  if (!inherits(lmavg_conc,"try-error")) {
-    
-    lm.eval.points <- na.omit(plume_stats[,c("Agg.Date","avg_conc")])
-    lm.eval.points <- data.frame(Agg.Date = as.Date(seq(range(lm.eval.points$Agg.Date)[1],range(lm.eval.points$Agg.Date)[2],length = 100)))
-    lm.pred <- predict(lmavg_conc,newdata = lm.eval.points,interval = "confidence")
-    
-    lm.eval.points$fit <- lm.pred[,"fit"]
-    lm.eval.points$lwr <- lm.pred[,"lwr"]
-    lm.eval.points$upr <- lm.pred[,"upr"]
-    
-    
-    my.ylim <- c(min(c(lm.eval.points$lwr,my.ylim), na.rm = T), max(c(lm.eval.points$upr,my.ylim),na.rm = T))
-    my.ylim[1] <- max(my.ylim[1],0)
-    
+  #my.ylim <- range(plume_stats$avg_conc, na.rm = T)
+  if(!is.null(plume_statsreducedWellSet)){ 
+    my.ylim <- 1.2*range(plume_statsreducedWellSet$avg_conc,plume_stats$avg_conc,na.rm=T)
+  }else{
+    my.ylim <- 1.2*range(plume_stats$avg_conc,na.rm=T)
   }
+  my.ylim[1]<-0
+  
+  
   
   my.ylab <- paste("Concentration",tempUnitHandle$PlumeAverageUnits,sep = "")
   
@@ -190,34 +149,25 @@ plotPlumeTimeSeries <- function(plume_stats) {
            cex.lab = 1.5,
            pch = 19,
            cex = 1.5,
+           yaxs="i",
            ylab = my.ylab)
   
-  try(mtext(paste("Plume Threshold = ", plume_thresh, "ug/l", sep = ""),side = 3, line = -1.1, cex = 0.95))
   
-  if (!inherits(lmavg_conc,"try-error")) {
-    
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$fit,lwd=2,col="green"))
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$lwr,lwd=2,col="green",lty=2))
-    #try(lines(lm.eval.points$Agg.Date,lm.eval.points$upr,lwd=2,col="green",lty=2))
-    
-    
-  }
+  if(!is.null(plume_statsreducedWellSet)){ 
+    points(plume_statsreducedWellSet$Agg.Date, plume_statsreducedWellSet$avg_conc,type="b",lty=1,pch = 19,cex = 1.5,col="green")
+    legend("bottomleft",c("Full Data","Reduced Well Data"),pch=19,lty=1,col=c("black","green"))
+  }    
   
-  Mann.testPlumeAverageConc <- try(Kendall::Kendall(plume_stats$Agg.Date, plume_stats$avg_conc))
   
-  if(!inherits(Mann.testPlumeAverageConc,"try-error")){
-    
-    temp.tex1<-paste("(Mann-Kendall P.Value=",format.pval(Mann.testPlumeAverageConc$sl,digits=3,eps=0.01),")",sep="")
-    #try(mtext(temp.tex1,side=3,line=0.4,cex=0.75,col=if(Mann.testPlumeAverageConc$sl<0.05 & Mann.testPlumeAverageConc$tau<0.0){"darkgreen"}else{"red"}))
-    #try(mtext(temp.tex1,side=3,line=0.4,cex=0.75,col=if(Mann.testPlumeAverageConc$sl<0.05){"darkgreen"}else{"red"}))
-    
-  }
-
+  try(mtext(paste("Plume Threshold = ", plume_thresh, plume_stats$conc_unit[1], sep = ""),side = 3, line = -1.1, cex = 0.95))
+  
+  
+  
 }
 
 
 
-plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 500){
+plotPlumeTimeSeriesPPT <- function(plume_stats,ImplementReducedWellSet, fileout, width = 800, height = 500){
   
   
   # Initialize Powerpoint file.
@@ -230,7 +180,7 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 5
   
  
   png(mytemp, width = width, height = height) 
-  plotPlumeTimeSeries(plume_stats)
+  plotPlumeTimeSeries(plume_stats,ImplementReducedWellSet)
   dev.off()
  
   
@@ -245,6 +195,7 @@ plotPlumeTimeSeriesPPT <- function(plume_stats, fileout, width = 800, height = 5
 
 
 printPlumeStatsCSV <- function(plume_stats) {
+  
   
   # Copy, in case it is passed by reference.
   stats_tbl <- plume_stats
@@ -261,7 +212,7 @@ printPlumeStatsCSV <- function(plume_stats) {
   names(stats_tbl)[names(stats_tbl) == "mass_centre_x"] <- "Centre of Mass (x)"
   names(stats_tbl)[names(stats_tbl) == "mass_centre_y"] <- "Centre of Mass (y)"
   names(stats_tbl)[names(stats_tbl) == "volume"] <- "Volume"
-  names(stats_tbl)[names(stats_tbl) == "conc_thresh"] <- "Plume Threshold Conc (ug/l)"
+  names(stats_tbl)[names(stats_tbl) == "conc_thresh"] <- paste0("Plume Threshold Conc (",stats_tbl$conc_unit[1],")")
   stats_tbl$ground_porosity<-100*stats_tbl$ground_porosity
   names(stats_tbl)[names(stats_tbl) == "ground_porosity"] <- "Ground Porosity (%)"
   
@@ -277,7 +228,7 @@ printPlumeStatsCSV <- function(plume_stats) {
 }
 
 #' @importFrom splancs gridpts
-plotPlumeEst <- function(csite, substance, plume_thresh){
+plotPlumeEst <- function(csite, substance, plume_thresh,UseReducedWellSet){
   
   
   #### Get Hull data points function ########
@@ -318,7 +269,11 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
   temp.df$MaxConc <- rep(NA,nrow(temp.df))
   temp.df$MaxInteriorConc <- rep(NA,nrow(temp.df))
   
-  model <- csite$Fitted.Data[[substance]][["Model.tune"]]$best.model
+  if(UseReducedWellSet){
+    model <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]$best.model
+  }else{
+    model <- csite$Fitted.Data[[substance]][["Model.tune"]]$best.model
+  }
   
   
   
@@ -326,10 +281,13 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
     
     temp.time.eval <- csite$All.Data$All_Agg_Dates[i]
     
-    Good.Wells <- as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
-
-    Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
-    
+    if(UseReducedWellSet){
+      Good.Wells <- as.character(unique(csite$Reduced.Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Reduced.Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+      Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Reduced.Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Reduced.Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+    }else{
+      Good.Wells <- as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) <= temp.time.eval,]$WellName))
+      Good.Wells <- intersect(Good.Wells,as.character(unique(csite$Fitted.Data[[substance]]$Cont.Data[as.numeric(csite$Fitted.Data[[substance]]$Cont.Data$AggDate) >= temp.time.eval,]$WellName)))
+    }
     if (length(Good.Wells) > 2) {
 
       ### Calculate Max Conc on hull boundary
@@ -376,5 +334,5 @@ plotPlumeEst <- function(csite, substance, plume_thresh){
               c(temp.df$MaxInteriorConc, rev(temp.df$MaxConc)),col = "grey", border = NA))
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
   abline(h = plume_thresh, col = "red", lwd = 2, lty = 2)
- 
+  if(UseReducedWellSet){mtext("Note: Well Redundancy Activated.",side = 3,adj = 0,line = 0,font=2,col=4)}
 }

@@ -42,6 +42,7 @@ formatData <- function(solute_data, sample_loc) {
   #   return(NULL)
   # }
   
+
   solute_data$WellName <- factor(rm_spaces(as.character(solute_data$WellName)))
   solute_data$Units <- factor(rm_spaces(as.character(solute_data$Units)))
   solute_data$Constituent <- factor(rm_spaces(as.character(solute_data$Constituent)))
@@ -88,8 +89,16 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
                         subst_napl_vals = "yes",
                         verbose = TRUE) {
 
-    cat("* processData()")
+  cat("* processData()")
   #Pick up Electron Acceptors before deleting non-aquifer wells. 
+  
+  if (any(is.na(solute_data$SampleDate))) {
+    msg = "Incorrectly formatted date(s) detected. Please correct and re-run GWSDAT analysis."
+    showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    Sys.sleep(5)
+    return(NULL)
+  }
+  
   ElecAccepts <- unique(as.character(solute_data[ tolower(as.character(solute_data$Flags)) %in% c("e-acc","notinnapl","redox"),"Constituent"]))
  
   well_tmp_data <- sample_loc$data[sample_loc$data$Aquifer == Aq_sel,]
@@ -104,8 +113,9 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   
   
   if (any(table(well_tmp_data$WellName) > 1)) {
-    msg = "Found non-unique well names in well coordinate table."
+    msg = "Found non-unique well names in well coordinate table. Please correct and re-run GWSDAT analysis."
     showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+    Sys.sleep(5)
     return(NULL)
   }
   
@@ -168,8 +178,9 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   ########################## Units Checking ####################################
   if (any(!tolower(as.character(Cont.Data$Units[tolower(as.character(Cont.Data$Constituent)) != "napl"])) %in% c("ug/l","mg/l","ng/l"))) {
 
-    msg = "Solute data must be one of 'ng/l', 'ug/l' or 'mg/l'. Please correct and re-run GWSDAT analysis."
+    msg = "Solute data units must be one of 'ng/l', 'ug/l' or 'mg/l'. Please correct and re-run GWSDAT analysis."
     showModal(modalDialog(title = "Units Error", msg, easyClose = FALSE))
+    Sys.sleep(5)
     return(NULL)
   }
   
@@ -189,8 +200,14 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
   
   if (length(zero_conc) > 0) {
     Cont.Data <- Cont.Data[-zero_conc,] 
-    if (verbose) showNotification(paste0("Ignoring ", length(zero_conc), "/", length(non_zero), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),
-                     duration = 10)
+    if (verbose) showNotification(paste0("Ignoring ", length(zero_conc), " zero concentration entries for Aquifer \'", Aq_sel, "\'."),duration = 10) #"/", length(non_zero), 
+  }
+  
+  ###bad_conc <-   which( is.na(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"  & !Cont.Data$ND])) ##Erroneous!
+  bad_conc <-   which(tolower(Cont.Data$Constituent) != "napl" & !Cont.Data$ND & is.na(Cont.Data$Result.Corr.ND))
+  if (length(bad_conc) > 0) {
+    Cont.Data <- Cont.Data[-bad_conc,] 
+    if (verbose) showNotification(paste0("Ignoring ", length(bad_conc),  " erroneous concentration entries for Aquifer \'", Aq_sel, "\'."),duration = 15) #"/", length(non_zero),
   }
   
   bad_conc <-   which( is.na(Cont.Data$Result.Corr.ND[tolower(Cont.Data$Constituent) != "napl"  & !Cont.Data$ND]))
@@ -272,6 +289,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
       
       msg = "Multiple units detected for NAPL thickness in input dataset. Please ensure same thickness units are used throughout."
       showModal(modalDialog(title = "Error", msg, easyClose = FALSE))
+      Sys.sleep(5)
       return(NULL)
     }
     
@@ -281,6 +299,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
         
         msg = "NAPL thickness units must be one of 'level', 'mm', 'cm', 'metres', 'inches' or 'feet'.\n\nPlease correct and re-run GWSDAT analysis."
         showModal(modalDialog(title = "Error", msg))
+        Sys.sleep(5)
         return(NULL)
       }
     }
@@ -294,7 +313,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
     
     
     if (is.null(subst_napl_vals)) {
-      msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations? \nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
+      msg <- "Do you wish to substitute NAPL values with maximum observed solute concentrations?<br>Note: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
       ask_user <- list(msg = msg, title = "NAPL Value Substitution")
 
       class(ask_user) <- "dialogBox"
@@ -405,6 +424,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
     # "Units Error"
     msg <- "Multiple units detected for GroundWater elevation in input dataset. \nPlease ensure same elevation units are used throughout."
     showModal(modalDialog(title = "Units Error", msg))
+    Sys.sleep(5)
     return(NULL)
   }
   
@@ -414,6 +434,7 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
       
       msg <- "GroundWater elevation units must be one of 'level', 'mm', 'cm', 'metres', 'inches' or 'feet'.\n\nPlease correct and re-run GWSDAT analysis."
       showModal(modalDialog(title = "Units Error", msg))
+      Sys.sleep(5)
       return(NULL)
     }
   }

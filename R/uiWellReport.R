@@ -17,7 +17,9 @@ uiWellReport <- function(csite, img_frmt) {
             
       radioButtons("logscale_wr", label = "Use Log-Scale",
                  choices = list("Yes", "No"), 
-                 selected = csite$ui_attr$logscale_wr)
+                 selected = csite$ui_attr$logscale_wr),
+      actionButton("update_wellreport_plot" ,"Update Plot", icon("refresh"),
+                   class = "btn btn-primary")
     
     ), # end box
 

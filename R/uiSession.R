@@ -6,7 +6,7 @@ uiSession <- function() {
     
     shinydashboard::box(width = 5, title = "Save Session", solidHeader = TRUE, status = "primary",
         
-      "Save and download the current Analysis session to a .RData file.",
+      "Save and download the current Analysis session to a .rds file.",
       
       div(style = "margin-top: 10px",
             textInput("session_filename", "Filename", 

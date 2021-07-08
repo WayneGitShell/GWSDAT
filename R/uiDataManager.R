@@ -113,7 +113,7 @@ uiImportSessionData <- function(valid_data_name) {
     ),
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", rhandsontable::rHandsontableOutput("tbl_conc_sess")), 
+                           tabPanel("Monitoring Data", rhandsontable::rHandsontableOutput("tbl_conc_sess")), 
                            tabPanel("Well Coordinates", rhandsontable::rHandsontableOutput("tbl_well_sess"))
     )
   )
@@ -136,8 +136,8 @@ uiImportNewData <- function(valid_data_name) {
                         "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
                         fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
                                   multiple = TRUE),
-                        selectInput("coord_unit_nd", label = "Coordinate Unit", choices = coord_units,
-                                    selected = coord_units[1], width = "50%"),
+                        selectInput("coord_unit_nd", label = "Coordinate Unit", choices =c("None"="","metres"="metres","feet"="feet"),# coord_units,
+                                    selected = "None", width = "50%"),
                         hr(),
                         actionButton("reset_nd_import", label = "Reset"),
                         actionButton("save_button_nd", label = "Save", icon("save"), 
@@ -145,7 +145,7 @@ uiImportNewData <- function(valid_data_name) {
     ),
     
     shinydashboard::tabBox(title = "", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", shiny::tagList(
+                           tabPanel("Monitoring Data", shiny::tagList(
                              div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_nd", "Clear Table")),
                              div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_nd", "Add Row", icon = icon("plus") )),
                              rhandsontable::rHandsontableOutput("tbl_conc_nd"),
@@ -181,11 +181,11 @@ uiImportCSVData <- function(valid_data_name) {
                         
                         
                         h3("Import CSV Data"),
-                        "Select the contaminant data and well coordinate files in CSV format (see setting below).",
+                        "Select the monitoring data and well coordinate files in CSV format (see setting below).",
                         hr(),
                         
                         textInput("dname_csv", label = "Data Name", value = valid_data_name),
-                        fileInput('well_data_csv', 'Contaminant Data File',
+                        fileInput('well_data_csv', 'Monitoring Data File',
                                   accept = c('text/csv', 
                                              'text/comma-separated-values,text/plain', 
                                              '.csv')),
@@ -222,7 +222,7 @@ uiImportCSVData <- function(valid_data_name) {
     ), # end box
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_csv_import",
-                           tabPanel("Contaminant Data", 
+                           tabPanel("Monitoring Data", 
                                     rhandsontable::rHandsontableOutput("tbl_conc_csv")
                            ), 
                            tabPanel("Well Coordinates", 
@@ -267,7 +267,7 @@ uiImportExcelData <- function(csite_list) {
     ),
     
     shinydashboard::tabBox(title = "Data Preview", width = 9, id = "tabbox_xls_import",
-                           tabPanel("Contaminant Data", {
+                           tabPanel("Monitoring Data", {
                              shiny::tagList(
                                HTML("<b>Note</b>: Only the first 1000 rows are displayed to speed up the table view given large data sets."),
                                rhandsontable::rHandsontableOutput("tbl_conc_xls")
@@ -304,8 +304,8 @@ uiEditData <- function(csite) {
                         #"Shape data editing not implemented.",
                         #fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
                         #          multiple = TRUE),
-                        selectInput("coord_unit_ed", label = "Coordinate Unit", choices = coord_units,
-                                    selected = csite$All.Data$sample_loc$coord_unit, width = "50%"),
+                        selectInput("coord_unit_ed", label = "Coordinate Unit", choices = c("None"="","metres"="metres","feet"="feet"),#coord_units,
+                                    selected = if(csite$All.Data$sample_loc$coord_unit %in% c("metres","feet")){csite$All.Data$sample_loc$coord_unit}else{"None"}, width = "50%"),
                         hr(),
                         actionButton("reset_ed_data", label = "Reset"),
                         actionButton("save_button_ed", label = "Save", icon("save"), 
@@ -313,7 +313,7 @@ uiEditData <- function(csite) {
     ),
     
     shinydashboard::tabBox(title = "", width = 9, id = "tabbox_nd_import",
-                           tabPanel("Contaminant Data", shiny::tagList(
+                           tabPanel("Monitoring Data", shiny::tagList(
                              #div(style = "display: inline-block; float:left", actionButton("clear_tbl_conc_ed", "Clear Table")),
                              div(style = "float:left; margin-left: 5px; margin-bottom: 5px", actionButton("addrow_tbl_conc_ed", "Add Row", icon = icon("plus") )),
                              rhandsontable::rHandsontableOutput("tbl_conc_ed"),

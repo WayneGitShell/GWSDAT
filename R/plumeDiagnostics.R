@@ -1,6 +1,5 @@
 
-getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
-                              progressBar = NULL) {
+getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,progressBar = NULL,UseReducedWellSet) {
 
   # This will become a data frame containing in each row the plume statistics 
   # of each date.
@@ -14,10 +13,10 @@ getFullPlumeStats <- function(csite, substance, plume_thresh, ground_porosity,
     
     progressBar$set(value = (i/nr_timesteps), detail = paste("time point ", i, " / ", nr_timesteps))
     
-    interp.pred <- interpConc(csite, substance, datetmp)
+    interp.pred <- interpConc(csite, substance, datetmp,UseReducedWellSet)
     
     plume_stats <- getPlumeStats(csite, substance, datetmp, 
-                                 interp.pred$data, plume_thresh, ground_porosity)
+                                 interp.pred$data, plume_thresh, ground_porosity,UseReducedWellSet)
     
     # Add date. 
     plume_stats = cbind(plume_stats, "Agg.Date" = datetmp)
@@ -52,14 +51,14 @@ getPlumeStats <- function(csite,
                           timepoint, 
                           predicted_val, 
                           plume_thresh, 
-                          ground_porosity ) {
+                          ground_porosity,UseReducedWellSet) {
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") {plume_thresh <- plume_thresh/1000}
   if (csite$ui_attr$conc_unit_selected == "ng/l") {plume_thresh <- plume_thresh*1000}
   
   cL <- contourLines(predicted_val, levels = plume_thresh)
   
-  model.tune <- csite$Fitted.Data[[substance]][["Model.tune"]]
+  model.tune <- if(UseReducedWellSet){csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]}else{csite$Fitted.Data[[substance]][["Model.tune"]]}
   
   PlumeDetails = list()
   
@@ -156,7 +155,7 @@ CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
   
   cL.Tri.Points  <- data.frame(XCoord=cL$x,YCoord=cL$y,z=rep(plume_thresh,length(cL$x)))
   Vol.Tri.Points <- unique(rbind(Plume.Tri.Points[,c("XCoord","YCoord","z")],cL.Tri.Points))
-  
+
   mydeldir  <- deldir::deldir(x=Vol.Tri.Points$XCoord, y = Vol.Tri.Points$YCoord, z = Vol.Tri.Points$z)
   mytriangs <- deldir::triang.list(mydeldir)
   PlumeVol  <- sum(unlist(lapply(mytriangs, VolIndTri)))
@@ -172,7 +171,8 @@ CalcPlumeStats <- function(model, AggDate, cL, plume_thresh, type, units){
 
 PlumeUnitHandlingFunc <- function(LengthUnit, rgUnits, PlumeMass, PlumeArea){
   
-  if (is.null(LengthUnit)) {
+  
+  if (is.null(LengthUnit) || LengthUnit=="" ) {
     
     PlumeMass <- 1000*PlumeMass
     
