@@ -21,11 +21,9 @@ server <- function(input, output, session) {
   
   # Moved into server from ui due to modal conflicts
   if (exists("APP_CUSTOM_COMPONENT", envir = .GlobalEnv)) 
-<<<<<<< HEAD
+
   shiny::showModal(APP_CUSTOM_COMPONENT())
-=======
-    shiny::showModal(APP_CUSTOM_COMPONENT())
->>>>>>> master
+
   
   # This is set inside launchApp()
   if (!exists("APP_LOGIN_MODE", envir = .GlobalEnv)) 
@@ -303,7 +301,6 @@ server <- function(input, output, session) {
                              substance = input$solute_select_sp, 
                              plume_thresh = input$plume_thresh_pd,
                              ground_porosity = (input$ground_porosity / 1),
-<<<<<<< HEAD
                              progressBar = progress,
                              UseReducedWellSet=FALSE
                              )
@@ -316,9 +313,7 @@ server <- function(input, output, session) {
                                          ground_porosity = (input$ground_porosity / 1),
                                          progressBar = progress,
                                          UseReducedWellSet=isolate(input$ImplementReducedWellSet)
-=======
-                             progressBar = progress
->>>>>>> master
+
                             )
       
   }else{

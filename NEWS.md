@@ -9,8 +9,5 @@ BUG FIXES
 * Fixed Model dialog box issue to correctly show Glasgow T+Cs. 
 
 * Fixed csv input date format issue
-<<<<<<< HEAD
 
 * Bug FIxez
-=======
->>>>>>> master
