@@ -1,3 +1,18 @@
+CHANGES IN VERSION 3.1.0 - Released 2021/07/08
+
+* Well Redundancy Analysis: This allows the user to very conveniently drop a well or a combination of wells from the analysis and investigate the resultant impact. 
+
+* Updated User Manual: http://gwsdat.net/gwsdat_manual. A fully comprehensive description of GWSDAT, updated for version 3.1. 
+
+* Excel Add-in Menu: New Excel menu designed to be clearer to navigate and easier to install. 
+
+* Custom Colour Key:  In response to user feedback, the latest version has the functionality to customise the colour key in the main GWSDAT spatial plot. 
+
+* Updated branding: The Excel data input templates have been updated with more contemporary colour schemes.
+
+* Bug Fixes: Numerous bug fixes and enhancements. More robust data input procedures which report more thoroughly on any potential issues, e.g. missing data, incorrect units, etc.
+
+
 CHANGES IN VERSION 3.0.6 - Released 2021/02/19
 
 BUG FIXES
@@ -10,4 +25,3 @@ BUG FIXES
 
 * Fixed csv input date format issue
 
-* Bug FIxez
