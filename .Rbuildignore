@@ -12,3 +12,5 @@
 ^users.RData
 ^app.R
 ^users.db
+^CRAN-RELEASE$
+^cran-comments.md
