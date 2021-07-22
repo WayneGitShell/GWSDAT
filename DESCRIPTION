@@ -22,7 +22,7 @@ Imports:
     lubridate,
     MASS,
     Matrix,
-    officer,
+    officer (>= 0.3.8),
     raster,
     readxl,
     rhandsontable,
