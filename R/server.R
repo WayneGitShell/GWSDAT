@@ -2713,6 +2713,7 @@ server <- function(input, output, session) {
       BP_modelfit_infile <- tempfile(pattern = "LC_", tmpdir = tempdir(), fileext = ".rds")
       
       # Save data object to file 
+      csite$SavedlibPaths<-.libPaths()
       saveRDS(csite, file = BP_modelfit_infile)
       
       # Starts script as a background process.
