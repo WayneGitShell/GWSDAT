@@ -2733,7 +2733,7 @@ server <- function(input, output, session) {
       # Set new number of knots for the P-Spline model.
       tmp_opt <- csite$GWSDAT_Options
       tmp_opt$PSplineVars$nseg <- new_psplines_nseg
-      
+      tmp_opt$SavedlibPaths <- .libPaths()
       # Add job to queue.
       # Uses system.file() to retrieve full path of target script. 
       # Note: This script loads GWSDAT itself, so it can't be located inside the R folder.
