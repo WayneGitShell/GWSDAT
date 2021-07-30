@@ -492,7 +492,7 @@ server <- function(input, output, session) {
     showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
     
     BP_modelfit_running(FALSE)
-
+    BP_modelfit_done(BP_modelfit_done() + 1) # Notify observers that fitting took place.  
     cat("** end of fitPSplineChecker()\n")
     
     # 
