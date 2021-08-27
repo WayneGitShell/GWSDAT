@@ -45,7 +45,7 @@ createOptions <- function(site_name = NULL) {
   GWSDAT_Options[['DefPorosity']] <- 0.25
   GWSDAT_Options[['smThreshSe']] <- 1.1512
   GWSDAT_Options[['smMethod']] <- 'aicc'
-  GWSDAT_Options[['Version']] <- as.numeric('3.00')
+  GWSDAT_Options[['Version']] <- packageVersion("GWSDAT")
   GWSDAT_Options[['ShapeFileNames']] <- NULL
   
   
