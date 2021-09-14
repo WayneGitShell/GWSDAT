@@ -72,10 +72,10 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 
   # This is for drawing the red tic on the top of the plot to show position in time.
   temp.time.frac <- as.numeric(timepoint - min(csite$All.Data$All_Agg_Dates))/as.numeric(diff(range(csite$All.Data$All_Agg_Dates)))
+  if (as.numeric(diff(range(csite$All.Data$All_Agg_Dates))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
   if (temp.time.frac == 1) temp.time.frac = .999 # to avoid plot issue with wmf format!
   if (temp.time.frac == 0) {temp.time.frac = .001}
-  if (as.numeric(diff(range(csite$All.Data$All_Agg_Dates))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
-
+  
   # Create the string for the date or date range to print
   date_to_print <- pasteAggLimit(timepoint, csite$GWSDAT_Options$Aggby)
   
