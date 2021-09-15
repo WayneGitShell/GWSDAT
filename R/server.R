@@ -758,7 +758,7 @@ server <- function(input, output, session) {
     for (cont in csite$All.Data$cont_names) {
       # Extract aggregation dates created above for specific contaminant and copy to fitted data table.
       agg_col <- csite$All.Data$Cont.Data$AggDate[which(csite$All.Data$Cont.Data$Constituent == cont)]
-      csite$Fitted.Data[[cont]]$Cont.Data$AggDate <<- agg_col
+      try(csite$Fitted.Data[[cont]]$Cont.Data$AggDate <<- agg_col) ## encapsulate with try to handle GW and NAPL only data sets..
     }
     
     # Re-Calculate Traffic Lights (depends on aggregation date).
