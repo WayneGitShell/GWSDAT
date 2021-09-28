@@ -34,8 +34,9 @@ calcGWFlow <- function(temp.GW) {
     temp.GW <- new.temp.GW
   }
   
-  temp.tr <- deldir(x=temp.GW$XCoord, y=temp.GW$YCoord, duplicate = "remove",frac = 0)
-
+  #temp.tr <- deldir(x=temp.GW$XCoord, y=temp.GW$YCoord, duplicate = "remove",frac = 0)
+  temp.tr <- deldir(x=temp.GW$XCoord, y=temp.GW$YCoord)
+  
   temp.tr.nghbrs <- delDirNeighbours(temp.tr)
   temp.GW$R <- temp.GW$GradY <- temp.GW$GradX <- rep(NA,nrow(temp.GW))
 
