@@ -2829,11 +2829,11 @@ server <- function(input, output, session) {
     
   if(is.null(csite$ui_attr$lev_cut_by_solute)){
     
-    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names)),rowHeaders = NULL,digits=0)
+    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names),check.names=F),rowHeaders = NULL,digits=0)
     
   }else{
     
-    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
+    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute,check.names=F),rowHeaders = NULL,digits=0)
     
   }
   })
