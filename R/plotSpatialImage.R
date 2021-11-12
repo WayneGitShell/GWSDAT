@@ -96,7 +96,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
     temp.Cont.Data$Result.Corr.ND <- temp.Cont.Data$Result.Corr.ND/1000
     temp.res <- as.character(temp.Cont.Data$Result)
-    temp.res <- gsub("ND<","",temp.res)
+    temp.res <- gsub("ND<|<","",temp.res)
     temp.res[tolower(temp.res) != "napl"] <- as.character(as.numeric(temp.res[tolower(temp.res) != "napl"])/1000)
     temp.res[temp.Cont.Data$ND] <- paste("ND<",temp.res[temp.Cont.Data$ND],sep = "")
     temp.Cont.Data$Result <- temp.res
@@ -107,7 +107,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
     temp.Cont.Data$Result.Corr.ND <- temp.Cont.Data$Result.Corr.ND*1000
     temp.res <- as.character(temp.Cont.Data$Result)
-    temp.res <- gsub("ND<","",temp.res)
+    temp.res <- gsub("ND<|<","",temp.res)
     temp.res[tolower(temp.res) != "napl"] <- as.character(as.numeric(temp.res[tolower(temp.res) != "napl"])*1000)
     temp.res[temp.Cont.Data$ND] <- paste("ND<",temp.res[temp.Cont.Data$ND],sep = "")
     temp.Cont.Data$Result <- temp.res
