@@ -1,3 +1,7 @@
+CHANGES IN VERSION 3.1.1 - Released 2021/07/08
+
+* Cumulative bug fixes since the release of 3.1.0
+
 CHANGES IN VERSION 3.1.0 - Released 2021/07/08
 
 * Well Redundancy Analysis: This allows the user to very conveniently drop a well or a combination of wells from the analysis and investigate the resultant impact. 
