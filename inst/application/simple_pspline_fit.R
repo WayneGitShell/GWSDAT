@@ -1,6 +1,6 @@
 
 
-library(GWSDAT)
+#library(GWSDAT) #Need to find libPath first before loading GWSDAT library. 
 
 
 vargs <- commandArgs(TRUE)
@@ -17,6 +17,8 @@ if (length(vargs) == 4) {
   cat("n_spline_segments: ", n_spline_segs, "\n")
   
   csite <- readRDS(infile)
+  .libPaths(c(csite$SavedlibPaths,.libPaths()))
+  library(GWSDAT)
   csite$GWSDAT_Options[['PSplineVars']][['nseg']] <- n_spline_segs
 
   # Do the fitting..  

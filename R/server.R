@@ -492,7 +492,7 @@ server <- function(input, output, session) {
     showNotification("P-Spline fit completed successfully.", type = "message", duration = 7)
     
     BP_modelfit_running(FALSE)
-
+    BP_modelfit_done(BP_modelfit_done() + 1) # Notify observers that fitting took place.  
     cat("** end of fitPSplineChecker()\n")
     
     # 
@@ -758,7 +758,7 @@ server <- function(input, output, session) {
     for (cont in csite$All.Data$cont_names) {
       # Extract aggregation dates created above for specific contaminant and copy to fitted data table.
       agg_col <- csite$All.Data$Cont.Data$AggDate[which(csite$All.Data$Cont.Data$Constituent == cont)]
-      csite$Fitted.Data[[cont]]$Cont.Data$AggDate <<- agg_col
+      try(csite$Fitted.Data[[cont]]$Cont.Data$AggDate <<- agg_col) ## encapsulate with try to handle GW and NAPL only data sets..
     }
     
     # Re-Calculate Traffic Lights (depends on aggregation date).
@@ -2713,6 +2713,7 @@ server <- function(input, output, session) {
       BP_modelfit_infile <- tempfile(pattern = "LC_", tmpdir = tempdir(), fileext = ".rds")
       
       # Save data object to file 
+      csite$SavedlibPaths<-.libPaths()
       saveRDS(csite, file = BP_modelfit_infile)
       
       # Starts script as a background process.
@@ -2733,7 +2734,7 @@ server <- function(input, output, session) {
       # Set new number of knots for the P-Spline model.
       tmp_opt <- csite$GWSDAT_Options
       tmp_opt$PSplineVars$nseg <- new_psplines_nseg
-      
+      tmp_opt$SavedlibPaths <- .libPaths()
       # Add job to queue.
       # Uses system.file() to retrieve full path of target script. 
       # Note: This script loads GWSDAT itself, so it can't be located inside the R folder.
@@ -2828,11 +2829,11 @@ server <- function(input, output, session) {
     
   if(is.null(csite$ui_attr$lev_cut_by_solute)){
     
-    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names)),rowHeaders = NULL,digits=0)
+    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names),check.names=F),rowHeaders = NULL,digits=0)
     
   }else{
     
-    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
+    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute,check.names=F),rowHeaders = NULL,digits=0)
     
   }
   })

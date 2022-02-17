@@ -1,13 +1,6 @@
 
 
-library(GWSDAT)
-
-
-if (!require(DBI))
-  stop("Missing the DBI package. Please install it.")
-
-if (!require(RSQLite))
-  stop("Missing the RSQLite package. Please install it.")
+#library(GWSDAT) #Need to find libPath first before loading GWSDAT library. 
 
 
 
@@ -33,6 +26,16 @@ if (length(vargs) == 3) {
   
   cat("job_id: ", job_id, ", refitting pslines with ", params$PSplineVars$nseg, " segments.\n")
   
+  .libPaths(c(params$SavedlibPaths,.libPaths()))
+  
+  if (!require(DBI))
+    stop("Missing the DBI package. Please install it.")
+  
+  if (!require(RSQLite))
+    stop("Missing the RSQLite package. Please install it.")
+  
+  
+  library(GWSDAT)
   fitdat <- GWSDAT:::fitData(csite$All.Data, params, showProgress = FALSE)
 
   # Pass the used parameters back, so they can update the data set parameters 

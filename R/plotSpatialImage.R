@@ -72,10 +72,10 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
 
   # This is for drawing the red tic on the top of the plot to show position in time.
   temp.time.frac <- as.numeric(timepoint - min(csite$All.Data$All_Agg_Dates))/as.numeric(diff(range(csite$All.Data$All_Agg_Dates)))
+  if (as.numeric(diff(range(csite$All.Data$All_Agg_Dates))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
   if (temp.time.frac == 1) temp.time.frac = .999 # to avoid plot issue with wmf format!
   if (temp.time.frac == 0) {temp.time.frac = .001}
-  if (as.numeric(diff(range(csite$All.Data$All_Agg_Dates))) == 0 || is.nan(temp.time.frac)) {temp.time.frac = .999} # Handle case when only one time point.
-
+  
   # Create the string for the date or date range to print
   date_to_print <- pasteAggLimit(timepoint, csite$GWSDAT_Options$Aggby)
   
@@ -96,7 +96,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
     temp.Cont.Data$Result.Corr.ND <- temp.Cont.Data$Result.Corr.ND/1000
     temp.res <- as.character(temp.Cont.Data$Result)
-    temp.res <- gsub("ND<","",temp.res)
+    temp.res <- gsub("ND<|<","",temp.res)
     temp.res[tolower(temp.res) != "napl"] <- as.character(as.numeric(temp.res[tolower(temp.res) != "napl"])/1000)
     temp.res[temp.Cont.Data$ND] <- paste("ND<",temp.res[temp.Cont.Data$ND],sep = "")
     temp.Cont.Data$Result <- temp.res
@@ -107,7 +107,7 @@ plotSpatialImage_main <- function(csite, substance = " ", timepoint = NULL,
     
     temp.Cont.Data$Result.Corr.ND <- temp.Cont.Data$Result.Corr.ND*1000
     temp.res <- as.character(temp.Cont.Data$Result)
-    temp.res <- gsub("ND<","",temp.res)
+    temp.res <- gsub("ND<|<","",temp.res)
     temp.res[tolower(temp.res) != "napl"] <- as.character(as.numeric(temp.res[tolower(temp.res) != "napl"])*1000)
     temp.res[temp.Cont.Data$ND] <- paste("ND<",temp.res[temp.Cont.Data$ND],sep = "")
     temp.Cont.Data$Result <- temp.res

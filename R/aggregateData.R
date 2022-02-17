@@ -37,7 +37,8 @@ aggregateData <- function(Cont.Data, GW.Data, NAPL.Thickness.Data, Well.Coords,
   
   
   All.Dates<-as.Date(sort(unique(c(Cont.Data$SampleDate,GW.Data$SampleDate, NAPL.Thickness.Data$SampleDate))))
-  my.seq<-as.Date(sort(seq.Date(max(Cont.Data$SampleDate),min(Cont.Data$SampleDate)-500,by=paste("-1",tolower(aggr_by)))))
+  ##my.seq<-as.Date(sort(seq.Date(max(Cont.Data$SampleDate),min(Cont.Data$SampleDate)-500,by=paste("-1",tolower(aggr_by)))))
+  my.seq<-as.Date(sort(seq.Date(max(All.Dates),min(All.Dates)-500,by=paste("-1",tolower(aggr_by)))))
   Cont.Data$AggDate<-as.Date(cut.Date(Cont.Data$SampleDate,breaks=my.seq,include.lowest=T,right=T,labels=as.character(my.seq[-1])))
   
   #Cont.Data$AggDate <- as.Date(cut.Date(Cont.Data$SampleDate, breaks = tolower(aggr_by), include.lower = TRUE))

@@ -22,7 +22,6 @@ plotPlumeTimeSeries <- function(plume_stats,ImplementReducedWellSet) {
   if (all(is.na(plume_stats$mass))) 
     return(NULL)
   
-  
   substance <- plume_stats$substance[1]
   plume_thresh <- plume_stats$conc_thresh[1]
   ground_porosity <- plume_stats$ground_porosity[1]
@@ -203,7 +202,10 @@ printPlumeStatsCSV <- function(plume_stats) {
   # Retrieve proper unit strings.
   tempUnitHandle <- PlumeUnitHandlingFunc(stats_tbl$coord_unit[1], 
                                           stats_tbl$conc_unit[1], 
-                                          NaN, NaN)
+                                          stats_tbl$mass, stats_tbl$area)
+  
+  stats_tbl$mass <- tempUnitHandle$PlumeMass
+  stats_tbl$area <- tempUnitHandle$PlumeArea
   
   # Edit column names.
   names(stats_tbl)[names(stats_tbl) == "avg_conc"] <- paste("Plume Average Conc ", tempUnitHandle$PlumeAverageUnits, sep = "")
