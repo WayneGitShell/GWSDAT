@@ -1315,14 +1315,6 @@ server <- function(input, output, session) {
   
     
   
-  # Generate PPT with spatial animation.
-  #observeEvent(input$generate_spatial_anim_ppt, {
-  #  
-  #  makeSpatialAnimation(csite, input$solute_select_sp,
-  #                       input$img_width_px, input$img_height_px,
-  #                       input$img_width_px_wide, input$img_height_px_wide)
-  #  
-  #})
   
   output$generate_spatial_anim_ppt <- downloadHandler(
     
@@ -1349,10 +1341,6 @@ server <- function(input, output, session) {
     
     content <- function(file) {
       
-      
-      # makeSpatialAnimation(csite, file, input$solute_select_sp,
-      #                      input$img_width_px, input$img_height_px,
-      #                      input$img_width_px_wide, input$img_height_px_wide,input$ImplementReducedWellSet,input$sample_Omitted_Wells)
       makeTimeSeriesAnimationPPT(csite, file, input$solute_select_ts, input$sample_loc_select_ts,
                         width  = input$img_width_px, height = input$img_height_px)
       
