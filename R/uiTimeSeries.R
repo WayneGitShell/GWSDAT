@@ -35,7 +35,13 @@ uiTimeSeries <- function(csite, img_frmt) {
                         
                         div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
                             downloadButton("save_timeseries_plot", label = "Save Plot")
-                        )
+                        ),
+                        if (existsPPT()) {
+                          div(id = "save_timeseries_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
+                              
+                              downloadButton("generate_timeseries_anim_ppt", label = "Generate GW Well Report", icon = icon("file-movie-o"))
+                              #actionButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
+                          ) }
                         
     )
   )

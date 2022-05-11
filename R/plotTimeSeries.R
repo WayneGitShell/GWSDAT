@@ -406,3 +406,51 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, 
   
 }
 
+
+
+
+makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, width = 600, height = 400){
+  
+  # Initialize Powerpoint file.
+  if (is.null(ppt_pres <- initPPT())) {
+    return(NULL)
+  }
+  
+  # Create temporary wmf file. 
+  # Loop over each time step.. 
+  All.Wells<-as.character(sort(unique(csite$All.Data$Cont.Data$WellName)))
+  for (i in 1:length(All.Wells)) {
+    
+  
+  mytemp <- tempfile(fileext = ".png")
+  
+  png(mytemp, width = width, height = height) 
+  plotTimeSeries(csite, substance, All.Wells[i])
+  dev.off()
+  
+  ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
+  
+  print(ppt_pres, target = fileout) %>% invisible()
+  
+  try(file.remove(mytemp))
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
