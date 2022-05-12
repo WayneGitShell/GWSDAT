@@ -418,10 +418,16 @@ makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, widt
   
   # Create temporary wmf file. 
   # Loop over each time step.. 
+  progress <- shiny::Progress$new()
+  progress$set(message = "Generating Powerpoint: ", value = 0)
+  on.exit(progress$close())
+  
   All.Wells<-as.character(sort(unique(csite$All.Data$Cont.Data$WellName)))
+  
   for (i in 1:length(All.Wells)) {
     
-  
+  progress$set(value = i/length(All.Wells), detail = paste0("Slide ", i))
+    
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
