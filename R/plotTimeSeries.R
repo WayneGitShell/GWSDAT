@@ -409,7 +409,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, 
 
 
 
-makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, width = 600, height = 400){
+makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layout,width = 600, height = 400){
   
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -422,27 +422,33 @@ makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, widt
   progress$set(message = "Generating Powerpoint: ", value = 0)
   on.exit(progress$close())
   
-  All.Wells<-as.character(sort(unique(csite$All.Data$Cont.Data$WellName)))
+  All.Wells<-location
+ 
+  Layout= switch(Layout,"1x1"=c(1,1),"2x1"=c(2,1),"1x2"=c(1,2),"2x2"=c(2,2))
   
   for (i in 1:length(All.Wells)) {
     
   progress$set(value = i/length(All.Wells), detail = paste0("Slide ", i))
+  
+  if(i %in% seq(1,length(All.Wells),by= Layout[1] * Layout[2])){
+    mytemp <- tempfile(fileext = ".png")
+    png(mytemp, width = width, height = height) 
+    par(mfrow=Layout)
+  }
     
-  mytemp <- tempfile(fileext = ".png")
-  
-  png(mytemp, width = width, height = height) 
   plotTimeSeries(csite, substance, All.Wells[i])
-  dev.off()
   
-  ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
+  if(i %in% c(seq(Layout[1] * Layout[2],max(Layout[1] * Layout[2],length(All.Wells)),by=Layout[1] * Layout[2]),length(All.Wells))){
+    dev.off()
+    ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
+    print(ppt_pres, target = fileout) %>% invisible()
+    try(file.remove(mytemp))
+  }
   
-  print(ppt_pres, target = fileout) %>% invisible()
   
-  try(file.remove(mytemp))
   }
   
 }
-
 
 
 

@@ -1332,8 +1332,8 @@ server <- function(input, output, session) {
     }
   )
   
- 
-  output$generate_timeseries_anim_ppt <- downloadHandler(
+########### GW Well Report Time Series Plotting ################################
+output$generate_timeseries_anim_ppt <- downloadHandler(
     
     filename <- function() {
       paste("timeseries_anim.pptx")
@@ -1341,12 +1341,31 @@ server <- function(input, output, session) {
     
     content <- function(file) {
       
-      makeTimeSeriesAnimationPPT(csite, file, input$solute_select_ts, input$sample_loc_select_ts,
+      makeTimeSeriesAnimationPPT(csite, file, input$solute_select_ts, input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,
                         width  = input$img_width_px, height = input$img_height_px)
       
     }
-  )
+)
   
+  
+  
+observeEvent(input$Optionsgenerate_timeseries_anim_ppt, {
+                 showModal(GWWellReportModal(csite))
+})
+               
+GWWellReportModal<-function(csite){
+                 
+              modalDialog(
+                  selectInput("gwwellreportsample_loc_select_wr", 'Select Monitoring Wells', choices = csite$ui_attr$sample_loc_names,selected =csite$ui_attr$sample_loc_names,multiple=T),
+                  radioButtons("gwwellreportlayout", label = "Plot Layout (Rows x Columns)",
+                               choices = c("1x1","1x2","2x1","2x2"), 
+                               selected = "2x2"),
+                  footer = tagList(downloadButton("generate_timeseries_anim_ppt", label = "Generate PowerPoint Report", icon = icon("file-movie-o")),modalButton("Close"))
+                   
+                 )
+                 
+ }            
+               
   ## General Import Routines ###################################################
   
   
