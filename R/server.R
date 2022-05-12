@@ -1355,7 +1355,7 @@ observeEvent(input$Optionsgenerate_timeseries_anim_ppt, {
                
 GWWellReportModal<-function(csite){
                  
-              modalDialog(
+              modalDialog(title=h3("Well Report"),
                   selectInput("gwwellreportsample_loc_select_wr", 'Select Monitoring Wells', choices = csite$ui_attr$sample_loc_names,selected =csite$ui_attr$sample_loc_names,multiple=T),
                   radioButtons("gwwellreportlayout", label = "Plot Layout (Rows x Columns)",
                                choices = c("1x1","1x2","2x1","2x2"), 
