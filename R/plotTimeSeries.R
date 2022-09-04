@@ -384,7 +384,7 @@ plotTimeSeries <- function(csite,
 # }
 
 
-makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, height = 400){
+makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,width = 600, height = 400){
   
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -395,7 +395,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, 
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotTimeSeries(csite, substance, location)
+  plotTimeSeries(csite, substance, location,show_thresh)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
