@@ -409,7 +409,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,w
 
 
 
-makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layout,width = 600, height = 400){
+makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layout,show_thresh,width = 600, height = 400){
   
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -436,7 +436,7 @@ makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layo
     par(mfrow=Layout)
   }
     
-  plotTimeSeries(csite, substance, All.Wells[i])
+  plotTimeSeries(csite=csite, substance =substance, location = All.Wells[i],show_thresh = show_thresh)
   
   if(i %in% c(seq(Layout[1] * Layout[2],max(Layout[1] * Layout[2],length(All.Wells)),by=Layout[1] * Layout[2]),length(All.Wells))){
     dev.off()
