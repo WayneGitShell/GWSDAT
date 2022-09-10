@@ -2,6 +2,7 @@ CHANGES IN VERSION 3.1.2
 
 * Fixed bug Threshold Value does not display in export of time-series graphs: #252
 * Added GW Well Report Functionality.
+* Added local save options to CSV generation of Monitoring data file from Excel Add-in. More robust date format identification. 
 
 CHANGES IN VERSION 3.1.1 - Released 2021/07/08
 
