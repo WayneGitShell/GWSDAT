@@ -1,4 +1,4 @@
-CHANGES IN VERSION 3.1.2
+CHANGES IN VERSION 3.1999999
 
 * Fixed bug Threshold Value does not display in export of time-series graphs: #252
 * Added GW Well Report Functionality.
