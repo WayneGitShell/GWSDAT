@@ -74,13 +74,15 @@ server <- function(input, output, session) {
   renderRHandsonWell <- reactiveVal(0)
   
   # Define supported image formats for saving plots.
-  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx","tif")
+  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx","tif","wmf")
         
   # Remove pptx (powerpoint) if no support was found. 
   if (!existsPPT())
     img_frmt <- img_frmt[-which(img_frmt == "pptx")]
-   
- 
+  
+  if (Sys.info()[['sysname']]!="Windows")
+    img_frmt <- img_frmt[-which(img_frmt == "wmf")]
+  
   
   # Clean-up user session.
   session$onSessionEnded(function() {
@@ -1111,7 +1113,8 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-          
+          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
+        
           plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
          
           dev.off()
