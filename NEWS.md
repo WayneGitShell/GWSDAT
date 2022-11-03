@@ -4,6 +4,7 @@ CHANGES IN VERSION 3.1999999
 * Added GW Well Report Functionality.
 * Added local save options to CSV generation of Monitoring data file from Excel Add-in. More robust date format identification. 
 * Improved messaging describing how GWSDAT behaves when concentration and NAPL data observed together, i.e. prefers to use conc data rather than substitution. 
+* Support for Windows Meta File image format output for spatial plot. Useful for rearranging overlapping well labels. 
 
 CHANGES IN VERSION 3.1.1 - Released 2021/07/08
 
