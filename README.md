@@ -28,8 +28,8 @@ Install the package as above and pass a `GWSDAT_Options` list to `launchApp()`. 
 library(GWSDAT)
 # Define GWSDAT_Options
 opt <- createOptions("Site Name")
-opt$WellData <- read.csv(system.file("data","ComprehensiveExample_WellData.csv",package="GWSDAT"))
-opt$WellCoords <- read.csv(system.file("data","ComprehensiveExample_WellCoords.csv",package="GWSDAT"))
+opt$WellData <- read.csv(system.file("extdata","ComprehensiveExample_WellData.csv",package="GWSDAT"))
+opt$WellCoords <- read.csv(system.file("extdata","ComprehensiveExample_WellCoords.csv",package="GWSDAT"))
 launchApp(opt)
 ``` 
 or the location of input csv files `WellDataFilename` and `WellCoordsFilename`. 
@@ -38,8 +38,8 @@ or the location of input csv files `WellDataFilename` and `WellCoordsFilename`.
 library("GWSDAT")
 # Define GWSDAT_Options
 GWSDAT_Options <- createOptions("Example Site")
-GWSDAT_Options$WellDataFilename <- system.file("data","BasicExample_WellData.csv",package="GWSDAT")
-GWSDAT_Options$WellCoordsFilename <- system.file("data","BasicExample_WellCoords.csv",package="GWSDAT")
+GWSDAT_Options$WellDataFilename <- system.file("extdata","BasicExample_WellData.csv",package="GWSDAT")
+GWSDAT_Options$WellCoordsFilename <- system.file("extdata","BasicExample_WellCoords.csv",package="GWSDAT")
 launchApp(GWSDAT_Options)
 ```
 <!---
