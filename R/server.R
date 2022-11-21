@@ -2973,15 +2973,27 @@ GWWellReportModal<-function(csite){
     Aq_sel <- loadOptions$aquifer
     subst_napl <- loadOptions$subst_napl
     
-    # Load the data from the .csv files.
     solute_data <- well_data <- NULL
+
+    if(!is.null(GWSDAT_Options[["WellData"]]) || !is.null(GWSDAT_Options[["WellCoords"]])){
+      
+      tryCatch({
+      solute_data<-GWSDAT_Options[["WellData"]]
+      well_data<-GWSDAT_Options[["WellCoords"]]  ### output well coordinate data is a list consisting of fields data and coord_unit
+      well_data<-list(data=GWSDAT_Options[["WellCoords"]][,c("WellName","XCoord","YCoord","Aquifer")],coord_unit=GWSDAT_Options[["WellCoords"]]["CoordUnits"][1])
+      }, error = function(w){showModal(modalDialog(title = "Error Inputting WellData and/or WellCoords.", w$message, easyClose = FALSE)); Sys.sleep(5)})
+
+    }
     
-    # Read Well data and coordinates from file.
-    tryCatch({
-      solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
-      well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
-    #}, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
-    }, error = function(w){showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)); Sys.sleep(5)})
+    #  # Read Well data and coordinates from csv files.
+    if(is.null(solute_data)){ # if it hasnt found any data yet.
+    
+      tryCatch({
+        solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
+        well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
+      }, error = function(w){showModal(modalDialog(title = "Error reading csv files", w$message, easyClose = FALSE)); Sys.sleep(5)})
+    
+    }
     
     # Check if reading the data failed. 
     if (is.null(solute_data) || is.null(well_data))
