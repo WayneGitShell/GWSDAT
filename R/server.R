@@ -399,7 +399,9 @@ server <- function(input, output, session) {
   ### Refit the spline model to all solutes with selected wells omitted.
   observeEvent(input$UpdateReducedWellFittedModel,{
     csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
-  
+    print("Updating Well redundancy well order")
+    updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+    
     })
   
   observeEvent(input$ImplementReducedWellSet,{
@@ -413,6 +415,7 @@ server <- function(input, output, session) {
     # Refit the spline model on initial selection of ReducedWellset implementation
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
+      updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
     }
     
   })
@@ -431,7 +434,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
-    
+    updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
   })
   
   #------------------------------------------------------------------#

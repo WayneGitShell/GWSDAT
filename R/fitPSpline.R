@@ -116,8 +116,7 @@ GWSDAT.compute.map.coef <- function(B, DtD, y, ig.a=1e-3, ig.b=1e-3, lambdas, pr
 
 }
 
-tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, 
-                         pord, bdeg, Trial.Lambda, verbose = FALSE) {
+tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda, verbose = FALSE) {
 
 
   # Prepare Data  
@@ -134,11 +133,37 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg,
   Y <- model.response(model.frame(form, ContData))
 
 
-  mat <- GWSDAT.st.matrices(X, xrange = t(apply(X, 2, range)), ndims = 3, 
-                            nseg = rep(nseg,3), pord = pord, bdeg = bdeg)
+  mat <- GWSDAT.st.matrices(X, xrange = t(apply(X, 2, range)), ndims = 3, nseg = rep(nseg,3), pord = pord, bdeg = bdeg)
   
-  BestModel <- GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas = Trial.Lambda, 
-                                       ig.a = NIG.a, ig.b = NIG.b, prior = GWSDAT.Prior)
+  
+  BestModel <- GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas = Trial.Lambda, ig.a = NIG.a, ig.b = NIG.b, prior = GWSDAT.Prior)
+  
+  if(TRUE){ 
+    print("Calculating Imetrics..")
+    
+    B      <- mat$B
+    P      <- mat$P
+    
+    # computing Hat matrix
+    hatmat <- B %*% solve((t(B) %*% B + BestModel$best.lambda * P)) %*% t(B)
+    df <- sum(diag(hatmat))     # effective degrees of freedom
+   
+    
+    Imetrics <- data.frame(WellName =ContData$WellName,leverage=diag(hatmat),residual=Y-BestModel$fitted)
+    N <- nrow(Imetrics)        # number of observations 
+    
+
+    # calculate standard error of residuals
+    RSE <- sqrt(sum(Imetrics$residual^2)/(N-df))
+    
+    # calculate standardized residuals and add to results
+    Imetrics$standresid = Imetrics$residual/(RSE*sqrt(1-Imetrics$leverage))
+    Imetrics$covratio<- 1/(((((N-df-1)/(N-df))+((Imetrics$standresid^2)/(N-df)))^df)*(1-Imetrics$leverage))
+    ImetricsByWellSummary<-aggregate(covratio~WellName,Imetrics,mean)
+    ImetricsByWellSummary<-ImetricsByWellSummary[order(ImetricsByWellSummary$covratio,decreasing = F),]
+    print(ImetricsByWellSummary)
+  }
+  
   
   if (verbose) {
   
@@ -159,7 +184,8 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg,
                      scale = scale,
                      center = center,
                      alpha = BestModel$alpha,
-                     fitted = BestModel$fitted)
+                     fitted = BestModel$fitted,
+                     Imetrics=list(ImetricsByWellSummary=ImetricsByWellSummary,Wellorder=as.character(ImetricsByWellSummary$WellName)))
 
   ##Alternative for SEs
   #best.model<-list(
