@@ -40,7 +40,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                     selectInput("sample_Omitted_Wells", "Select wells to be omitted from analysis", 
                                             choices = if(is.null(csite$Reduced.Fitted.Data)){
                                                         csite$Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder
-                                                      }else{csite$Reduced.Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder},
+                                                      }else{c(csite$ui_attr$sample_Omitted_Wells_selected,csite$Reduced.Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder)},
                                             selected = csite$ui_attr$sample_Omitted_Wells_selected, multiple = TRUE, selectize = TRUE),
 
                                     actionButton("UpdateReducedWellFittedModel", "Update Model")
