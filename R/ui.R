@@ -22,7 +22,8 @@ createLogoCSS <- function() {
 dbHeaderFull <- function() shinydashboard::dashboardHeader(title = "GWSDAT", 
                                                 shinydashboard::dropdownMenuOutput("welcomeMsg"), 
                                                 shinydashboard::dropdownMenuOutput("logAction"),
-                                                shinydashboard::dropdownMenuOutput("signupAction"))
+                                                shinydashboard::dropdownMenuOutput("signupAction"),tags$li(a(href = 'http://gwsdat.net',target="_blank",
+                                                                                                             icon("home"), title = "GWSDAT Homepage and User Manual"), class = "dropdown"))
 
 
 uiFull <- function() shinydashboard::dashboardPage(skin = "black",
@@ -93,8 +94,8 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
 
 # Define the Shiny dashboard header
 dbHeaderSimple <- function() shinydashboard::dashboardHeader(title = "GWSDAT",
-    tags$li(a(href = 'http://gwsdat.net',
-              icon("home"), title = "GWSDAT Homepage"), class = "dropdown")
+    tags$li(a(href = 'http://gwsdat.net',target="_blank",
+              icon("home"), title = "GWSDAT Homepage and User Manual"), class = "dropdown")
 )
 
 
