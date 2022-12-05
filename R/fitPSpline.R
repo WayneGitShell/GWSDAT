@@ -149,7 +149,7 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda,
     df <- sum(diag(hatmat))     # effective degrees of freedom
    
     
-    Imetrics <- data.frame(WellName =ContData$WellName,leverage=diag(hatmat),residual=Y-BestModel$fitted)
+    Imetrics <- data.frame(Constituent=ContData$Constituent,WellName =ContData$WellName,SampleDate=ContData$AggDate, leverage=diag(hatmat),residual=Y-BestModel$fitted)
     N <- nrow(Imetrics)        # number of observations 
     
 
@@ -159,11 +159,9 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda,
     # calculate standardized residuals and add to results
     Imetrics$standresid = Imetrics$residual/(RSE*sqrt(1-Imetrics$leverage))
     Imetrics$cd<-(1/df)*(Imetrics$standresid^2)*(Imetrics$leverage/(1-Imetrics$leverage))
-    
     Imetrics$covratio<- 1/(((((N-df-1)/(N-df))+((Imetrics$standresid^2)/(N-df)))^df)*(1-Imetrics$leverage))
-    ImetricsByWellSummary<-aggregate(cd~WellName,Imetrics,mean)
+    ImetricsByWellSummary<-aggregate(cd~Constituent+WellName,Imetrics,mean)
     ImetricsByWellSummary<-ImetricsByWellSummary[order(ImetricsByWellSummary$cd,decreasing = F),]
-    print(ImetricsByWellSummary)
   }
   
   
@@ -187,7 +185,7 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda,
                      center = center,
                      alpha = BestModel$alpha,
                      fitted = BestModel$fitted,
-                     Imetrics=list(ImetricsByWellSummary=ImetricsByWellSummary,Wellorder=as.character(ImetricsByWellSummary$WellName)))
+                     Imetrics=list(Imetrics=Imetrics,ImetricsByWellSummary=ImetricsByWellSummary,Wellorder=as.character(ImetricsByWellSummary$WellName)))
 
   ##Alternative for SEs
   #best.model<-list(
