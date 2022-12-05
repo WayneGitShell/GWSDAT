@@ -158,9 +158,11 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda,
     
     # calculate standardized residuals and add to results
     Imetrics$standresid = Imetrics$residual/(RSE*sqrt(1-Imetrics$leverage))
+    Imetrics$cd<-(1/df)*(Imetrics$standresid^2)*(Imetrics$leverage/(1-Imetrics$leverage))
+    
     Imetrics$covratio<- 1/(((((N-df-1)/(N-df))+((Imetrics$standresid^2)/(N-df)))^df)*(1-Imetrics$leverage))
-    ImetricsByWellSummary<-aggregate(covratio~WellName,Imetrics,mean)
-    ImetricsByWellSummary<-ImetricsByWellSummary[order(ImetricsByWellSummary$covratio,decreasing = F),]
+    ImetricsByWellSummary<-aggregate(cd~WellName,Imetrics,mean)
+    ImetricsByWellSummary<-ImetricsByWellSummary[order(ImetricsByWellSummary$cd,decreasing = F),]
     print(ImetricsByWellSummary)
   }
   
