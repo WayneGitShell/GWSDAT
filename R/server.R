@@ -1366,7 +1366,7 @@ GWWellReportModal<-function(csite){
                   radioButtons("gwwellreportlayout", label = "Plot Layout (Rows x Columns)",
                                choices = c("1x1","1x2","2x1","2x2"), 
                                selected = "2x2"),
-                  footer = tagList(downloadButton("generate_timeseries_anim_ppt", label = "Generate PowerPoint Report", icon = icon("file-movie-o")),modalButton("Close"))
+                  footer = tagList(downloadButton("generate_timeseries_anim_ppt", label = "Generate PowerPoint Report"),modalButton("Close")) #, icon = icon("file-movie-o")
                    
                  )
                  

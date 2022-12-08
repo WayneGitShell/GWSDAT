@@ -69,7 +69,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                     if (existsPPT()) {
                                       div(id = "save_spatial_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
                                           
-                                          downloadButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
+                                          downloadButton("generate_spatial_anim_ppt", label = "Generate PPT Animation")#, icon = icon("file-movie-o")
                                           #actionButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
                                       ) }
                                     

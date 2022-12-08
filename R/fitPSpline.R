@@ -203,6 +203,7 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda,
 
 
 
+
 fitPSplines <- function(ContData, params){
 
   #cat("* in fitPSpline()\n")
