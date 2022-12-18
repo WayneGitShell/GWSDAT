@@ -8,23 +8,23 @@ server <- function(input, output, session) {
   observe({
   urlArgs<-session$clientData$url_search
   
-  if(urlArgs==""){
-    #GWSDAT_Options<-createOptions()
+  if(urlArgs!=""){
+    
     .GlobalEnv$GWSDAT_Options<-createOptions()
-    urlArgs<-"&ExcelDataFilename=C:/Users/Wayne.W.Jones/Desktop/GWSDATExample.xlsx&ShapeFileNames=C:/Users/Wayne.W.Jones/GitHub/GWSDAT_v3.12/data/GIS_Files/GWSDATex2.shp"
+    #urlArgs<-"&ExcelDataFilename=C:/Users/Wayne.W.Jones/Desktop/GWSDATExample.xlsx&ShapeFileNames=C:/Users/Wayne.W.Jones/GitHub/GWSDAT_v3.12/data/GIS_Files/GWSDATex2.shp"
     urlArgsParsed<-parseQueryString(urlArgs)
 
     for(eachArg in 1:length(urlArgsParsed)){GWSDAT_Options[[names(urlArgsParsed)[eachArg]]]<-urlArgsParsed[[names(urlArgsParsed)[eachArg]]]}
 
     if(!is.null(GWSDAT_Options$ExcelDataFilename)){
-      #GWSDAT_Options$ExcelDataFilename$datapath<-GWSDAT_Options$ExcelDataFilename
       GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
       }
-    #opt1<<-GWSDAT_Options
+
     .GlobalEnv$GWSDAT_Options<-GWSDAT_Options
-    #print("here")
+
   }
-  #print(GWSDAT_Options)
+  
+  #print(GWSDAT_Options)  
   # if(urlArgs!=""){
   # GWSDAT_Options <- createOptions("Example Site")
   # GWSDAT_Options$WellDataFilename <- system.file("extdata","BasicExample_WellData.csv",package="GWSDAT")
