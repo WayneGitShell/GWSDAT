@@ -3,11 +3,10 @@
 
 server <- function(input, output, session) {
   
-  print(exists("GWSDAT_Options")); print("GWSDFAT OPtions here?")
   
   observe({
   urlArgs<-session$clientData$url_search
-  
+  print("urlArgs"); print(urlArgs)
   if(urlArgs!=""){
     
     .GlobalEnv$GWSDAT_Options<-createOptions()
