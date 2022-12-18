@@ -43,7 +43,8 @@ uiSpatialImage <- function(csite, img_frmt) {
                                                       }else{c(csite$ui_attr$sample_Omitted_Wells_selected,csite$Reduced.Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder)},
                                             selected = csite$ui_attr$sample_Omitted_Wells_selected, multiple = TRUE, selectize = TRUE),
 
-                                    actionButton("UpdateReducedWellFittedModel", "Update Model")
+                                    actionButton("UpdateReducedWellFittedModel", "Update Model"),
+                                    actionButton("show_WellRedundancy_help", "Help")
 
 
                            )

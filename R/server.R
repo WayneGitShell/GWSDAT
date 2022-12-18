@@ -3,6 +3,39 @@
 
 server <- function(input, output, session) {
   
+  print(exists("GWSDAT_Options")); print("GWSDFAT OPtions here?")
+  
+  observe({
+  urlArgs<-session$clientData$url_search
+  
+  if(urlArgs==""){
+    #GWSDAT_Options<-createOptions()
+    .GlobalEnv$GWSDAT_Options<-createOptions()
+    urlArgs<-"&ExcelDataFilename=C:/Users/Wayne.W.Jones/Desktop/GWSDATExample.xlsx&ShapeFileNames=C:/Users/Wayne.W.Jones/GitHub/GWSDAT_v3.12/data/GIS_Files/GWSDATex2.shp"
+    urlArgsParsed<-parseQueryString(urlArgs)
+
+    for(eachArg in 1:length(urlArgsParsed)){GWSDAT_Options[[names(urlArgsParsed)[eachArg]]]<-urlArgsParsed[[names(urlArgsParsed)[eachArg]]]}
+
+    if(!is.null(GWSDAT_Options$ExcelDataFilename)){
+      #GWSDAT_Options$ExcelDataFilename$datapath<-GWSDAT_Options$ExcelDataFilename
+      GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
+      }
+    #opt1<<-GWSDAT_Options
+    .GlobalEnv$GWSDAT_Options<-GWSDAT_Options
+    #print("here")
+  }
+  #print(GWSDAT_Options)
+  # if(urlArgs!=""){
+  # GWSDAT_Options <- createOptions("Example Site")
+  # GWSDAT_Options$WellDataFilename <- system.file("extdata","BasicExample_WellData.csv",package="GWSDAT")
+  # GWSDAT_Options$WellCoordsFilename <- system.file("extdata","BasicExample_WellCoords.csv",package="GWSDAT")
+  # GWSDAT_Options<<-GWSDAT_Options
+  # print(GWSDAT_Options)
+  # }
+  
+  
+  })
+  
   time.log <- ''
   
   DEBUG_MODE <- FALSE
@@ -395,6 +428,29 @@ server <- function(input, output, session) {
   })
   
   ########### Well Redundancy Analysis Section #######################
+  
+  ### Well Redundancy modal help dialog. 
+  #The well redundancy feature allows a user to drop a well or a combination of
+  # wells from the analysis and investigate the resultant impact. The primary intent of this tool is to understand
+  # which wells may have the most influence and also provide supporting evidence that the conclusions of the
+  # analysis would not be significantly different with the omission of some certain wells. 
+  # 
+  # observeEvent(input$show_WellRedundancy_help,{
+  #   showModal(modalDialog("The well redundancy feature allows a user to drop a well or a combination of wells from the analysis and investigate the resultant impact.","kjhjhjh",tags$div("For more details the GWSDAT user manual ", tags$a(target="_blank",href = 'http://gwsdat.net/gwsdat_manual/', "here")), title = "Well Redundancy Analysis"))
+  # })
+  # 
+  observeEvent(input$show_WellRedundancy_help,{
+    showModal(
+      modalDialog("The well redundancy feature allows a user to drop a well or a combination of wells from the analysis and investigate the resultant impact.",
+                  tags$div("Select the wells to be omitted from the listbox and press the `Update Model` button to fit the reduced well data set."),
+                  "Use the checkbox to toggle between the full and reduced well data set.", "The ",
+                  "For more details the GWSDAT user manual ", tags$a(target="_blank",href = 'http://gwsdat.net/gwsdat_manual/', "here"),
+                  tags$a(target="_blank",href = 'https://github.com/peterradv/Well-Influence-Analysis', "here"), 
+                  title = "GWSDAT Well Redundancy Analysis Feature",size="l",footer = modalButton("Close"),easyClose=T))
+  })
+  
+  
+  
   
   ### Refit the spline model to all solutes with selected wells omitted.
   observeEvent(input$UpdateReducedWellFittedModel,{
@@ -2968,16 +3024,18 @@ GWWellReportModal<-function(csite){
       return(TRUE)  
     }
     
-    
-    # Create Options in case they don't exist.
-    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) 
+     if (!exists("GWSDAT_Options", envir = .GlobalEnv)){ 
       GWSDAT_Options <-  createOptions()
+    }
+    
+    
     
     Aq_sel <- loadOptions$aquifer
     subst_napl <- loadOptions$subst_napl
     
     solute_data <- well_data <- NULL
-
+    
+    # Well data and coordinates inputted as R data frames. 
     if(!is.null(GWSDAT_Options[["WellData"]]) || !is.null(GWSDAT_Options[["WellCoords"]])){
       
       tryCatch({
@@ -2987,6 +3045,18 @@ GWWellReportModal<-function(csite){
       }, error = function(w){showModal(modalDialog(title = "Error Inputting WellData and/or WellCoords.", w$message, easyClose = FALSE)); Sys.sleep(5)})
 
     }
+    
+    
+    #  Read Well data and coordinates from Excel GWSDAT input Template
+    if(!is.null(GWSDAT_Options[["ExcelDataFilename"]])){
+      
+      #ret<-readExcel(opt$ExcelDataFilename,sheet="GWSDAT Basic Example")
+      ret<-readExcel(GWSDAT_Options$ExcelDataFilename)
+      solute_data<-ret$conc_data
+      well_data<-list(data=ret$well_data[,c("WellName","XCoord","YCoord","Aquifer")],coord_unit=ret$coord_unit[1])
+      
+    }
+    
     
     #  # Read Well data and coordinates from csv files.
     if(is.null(solute_data)){ # if it hasnt found any data yet.

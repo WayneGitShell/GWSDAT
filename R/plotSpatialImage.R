@@ -694,6 +694,7 @@ PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWel
   r <- rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
   
   writeRaster(r,fileout,overwrite=TRUE)
+  #writeRaster(r, filename=fileout, format="GTiff", overwrite=TRUE) #Geotiff format
   
 }
 
