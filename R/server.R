@@ -5,32 +5,26 @@ server <- function(input, output, session) {
   
   
   observe({
-  urlArgs<-session$clientData$url_search
-  print("urlArgs"); print(urlArgs)
-  if(urlArgs!=""){
     
-    .GlobalEnv$GWSDAT_Options<-createOptions()
-    #urlArgs<-"&ExcelDataFilename=C:/Users/Wayne.W.Jones/Desktop/GWSDATExample.xlsx&ShapeFileNames=C:/Users/Wayne.W.Jones/GitHub/GWSDAT_v3.12/data/GIS_Files/GWSDATex2.shp"
-    urlArgsParsed<-parseQueryString(urlArgs)
-
-    for(eachArg in 1:length(urlArgsParsed)){GWSDAT_Options[[names(urlArgsParsed)[eachArg]]]<-urlArgsParsed[[names(urlArgsParsed)[eachArg]]]}
-
-    if(!is.null(GWSDAT_Options$ExcelDataFilename)){
-      GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
-      }
-
-    .GlobalEnv$GWSDAT_Options<-GWSDAT_Options
-
-  }
+    urlArgs<-session$clientData$url_search
   
-  #print(GWSDAT_Options)  
-  # if(urlArgs!=""){
-  # GWSDAT_Options <- createOptions("Example Site")
-  # GWSDAT_Options$WellDataFilename <- system.file("extdata","BasicExample_WellData.csv",package="GWSDAT")
-  # GWSDAT_Options$WellCoordsFilename <- system.file("extdata","BasicExample_WellCoords.csv",package="GWSDAT")
-  # GWSDAT_Options<<-GWSDAT_Options
-  # print(GWSDAT_Options)
-  # }
+  
+      if(urlArgs!=""){
+    
+        .GlobalEnv$GWSDAT_Options<-createOptions()
+         urlArgsParsed<-parseQueryString(urlArgs)
+
+          for(eachArg in 1:length(urlArgsParsed)){GWSDAT_Options[[names(urlArgsParsed)[eachArg]]]<-urlArgsParsed[[names(urlArgsParsed)[eachArg]]]}
+
+          if(!is.null(GWSDAT_Options$ExcelDataFilename)){
+            GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
+          }
+
+      .GlobalEnv$GWSDAT_Options<-GWSDAT_Options #Has to be a global variable to work... 
+    ##Example: https://rconnect-dev.private.selfservice.shell.ai/GWSDATURL/?ExcelDataFilename=GWSDATExample.xlsx&ShapeFileNames=GWSDATex2.shp 
+    ## https://rconnect-dev.private.selfservice.shell.ai/GWSDATURL/?WellDataFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellData.csv&WellCoordsFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellCoords.csv
+    
+  }
   
   
   })
@@ -440,16 +434,21 @@ server <- function(input, output, session) {
   # 
   observeEvent(input$show_WellRedundancy_help,{
     showModal(
-      modalDialog("The well redundancy feature allows a user to drop a well or a combination of wells from the analysis and investigate the resultant impact.",
-                  tags$div("Select the wells to be omitted from the listbox and press the `Update Model` button to fit the reduced well data set."),
-                  "Use the checkbox to toggle between the full and reduced well data set.", "The ",
-                  "For more details the GWSDAT user manual ", tags$a(target="_blank",href = 'http://gwsdat.net/gwsdat_manual/', "here"),
-                  tags$a(target="_blank",href = 'https://github.com/peterradv/Well-Influence-Analysis', "here"), 
+      modalDialog(HTML("<ul> <li><font size='+0.5'> The well redundancy feature allows a user to drop a well or a combination of wells from the analysis and investigate the resultant impact.
+                   Select the wells to be omitted from the listbox and press the `Update Model` button to fit the reduced well data set. Use the checkbox to toggle between the full and reduced well data set. <br><br></font></li></ul>"), 
+                  
+                  HTML("<ul> <li><font size='+0.5'> The order of wells in the list box are presented such that the wells which have been estimated to have the least 
+                  influence on the spatiotemporal solute concentration smoother are presented first. This order is established via a procedure fully documented 
+                       <a href='https://github.com/peterradv/Well-Influence-Analysis' target='_blank'>here</a>.  This <u>approximation</u> procedure has been adopted to greatly increase computational speed and efficiency. 
+                  For this reason, the order of wells is to be interpreted as a <u>guide</u> only. Please note that this order is also dependent on the current selection of omitted wells and substance and will 
+                  be updated once the model is updated or a different substance selected. 
+                       For this reason, it is suggested to omit wells in an incremental one-by-one fashion. </font></li></ul><br>"),
+                  HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='http://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
                   title = "GWSDAT Well Redundancy Analysis Feature",size="l",footer = modalButton("Close"),easyClose=T))
   })
   
   
-  
+  #HTML("I like <u>turtles</u>"), HTML("<a href='https://github.com/peterradv/Well-Influence-Analysis' target='_blank'>here</a>.")#tags$a(target="_blank",href = 'https://github.com/peterradv/Well-Influence-Analysis', "here"),
   
   ### Refit the spline model to all solutes with selected wells omitted.
   observeEvent(input$UpdateReducedWellFittedModel,{
