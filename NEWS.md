@@ -1,5 +1,6 @@
 CHANGES IN VERSION 3.1999999
-
+* Implementation of well influence analysis: https://github.com/peterradv/Well-Influence-Analysis
+* Updated User Manual for version 3.2. 
 * Fixed bug Threshold Value does not display in export of time-series graphs: #252
 * Added GW Well Report Functionality.
 * Added local save options to CSV generation of Monitoring data file from Excel Add-in. More robust date format identification. 
