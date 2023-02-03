@@ -453,8 +453,10 @@ server <- function(input, output, session) {
   ### Refit the spline model to all solutes with selected wells omitted.
   observeEvent(input$UpdateReducedWellFittedModel,{
     csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
-    print("Updating Well redundancy well order")
-    updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+
+    if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+      updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+    }
     
     })
   
@@ -464,12 +466,22 @@ server <- function(input, output, session) {
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet & is.null(input$sample_Omitted_Wells)){
       csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
       csite[["Reduced.Fitted.Data.GW.Flows"]]<<-csite[["GW.Flows"]]
+      
+      if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+        updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+      }
+      
     }
     
     # Refit the spline model on initial selection of ReducedWellset implementation
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
+      
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
-      updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+      
+      if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+        updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+      }
+        
     }
     
   })
@@ -488,7 +500,35 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
-    updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+    
+    
+    
+    if(is.null(csite$Reduced.Fitted.Data)){
+      
+      if(!inherits(try(csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+      }else{
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$ui_attr$sample_loc_names))
+       }
+      
+    }else{
+      
+       if(!inherits(try(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+       }else{
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$ui_attr$sample_loc_names))
+       }
+      
+    }
+    
+    # if(is.null(csite$Reduced.Fitted.Data)){ #No reduced model fit as yet attempt to use Full model fit well order instead.
+    #   updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+    # }
+    # ## Update well order in Well Redundancy listbox for newly selected solutes. 
+    # if(!inherits(try(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+    #   updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+    # }
+    
   })
   
   #------------------------------------------------------------------#
