@@ -505,7 +505,7 @@ server <- function(input, output, session) {
     
     if(is.null(csite$Reduced.Fitted.Data)){
       
-      if(!inherits(try(csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+      if(!inherits(csite$Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
          updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
       }else{
          updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$ui_attr$sample_loc_names))
@@ -513,7 +513,8 @@ server <- function(input, output, session) {
       
     }else{
       
-       if(!inherits(try(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+       #if(!inherits(try(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+       if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
          updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
        }else{
          updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$ui_attr$sample_loc_names))
