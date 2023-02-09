@@ -138,8 +138,7 @@ tunePSplines <- function(ContData, NIG.a, NIG.b, nseg, pord, bdeg, Trial.Lambda,
   
   BestModel <- GWSDAT.compute.map.coef(mat$B, mat$P, Y, lambdas = Trial.Lambda, ig.a = NIG.a, ig.b = NIG.b, prior = GWSDAT.Prior)
   
-  if(TRUE){ 
-    print("Calculating Imetrics....")
+  if(TRUE){ ##Calculate Imetrics - introduced in GWSDAT version 3.2
     
     B      <- mat$B
     P      <- mat$P
