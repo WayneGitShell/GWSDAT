@@ -9,6 +9,7 @@ server <- function(input, output, session) {
     urlArgs<-session$clientData$url_search
   
   
+    
       if(urlArgs!=""){
     
         .GlobalEnv$GWSDAT_Options<-createOptions()
