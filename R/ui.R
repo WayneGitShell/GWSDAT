@@ -78,12 +78,13 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
                   uiOutput("uiAnalyseDataList")
               ),
               shinyjs::hidden(div(id = "analyse_page",
-                     uiOutput("rndAnalyse"))
+                     uiOutput("rndAnalyseFull"))
               )
       ),
      
       shinydashboard::tabItem(tabName = "logs_jobs",
-                              uiOutput("uiLogsJobs")
+                              uiOutput("uiLogsJobsFull")
+                              #h2("Widgets tab content")
       )
       
     ) # end tabItems
@@ -104,8 +105,8 @@ uiSimple <- function() shinydashboard::dashboardPage(skin = "black",
 
   dbHeaderSimple(), 
   shinydashboard::dashboardSidebar(shinydashboard::sidebarMenu(
-    shinydashboard::menuItem("Analyse", tabName = "analysis", icon = icon("bar-chart")),
-    shinydashboard::menuItem("Logs and Jobs", tabName = "logs_jobs", icon = icon("wpforms"))
+    shinydashboard::menuItem("Analyse", tabName = "analysis1", icon = icon("bar-chart")),
+    shinydashboard::menuItem("Logs and Jobs", tabName = "logs_jobs1", icon = icon("wpforms"))
     ),
     collapsed = TRUE
   ),
@@ -116,8 +117,8 @@ uiSimple <- function() shinydashboard::dashboardPage(skin = "black",
                       shiny::singleton(tags$head(tags$script(src = system.file("www", "trafficlight.js", package = "GWSDAT")))),
                       shiny::singleton(tags$head(tags$link(href = system.file("www", "trafficlight.css", package = "GWSDAT"), rel = "stylesheet"))),
                       shinydashboard::tabItems( 
-                        shinydashboard::tabItem(tabName = "analysis", uiOutput("rndAnalyse")),
-                        shinydashboard::tabItem(tabName = "logs_jobs", uiOutput("uiLogsJobs"))
+                        shinydashboard::tabItem(tabName = "analysis1", uiOutput("rndAnalyse")),
+                        shinydashboard::tabItem(tabName = "logs_jobs1", uiOutput("uiLogsJobs"))
                       )
                       
   ) # end dashboardBody 
@@ -175,3 +176,15 @@ uiSignupModal <- function() {
   ))
 }
 
+
+uiChoice <-  tagList(
+  shinyjs::useShinyjs(),
+  div(id = "uiFull",
+      #style = "display:none",
+      uiFull()
+  ),
+  div(id = "uiSimple",
+     #style = "display:none",
+      uiSimple()
+  )
+)

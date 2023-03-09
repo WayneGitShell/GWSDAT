@@ -29,7 +29,10 @@ options(warn = 1)
 #' launchApp(session_file = "path_to_GWSDAT_session.rds") # launch in single data mode.
 #' launchApp()  # launch in multi data mode
 #' }
+
 launchApp <- function(GWSDAT_Options, session_file) {
+  
+
   
   # For R package: Need this here or shinyjs won't work and the connection 
   # breaks - reason unknown. 
@@ -42,7 +45,9 @@ launchApp <- function(GWSDAT_Options, session_file) {
     
     .GlobalEnv$APP_RUN_MODE <- "MultiData"
     
-    shinyApp(ui = uiFull(), server = server)
+    #shinyApp(ui = uiFull(), server = server)
+    #shinyApp(ui = fluidPage(useShinyjs(),uiOutput('myUI')), server = server)
+    shinyApp(ui = uiChoice, server = server)
     
   } else {
     

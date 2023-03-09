@@ -4,14 +4,12 @@
 server <- function(input, output, session) {
   
   
-  observe({
+    observe({
     
     urlArgs<-session$clientData$url_search
   
-  
-    
       if(urlArgs!=""){
-    
+        print(getQueryString())
         .GlobalEnv$GWSDAT_Options<-createOptions()
          urlArgsParsed<-parseQueryString(urlArgs)
 
@@ -24,15 +22,20 @@ server <- function(input, output, session) {
       .GlobalEnv$GWSDAT_Options<-GWSDAT_Options #Has to be a global variable to work... 
     ##Example: https://rconnect-dev.private.selfservice.shell.ai/GWSDATURL/?ExcelDataFilename=GWSDATExample.xlsx&ShapeFileNames=GWSDATex2.shp 
     ## https://rconnect-dev.private.selfservice.shell.ai/GWSDATURL/?WellDataFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellData.csv&WellCoordsFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellCoords.csv
-    
-  }
-  
+      
+      .GlobalEnv$APP_RUN_MODE <- "SingleData"
+      shinyjs::show("uiSimple")
+      }else{
+    print("HERE")
+        #output$myUI <- renderUI({uiFull()})
+        shinyjs::show("uiFull")
+      }
   
   })
   
   time.log <- ''
-  
-  DEBUG_MODE <- FALSE
+  print("kjakjas")
+  DEBUG_MODE <- TRUE
  
   # Increase upload file size to 30MB (default: 5MB)
   options(shiny.maxRequestSize = 30*1024^2)
@@ -3552,7 +3555,7 @@ GWWellReportModal<-function(csite){
   
     # Observe load status of data.
     data_load_status <- dataLoaded()
-    
+    print("IN renderUI rndAnalyse")
     ret <- FALSE
     
     # Nothing loaded yet, start process.
@@ -3564,7 +3567,8 @@ GWWellReportModal<-function(csite){
         return(NULL)
       }
     }
-      
+    
+    
     
     if (class(ret) == "Aq_list" ) {
       return(div(style = "width: 50%; margin: 0 auto",
@@ -3606,6 +3610,67 @@ GWWellReportModal<-function(csite){
   })
   
   
+  output$rndAnalyseFull <- renderUI({
+    if (DEBUG_MODE)
+      cat("* in rndAnalyse <- renderUI()\n")
+    
+    # Observe load status of data.
+    data_load_status <- dataLoaded()
+    
+    ret <- FALSE
+    
+    # Nothing loaded yet, start process.
+    if (data_load_status < LOAD_COMPLETE) { 
+      ret <- loadDataSet()
+      
+      if (is.null(ret)) {
+        showModal(modalDialog(title = "Error", "Loading data failed, exiting."))
+        return(NULL)
+      }
+    }
+    
+    
+    
+    if (class(ret) == "Aq_list" ) {
+      return(div(style = "width: 50%; margin: 0 auto",
+                 shinydashboard::box(
+                   selectInput("aquifer", "Choose from list", choices = ret),     
+                   div(style = "float: right", actionButton("aquifer_btn", "Next")),
+                   status = "primary", 
+                   solidHeader = TRUE, 
+                   collapsible = FALSE, 
+                   width = 6, 
+                   title = "Select an Aquifer"
+                 ))
+      )
+    }
+    
+    if (class(ret) == "dialogBox" ) {
+      return(div(style = "width: 80%; margin: 0 auto",
+                 shinydashboard::box(
+                   div(style = "margin-top: 10px; margin-bottom: 25px",
+                       HTML(paste0(ret$msg))),
+                   div(style = "float: right", 
+                       actionButton("diag_no" , "No"),
+                       actionButton("diag_yes", "Yes")),
+                   status = "primary", 
+                   solidHeader = TRUE, 
+                   collapsible = FALSE, 
+                   width = 6, 
+                   title = ret$title
+                 ))
+      )
+    }
+    
+    
+    # Completely loaded, display the Analyse UI.
+    if (data_load_status >= LOAD_COMPLETE) {
+      return(uiAnalyse(csite, img_frmt, APP_RUN_MODE))
+    }
+    
+  })
+  
+  
   # These observers catch the button press in the dialog boxes on startup
   observeEvent(input$aquifer_btn, {
     loadOptions$aquifer <<- input$aquifer
@@ -3628,6 +3693,10 @@ GWWellReportModal<-function(csite){
   
   # Maybe not use renderUI but standard client side ui????
   output$uiLogsJobs <- renderUI({
+    uiLogsJobs()
+  })
+  
+  output$uiLogsJobsFull <- renderUI({
     uiLogsJobs()
   })
   
