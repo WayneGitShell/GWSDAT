@@ -9,6 +9,7 @@ For latest development version, install from github using the `devtools` R packa
 
 ```r
 devtools::install_github("WayneGitShell/GWSDAT")
+options(shiny.useragg = FALSE) #to avoid artefacts in spatial plots
 GWSDAT::launchApp()
 ```
 
@@ -16,6 +17,7 @@ Or install from CRAN:
 
 ```r
 install.packages("GWSDAT")
+options(shiny.useragg = FALSE) #to avoid artefacts in spatial plots
 GWSDAT::launchApp()
 ```
 A couple of example data sets are already pre-loaded. See full options for interactive data input in section 6.1 of the GWSDAT user manual: <http://www.gwsdat.net/gwsdat_manual>
