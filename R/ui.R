@@ -48,7 +48,7 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
     tags$head(includeHTML(system.file("www/google-analytics.js", package="GWSDAT"))),
     
     # Load .js Code that jumps from trend table to time-series table.
-    tags$head(includeScript(system.file("inst/www/jump_to_tsplot.js", package="GWSDAT"))),
+    tags$head(includeScript(system.file("www/jump_to_tsplot.js", package="GWSDAT"))),
     
     # Makes the sidebar minimize to icons only.
     tags$script(HTML("$('body').addClass('sidebar-mini');")),
