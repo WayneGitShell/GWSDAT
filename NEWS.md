@@ -1,6 +1,7 @@
 CHANGES IN VERSION 3.1999999
 * Implementation of well influence analysis: https://github.com/peterradv/Well-Influence-Analysis
 * Updated User Manual for version 3.2. 
+* Updated Excel Add-in - more robust to 32 bit versus 64 bit version of Excel. Removed installation of rgdal. 
 * Fixed bug Threshold Value does not display in export of time-series graphs: #252
 * Functionality to read in R data.frames directly. 
 * Beta implementation of api style argument passing to online version.
