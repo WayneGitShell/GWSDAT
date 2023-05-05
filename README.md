@@ -67,9 +67,9 @@ GWSDAT::launchApp(session_file = "path_to_file.rds")
 ``` 
 
 
-## Deploy on Shiny Server
+## Deploy on Posit Connect
 
-On the server, install the package as shown above and create a directory `GWSDAT` inside the Shiny app folder defined in `/etc/shiny-server/shiny-server.conf`. Create the file `GWSDAT/app.R` with the following content:
+Create the file `app.R` with the following content and publish to Posit Connect server in the usual manner:
 
 ```r
 library("GWSDAT")
