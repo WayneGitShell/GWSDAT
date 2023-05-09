@@ -17,7 +17,15 @@ server <- function(input, output, session) {
           for(eachArg in 1:length(urlArgsParsed)){GWSDAT_Options[[names(urlArgsParsed)[eachArg]]]<-urlArgsParsed[[names(urlArgsParsed)[eachArg]]]}
 
           if(!is.null(GWSDAT_Options$ExcelDataFilename)){
+            
             GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
+            
+            if (grepl("^((http|ftp)s?|sftp)://", GWSDAT_Options$ExcelDataFilename$datapath)) { #if web URL download to temporary directory and save temp path. 
+                   tmp_file <- tempfile(fileext = "xlsx") 
+                   utils::download.file(GWSDAT_Options$ExcelDataFilename$datapath, tmp_file, mode = "wb") 
+                   GWSDAT_Options$ExcelDataFilename$datapath <- tmp_file 
+            } 
+            
           }
 
       .GlobalEnv$GWSDAT_Options<-GWSDAT_Options #Has to be a global variable to work... 
