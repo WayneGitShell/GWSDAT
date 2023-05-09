@@ -21,7 +21,7 @@ server <- function(input, output, session) {
             GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
             
             if (grepl("^((http|ftp)s?|sftp)://", GWSDAT_Options$ExcelDataFilename$datapath)) { #if web URL download to temporary directory and save temp path. 
-                   tmp_file <- tempfile(fileext = "xlsx") 
+                   tmp_file <- tempfile(fileext = paste0(".",tools::file_ext(GWSDAT_Options$ExcelDataFilename$datapath))) 
                    utils::download.file(GWSDAT_Options$ExcelDataFilename$datapath, tmp_file, mode = "wb") 
                    GWSDAT_Options$ExcelDataFilename$datapath <- tmp_file 
             } 
