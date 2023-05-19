@@ -75,3 +75,15 @@ Create the file `app.R` with the following content and publish to Posit Connect 
 library("GWSDAT")
 launchApp()
 ```
+
+## Beta: Deploy  as API on Posit Connect
+Create the file `app.R` with the following content and publish to Posit Connect server in the usual manner:
+
+```r
+library("GWSDAT")
+launchApp(createOptions())
+```
+GWSDAT input arguments can be included in the URL. This example [here](https://stats-glasgow.shinyapps.io/GWSDATURL/?WellDataFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellData.csv&WellCoordsFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellCoords.csv) passes the location of the csv well and well coordinates data. 
+This example [here](https://stats-glasgow.shinyapps.io/GWSDATURL/?ExcelDataFilename=https://github.com/WayneGitShell/GWSDAT/raw/GWWellReport/inst/extdata/Basic_Example.xlsx) passes the location of an Excel GWSDAT Input data file. 
+This functionality is still in development. 
+
