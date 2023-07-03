@@ -59,7 +59,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                             selected = csite$ui_attr$sample_Omitted_Wells_selected, multiple = TRUE, selectize = TRUE),
 
                                     actionButton("UpdateReducedWellFittedModel", "Update Model"),
-                                    actionButton("show_WellRedundancy_help", "Help")
+                                    actionButton("show_WellRedundancy_help", "Help"),p(""),p("Hint: Each time a well is removed or added remember to press update model to refresh the well order.")#, style="clear:left;")
 
 
                            )

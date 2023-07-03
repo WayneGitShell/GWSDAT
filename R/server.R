@@ -448,9 +448,9 @@ server <- function(input, output, session) {
                   HTML("<ul> <li><font size='+0.5'> The order of wells in the list box are presented such that the wells which have been estimated to have the least 
                   influence on the spatiotemporal solute concentration smoother are presented first. This order is established via a procedure fully documented 
                        <a href='https://github.com/peterradv/Well-Influence-Analysis' target='_blank'>here</a>.  This <u>approximation</u> procedure has been adopted to greatly increase computational speed and efficiency. 
-                  For this reason, the order of wells is to be interpreted as a <u>guide</u> only. Please note that this order is also dependent on the current selection of omitted wells and substance and will 
-                  be updated once the model is updated or a different substance selected. 
-                       For this reason, it is suggested to omit wells in an incremental one-by-one fashion. </font></li></ul><br>"),
+                  For this reason, the order of wells is to be interpreted as a <u>guide</u> only.  </font></li></ul><br>"),
+                  HTML("<ul> <li><font size='+0.5'> The well order is dependent on the current selection of omitted wells and will only be updated once the model is updated. For this reason, it is suggested to omit wells in an incremental one-by-one fashion, i.e. update the model every time a well is removed or added.  </font></li></ul><br>"),
+                  HTML("<ul> <li><font size='+0.5'> Well redundancy analysis is substance specific which means the importance of wells may be different for each substance. </font></li></ul><br>"),
                   HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='http://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
                   title = "GWSDAT Well Redundancy Analysis Feature",size="l",footer = modalButton("Close"),easyClose=T))
   })
@@ -961,7 +961,7 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
-    cat("* entering image_plot()\n")
+    #cat("* entering image_plot()\n")
 
     # React to new fitted model.
     BP_modelfit_done()
