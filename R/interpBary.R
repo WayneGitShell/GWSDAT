@@ -68,6 +68,8 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
 
     #dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")],options=""), silent = T)
     dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
+    if (!inherits(dn, "try-error") && class(dn)[1]=="delaunayn") {dn<-dn$tri} ## Ensuring matrix of  Delaunay triangulation is returned. 
+    
     if (!inherits(dn, "try-error")) {
       
       ### Backwards compatibility for function tsearch in package geometry. 
