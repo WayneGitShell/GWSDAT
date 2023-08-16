@@ -227,7 +227,7 @@ plotTimeSeries <- function(csite,
                  lty=c(-1,-1,-1,1,1,2,1,1)[choose.vec],
                  lwd=c(-1,-1,-1,2,2,3,1,1)[choose.vec],
                  pt.cex=c(1.2,1.2,1.2,1.2,1.2,1.2,1,1)[choose.vec],
-                 col=c("black","orange","red","green","blue","red","black","red")[choose.vec],horiz = F,cex=.5,ncol=min(3,ceiling(sum(choose.vec)/2)))
+                 col=c("black","orange","red","green","blue","red","black","red")[choose.vec],horiz = F,cex=.75,ncol=min(3,ceiling(sum(choose.vec)/2)))
       )
       
       
@@ -238,7 +238,7 @@ plotTimeSeries <- function(csite,
                  pch=c(19,19,19)[choose.vec[1:3]],
                  pt.cex=c(1.2,1.2,1.2)[choose.vec[1:3]],
                  col=c("black","orange","red")[choose.vec[1:3]],
-                 horiz = F,cex=.5,ncol=min(3,ceiling(sum(choose.vec)/2))))
+                 horiz = F,cex=.75,ncol=min(3,ceiling(sum(choose.vec)/2))))
       
     }
     
