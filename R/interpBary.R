@@ -66,8 +66,8 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
     #    convex (check before or just catch). 
     #  - As a consequence, calls to contourLines() will produce warnings.
 
-    #dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")],options=""), silent = T)
-    dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
+    dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")],options=""), silent = T)
+    #dn <- try(delaunayn(eval.df[,c("XCoord","YCoord")]), silent = T)
     if (!inherits(dn, "try-error") && class(dn)[1]=="delaunayn") {dn<-dn$tri} ## Ensuring matrix of  Delaunay triangulation is returned. 
     
     if (!inherits(dn, "try-error")) {
