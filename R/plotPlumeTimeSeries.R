@@ -251,7 +251,19 @@ plotPlumeEst <- function(csite, substance, plume_thresh,UseReducedWellSet){
       # approx() and just copy the single coordinate.
       if (Perimeter.Npts[i] != 0) {
       
-        amh <- approx(myhull[i:(i + 1),], n = max(Perimeter.Npts[i],3))
+        #amh <- approx(myhull[i:(i + 1),], n = max(Perimeter.Npts[i],3))
+        temphull<-myhull[i:(i + 1),]
+        
+        if(temphull$XCoord[1]!=temphull$XCoord[2]){
+          
+          amh <- approx(temphull, n = max(Perimeter.Npts[i],3))
+          
+        }else{
+          
+          amh <- approx(temphull[,c("YCoord","XCoord")], n = max(Perimeter.Npts[i],3)) #If X coordinates are identical interp along y and then switch back coordinates. 
+          names(amh)<-c("y","x")
+        }
+        
         
       } else {
         # Copy the first coordinate (remaining should be identical).
