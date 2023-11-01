@@ -34,10 +34,32 @@ uiSpatialImage <- function(csite, img_frmt) {
 
                                     checkboxInput("ImplementReducedWellSet", label = "Use reduced set of wells?", value = csite$ui_attr$ImplementReducedWellSet),
 
-                                    selectInput("sample_Omitted_Wells", "Select wells to be omitted from analysis", choices = csite$ui_attr$sample_loc_names,
-                                    selected = csite$ui_attr$sample_Omitted_Wells_selected, multiple = TRUE, selectize = TRUE),
+                                    #selectInput("sample_Omitted_Wells", "Select wells to be omitted from analysis", choices = csite$ui_attr$sample_loc_names,
+                                    #csite$Fitted.Data[[1]]$Model.tune$best.model$Imetrics$Wellorder
+                                    #csite$Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder
+                                    selectInput("sample_Omitted_Wells", "Select wells to be omitted from analysis", 
+                                            choices = if(is.null(csite$Reduced.Fitted.Data)){
+                                              
+                                                        if(!inherits(try(csite$Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+                                                            csite$Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder}
+                                                        else{
+                                                            csite$ui_attr$sample_loc_names
+                                                        }
+                                                  
+                                                      }else{
+                                                        
+                                                        if(!inherits(try(csite$Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+                                                          csite$Reduced.Fitted.Data[[csite$ui_attr$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder}
+                                                        else{
+                                                          csite$ui_attr$sample_loc_names
+                                                        }
+                                                  
+                                                        
+                                                      },
+                                            selected = csite$ui_attr$sample_Omitted_Wells_selected, multiple = TRUE, selectize = TRUE),
 
-                                    actionButton("UpdateReducedWellFittedModel", "Update Model")
+                                    actionButton("UpdateReducedWellFittedModel", "Update Model"),
+                                    actionButton("show_WellRedundancy_help", "Help"),p(""),p("Hint: Each time a well is removed or added remember to press update model to refresh the well order.")#, style="clear:left;")
 
 
                            )
@@ -63,7 +85,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                     if (existsPPT()) {
                                       div(id = "save_spatial_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
                                           
-                                          downloadButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
+                                          downloadButton("generate_spatial_anim_ppt", label = "Generate PPT Animation")#, icon = icon("file-movie-o")
                                           #actionButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
                                       ) }
                                     

@@ -227,7 +227,7 @@ plotTimeSeries <- function(csite,
                  lty=c(-1,-1,-1,1,1,2,1,1)[choose.vec],
                  lwd=c(-1,-1,-1,2,2,3,1,1)[choose.vec],
                  pt.cex=c(1.2,1.2,1.2,1.2,1.2,1.2,1,1)[choose.vec],
-                 col=c("black","orange","red","green","blue","red","black","red")[choose.vec],horiz = F,cex=.5,ncol=min(3,ceiling(sum(choose.vec)/2)))
+                 col=c("black","orange","red","green","blue","red","black","red")[choose.vec],horiz = F,cex=.75,ncol=min(3,ceiling(sum(choose.vec)/2)))
       )
       
       
@@ -238,7 +238,7 @@ plotTimeSeries <- function(csite,
                  pch=c(19,19,19)[choose.vec[1:3]],
                  pt.cex=c(1.2,1.2,1.2)[choose.vec[1:3]],
                  col=c("black","orange","red")[choose.vec[1:3]],
-                 horiz = F,cex=.5,ncol=min(3,ceiling(sum(choose.vec)/2))))
+                 horiz = F,cex=.75,ncol=min(3,ceiling(sum(choose.vec)/2))))
       
     }
     
@@ -384,7 +384,7 @@ plotTimeSeries <- function(csite,
 # }
 
 
-makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, height = 400){
+makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,width = 600, height = 400){
   
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -395,7 +395,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, 
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotTimeSeries(csite, substance, location)
+  plotTimeSeries(csite, substance, location,show_thresh)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
@@ -405,4 +405,64 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, width = 600, 
   try(file.remove(mytemp))
   
 }
+
+
+
+
+makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layout,show_thresh,width = 600, height = 400){
+  
+  # Initialize Powerpoint file.
+  if (is.null(ppt_pres <- initPPT())) {
+    return(NULL)
+  }
+  
+  # Create temporary wmf file. 
+  # Loop over each time step.. 
+  progress <- shiny::Progress$new()
+  progress$set(message = "Generating Powerpoint: ", value = 0)
+  on.exit(progress$close())
+  
+  All.Wells<-location
+ 
+  Layout= switch(Layout,"1x1"=c(1,1),"2x1"=c(2,1),"1x2"=c(1,2),"2x2"=c(2,2))
+  
+  for (i in 1:length(All.Wells)) {
+    
+  progress$set(value = i/length(All.Wells), detail = paste0("Slide ", i))
+  
+  if(i %in% seq(1,length(All.Wells),by= Layout[1] * Layout[2])){
+    mytemp <- tempfile(fileext = ".png")
+    png(mytemp, width = width, height = height) 
+    par(mfrow=Layout)
+  }
+    
+  plotTimeSeries(csite=csite, substance =substance, location = All.Wells[i],show_thresh = show_thresh)
+  
+  if(i %in% c(seq(Layout[1] * Layout[2],max(Layout[1] * Layout[2],length(All.Wells)),by=Layout[1] * Layout[2]),length(All.Wells))){
+    dev.off()
+    ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
+    print(ppt_pres, target = fileout) %>% invisible()
+    try(file.remove(mytemp))
+  }
+  
+  
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

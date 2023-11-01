@@ -99,7 +99,7 @@ parseTable <- function(tbl = NULL, type = NULL, wells  = NULL, dsource = "") {
         next
       }
       
-      if (tbl$Result[i] == "") next
+      if (is.na(tbl$Result[i]) || tbl$Result[i] == "") next
       
       if (!(tolower(tbl$Units[i]) %in% units)) {
         invalid_units <- invalid_units + 1

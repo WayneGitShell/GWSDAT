@@ -3,6 +3,40 @@
 
 server <- function(input, output, session) {
   
+  
+  observe({
+    
+    urlArgs<-session$clientData$url_search
+  
+  
+      if(urlArgs!=""){
+    
+        .GlobalEnv$GWSDAT_Options<-createOptions()
+         urlArgsParsed<-parseQueryString(urlArgs)
+
+          for(eachArg in 1:length(urlArgsParsed)){GWSDAT_Options[[names(urlArgsParsed)[eachArg]]]<-urlArgsParsed[[names(urlArgsParsed)[eachArg]]]}
+
+          if(!is.null(GWSDAT_Options$ExcelDataFilename)){
+            
+            GWSDAT_Options$ExcelDataFilename<-list(datapath=GWSDAT_Options$ExcelDataFilename)
+            
+            if (grepl("^((http|ftp)s?|sftp)://", GWSDAT_Options$ExcelDataFilename$datapath)) { #if web URL download to temporary directory and save temp path. 
+                   tmp_file <- tempfile(fileext = paste0(".",tools::file_ext(GWSDAT_Options$ExcelDataFilename$datapath))) 
+                   utils::download.file(GWSDAT_Options$ExcelDataFilename$datapath, tmp_file, mode = "wb") 
+                   GWSDAT_Options$ExcelDataFilename$datapath <- tmp_file 
+            } 
+            
+          }
+
+      .GlobalEnv$GWSDAT_Options<-GWSDAT_Options #Has to be a global variable to work... 
+    ##Example: https://rconnect-dev.private.selfservice.shell.ai/GWSDATURL/?ExcelDataFilename=GWSDATExample.xlsx&ShapeFileNames=GWSDATex2.shp 
+    ## https://rconnect-dev.private.selfservice.shell.ai/GWSDATURL/?WellDataFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellData.csv&WellCoordsFilename=https://raw.githubusercontent.com/WayneGitShell/GWSDAT/master/data/BasicExample_WellCoords.csv
+    
+  }
+  
+  
+  })
+  
   time.log <- ''
   
   DEBUG_MODE <- FALSE
@@ -74,13 +108,15 @@ server <- function(input, output, session) {
   renderRHandsonWell <- reactiveVal(0)
   
   # Define supported image formats for saving plots.
-  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx","tif")
+  img_frmt <- list("png", "jpg", "pdf", "ps", "pptx","tif","wmf")
         
   # Remove pptx (powerpoint) if no support was found. 
   if (!existsPPT())
     img_frmt <- img_frmt[-which(img_frmt == "pptx")]
-   
- 
+  
+  if (Sys.info()[['sysname']]!="Windows")
+    img_frmt <- img_frmt[-which(img_frmt == "wmf")]
+  
   
   # Clean-up user session.
   session$onSessionEnded(function() {
@@ -394,10 +430,42 @@ server <- function(input, output, session) {
   
   ########### Well Redundancy Analysis Section #######################
   
+  ### Well Redundancy modal help dialog. 
+  #The well redundancy feature allows a user to drop a well or a combination of
+  # wells from the analysis and investigate the resultant impact. The primary intent of this tool is to understand
+  # which wells may have the most influence and also provide supporting evidence that the conclusions of the
+  # analysis would not be significantly different with the omission of some certain wells. 
+  # 
+  # observeEvent(input$show_WellRedundancy_help,{
+  #   showModal(modalDialog("The well redundancy feature allows a user to drop a well or a combination of wells from the analysis and investigate the resultant impact.","kjhjhjh",tags$div("For more details the GWSDAT user manual ", tags$a(target="_blank",href = 'http://gwsdat.net/gwsdat_manual/', "here")), title = "Well Redundancy Analysis"))
+  # })
+  # 
+  observeEvent(input$show_WellRedundancy_help,{
+    showModal(
+      modalDialog(HTML("<ul> <li><font size='+0.5'> The well redundancy feature allows a user to drop a well or a combination of wells from the analysis and investigate the resultant impact.
+                   Select the wells to be omitted from the listbox and press the `Update Model` button to fit the reduced well data set. Use the checkbox to toggle between the full and reduced well data set. <br><br></font></li></ul>"), 
+                  
+                  HTML("<ul> <li><font size='+0.5'> The order of wells in the list box are presented such that the wells which have been estimated to have the least 
+                  influence on the spatiotemporal solute concentration smoother are presented first. This order is established via a procedure fully documented 
+                       <a href='https://github.com/peterradv/Well-Influence-Analysis' target='_blank'>here</a>.  This <u>approximation</u> procedure has been adopted to greatly increase computational speed and efficiency. 
+                  For this reason, the order of wells is to be interpreted as a <u>guide</u> only.  </font></li></ul><br>"),
+                  HTML("<ul> <li><font size='+0.5'> The well order is dependent on the current selection of omitted wells and will only be updated once the model is updated. For this reason, it is suggested to omit wells in an incremental one-by-one fashion, i.e. update the model every time a well is removed or added.  </font></li></ul><br>"),
+                  HTML("<ul> <li><font size='+0.5'> Well redundancy analysis is substance specific which means the importance of wells may be different for each substance. </font></li></ul><br>"),
+                  HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='http://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
+                  title = "GWSDAT Well Redundancy Analysis Feature",size="l",footer = modalButton("Close"),easyClose=T))
+  })
+  
+  
+  #HTML("I like <u>turtles</u>"), HTML("<a href='https://github.com/peterradv/Well-Influence-Analysis' target='_blank'>here</a>.")#tags$a(target="_blank",href = 'https://github.com/peterradv/Well-Influence-Analysis', "here"),
+  
   ### Refit the spline model to all solutes with selected wells omitted.
   observeEvent(input$UpdateReducedWellFittedModel,{
     csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
-  
+
+    if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+      updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+    }
+    
     })
   
   observeEvent(input$ImplementReducedWellSet,{
@@ -406,11 +474,22 @@ server <- function(input, output, session) {
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet & is.null(input$sample_Omitted_Wells)){
       csite[["Reduced.Fitted.Data"]]<<-csite[["Fitted.Data"]]
       csite[["Reduced.Fitted.Data.GW.Flows"]]<<-csite[["GW.Flows"]]
+      
+      if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+        updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+      }
+      
     }
     
     # Refit the spline model on initial selection of ReducedWellset implementation
     if(is.null(csite$Reduced.Fitted.Data) & input$ImplementReducedWellSet){
+      
       csite<<-RefitModel(csite,input$solute_select_sp,input$sample_Omitted_Wells)
+      
+      if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+        updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+      }
+        
     }
     
   })
@@ -429,6 +508,35 @@ server <- function(input, output, session) {
     updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
+    
+    
+    
+    if(is.null(csite$Reduced.Fitted.Data)){
+      
+      if(!inherits(csite$Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+      }else{
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$ui_attr$sample_loc_names))
+       }
+      
+    }else{
+      
+       #if(!inherits(try(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+       if(!inherits(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune,"try-error")){
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+       }else{
+         updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$ui_attr$sample_loc_names))
+       }
+      
+    }
+    
+    # if(is.null(csite$Reduced.Fitted.Data)){ #No reduced model fit as yet attempt to use Full model fit well order instead.
+    #   updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))
+    # }
+    # ## Update well order in Well Redundancy listbox for newly selected solutes. 
+    # if(!inherits(try(csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder),"try-error")){
+    #   updateSelectInput(session,"sample_Omitted_Wells", selected=input$sample_Omitted_Wells,choices = c(input$sample_Omitted_Wells,csite$Reduced.Fitted.Data[[input$solute_select_sp]]$Model.tune$best.model$Imetrics$Wellorder))#csite$ui_attr$sample_loc_names)
+    # }
     
   })
   
@@ -853,7 +961,7 @@ server <- function(input, output, session) {
   #
   output$image_plot <- renderPlot({
     
-    cat("* entering image_plot()\n")
+    #cat("* entering image_plot()\n")
 
     # React to new fitted model.
     BP_modelfit_done()
@@ -1067,7 +1175,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "pptx") {
         
-        makeTimeSeriesPPT(csite, file, input$solute_select_ts, input$sample_loc_select_ts,
+        makeTimeSeriesPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,
                           width  = input$img_width_px, height = input$img_height_px)
         
       } 
@@ -1078,7 +1186,7 @@ server <- function(input, output, session) {
         if (input$export_format_ts == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
         
-        plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts)
+        plotTimeSeries(csite, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold)
         dev.off()
       }
     }
@@ -1111,7 +1219,8 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-          
+          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
+        
           plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
          
           dev.off()
@@ -1315,14 +1424,6 @@ server <- function(input, output, session) {
   
     
   
-  # Generate PPT with spatial animation.
-  #observeEvent(input$generate_spatial_anim_ppt, {
-  #  
-  #  makeSpatialAnimation(csite, input$solute_select_sp,
-  #                       input$img_width_px, input$img_height_px,
-  #                       input$img_width_px_wide, input$img_height_px_wide)
-  #  
-  #})
   
   output$generate_spatial_anim_ppt <- downloadHandler(
     
@@ -1340,9 +1441,40 @@ server <- function(input, output, session) {
     }
   )
   
- 
+########### GW Well Report Time Series Plotting ################################
+output$generate_timeseries_anim_ppt <- downloadHandler(
+    
+    filename <- function() {
+      paste("timeseries_anim.pptx")
+    },
+    
+    content <- function(file) {
+      
+      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,
+                        width  = input$img_width_px, height = input$img_height_px)
+      
+    }
+)
   
   
+  
+observeEvent(input$Optionsgenerate_timeseries_anim_ppt, {
+                 showModal(GWWellReportModal(csite))
+})
+               
+GWWellReportModal<-function(csite){
+                 
+              modalDialog(title=h3("Well Report"),
+                  selectInput("gwwellreportsample_loc_select_wr", 'Select Monitoring Wells', choices = csite$ui_attr$sample_loc_names,selected =csite$ui_attr$sample_loc_names,multiple=T),
+                  radioButtons("gwwellreportlayout", label = "Plot Layout (Rows x Columns)",
+                               choices = c("1x1","1x2","2x1","2x2"), 
+                               selected = "2x2"),
+                  footer = tagList(downloadButton("generate_timeseries_anim_ppt", label = "Generate PowerPoint Report"),modalButton("Close")) #, icon = icon("file-movie-o")
+                   
+                 )
+                 
+ }            
+               
   ## General Import Routines ###################################################
   
   
@@ -2825,15 +2957,15 @@ server <- function(input, output, session) {
   #   rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute),rowHeaders = NULL,digits=0)
   # })
   
-  output$ColourKeyRHandsontable <- renderRHandsontable({
+  output$ColourKeyRHandsontable <- rhandsontable::renderRHandsontable({
     
   if(is.null(csite$ui_attr$lev_cut_by_solute)){
     
-    rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names),check.names=F),rowHeaders = NULL,digits=0)
+    rhandsontable::rhandsontable(as.data.frame(create_lev_cut_by_solute(csite$ui_attr$lev_cut,csite$ui_attr$solute_names),check.names=F),rowHeaders = NULL,digits=0)
     
   }else{
     
-    rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute,check.names=F),rowHeaders = NULL,digits=0)
+    rhandsontable::rhandsontable(as.data.frame(csite$ui_attr$lev_cut_by_solute,check.names=F),rowHeaders = NULL,digits=0)
     
   }
   })
@@ -2939,23 +3071,49 @@ server <- function(input, output, session) {
       return(TRUE)  
     }
     
-    
-    # Create Options in case they don't exist.
-    if (!exists("GWSDAT_Options", envir = .GlobalEnv)) 
+     if (!exists("GWSDAT_Options", envir = .GlobalEnv)){ 
       GWSDAT_Options <-  createOptions()
+    }
+    
+    
     
     Aq_sel <- loadOptions$aquifer
     subst_napl <- loadOptions$subst_napl
     
-    # Load the data from the .csv files.
     solute_data <- well_data <- NULL
     
-    # Read Well data and coordinates from file.
-    tryCatch({
-      solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
-      well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
-    #}, warning = function(w) showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)))
-    }, error = function(w){showModal(modalDialog(title = "Error", w$message, easyClose = FALSE)); Sys.sleep(5)})
+    # Well data and coordinates inputted as R data frames. 
+    if(!is.null(GWSDAT_Options[["WellData"]]) || !is.null(GWSDAT_Options[["WellCoords"]])){
+      
+      tryCatch({
+      solute_data<-GWSDAT_Options[["WellData"]]
+      well_data<-GWSDAT_Options[["WellCoords"]]  ### output well coordinate data is a list consisting of fields data and coord_unit
+      well_data<-list(data=GWSDAT_Options[["WellCoords"]][,c("WellName","XCoord","YCoord","Aquifer")],coord_unit=GWSDAT_Options[["WellCoords"]]["CoordUnits"][1])
+      }, error = function(w){showModal(modalDialog(title = "Error Inputting WellData and/or WellCoords.", w$message, easyClose = FALSE)); Sys.sleep(5)})
+
+    }
+    
+    
+    #  Read Well data and coordinates from Excel GWSDAT input Template
+    if(!is.null(GWSDAT_Options[["ExcelDataFilename"]])){
+      
+      #ret<-readExcel(opt$ExcelDataFilename,sheet="GWSDAT Basic Example")
+      ret<-readExcel(GWSDAT_Options$ExcelDataFilename)
+      solute_data<-ret$conc_data
+      well_data<-list(data=ret$well_data[,c("WellName","XCoord","YCoord","Aquifer")],coord_unit=ret$coord_unit[1])
+      
+    }
+    
+    
+    #  # Read Well data and coordinates from csv files.
+    if(is.null(solute_data)){ # if it hasnt found any data yet.
+    
+      tryCatch({
+        solute_data <- readConcData(GWSDAT_Options$WellDataFilename, conc_header)
+        well_data <- readWellCoords(GWSDAT_Options$WellCoordsFilename, well_header)
+      }, error = function(w){showModal(modalDialog(title = "Error reading csv files", w$message, easyClose = FALSE)); Sys.sleep(5)})
+    
+    }
     
     # Check if reading the data failed. 
     if (is.null(solute_data) || is.null(well_data))

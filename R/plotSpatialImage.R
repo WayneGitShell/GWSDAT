@@ -2,7 +2,7 @@
 
 
 plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet,sample_Omitted_Wells) {
-  print("* in plotSpatialImage()")
+  #print("* in plotSpatialImage()")
   
   if (is.null(timepoint) || class(timepoint) != "Date")
     stop("Need to specify valid timepoint of class \"Date\".")
@@ -694,6 +694,7 @@ PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWel
   r <- rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
   
   writeRaster(r,fileout,overwrite=TRUE)
+  #writeRaster(r, filename=fileout, format="GTiff", overwrite=TRUE) #Geotiff format
   
 }
 

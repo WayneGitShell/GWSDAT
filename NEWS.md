@@ -1,3 +1,15 @@
+CHANGES IN VERSION 3.2.0
+* Implementation of well influence analysis: https://github.com/peterradv/Well-Influence-Analysis
+* Updated User Manual for version 3.2. 
+* Updated Excel Add-in - more robust to 32 bit versus 64 bit version of Excel. Removed installation of rgdal. 
+* Fixed bug Threshold Value does not display in export of time-series graphs: #252
+* Functionality to read in R data.frames directly. 
+* Beta implementation of api style argument passing to online version.
+* Added GW Well Report Functionality.
+* Added local save options to CSV generation of Monitoring data file from Excel Add-in. More robust date format identification. 
+* Improved messaging describing how GWSDAT behaves when concentration and NAPL data observed together, i.e. prefers to use conc data rather than substitution. 
+* Support for Windows Meta File image format output for spatial plot. Useful for rearranging overlapping well labels. 
+
 CHANGES IN VERSION 3.1.1 - Released 2021/07/08
 
 * Cumulative bug fixes since the release of 3.1.0

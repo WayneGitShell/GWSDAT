@@ -106,7 +106,7 @@ readExcel <- function(filein, sheet = NULL) {
         ret <- readExcelData(filein$datapath, sheet = sheet, header = conc_header)
         
         if (class(ret) != "data.frame") {
-            showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found."), duration = 10, type = "error")
+            try(showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found."), duration = 10, type = "error"))
             next
         }
         
@@ -116,10 +116,10 @@ readExcel <- function(filein, sheet = NULL) {
             ret <- ret[!is.na(ret$SampleDate),]
             
             msg <- paste0("Sheet \'", sheet, "\': Incorrect input date value(s) detected. Ommitting values.")
-            showNotification(msg, type = "warning", duration = 10)
+            try(showNotification(msg, type = "warning", duration = 10))
             
             if (nrow(ret) == 0) {
-                showNotification(paste0("Sheet \'", sheet, "\': Zero entries in concentration data read, skipping."), type = "error", duration = 10)
+                try(showNotification(paste0("Sheet \'", sheet, "\': Zero entries in concentration data read, skipping."), type = "error", duration = 10))
                 next
             } 
         }
@@ -174,7 +174,7 @@ readExcel <- function(filein, sheet = NULL) {
         
 
         # If we made it until here, we were able to read some valid data. 
-        showNotification(paste0("Sheet \'", sheet, "\': Found valid tables."), type = "message", duration = 10)
+        try(showNotification(paste0("Sheet \'", sheet, "\': Found valid tables."), type = "message", duration = 10))
         break
     }
     

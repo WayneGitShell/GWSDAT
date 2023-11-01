@@ -347,7 +347,8 @@ processData <- function(solute_data, sample_loc, GWSDAT_Options,
 
           # "NAPL Data Conflict"        
           # msg <- "Concentration data reported in presence of NAPL. Do you wish to use concentration data (Yes) or substitue these NAPL values with maximum observed solute concentrations (No)?\nNote: NAPL measurements for electron acceptor, Redox or 'NotInNapl' flagged constituents will be ignored."
-          msg <- "Concentration data reported in presence of NAPL. Use it? (Yes/No choice will soon be supported)"
+          #msg <- "Concentration data reported in presence of NAPL. Use it? (Yes/No choice will soon be supported)"
+          msg<-  "Concentration data reported in presence of NAPL. For these specific data points, adopting reported concentration values rather than performing NAPL substitution with max observed values."
           showNotification(msg, type = "warning", duration = 10)  
         }
         
