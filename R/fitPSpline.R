@@ -242,7 +242,7 @@ fitPSplines <- function(ContData, params){
 
 }
 
-
+#' @export
 predict.GWSDAT.PSpline <- function(mod,newdata,se=FALSE) {
 
   X <- model.matrix(~XCoord+YCoord+AggDate-1,newdata)
