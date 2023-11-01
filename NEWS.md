@@ -1,4 +1,4 @@
-CHANGES IN VERSION 3.2.0
+CHANGES IN VERSION 3.2.0  - Released 2023/11/01
 * Implementation of well influence analysis: https://github.com/peterradv/Well-Influence-Analysis
 * Updated User Manual for version 3.2. 
 * Updated Excel Add-in - more robust to 32 bit versus 64 bit version of Excel. Removed installation of rgdal. 
