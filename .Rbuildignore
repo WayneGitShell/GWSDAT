@@ -14,3 +14,7 @@
 ^users.db
 ^CRAN-RELEASE$
 ^cran-comments.md
+^CRAN-SUBMISSION$
+^dumpdata.R
+^Evaldf.R
+^temp.R
