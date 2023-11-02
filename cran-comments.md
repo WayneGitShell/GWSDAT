@@ -1,9 +1,11 @@
-Version 3.20 fixed warning in first release attempt by using underscore instead of spaces in file names. Also fixed undeclared S3method issue. 
+Version 3.20
+Fixed warning in first release attempt by using underscore instead of spaces in file names. 
+Fixed undeclared S3method issue. 
+Fixed issue of comparing classes to strings. 
 
-I see 2 outstanding notes in the CRAN check. 
+I see 1 outstanding notes in the CRAN check. 
 1) platform-specific call - use of win.metafile - this is only implemented on windows distributions to generate windows metafiles. 
-2) "Found if() conditions comparing class() to string" - we use custom classes and there doesn't exist a function "is.Date" in R. Safer and easier to compare character in this circumstance. 
-
+I believe this is a false positive as per here: https://stackoverflow.com/questions/70585796/unable-to-understand-1-note-in-devtoolscheck-caused-by-a-platform-specific-d
 
 In response to Uwe's comments I have added version dependency for "officer" to description file. 
 
