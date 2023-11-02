@@ -4,7 +4,8 @@
 plotSpatialImage <- function(csite, substance, timepoint = NULL, app_log = NULL,UseReducedWellSet,sample_Omitted_Wells) {
   #print("* in plotSpatialImage()")
   
-  if (is.null(timepoint) || class(timepoint) != "Date")
+  #if (is.null(timepoint) || class(timepoint) != "Date")
+  if(is.null(timepoint) || !inherits(timepoint,"Date"))
     stop("Need to specify valid timepoint of class \"Date\".")
   
   # Make Prediction.

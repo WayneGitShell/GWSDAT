@@ -1542,7 +1542,8 @@ GWWellReportModal<-function(csite){
     for (Aq_sel in unique(all_data$sample_loc$data$Aquifer)) {
       
       pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, Aq_sel,subst_napl_vals)
-      if (class(pr_dat) == "dialogBox")
+      #if (class(pr_dat) == "dialogBox")
+      if (inherits(pr_dat, "dialogBox"))
         return(pr_dat)
       
       if (is.null(pr_dat)) next
@@ -1726,7 +1727,8 @@ GWWellReportModal<-function(csite){
       return(NULL)
     }
     
-    if (class(csite_tmp) != "GWSDAT_DATA_LIST") {
+    #if (class(csite_tmp) != "GWSDAT_DATA_LIST") {
+    if (!inherits(csite_tmp,"GWSDAT_DATA_LIST")) {
       showNotification(paste0("Uploaded .rds file ", inFile$name, " does not contain data of type GWSDAT (wrong class)."), type = "error", duration = 10 )
       shinyjs::reset("data_session_file")
       return(NULL)
@@ -2207,7 +2209,8 @@ GWWellReportModal<-function(csite){
     
     ret<-importData(input$dname_csv)
     
-    if(class(ret)=="dialogBox"){
+    #if(class(ret)=="dialogBox"){
+    if(inherits(ret,"dialogBox")){
       
       showModal(modalDialog(
         title="NAPL Value Substitution",
@@ -2416,7 +2419,8 @@ GWWellReportModal<-function(csite){
     
     ret<-importData(input$dname_xls, "excel")
     
-    if(class(ret)=="dialogBox"){
+    #if(class(ret)=="dialogBox"){
+    if(inherits(ret,"dialogBox")){
       
       showModal(modalDialog(
         title="NAPL Value Substitution",
@@ -3137,7 +3141,8 @@ GWWellReportModal<-function(csite){
     pr_dat <- processData(all_data$solute_data, all_data$sample_loc, GWSDAT_Options, 
                           Aq_sel, subst_napl_vals = subst_napl)
     
-    if (class(pr_dat) == "dialogBox")
+    #if (class(pr_dat) == "dialogBox")
+    if (inherits(pr_dat, "dialogBox"))
       return(pr_dat)
       
     
@@ -3573,7 +3578,8 @@ GWWellReportModal<-function(csite){
     }
       
     
-    if (class(ret) == "Aq_list" ) {
+    #if (class(ret) == "Aq_list" ) {
+    if (inherits(ret,"Aq_list")) {
       return(div(style = "width: 50%; margin: 0 auto",
                       shinydashboard::box(
                         selectInput("aquifer", "Choose from list", choices = ret),     
@@ -3587,7 +3593,8 @@ GWWellReportModal<-function(csite){
       )
     }
     
-    if (class(ret) == "dialogBox" ) {
+    #if (class(ret) == "dialogBox" ) {
+    if (inherits(ret,"dialogBox" )) {
       return(div(style = "width: 80%; margin: 0 auto",
                       shinydashboard::box(
                         div(style = "margin-top: 10px; margin-bottom: 25px",
