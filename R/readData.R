@@ -105,7 +105,8 @@ readExcel <- function(filein, sheet = NULL) {
         #
         ret <- readExcelData(filein$datapath, sheet = sheet, header = conc_header)
         
-        if (class(ret) != "data.frame") {
+        #if (class(ret) != "data.frame") {
+        if (!is.data.frame(ret)) {
             try(showNotification(paste0("Sheet \'", sheet, "\': No valid contaminant table found."), duration = 10, type = "error"))
             next
         }
@@ -139,7 +140,8 @@ readExcel <- function(filein, sheet = NULL) {
         well_data <- readExcelData(filein$datapath, sheet = sheet, header = well_header, 
                              ign_first_head = "WellName")
         
-        if (class(well_data) != "data.frame") {
+        #if (class(well_data) != "data.frame") {
+        if (!is.data.frame(well_data)) {
             showNotification(paste0("Sheet \'", sheet, "\': No valid well table found, skipping."), duration = 10)
             next
         }
@@ -224,7 +226,8 @@ readConcData <- function(input_file, valid_header, ...) {
   }
    
   # Transform the 'SampleDate' column into 'Date' class.  
-  if (class(DF$SampleDate) == "numeric" | class(DF$SampleDate) == "integer")
+  #if (class(DF$SampleDate) == "numeric" | class(DF$SampleDate) == "integer")
+  if (is.numeric(DF$SampleDate) | is.integer(DF$SampleDate))
     # An integer value indicates Excel time. This is _not_ Unix time!
     DF$SampleDate <- excelDate2Date(floor(as.numeric(as.character(DF$SampleDate)))) 
   else

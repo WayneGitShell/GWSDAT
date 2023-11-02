@@ -25,8 +25,9 @@ formatData <- function(solute_data, sample_loc) {
   solute_data$Flags[is.na(solute_data$Flags)] = ""
   solute_data <- solute_data[tolower(as.character(solute_data$Flags)) != "omit",]
   
-  if (class(solute_data$SampleDate) == "integer") {
-    
+  #if (class(solute_data$SampleDate) == "integer") {
+  if (is.integer(solute_data$SampleDate)) {
+      
     solute_data$SampleDate <- excelDate2Date(solute_data$SampleDate) 
     
   #} else if (class(solute_data$SampleDate)[1] %in% c("POSIXct", "POSIXt")) {

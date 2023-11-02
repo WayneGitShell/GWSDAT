@@ -7,7 +7,8 @@ plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend",
   
   
   
-  if (is.null(timepoint) || class(timepoint) != "Date")
+  #if (is.null(timepoint) || class(timepoint) != "Date")
+  if(is.null(timepoint) || !inherits(timepoint,"Date"))
     stop("Need to specify valid timepoint of class \"Date\".")
   
   
