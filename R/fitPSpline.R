@@ -243,16 +243,17 @@ fitPSplines <- function(ContData, params){
 }
 
 #' @export
-predict.GWSDAT.PSpline <- function(mod,newdata,se=FALSE) {
-
+#predict.GWSDAT.PSpline <- function(mod,newdata,se=FALSE) {
+predict.GWSDAT.PSpline <- function(object,newdata,se=FALSE,...) {
+  
   X <- model.matrix(~XCoord+YCoord+AggDate-1,newdata)
-  X <- sweep(X, 2L, mod$center)
-  X <- sweep(X, 2L, mod$scale, "/")
+  X <- sweep(X, 2L, object$center)
+  X <- sweep(X, 2L, object$scale, "/")
   
   
-  mat <- GWSDAT.st.matrices(x = X, xrange = mod$xrange, ndims = mod$ndims,
-                            nseg = rep(mod$nseg,mod$ndims), bdeg = mod$bdeg, 
-                            pord = mod$pord, computeP = FALSE)
+  mat <- GWSDAT.st.matrices(x = X, xrange = object$xrange, ndims = object$ndims,
+                            nseg = rep(object$nseg,object$ndims), bdeg = object$bdeg, 
+                            pord = object$pord, computeP = FALSE)
   B <- mat$B
   
   result <- list(predicted.sd = rep(NA,nrow(B)))
@@ -260,19 +261,19 @@ predict.GWSDAT.PSpline <- function(mod,newdata,se=FALSE) {
   
   if (se) {
   
-    post.ig.a <- mod$post.ig.a
-    post.ig.b <- mod$post.ig.b
+    post.ig.a <- object$post.ig.a
+    post.ig.b <- object$post.ig.b
   
     if (post.ig.a <= 2) {
       result$predicted.sd <- rep(Inf, nrow(B))
     } else {
-  	  result$predicted.sd <- sqrt((post.ig.b / (post.ig.a-2)) * ((B%*%mod$Xtinv)^2  %*% (1 / (mod$d + mod$Lambda * mod$e))))
+  	  result$predicted.sd <- sqrt((post.ig.b / (post.ig.a-2)) * ((B%*%object$Xtinv)^2  %*% (1 / (object$d + object$Lambda * object$e))))
     }
   	
   	result$predicted.sd <- drop(result$predicted.sd)
   }
 
-  result$predicted <- as.numeric(B %*% mod$alpha)
+  result$predicted <- as.numeric(B %*% object$alpha)
   return(result)
 }
 
