@@ -28,7 +28,7 @@ uiTimeSeries <- function(csite, img_frmt) {
                         
                         div(style = "display: inline-block;",
                             selectInput("export_format_ts", label = "Image format", 
-                                        choices = img_frmt, #csite$ui_attr$img_formats, 
+                                        choices = img_frmt[-which(img_frmt == "tif")], #csite$ui_attr$img_formats, 
                                         selected = img_frmt[[1]] #csite$ui_attr$img_formats[[1]]
                             )
                         ),
