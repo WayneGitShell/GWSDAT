@@ -1185,6 +1185,7 @@ server <- function(input, output, session) {
         if (input$export_format_ts == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_ts == "ps")  postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
+        if (input$export_format_ts == "wmf") grDevices::win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
         
         plotTimeSeries(csite, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold)
         dev.off()
@@ -1219,7 +1220,7 @@ server <- function(input, output, session) {
           if (input$export_format_sp == "pdf") pdf(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "ps") postscript(file, width = input$img_width_px / csite$ui_attr$img_ppi, height = input$img_height_px / csite$ui_attr$img_ppi) 
           if (input$export_format_sp == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
-          if (input$export_format_sp == "wmf") win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
+          if (input$export_format_sp == "wmf") grDevices::win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
         
           plotSpatialImage(csite, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet,sample_Omitted_Wells=input$sample_Omitted_Wells)
          
@@ -1291,6 +1292,7 @@ server <- function(input, output, session) {
         if (input$export_format_wr == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_wr == "ps") postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_wr == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
+        if (input$export_format_wr == "wmf") grDevices::win.metafile(file, width = input$img_width_px_wide/100, height = input$img_height_px_wide/100)
         
         plotWellReport(csite, input$solute_select_wr, input$sample_loc_select_wr, use_log_scale)
 
@@ -1323,7 +1325,8 @@ server <- function(input, output, session) {
         if (input$export_format_pd == "png") png(file, width = input$img_width_px_wide, height = input$img_height_px_wide)
         if (input$export_format_pd == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_pd == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
-        if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
+        if (input$export_format_pd == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality)
+        if (input$export_format_pd == "wmf") grDevices::win.metafile(file, width = input$img_width_px_wide/100, height = input$img_height_px_wide/100)
         #if (input$export_format_pd == "wmf") win.metafile(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         
         plotPlumeTimeSeries(plume_stats,input$ImplementReducedWellSet)
@@ -1380,6 +1383,7 @@ server <- function(input, output, session) {
         if (input$export_format_stp == "pdf") pdf(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_stp == "ps")  postscript(file, width = input$img_width_px_wide / csite$ui_attr$img_ppi, height = input$img_height_px_wide / csite$ui_attr$img_ppi) 
         if (input$export_format_stp == "jpg") jpeg(file, width = input$img_width_px_wide, height = input$img_height_px_wide, quality = input$img_jpg_quality) 
+        if (input$export_format_stp == "wmf")  grDevices::win.metafile(file, width = input$img_width_px_wide/100, height = input$img_height_px_wide/100)
         
         plotSTPredictions(csite, input$solute_select_stp, input$sample_loc_select_stp, use_log_scale, input$solute_conc_stp)
         
