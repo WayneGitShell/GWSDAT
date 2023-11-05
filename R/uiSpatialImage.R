@@ -98,7 +98,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                     div(id = "plume_save_btn_div",
                                         div(style = "display: inline-block;",
                                             selectInput("export_format_pd", label = "Image format", 
-                                                        choices = img_frmt, 
+                                                        choices = img_frmt[-which(img_frmt == "tif")], 
                                                         selected = img_frmt[[1]])
                                         ),
                                         

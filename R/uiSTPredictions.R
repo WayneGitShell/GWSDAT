@@ -30,7 +30,7 @@ uiSTPredictions <- function(csite, img_frmt) {
                         
                         div(style = "display: inline-block;",
                             selectInput("export_format_stp", label = "Image format", 
-                                        choices = img_frmt, 
+                                        choices = img_frmt[-which(img_frmt == "tif")], 
                                         selected = img_frmt[[1]]
                             )
                         ),
