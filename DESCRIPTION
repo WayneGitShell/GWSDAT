@@ -12,7 +12,7 @@ Description: Shiny application for the analysis of groundwater
     the import of a site basemap in GIS shapefile format.
 License: GPL-3
 Depends: 
-    R (>= 3.2.2)
+    R (>= 3.5.0)
 Imports: 
     deldir,
     digest,
