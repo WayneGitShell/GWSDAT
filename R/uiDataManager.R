@@ -134,7 +134,7 @@ uiImportNewData <- function(valid_data_name) {
                         
                         textInput("dname_nd", label = "Data Name", value = valid_data_name),
                         "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
-                        fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
+                        fileInput('shape_files_nd', 'Add Shape Files', accept = c('.shp','.shx', '.dbf', '.sbn', '.sbx', '.fbn','.fbx','.ain','.aih','.atx','.ixs','.mxs','.prj','.xml','.cpg'),
                                   multiple = TRUE),
                         selectInput("coord_unit_nd", label = "Coordinate Unit", choices =c("None"="","metres"="metres","feet"="feet"),# coord_units,
                                     selected = "None", width = "50%"),
@@ -195,7 +195,7 @@ uiImportCSVData <- function(valid_data_name) {
                                              'text/comma-separated-values,text/plain', 
                                              '.csv')),
                         "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
-                        fileInput('shape_files_csv', 'Add Shape Files', accept = c('*.shx', '*.dbf', '*.sbn', '*.sbx', '*.prj', '*.shp'),
+                        fileInput('shape_files_csv', 'Add Shape Files', accept = c('.shp','.shx', '.dbf', '.sbn', '.sbx', '.fbn','.fbx','.ain','.aih','.atx','.ixs','.mxs','.prj','.xml','.cpg'),
                                   multiple = TRUE),
                         
                         hr(),
@@ -258,7 +258,7 @@ uiImportExcelData <- function(csite_list) {
                         fileInput('excel_import_file', 'Excel File', accept = c(".xls", ".xlsx")),
                         # MIME type .xlsx: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
                         "Add multiple shape files by using Shift- or Ctrl- inside the Open Dialog.",
-                        fileInput('shape_files_xls', 'Add Shape Files', accept = c('.shx', '.dbf', '.sbn', '.sbx', '.prj', '.shp'),
+                        fileInput('shape_files_xls', 'Add Shape Files', accept = c('.shp','.shx', '.dbf', '.sbn', '.sbx', '.fbn','.fbx','.ain','.aih','.atx','.ixs','.mxs','.prj','.xml','.cpg'),
                                   multiple = TRUE),
                         actionButton("reset_xls_import", label = "Reset"),
                         actionButton("import_button_xls", label = "Import", icon("arrow-down"), 
