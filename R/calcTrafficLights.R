@@ -66,7 +66,7 @@ calcTrafficLights <- function(All.Data, Fitted.Data, smThreshSe = 1.1512, smMeth
     y.obs<-log(x$Result.Corr.ND)
     out.upper<-rep(NA,length(All.Time.Evals))
     out.Betas<-rep(NA,length(All.Time.Evals))
-    out.index<-match(x$AggDate,as.numeric(All.Time.Evals)) #outindex matches the aggregate date!
+    out.index<-match(as.numeric(x$AggDate),as.numeric(All.Time.Evals)) #outindex matches the aggregate date!
     out.index<-range(out.index,na.rm=T)[1]:range(out.index,na.rm=T)[2]
     
     
