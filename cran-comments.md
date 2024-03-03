@@ -1,4 +1,7 @@
-Version 3.20
+Version 3.2.1
+Bug fix - https://github.com/WayneGitShell/GWSDAT/commit/9e0e482281d968b85cc12a2461c974aeac93e79d
+
+Version 3.2.0
 Fixed warning in first release attempt by using underscore instead of spaces in file names. 
 Fixed undeclared S3method issue. 
 Fixed issue of comparing classes to strings. 

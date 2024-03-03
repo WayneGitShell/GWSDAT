@@ -1,4 +1,4 @@
-# GWSDAT 3.2.0
+# GWSDAT 3.2.1
 - Bug fix for Trends and Threshold Indicator Table 
 
 # GWSDAT 3.2.0
