@@ -1,3 +1,6 @@
+# GWSDAT 3.2.1
+- Bug fix for Trends and Threshold Indicator Table 
+
 # GWSDAT 3.2.0
 - Implementation of well influence analysis: https://github.com/peterradv/Well-Influence-Analysis
 
