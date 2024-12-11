@@ -74,7 +74,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                     
                                     div(style = "display: inline-block;", 
                                         selectInput("export_format_sp", label = "Image format", 
-                                                    choices  = img_frmt, 
+                                                    choices  = c(img_frmt,'asc'), 
                                                     selected = img_frmt[[1]]
                                         )
                                     ),
@@ -87,8 +87,8 @@ uiSpatialImage <- function(csite, img_frmt) {
                                           
                                           downloadButton("generate_spatial_anim_ppt", label = "Generate PPT Animation")#, icon = icon("file-movie-o")
                                           #actionButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
-                                      ) }
-                                    
+                                      ) },
+                                    uiOutput("res_ui")
                            ),
                            tabPanel("Plume Mass, Area & Conc.",
                                     
