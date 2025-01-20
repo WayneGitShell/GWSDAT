@@ -1193,7 +1193,53 @@ server <- function(input, output, session) {
     }
   )
   
+  #-----------------------------------------------------------------------------------------------------------
   
+  #--------------------------save_spatial_plot--------------------------------------------------------
+  
+  #Below syntax used to select the asc option from the drop-down list to the save the image ing ascii format. 
+  #The resolution refers to the size of each grid cell in the spatial dataset.
+  #Common Resolution Values:
+  
+  #High Resolution (Detailed)
+  #1 meter (e.g., 1x1 m grid for small areas like urban planning)
+  #10 meters (e.g., 10x10 m grid for detailed environmental studies)
+  
+  
+  #Medium Resolution
+  #30 meters (e.g., Landsat satellite data for regional analysis)
+  #90 meters (e.g., global DEMs like SRTM for large-area analysis)
+  
+  
+  #3. Low Resolution (Generalized)
+  #100 meters (e.g., for large-scale terrain or climate models)
+  #1 kilometer (e.g., global climate or topographic models)
+  
+  
+  #Choosing Resolution:
+  #Smaller Values: More detail, larger file sizes, and longer processing time.
+  #Larger Values: Less detail, smaller file sizes, and faster processing.
+  output$res_ui <- renderUI({
+    if (input$export_format_sp == "asc") {
+      div(style = "color:red",
+          
+          numericInput("resolution", "Enter Resolution (Smaller Values: More detail/Larger Values: Less detail)*" , value = ""))
+    }
+  })
+  
+  observeEvent(input$export_format_sp , {
+    if (input$export_format_sp == "asc") {
+      shinyjs::disable("save_spatial_plot")
+    }
+  })
+  observeEvent(input$resolution , {
+    if (!is.na(input$resolution)) {
+      shinyjs::enable("save_spatial_plot")
+    }
+    if (is.na(input$resolution)) {
+      shinyjs::disable("save_spatial_plot")
+    }
+  })
   output$save_spatial_plot <- downloadHandler(
     
     filename <- function() { 
@@ -1213,7 +1259,18 @@ server <- function(input, output, session) {
           
           PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
           
+        } else if (input$export_format_sp == "asc") {
+          PlotSpatialImageAsc(
+            csite,
+            file,
+            input$solute_select_sp,
+            as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
+            UseReducedWellSet = input$ImplementReducedWellSet,
+            resolution = input$resolution
+          )
+          
         }
+      
       else {
           
           if (input$export_format_sp == "png") png(file, width = input$img_width_px, height = input$img_height_px)

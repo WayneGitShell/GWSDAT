@@ -698,7 +698,23 @@ PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWel
   #writeRaster(r, filename=fileout, format="GTiff", overwrite=TRUE) #Geotiff format
   
 }
-
+#' Below function allows exporting a georeferenced raster file(in ASCII format) from maps. This helps save processed
+#' raster data, such as interpolated grids, without extra details like well locations, labels, or contours. The exported
+#' file can then be used in GIS software, making it more flexible for creating reports, visualizations, or use in tools like Leapfrog, etc.
+#' @importFrom raster raster rasterize writeRaster extent
+PlotSpatialImageAsc<-function(csite, fileout, substance, timepoint,UseReducedWellSet, format, resolution){
+  
+  dat<-interpConc(csite,substance,timepoint,UseReducedWellSet,res = resolution)$data
+  dat1<-expand.grid(x=dat$x,y=dat$y)
+  dat1$z<-as.numeric(t(dat$z))
+  dat1<-data.frame(x=dat1$x,y=dat1$y,z=dat1$z)
+  ext <- extent(dat1[,c("x","y")])
+  n_cols  <- floor((ext[2] - ext[1])/resolution)
+  n_rows <- floor((ext[4] - ext[3])/resolution)
+  r <- raster(extent(dat1[,c("x","y")]), ncol=n_cols, nrow=n_rows, res = resolution)
+  r <- rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
+  writeRaster(r,fileout,format = "ascii",overwrite=TRUE)
+}
 
 
 
