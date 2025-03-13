@@ -5,7 +5,7 @@ uiSpatialImage <- function(csite, img_frmt) {
     shinydashboard::tabBox(width = 3, id="NewTabBox",# status = "warning", title = "Settings",
                            
                            tabPanel("Settings",selectInput("aggregate_select_sp", label = "Aggregate by", 
-                                                           choices  = csite$ui_attr$aggregate_list,
+                                                           choices  = c(csite$ui_attr$aggregate_list,"SemiAnnual"),
                                                            selected = csite$ui_attr$aggregate_select, 
                                                            width = "80%"),
                                     

@@ -13,10 +13,13 @@ pasteAggLimit <- function(timep, aggr_by, fchrin = "%d-%m-%Y", fout = "%d-%b-%Y"
 
   # Need the end of the aggregation period
   if (tolower(aggr_by) != "day") {
-    
+    if (aggr_by == "semiannual") {
+      period <- seq.Date(timep, by = "-6 months", length.out = 2) - 1
+    } else{
     # The second element will be the last day of the month or quarter, year.
     #period <- seq.Date(timep, by = aggr_by, length.out = 2) - 1
     period <- seq.Date(timep, by = paste0("-1 ",aggr_by), length.out = 2) + 1
+    }
     dout   <- paste0(format.Date(period[2], fout), " to ", dout)
     #dout   <- paste0(dout, " to ", format.Date(period[2], fout))
   }
@@ -29,8 +32,8 @@ aggregateData <- function(Cont.Data, GW.Data, NAPL.Thickness.Data, Well.Coords,
                           aggr_by, aggr_gw_type) {
   
 
-  if (!(tolower(aggr_by) %in% c("day", "month", "quarter", "year" )))
-    stop("Need to specify valid aggregation period (aggr_by): day, month, quarter, or year.")
+  if (!(tolower(aggr_by) %in% c("day", "month", "quarter", "semiannual", "year" )))
+    stop("Need to specify valid aggregation period (aggr_by): day, month, quarter, semiannual or year.")
   
   if (!(tolower(aggr_gw_type) %in% c("mean","median","min","max")))
     stop("Need to specify valid GW aggregation method (aggr_gw_type): mean, meadian, min, or max.")
@@ -38,7 +41,13 @@ aggregateData <- function(Cont.Data, GW.Data, NAPL.Thickness.Data, Well.Coords,
   
   All.Dates<-as.Date(sort(unique(c(Cont.Data$SampleDate,GW.Data$SampleDate, NAPL.Thickness.Data$SampleDate))))
   ##my.seq<-as.Date(sort(seq.Date(max(Cont.Data$SampleDate),min(Cont.Data$SampleDate)-500,by=paste("-1",tolower(aggr_by)))))
+  if (tolower(aggr_by) == "semiannual") {
+    #my.seq <- seq.Date(min(All.Dates)-500, max(All.Dates), by = "6 months")
+    my.seq<-as.Date(sort(seq.Date(max(All.Dates),min(All.Dates)-500, by = "-6 months")))
+    
+  } else {
   my.seq<-as.Date(sort(seq.Date(max(All.Dates),min(All.Dates)-500,by=paste("-1",tolower(aggr_by)))))
+  }
   Cont.Data$AggDate<-as.Date(cut.Date(Cont.Data$SampleDate,breaks=my.seq,include.lowest=T,right=T,labels=as.character(my.seq[-1])))
   
   #Cont.Data$AggDate <- as.Date(cut.Date(Cont.Data$SampleDate, breaks = tolower(aggr_by), include.lower = TRUE))

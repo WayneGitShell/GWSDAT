@@ -6,7 +6,7 @@ uiTrendTable <- function(csite) {
   fluidRow(
         shinydashboard::box(width = 3, status = "warning", title = "Settings",
                              selectInput("aggregate_select_tt", label = "Aggregate by", 
-                                         choices  = csite$ui_attr$aggregate_list,
+                                         choices  = c(csite$ui_attr$aggregate_list,"SemiAnnual"),
                                          selected = csite$ui_attr$aggregate_selec, 
                                          width = "80%"),
 
