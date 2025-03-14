@@ -3,6 +3,7 @@
 -   Redesign of GWSDAT Excel based deployment for more robust installation and optimised spatiotemporal model fitting.  GWSDAT add-in now packaged up and shipped out with a portable windows version of R with open BLAS library - see <https://github.com/WayneGitShell/GWSDAT/blob/v3.30/compileR-openBLAS.Rmd> for full details.
 -   Updated GWSDAT add-in.
 -   Functionality to export spatial plot predictions to ascii file format.
+-   Functionality to aggregate temporal plotting resolution to Semi Annual. 
 
 # GWSDAT 3.2.1
 
