@@ -89,7 +89,7 @@ createUIAttr <- function(All.Data, GWSDAT_Options) {
   
   ui_attr$gw_options  <- c("None", "Same Length", "Weighted Length")
   ui_attr$gw_selected <- ui_attr$gw_options[3]
-  ui_attr$aggregate_list <- c("Day", "Month", "Quarter","semiannual","Year") # disabled (error in plotSpatialImage(): , "Year")  
+  ui_attr$aggregate_list <- c("Day", "Month", "Quarter","SemiAnnual","Year") # disabled (error in plotSpatialImage(): , "Year")  
   ui_attr$aggregate_select <- GWSDAT_Options$Aggby
   ui_attr$trend_thresh_list <- c("Trend", "Threshold - Absolute", "Threshold - Statistical")
   ui_attr$trend_thresh_selected <- ui_attr$trend_thresh_list[1]
