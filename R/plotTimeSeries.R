@@ -15,15 +15,63 @@
 plotTimeSeries <- function(csite, 
                            substance = NULL, 
                            location = NULL,
-                           show_thresh = FALSE
+                           show_thresh = FALSE,
+                           timepoint = NULL, 
+                           export = FALSE
                            ) {
   
   showvline = FALSE
   
+  #Modify the function to handle multiple wells and substances
+  # Set up plotting layout
+  # date1 <- as.Date(timepoint[1])
+  # date2 <- as.Date(timepoint[2])
+  # diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
+  # 
+  # 
+  #  if(timepoint[1] == timepoint[2]){
+  #    stop("Please select different Time period")
+  #  }
+  # 
+  sl <- length(location) * length(substance)
+  if(sl < 3){
+    op <- par(mfrow = c(length(substance),length(location)))
+  }
+  else{
+    lr <- ceiling(sl/3)
+    op <- par(mfrow = c(lr,3))
+  }
+  
+  
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
   
-  Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) == location & csite$All.Data$Cont.Data$Constituent == substance,]
+  loc <- location
+  subs <- substance
   
+  #Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) == location & csite$All.Data$Cont.Data$Constituent == substance,]
+  
+  Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & csite$All.Data$Cont.Data$Constituent %in% substance,]
+  if (export == TRUE) return(Well.Data)
+  
+  ###################if the charts combinations are above 12 we need to restrict the combinations
+  if(length(location)*length(substance)>12){
+    stop("Please reduce the number of combinations of location or substance and retry")
+  }
+  ######################################################################################
+  
+  for (substance  in subs) {
+    for (location in loc) { 
+    
+      Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & 
+                                              csite$All.Data$Cont.Data$Constituent %in% substance,]
+      
+      #Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
+      ###############Adding for the error in selecting multiple plots while no data is available#######
+      
+      if(nrow(Well.Data)==0){
+        stop("Data is not available related to the location -" ,location," and Substance- ",substance)
+      }
+      ################################################################################################# 
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
   if (csite$ui_attr$conc_unit_selected == "ng/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND*1000 }
@@ -354,6 +402,8 @@ plotTimeSeries <- function(csite,
     }
     
     
+  }
+    }
   }
   
   par(op)

@@ -2,13 +2,13 @@
 uiTimeSeries <- function(csite, img_frmt) {
     
   fluidRow(
-    shinydashboard::box(width = 3, status = "warning", title = "Settings",
-                        
+    shinydashboard::box(width = 2, status = "warning", title = "Settings",
+                        # Modify the UI to allow multiple selections
                         selectInput("sample_loc_select_ts", label = "Select Monitoring Well", choices = csite$ui_attr$sample_loc_names,
-                                    selected = csite$ui_attr$sample_loc_select_ts, width = "80%"),
-                        
+                                    selected = csite$ui_attr$sample_loc_select_ts, width = "80%", multiple = TRUE),
+                        # Modify the UI to allow multiple selections
                         selectInput("solute_select_ts", label = "Substance", choices = csite$ui_attr$solute_names,
-                                    selected = csite$ui_attr$solute_select_ts, width = '80%'),
+                                    selected = csite$ui_attr$solute_select_ts, width = '80%', multiple = TRUE),
                         
                         radioButtons("solute_conc", label = "Solute Conc. Unit",
                                      choices = csite$ui_attr$conc_unit_list, 
@@ -23,18 +23,21 @@ uiTimeSeries <- function(csite, img_frmt) {
                         
     ),
     
-    shinydashboard::box(width = 9, status = "primary",
-                        plotOutput("time_series"),
+    shinydashboard::box(width = 10, status = "primary",
+                        div(   ### Increasing the size of the outputwindow in plottimeseries
+                          plotOutput("time_series",
+                                     height = 700)%>% withSpinner(color="#0dc5c1"),      ### Alignment should be done to properly distribute the unused space
                         
                         div(style = "display: inline-block;",
                             selectInput("export_format_ts", label = "Image format", 
-                                        choices = img_frmt[-which(img_frmt == "tif")], #csite$ui_attr$img_formats, 
+                                        choices = img_frmt,#[-which(img_frmt == "tif")], #csite$ui_attr$img_formats, 
                                         selected = img_frmt[[1]] #csite$ui_attr$img_formats[[1]]
                             )
                         ),
                         
                         div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
                             downloadButton("save_timeseries_plot", label = "Save Plot")
+                        ),
                         ),
                         if (existsPPT()) {
                           div(id = "save_timeseries_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",

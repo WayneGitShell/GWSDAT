@@ -559,7 +559,14 @@ server <- function(input, output, session) {
     csite$ui_attr$ts_options[input$ts_true_options] <<- TRUE
     
     
-    plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts, input$check_threshold)
+    #plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts, input$check_threshold)
+    plotTimeSeries(
+      csite,
+      input$solute_select_ts,
+      input$sample_loc_select_ts,
+      input$check_threshold,
+      input$timepoint_ts_idx
+    )
     
   })
 
