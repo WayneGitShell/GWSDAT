@@ -505,7 +505,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$solute_select_sp, {
-    updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
+    #updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
     

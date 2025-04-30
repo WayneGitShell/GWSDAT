@@ -146,7 +146,6 @@ rm_spaces <- function(x){
 
 existsNAPL <- function(All.Data, well, solute) {
 
-  print("here")
   Well.Data <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$WellName) %in%
                                     well & All.Data$Cont.Data$Constituent %in% solute,]
 
