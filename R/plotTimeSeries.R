@@ -68,9 +68,9 @@ plotTimeSeries <- function(csite,
       #Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
       ###############Adding for the error in selecting multiple plots while no data is available#######
       
-      if(nrow(Well.Data)==0){
-        stop("Data is not available related to the location -" ,location," and Substance- ",substance)
-      }
+      # if(nrow(Well.Data)==0){
+      #   stop("Data is not available related to the location -" ,location," and Substance- ",substance)
+      # }
       ################################################################################################# 
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
