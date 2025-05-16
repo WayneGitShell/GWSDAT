@@ -24,14 +24,14 @@ plotTimeSeries <- function(csite,
   
   #Modify the function to handle multiple wells and substances
   # Set up plotting layout
-  # date1 <- as.Date(timepoint[1])
-  # date2 <- as.Date(timepoint[2])
-  # diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
-  # 
-  # 
-  #  if(timepoint[1] == timepoint[2]){
-  #    stop("Please select different Time period")
-  #  }
+  date1 <- as.Date(timepoint[1])
+  date2 <- as.Date(timepoint[2])
+  diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
+
+
+   if(timepoint[1] == timepoint[2]){
+     stop("Please select different Time period")
+   }
   # 
   sl <- length(location) * length(substance)
   if(sl < 3){
@@ -65,7 +65,7 @@ plotTimeSeries <- function(csite,
       Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & 
                                               csite$All.Data$Cont.Data$Constituent %in% substance,]
       
-      #Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
+      Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
       ###############Adding for the error in selecting multiple plots while no data is available#######
       
       # if(nrow(Well.Data)==0){
@@ -218,7 +218,8 @@ plotTimeSeries <- function(csite,
          xlab = "Date",
          ylab = if (substance != " ") {paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = "")} else {""},
          ylim = my.ylim, 
-         xlim = my.xlim, 
+         #xlim = my.xlim, 
+         xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
          log  = "y", 
          cex.lab  = 1, 
          cex.main = 1, 
@@ -235,7 +236,8 @@ plotTimeSeries <- function(csite,
          xlab = "Date",
          ylab = if (substance != " ") {paste(substance," (", csite$ui_attr$conc_unit_selected, ")", sep="")} else {""},
          ylim = my.ylim,
-         xlim = my.xlim,
+         #xlim = my.xlim,
+         xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
          cex.lab  = 1,
          cex.main = 1,
          axes     = FALSE)
@@ -245,7 +247,20 @@ plotTimeSeries <- function(csite,
   
   
   #axis.Date(1, my.xlim)
-  axis.Date(1, seq(my.xlim[1],my.xlim[2],l=10))
+  #axis.Date(1, seq(my.xlim[1],my.xlim[2],l=10))
+  
+  ###  adding Axis legend in the time series plots
+  
+  if (diff_sec < (365.25 * 24 * 60 * 60))
+    
+  {
+    axis.Date(1, at = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "month"), format = "%b %Y")
+    
+  }
+  
+  else {
+    axis.Date(1, at = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "year"), format = "%Y")
+  }
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   graphics::box()	
