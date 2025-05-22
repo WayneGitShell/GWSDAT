@@ -28,7 +28,7 @@ plotTimeSeries <- function(csite,
   date2 <- as.Date(timepoint[2])
   diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
 
-
+  print(timepoint)
    if(timepoint[1] == timepoint[2]){
      stop("Please select different Time period")
    }
@@ -64,9 +64,19 @@ plotTimeSeries <- function(csite,
     
       Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & 
                                               csite$All.Data$Cont.Data$Constituent %in% substance,]
-      
+     
       Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
+      print(Well.Data)
+      
       ###############Adding for the error in selecting multiple plots while no data is available#######
+       if (nrow(Well.Data) == 0) {
+      #   # Plot an empty graph or display a message
+         plot(1, type = "n", xlab = "Date", ylab = paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = ""),
+              xlim = c(as.Date(timepoint[1], format = "%b %Y"), as.Date(timepoint[2], format = "%b %Y")),
+              ylim = c(0, 1))
+         title(main = paste("No data available for", substance, "at", location))
+         next
+       }
       
       # if(nrow(Well.Data)==0){
       #   stop("Data is not available related to the location -" ,location," and Substance- ",substance)
@@ -150,7 +160,7 @@ plotTimeSeries <- function(csite,
     
     
     my.eval.points <- seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40)
-    sm.fit <- sm::sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points)
+    sm.fit <- try(sm::sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points))
     
     if(!inherits(sm.fit, "try-error")){
       
