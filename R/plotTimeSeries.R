@@ -159,7 +159,7 @@ plotTimeSeries <- function(csite,
   if (csite$ui_attr$ts_options["Conc. Trend Smoother"] & !is.na(sm.h)) {
     
     
-    my.eval.points <- seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40)
+    my.eval.points <- try(seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40))
     sm.fit <- try(sm::sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points))
     
     if(!inherits(sm.fit, "try-error")){
