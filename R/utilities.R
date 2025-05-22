@@ -150,7 +150,7 @@ existsNAPL <- function(All.Data, well, solute) {
                                     well & All.Data$Cont.Data$Constituent %in% solute,]
 
   NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) ||
-    nrow(All.Data$NAPL.Thickness.Data[as.character(All.Data$NAPL.Thickness.Data$WellName) == well,]) > 0
+    nrow(All.Data$NAPL.Thickness.Data[as.character(All.Data$NAPL.Thickness.Data$WellName) %in% well,]) > 0
 
   if (is.na( NAPL.Present)) { NAPL.Present <- FALSE }
 

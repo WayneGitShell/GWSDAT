@@ -69,14 +69,14 @@ plotTimeSeries <- function(csite,
       print(Well.Data)
       
       ###############Adding for the error in selecting multiple plots while no data is available#######
-       if (nrow(Well.Data) == 0) {
-      #   # Plot an empty graph or display a message
-         plot(1, type = "n", xlab = "Date", ylab = paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = ""),
-              xlim = c(as.Date(timepoint[1], format = "%b %Y"), as.Date(timepoint[2], format = "%b %Y")),
-              ylim = c(0, 1))
-         title(main = paste("No data available for", substance, "at", location))
-         next
-       }
+      #  if (nrow(Well.Data) < 0) {
+      # #   # Plot an empty graph or display a message
+      #    plot(1, type = "n", xlab = "Date", ylab = paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = ""),
+      #         xlim = c(as.Date(timepoint[1], format = "%b %Y"), as.Date(timepoint[2], format = "%b %Y")),
+      #         ylim = c(0, 1))
+      #    title(main = paste("No data available for", substance, "at", location))
+      #    next
+      #  }
       
       # if(nrow(Well.Data)==0){
       #   stop("Data is not available related to the location -" ,location," and Substance- ",substance)
