@@ -32,7 +32,8 @@ plotTimeSeries <- function(csite,
    if(timepoint[1] == timepoint[2]){
      stop("Please select different Time period")
    }
-  # 
+  
+   
   sl <- length(location) * length(substance)
   if(sl < 3){
     op <- par(mfrow = c(length(substance),length(location)))
@@ -44,6 +45,7 @@ plotTimeSeries <- function(csite,
   
   
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
+ 
   
   loc <- location
   subs <- substance
@@ -274,8 +276,19 @@ plotTimeSeries <- function(csite,
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   graphics::box()	
-  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""}), font.main = 4, cex.main = 1)
+  #title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""}), font.main = 4, cex.main = 1)
+  # Existing title code
+  main_title <- paste(substance, if (substance != " ") {"in"} else {""}, location,
+                      if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""})
   
+  # Add date range to the title
+  date_range_title <- paste("Data Subset:", timepoint[1], "to", timepoint[2])
+  
+  # Combine titles with a newline character
+  full_title <- paste(main_title, "\n", date_range_title)
+  
+  # Plot with the new title
+  title(main = full_title, font.main = 4, cex.main = 1)
   
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
   
