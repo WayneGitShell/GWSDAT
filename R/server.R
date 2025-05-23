@@ -1180,7 +1180,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "pptx") {
         
-        makeTimeSeriesPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,
+        makeTimeSeriesPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx,
                           width  = input$img_width_px, height = input$img_height_px)
         
       } 
@@ -1192,7 +1192,7 @@ server <- function(input, output, session) {
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
         if (input$export_format_ts == "wmf") grDevices::win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
         
-        plotTimeSeries(csite, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold)
+        plotTimeSeries(csite, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx)
         dev.off()
       }
     }
@@ -1516,7 +1516,7 @@ output$generate_timeseries_anim_ppt <- downloadHandler(
     
     content <- function(file) {
       
-      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,
+      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx,
                         width  = input$img_width_px, height = input$img_height_px)
       
     }
