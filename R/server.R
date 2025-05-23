@@ -1516,7 +1516,7 @@ output$generate_timeseries_anim_ppt <- downloadHandler(
     
     content <- function(file) {
       
-      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,
+      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx,
                         width  = input$img_width_px, height = input$img_height_px)
       
     }
