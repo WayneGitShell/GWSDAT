@@ -28,7 +28,6 @@ plotTimeSeries <- function(csite,
   date2 <- as.Date(timepoint[2])
   diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
 
-  print(timepoint)
    if(timepoint[1] == timepoint[2]){
      stop("Please select different Time period")
    }
@@ -68,7 +67,6 @@ plotTimeSeries <- function(csite,
                                               csite$All.Data$Cont.Data$Constituent %in% substance,]
      
       Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
-      print(Well.Data)
       
       ###############Adding for the error in selecting multiple plots while no data is available#######
       #  if (nrow(Well.Data) < 0) {
@@ -483,7 +481,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,t
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotTimeSeries(csite, substance, location,show_thresh,timepoint=timepoint)
+  plotTimeSeries(csite=csite, substance=substance, location=location,show_thresh=show_thresh,timepoint=timepoint)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
