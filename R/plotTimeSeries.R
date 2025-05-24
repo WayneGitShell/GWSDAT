@@ -17,7 +17,8 @@ plotTimeSeries <- function(csite,
                            location = NULL,
                            show_thresh = FALSE,
                            timepoint = NULL, 
-                           export = FALSE
+                           export = FALSE,
+                           modify_plot_layout=TRUE
                            ) {
   
   showvline = FALSE
@@ -34,14 +35,17 @@ plotTimeSeries <- function(csite,
   
    
   sl <- length(location) * length(substance)
-  if(sl < 3){
-    op <- par(mfrow = c(length(substance),length(location)))
-  }
-  else{
-    lr <- ceiling(sl/3)
-    op <- par(mfrow = c(lr,3))
-  }
   
+  if(modify_plot_layout){ #Plot layour is suppressed when calling PlotTimeSeries from PowerPoint Well Report. 
+    
+    if(sl < 3){
+      op <- par(mfrow = c(length(substance),length(location)))
+    }
+    else{
+      lr <- ceiling(sl/3)
+      op <- par(mfrow = c(lr,3))
+    }
+  }
   
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
  
@@ -522,7 +526,7 @@ makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layo
     par(mfrow=Layout)
   }
     
-  plotTimeSeries(csite=csite, substance =substance, location = All.Wells[i],show_thresh = show_thresh,timepoint=timepoint)
+  plotTimeSeries(csite=csite, substance =substance, location = All.Wells[i],show_thresh = show_thresh,timepoint=timepoint,modify_plot_layout=FALSE)
   
   if(i %in% c(seq(Layout[1] * Layout[2],max(Layout[1] * Layout[2],length(All.Wells)),by=Layout[1] * Layout[2]),length(All.Wells))){
     dev.off()
