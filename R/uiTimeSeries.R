@@ -58,12 +58,15 @@ uiTimeSeries <- function(csite, img_frmt) {
                                   label="",
                                   #label = paste0("Time: ", pasteAggLimit(csite$ui_attr$timepoints[csite$ui_attr$timepoint_sp_idx], csite$GWSDAT_Options$Aggby)),
                                   #min = 1,
-                                  min = min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),
-                                  max = max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),
+                                  #min = min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),
+                                  #max = max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),
+                                  min = min(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T),
+                                  max = max(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T),
                                   step = 1,
                                   #value = c(1,csite$ui_attr$timepoint_sp_idx),
                                   #value = length(csite$ui_attr$timepoints),
-                                  value = c(min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")))
+                                  #value = c(min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")))
+                                  value=range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T)
                                   #,animate = animationOptions(loop = TRUE, interval = 1500)
                       ) # ,
                   )
