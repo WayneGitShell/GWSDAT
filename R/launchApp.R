@@ -55,7 +55,6 @@ launchApp <- function(GWSDAT_Options, session_file) {
       
       print("Warning: Deleting global variable name 'session_file'")
       rm("session_file",envir = .GlobalEnv)
-      
     }
       
       
