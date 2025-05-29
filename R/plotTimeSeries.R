@@ -36,15 +36,23 @@ plotTimeSeries <- function(csite,
    
   sl <- length(location) * length(substance)
   
-  if(modify_plot_layout){ #Plot layour is suppressed when calling PlotTimeSeries from PowerPoint Well Report. 
+  if(modify_plot_layout){ #Plot layout is suppressed when calling PlotTimeSeries from PowerPoint Well Report. 
     
-    if(sl < 3){
-      op <- par(mfrow = c(length(substance),length(location)))
-    }
-    else{
-      lr <- ceiling(sl/3)
-      op <- par(mfrow = c(lr,3))
-    }
+    num_columns <- length(substance)
+    num_rows <- ceiling(sl / num_columns)
+    
+    # Set up the plotting layout
+    op <- par(mfrow = c(num_rows, num_columns))
+    
+    # if(sl < 3){
+    #   op <- par(mfrow = c(length(substance),length(location)))
+    # }
+    # else{
+    #   lr <- ceiling(sl/3)
+    #   op <- par(mfrow = c(lr,3))
+    # }
+    
+    
   }
   
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
@@ -64,9 +72,10 @@ plotTimeSeries <- function(csite,
   }
   ######################################################################################
   
-  for (substance  in subs) {
-    for (location in loc) { 
-    
+  # for (substance  in subs) {
+  #   for (location in loc) { 
+  for (location in loc){
+    for (substance in subs){
       Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & 
                                               csite$All.Data$Cont.Data$Constituent %in% substance,]
      
