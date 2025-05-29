@@ -891,16 +891,26 @@ server <- function(input, output, session) {
     # Re-Calculate groundwater flows (depends on aggregation date).
     csite$GW.Flows <<- evalGWFlow(csite$All.Data$Agg_GW_Data)
     
-        
     # Update UI time points of slider.
     dates_tmp <- format(csite$All.Data$All_Agg_Dates, "%d-%m-%Y")
     csite$ui_attr$timepoints   <<- dates_tmp
-    
+
     # Set new time point to last date.
     new_timepoint_idx <- length(dates_tmp)
     
     # Update slider inputs: Spatial plot and in Trend table.
     outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
+    
+    
+    if(new_timepoint_idx==input$timepoint_sp_idx){ 
+      
+    #check for event when new length time points is unchanged. Manually change to something else - so update of slider label is performed.
+    updateSliderInput(session, "timepoint_sp_idx", value = max(1,new_timepoint_idx-1),
+                      min = 1, max = length(csite$ui_attr$timepoints), label ="", step = 1)
+    updateSliderInput(session, "timepoint_tt_idx", value = max(1,new_timepoint_idx-1),
+                      min = 1, max = length(csite$ui_attr$timepoints), label = "", step = 1) 
+  
+    }
     
     updateSliderInput(session, "timepoint_sp_idx", value = new_timepoint_idx,
                       #min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
