@@ -48,7 +48,16 @@ launchApp <- function(GWSDAT_Options, session_file) {
     
     .GlobalEnv$APP_RUN_MODE <- "SingleData"
     
-    
+    # Capturing the instance where session_file argument is not specified in the call to launchApp but still exists as a global variable.
+    # This could be improved upon!
+    if(missing(session_file) & exists("session_file", envir = .GlobalEnv)){ 
+      
+      print("Warning: Deleting global variable name 'session_file'")
+      rm("session_file",envir = .GlobalEnv)
+      
+    }
+      
+      
     if (!missing(session_file)) {
       .GlobalEnv$session_file <- normalizePath(session_file)
     } else {
