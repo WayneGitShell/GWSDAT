@@ -4,6 +4,8 @@
 -   Updated GWSDAT add-in.
 -   Functionality to export spatial plot predictions to ascii file format.
 -   Functionality to aggregate temporal plotting resolution to Semi Annual. 
+-   Functionality to select multiple wells and solutes in Well Time-Series plot. 
+-   Functionality to specify time range of data in Well Time-Series plot. 
 
 # GWSDAT 3.2.1
 
