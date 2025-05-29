@@ -41,7 +41,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
   if (missing(GWSDAT_Options) && missing(session_file)) {
     
     .GlobalEnv$APP_RUN_MODE <- "MultiData"
-    options(shiny.useragg = FALSE) #to avoid artefacts in spatial plots
+    if(!"shiny.useragg" %in% names(options())){options(shiny.useragg = FALSE)} #to avoid artefacts in spatial plots
     
     shinyApp(ui = uiFull(), server = server)
     
@@ -66,7 +66,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
     }
     
     options(shiny.launch.browser = TRUE)
-    options(shiny.useragg = FALSE) #to avoid artefacts in spatial plots
+    if(!"shiny.useragg" %in% names(options())){options(shiny.useragg = FALSE)} #to avoid artefacts in spatial plots
     
     shinyApp(ui = uiSimple(), server = server)
   }
