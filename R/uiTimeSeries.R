@@ -63,8 +63,8 @@ uiTimeSeries <- function(csite, img_frmt) {
                                   step = 1,
                                   #value = c(1,csite$ui_attr$timepoint_sp_idx),
                                   #value = length(csite$ui_attr$timepoints),
-                                  value = c(min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y"))),
-                                  animate = animationOptions(loop = TRUE, interval = 1500)
+                                  value = c(min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")))
+                                  #,animate = animationOptions(loop = TRUE, interval = 1500)
                       ) # ,
                   )
     )
