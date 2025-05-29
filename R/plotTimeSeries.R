@@ -157,7 +157,7 @@ plotTimeSeries <- function(csite,
     if (nrow(Well.Data) > 0) {my.ylim <- c(min(Well.Data$Result.Corr.ND, Stat.Lim,na.rm = T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
     else {my.ylim = c(0.01,100)}
     my.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T) #maybe change to AggDate!
-  
+    my.xlim<-timepoint
     }
   
   
@@ -271,18 +271,19 @@ plotTimeSeries <- function(csite,
   
   #axis.Date(1, my.xlim)
   #axis.Date(1, seq(my.xlim[1],my.xlim[2],l=10))
+  #axis.Date(1, seq(timepoint[1],timepoint[2],l=10))
   
   ###  adding Axis legend in the time series plots
   
   if (diff_sec < (365.25 * 24 * 60 * 60))
-    
+
   {
-    axis.Date(1, at = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "month"), format = "%b %Y")
-    
+    axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "month"), format = "%b %Y")
+
   }
-  
+
   else {
-    axis.Date(1, at = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "year"), format = "%Y")
+    axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "year"), format = "%Y")
   }
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
@@ -291,6 +292,8 @@ plotTimeSeries <- function(csite,
   # Existing title code
   main_title <- paste(substance, if (substance != " ") {"in"} else {""}, location,
                       if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""})
+  
+  
   
   # Add date range to the title
   date_range_title <- paste("Data Subset:", timepoint[1], "to", timepoint[2])
