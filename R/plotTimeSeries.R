@@ -28,7 +28,9 @@ plotTimeSeries <- function(csite,
   date1 <- as.Date(timepoint[1])
   date2 <- as.Date(timepoint[2])
   diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
-
+  ## Maximum possible x range - based on all available data. 
+  maxextent.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T) 
+  
    if(timepoint[1] == timepoint[2]){
      stop("Please select different Time period")
    }
@@ -156,8 +158,7 @@ plotTimeSeries <- function(csite,
     
     if (nrow(Well.Data) > 0) {my.ylim <- c(min(Well.Data$Result.Corr.ND, Stat.Lim,na.rm = T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
     else {my.ylim = c(0.01,100)}
-    my.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T) #maybe change to AggDate!
-    my.xlim<-timepoint
+    my.xlim <- timepoint
     }
   
   
@@ -241,8 +242,8 @@ plotTimeSeries <- function(csite,
          xlab = "Date",
          ylab = if (substance != " ") {paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = "")} else {""},
          ylim = my.ylim, 
-         #xlim = my.xlim, 
-         xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
+         xlim = my.xlim, 
+         #xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
          log  = "y", 
          cex.lab  = 1, 
          cex.main = 1, 
@@ -259,8 +260,8 @@ plotTimeSeries <- function(csite,
          xlab = "Date",
          ylab = if (substance != " ") {paste(substance," (", csite$ui_attr$conc_unit_selected, ")", sep="")} else {""},
          ylim = my.ylim,
-         #xlim = my.xlim,
-         xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
+         xlim = my.xlim,
+         #xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
          cex.lab  = 1,
          cex.main = 1,
          axes     = FALSE)
@@ -278,12 +279,13 @@ plotTimeSeries <- function(csite,
   if (diff_sec < (365.25 * 24 * 60 * 60))
 
   {
-    axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "month"), format = "%b %Y")
-
+    #axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "month"), format = "%b %Y")
+    axis.Date(1, x = seq(my.xlim[1], my.xlim[2], by = "month"), format = "%b %Y")
   }
 
   else {
-    axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "year"), format = "%Y")
+    #axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "year"), format = "%Y")
+    axis.Date(1, x =  seq(my.xlim[1], my.xlim[2], by = "year"), format = "%Y")
   }
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
@@ -296,10 +298,16 @@ plotTimeSeries <- function(csite,
   
   
   # Add date range to the title
-  date_range_title <- paste("Data Subset:", timepoint[1], "to", timepoint[2])
+  #date_range_title <- paste("Data Subset:", timepoint[1], "to", timepoint[2])
+  date_range_title <- paste("Data Subset:", my.xlim[1], "to", my.xlim[2])
   
   # Combine titles with a newline character
-  full_title <- paste(main_title, "\n", date_range_title)
+  
+  if(!csite$ui_attr$ts_options["Scale to Conc. Data"] &  my.xlim[1]==maxextent.xlim[1] &  my.xlim[2]==maxextent.xlim[2]){
+    full_title <- paste(main_title)
+  }else{
+    full_title <- paste(main_title, "\n", date_range_title)
+  }
   
   # Plot with the new title
   title(main = full_title, font.main = 4, cex.main = 1)
