@@ -1243,8 +1243,11 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$export_format_sp , {
-    if (input$export_format_sp == "asc") {
+    if (input$export_format_sp == "asc" ) {
       shinyjs::disable("save_spatial_plot")
+    }
+    if (input$export_format_sp != "asc"){
+      shinyjs::enable("save_spatial_plot")
     }
   })
   observeEvent(input$resolution , {

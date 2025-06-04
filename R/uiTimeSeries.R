@@ -38,14 +38,14 @@ uiTimeSeries <- function(csite, img_frmt) {
                         div(style = "display: inline-block; vertical-align:top; margin-top: 25px; margin-right: 10px", 
                             downloadButton("save_timeseries_plot", label = "Save Plot")
                         ),
-                        ),
+                        ##),
                         if (existsPPT()) {
                           div(id = "save_timeseries_ppt_anim", style = "display: inline-block; vertical-align:top; margin-top: 25px;",
                               
                 
                               actionButton("Optionsgenerate_timeseries_anim_ppt","Generate Well Report")
                           ) }
-                        
+                        ),
     ),
     absolutePanel(id = "timecontrol_ts", class = "panel panel-default", 
                   fixed = TRUE, draggable = TRUE, top = "auto", 
@@ -55,7 +55,7 @@ uiTimeSeries <- function(csite, img_frmt) {
                   div(style = "margin-left: 15px; margin-top: 5px",
                       h4(textOutput("timepoint_ts_idx_label")),
                       sliderInput("timepoint_ts_idx",
-                                  label="",
+                                  label="Date Range Selection:",
                                   #label = paste0("Time: ", pasteAggLimit(csite$ui_attr$timepoints[csite$ui_attr$timepoint_sp_idx], csite$GWSDAT_Options$Aggby)),
                                   #min = 1,
                                   #min = min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),

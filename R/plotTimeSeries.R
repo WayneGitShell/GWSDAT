@@ -310,7 +310,7 @@ plotTimeSeries <- function(csite,
   }
   
   # Plot with the new title
-  title(main = full_title, font.main = 4, cex.main = 1)
+  title(main = full_title, font.main = 4, cex.main = 1,line=2)
   
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
   

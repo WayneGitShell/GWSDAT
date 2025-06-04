@@ -18,8 +18,8 @@ uiTrendTable <- function(csite) {
                                           selected = csite$ui_attr$trend_thresh_selected)
                              
          ),
-         shinydashboard::box(width = 9, title = "Trends & Thresholds", status = "primary",
-                             htmlOutput("trend_table")
+         shinydashboard::box(width = 9, title = "Trends & Thresholds", status = "primary",div(style = "overflow-x: auto; overflow-y: auto;",htmlOutput("trend_table"))
+                             
          ),
        
          absolutePanel(id = "timecontrol_tt", class = "panel panel-default", 
