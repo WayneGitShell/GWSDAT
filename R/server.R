@@ -1017,6 +1017,13 @@ server <- function(input, output, session) {
     
   
   
+  ### adding Disclaimer in the plottrendtable
+  
+  output$note <- renderText({
+    "Disclaimer : The slider displays only the dates which are available in the data."
+  })
+  
+  
   
   output$trend_table <- renderUI({
     
@@ -1035,8 +1042,12 @@ server <- function(input, output, session) {
       return(NULL)
     }
 
-    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
-               input$trend_or_threshold, input$color_select_tt)
+    plotTrendTable(csite, 
+                   as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
+                #input$timepoint_tt_idx,
+               input$trend_or_threshold, 
+               input$color_select_tt,
+               input$substance_select_tt)
   })
 
   
