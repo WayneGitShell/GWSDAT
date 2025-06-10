@@ -1016,14 +1016,14 @@ server <- function(input, output, session) {
   })
     
   
-  
-  ### adding Disclaimer in the plottrendtable
-  
-  output$note <- renderText({
-    "Disclaimer : The slider displays only the dates which are available in the data."
-  })
-  
-  
+  # 
+  # ### adding Disclaimer in the plottrendtable
+  # 
+  # output$note <- renderText({
+  #   "Disclaimer : The slider displays only the dates which are available in the data."
+  # })
+  # 
+  # # 
   
   output$trend_table <- renderUI({
     
