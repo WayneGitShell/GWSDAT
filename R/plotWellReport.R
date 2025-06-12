@@ -12,7 +12,7 @@ plotWellReport <- function(csite, Conts.to.plot = NULL, Wells.to.Plot = NULL,
   Cont.Data <- Cont.Data[as.character(Cont.Data$WellName) %in% Wells.to.Plot,]
   
   if (nrow(Cont.Data) == 0) {
-    showNotification("Well Report: No data to plot.", type = "warning", duration = 10)
+    showNotification("Well Report: No data to plot.", type = "warning", duration = 5)
     return()
   }
   

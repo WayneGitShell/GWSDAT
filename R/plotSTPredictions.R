@@ -5,11 +5,15 @@ plotSTPredictions <- function(csite, substance = NULL, Wells.to.Plot = NULL,
   
  
   # Maybe show message that nothing is selected
-  if (is.null(substance) || is.null(Wells.to.Plot))
+  if (is.null(substance) || is.null(Wells.to.Plot)){
+    showNotification("Spatiotemporal Predictions: No data to plot.", type = "warning", duration = 5)
     return(NULL)
+  }
   
-  if (length(Wells.to.Plot) == 0) 
+  if (length(Wells.to.Plot) == 0) {
+    showNotification("Spatiotemporal Predictions: No data to plot.", type = "warning", duration = 5)
     return(NULL)
+  }
   
   
   Cont.Data <- csite$All.Data$Cont.Data

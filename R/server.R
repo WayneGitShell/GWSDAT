@@ -1087,6 +1087,28 @@ server <- function(input, output, session) {
     
   })
   
+  
+
+  
+  observeEvent(input$selectall_stp, {
+
+    if (input$selectall_stp %% 2 == 0){
+      updateSelectInput(session, "sample_loc_select_stp",selected=csite$ui_attr$sample_loc_names)
+    }else{
+      updateSelectInput(session, "sample_loc_select_stp",selected="")
+    }
+
+    
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
   updateNAPL <- function(location, substance) {
     
     tmp_napl <- existsNAPL(csite$All.Data, location, substance) 
@@ -1388,6 +1410,18 @@ server <- function(input, output, session) {
       
     }
   )
+  
+  
+  observeEvent(input$selectall_wr, {
+    
+    if (input$selectall_wr %% 2 == 0){
+      updateSelectInput(session, "sample_loc_select_wr",selected=csite$ui_attr$sample_loc_names)
+    }else{
+      updateSelectInput(session, "sample_loc_select_wr",selected="")
+    }
+    
+    
+  })
   
   
   output$save_plumestats_plot <- downloadHandler(
