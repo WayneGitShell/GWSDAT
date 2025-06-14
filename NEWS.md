@@ -10,6 +10,8 @@
 
 -   Functionality to specify time range of data in Well Time-Series plot. 
 
+-   CSS styling for Trends and Thresholds plot which includes scrolling to better cope with a large number of wells and/or solutes. 
+
 -   Functionality to Select/Deselect all wells in Well Report and Spatiotemporal predictions plots.
 
 -   Updated User Manual. 
