@@ -1136,7 +1136,7 @@ server <- function(input, output, session) {
   observeEvent({input$solute_select_ts; 
     input$sample_loc_select_ts}, {
     updateNAPL(input$sample_loc_select_ts, input$solute_select_ts)  
-    updateSelectInput(session, "solute_select_sp", selected = input$solute_select_ts[length(input$solute_select_ts)] ) 
+    #updateSelectInput(session, "solute_select_sp", selected = input$solute_select_ts[length(input$solute_select_ts)] ) 
   })
   
   #observeEvent(input$solute_select_sp, {
