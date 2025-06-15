@@ -14,7 +14,7 @@
 
 -   Functionality to Select/Deselect all wells in Well Report and Spatiotemporal predictions plots.
 
--   Updated User Manual. 
+-   Updated User Manual for version 3.3.
 
 # GWSDAT 3.2.1
 
