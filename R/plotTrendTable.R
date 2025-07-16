@@ -1,7 +1,7 @@
  
 
 plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend", 
-                       color_type = "All") {
+                       color_type = "All",substance = "NULL") {
   
   
   
@@ -66,7 +66,7 @@ plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend",
   #   if(length(Well.Names)==0){stop("No Wells selected!")}
   #   
   # }
-  
+  Cont.Names <- substance   ### Obtaining the selected substances
   if (display_type == "Trend") {
     
     temp.traffic.Beta.ND.Check <- csite$Traffic.Lights$Beta.ND.Check[Well.Names, Cont.Names, as.character(timepoint), drop = F]
@@ -192,14 +192,50 @@ plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend",
   titt <- matrix(temp.titles, ncol = Num.Conts)
  
   # Add CSS table style
+  ###$  User needs ability to scroll to the right to see all the analyte columns in the  Trends and Threshold table
   html <- paste0(html, "<style type='text/css' media='screen'>
      table{
        border-collapse:collapse;
        border:1px solid #000066;
+       table-layout: fixed;
+       width: 100%;
+       height: 100%;
      }
      table td{
        border:1px solid #000066;
-     } </style> ")
+       padding: 5px;
+       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+     }
+     table thead th:first-child,
+      table tbody td:first-child {
+     position: -webkit-sticky;
+     position: sticky;
+     left: 0;
+     #z-index: 1;
+     #background-color: red;
+     font-weight: bold;
+ }
+    table thead th {
+   position: -webkit-sticky;
+   position: sticky;
+   top: 0;
+   left: 0;
+   #z-index: 1;
+   background-color: #f7f7f7;
+   font-weight: bold;
+ }
+ table tbody td:first-child {
+   height: 200px;
+   top: auto;
+ }
+.header-color {
+                 background-color: #f7f7f7; /* This sets the background color to red, but you can change it to any color you want */
+                 #color: #FFFFFF; /* This sets the text color to white */
+}
+                 
+ </style> ")
   
   
 
@@ -227,7 +263,8 @@ plotTrendTable <- function(csite, timepoint = NULL, display_type = "Trend",
   }
   html <- paste0(html,"</tbody></table>")
   
-  return(div(style = "margin-bottom: 20px", HTML(html)))
+  return(div(#style = "margin-bottom: 20px", 
+    HTML(html))) ### Adding Scroll Bar in trends and threshold
   
   
 }
@@ -324,4 +361,3 @@ plotTrendTableLegend <- function() {
 #   }
 #   
 # }
-

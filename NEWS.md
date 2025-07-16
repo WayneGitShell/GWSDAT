@@ -1,9 +1,20 @@
 # GWSDAT 3.3.0
 
 -   Redesign of GWSDAT Excel based deployment for more robust installation and optimised spatiotemporal model fitting.  GWSDAT add-in now packaged up and shipped out with a portable windows version of R with open BLAS library - see <https://github.com/WayneGitShell/GWSDAT/blob/v3.30/compileR-openBLAS.Rmd> for full details.
--   Updated GWSDAT add-in.
+
 -   Functionality to export spatial plot predictions to ascii file format.
+
 -   Functionality to aggregate temporal plotting resolution to Semi Annual. 
+
+-   Functionality to select multiple wells and solutes in Well Time-Series plot. 
+
+-   Functionality to specify time range of data in Well Time-Series plot. 
+
+-   CSS styling for Trends and Thresholds plot which includes scrolling to better cope with a large number of wells and/or solutes. 
+
+-   Functionality to Select/Deselect all wells in Well Report and Spatiotemporal predictions plots.
+
+-   Updated User Manual for version 3.3.
 
 # GWSDAT 3.2.1
 

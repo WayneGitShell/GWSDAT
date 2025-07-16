@@ -15,15 +15,88 @@
 plotTimeSeries <- function(csite, 
                            substance = NULL, 
                            location = NULL,
-                           show_thresh = FALSE
+                           show_thresh = FALSE,
+                           timepoint = NULL, 
+                           export = FALSE,
+                           modify_plot_layout=TRUE
                            ) {
   
   showvline = FALSE
   
+  #Modify the function to handle multiple wells and substances
+  # Set up plotting layout
+  date1 <- as.Date(timepoint[1])
+  date2 <- as.Date(timepoint[2])
+  diff_sec <- as.numeric(difftime(date2, date1, units = "secs"))
+  ## Maximum possible x range - based on all available data. 
+  maxextent.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T) 
+  
+   if(timepoint[1] == timepoint[2]){
+     stop("Please select different Time period")
+   }
+  
+   
+  sl <- length(location) * length(substance)
+  
+  if(modify_plot_layout){ #Plot layout is suppressed when calling PlotTimeSeries from PowerPoint Well Report. 
+    
+    num_columns <- length(substance)
+    num_rows <- ceiling(sl / num_columns)
+    
+    # Set up the plotting layout
+    op <- par(mfrow = c(num_rows, num_columns))
+    
+    # if(sl < 3){
+    #   op <- par(mfrow = c(length(substance),length(location)))
+    # }
+    # else{
+    #   lr <- ceiling(sl/3)
+    #   op <- par(mfrow = c(lr,3))
+    # }
+    
+    
+  }
+  
   Use.LogScale = csite$ui_attr$ts_options["Log Conc. Scale"]
+ 
   
-  Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) == location & csite$All.Data$Cont.Data$Constituent == substance,]
+  loc <- location
+  subs <- substance
   
+  #Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) == location & csite$All.Data$Cont.Data$Constituent == substance,]
+  
+  Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & csite$All.Data$Cont.Data$Constituent %in% substance,]
+  if (export == TRUE) return(Well.Data)
+  
+  ###################if the charts combinations are above 12 we need to restrict the combinations
+  if(length(location)*length(substance)>12){
+    stop("Please reduce the number of combinations of location or substance and retry")
+  }
+  ######################################################################################
+  
+  # for (substance  in subs) {
+  #   for (location in loc) { 
+  for (location in loc){
+    for (substance in subs){
+      Well.Data <- csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$WellName) %in% location & 
+                                              csite$All.Data$Cont.Data$Constituent %in% substance,]
+     
+      Well.Data<-Well.Data[Well.Data$SampleDate>=timepoint[1]&Well.Data$SampleDate<=timepoint[2], ]
+      
+      ###############Adding for the error in selecting multiple plots while no data is available#######
+      #  if (nrow(Well.Data) < 0) {
+      # #   # Plot an empty graph or display a message
+      #    plot(1, type = "n", xlab = "Date", ylab = paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = ""),
+      #         xlim = c(as.Date(timepoint[1], format = "%b %Y"), as.Date(timepoint[2], format = "%b %Y")),
+      #         ylim = c(0, 1))
+      #    title(main = paste("No data available for", substance, "at", location))
+      #    next
+      #  }
+      
+      # if(nrow(Well.Data)==0){
+      #   stop("Data is not available related to the location -" ,location," and Substance- ",substance)
+      # }
+      ################################################################################################# 
   
   if (csite$ui_attr$conc_unit_selected == "mg/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND/1000 }
   if (csite$ui_attr$conc_unit_selected == "ng/l") { Well.Data$Result.Corr.ND <- Well.Data$Result.Corr.ND*1000 }
@@ -85,8 +158,7 @@ plotTimeSeries <- function(csite,
     
     if (nrow(Well.Data) > 0) {my.ylim <- c(min(Well.Data$Result.Corr.ND, Stat.Lim,na.rm = T),max(Well.Data$Result.Corr.ND,Stat.Lim,na.rm=T))}
     else {my.ylim = c(0.01,100)}
-    my.xlim <- range(c(csite$All.Data$Cont.Data$SampleDate, csite$All.Data$GW.Data$SampleDate),na.rm = T) #maybe change to AggDate!
-  
+    my.xlim <- timepoint
     }
   
   
@@ -101,8 +173,8 @@ plotTimeSeries <- function(csite,
   if (csite$ui_attr$ts_options["Conc. Trend Smoother"] & !is.na(sm.h)) {
     
     
-    my.eval.points <- seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40)
-    sm.fit <- sm::sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points)
+    my.eval.points <- try(seq(range(Well.Data$SampleDate)[1],range(Well.Data$SampleDate)[2],length=40))
+    sm.fit <- try(sm::sm.regression(Well.Data$SampleDate, log(Well.Data$Result.Corr.ND), display = "none",h=sm.h,eval.points = my.eval.points))
     
     if(!inherits(sm.fit, "try-error")){
       
@@ -171,6 +243,7 @@ plotTimeSeries <- function(csite,
          ylab = if (substance != " ") {paste(substance, " (", csite$ui_attr$conc_unit_selected, ")", sep = "")} else {""},
          ylim = my.ylim, 
          xlim = my.xlim, 
+         #xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
          log  = "y", 
          cex.lab  = 1, 
          cex.main = 1, 
@@ -188,6 +261,7 @@ plotTimeSeries <- function(csite,
          ylab = if (substance != " ") {paste(substance," (", csite$ui_attr$conc_unit_selected, ")", sep="")} else {""},
          ylim = my.ylim,
          xlim = my.xlim,
+         #xlim = c(as.Date(timepoint[1],format = "%b %Y") ,as.Date(timepoint[2],format = "%b %Y")),
          cex.lab  = 1,
          cex.main = 1,
          axes     = FALSE)
@@ -197,12 +271,46 @@ plotTimeSeries <- function(csite,
   
   
   #axis.Date(1, my.xlim)
-  axis.Date(1, seq(my.xlim[1],my.xlim[2],l=10))
+  #axis.Date(1, seq(my.xlim[1],my.xlim[2],l=10))
+  #axis.Date(1, seq(timepoint[1],timepoint[2],l=10))
+  
+  ###  adding Axis legend in the time series plots
+  
+  if (diff_sec < (365.25 * 24 * 60 * 60))
+
+  {
+    #axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "month"), format = "%b %Y")
+    axis.Date(1, x = seq(my.xlim[1], my.xlim[2], by = "month"), format = "%b %Y")
+  }
+
+  else {
+    #axis.Date(1, x = seq(as.Date(timepoint[1]), as.Date(timepoint[2]), by = "year"), format = "%Y")
+    axis.Date(1, x =  seq(my.xlim[1], my.xlim[2], by = "year"), format = "%Y")
+  }
   
   if (nrow(csite$All.Data$Cont.Data[as.character(csite$All.Data$Cont.Data$Result) != "NAPL" & !is.na(csite$All.Data$Cont.Data$Result),]) != 0) {axis(2)} #if no Conc Data suppress Y-axis
   graphics::box()	
-  title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""}), font.main = 4, cex.main = 1)
+  #title(main = paste(substance, if (substance != " ") {"in"}else{""}, location,if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""}), font.main = 4, cex.main = 1)
+  # Existing title code
+  main_title <- paste(substance, if (substance != " ") {"in"} else {""}, location,
+                      if (csite$Aquifer != "") {paste(": Aquifer-", csite$Aquifer, sep = "")} else {""})
   
+  
+  
+  # Add date range to the title
+  #date_range_title <- paste("Data Subset:", timepoint[1], "to", timepoint[2])
+  date_range_title <- paste("Data Subset:", my.xlim[1], "to", my.xlim[2])
+  
+  # Combine titles with a newline character
+  
+  if(!csite$ui_attr$ts_options["Scale to Conc. Data"] &  my.xlim[1]==maxextent.xlim[1] &  my.xlim[2]==maxextent.xlim[2]){
+    full_title <- paste(main_title)
+  }else{
+    full_title <- paste(main_title, "\n", date_range_title)
+  }
+  
+  # Plot with the new title
+  title(main = full_title, font.main = 4, cex.main = 1,line=2)
   
   grid(NA,NULL,lwd = 1,lty = 1,equilogs = FALSE)
   
@@ -355,6 +463,8 @@ plotTimeSeries <- function(csite,
     
     
   }
+    }
+  }
   
   par(op)
   
@@ -384,7 +494,7 @@ plotTimeSeries <- function(csite,
 # }
 
 
-makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,width = 600, height = 400){
+makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,timepoint,width = 600, height = 400){
   
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -395,7 +505,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,w
   mytemp <- tempfile(fileext = ".png")
   
   png(mytemp, width = width, height = height) 
-  plotTimeSeries(csite, substance, location,show_thresh)
+  plotTimeSeries(csite=csite, substance=substance, location=location,show_thresh=show_thresh,timepoint=timepoint)
   dev.off()
   
   ppt_pres <- addPlotPPT(mytemp, ppt_pres, width, height) 
@@ -409,7 +519,7 @@ makeTimeSeriesPPT <- function(csite, fileout, substance, location, show_thresh,w
 
 
 
-makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layout,show_thresh,width = 600, height = 400){
+makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layout,show_thresh,timepoint,width = 600, height = 400){
   
   # Initialize Powerpoint file.
   if (is.null(ppt_pres <- initPPT())) {
@@ -436,7 +546,7 @@ makeTimeSeriesAnimationPPT <- function(csite, fileout, substance, location, Layo
     par(mfrow=Layout)
   }
     
-  plotTimeSeries(csite=csite, substance =substance, location = All.Wells[i],show_thresh = show_thresh)
+  plotTimeSeries(csite=csite, substance =substance, location = All.Wells[i],show_thresh = show_thresh,timepoint=timepoint,modify_plot_layout=FALSE)
   
   if(i %in% c(seq(Layout[1] * Layout[2],max(Layout[1] * Layout[2],length(All.Wells)),by=Layout[1] * Layout[2]),length(All.Wells))){
     dev.off()

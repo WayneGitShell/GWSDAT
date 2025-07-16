@@ -15,11 +15,32 @@ uiTrendTable <- function(csite) {
                              
                              radioButtons("trend_or_threshold", label = "Display Table",
                                           choices  = csite$ui_attr$trend_thresh_list, 
-                                          selected = csite$ui_attr$trend_thresh_selected)
+                                          selected = csite$ui_attr$trend_thresh_selected),
+                            
+                            selectInput("substance_select_tt", label = "Substance", choices = csite$ui_attr$solute_names,    ### ### passing all and none
+                                        selected = csite$ui_attr$solute_names, width = '80%', multiple=TRUE),
                              
          ),
          shinydashboard::box(width = 9, title = "Trends & Thresholds", status = "primary",
-                             htmlOutput("trend_table")
+                             #div(style = "overflow-x: auto; overflow-y: auto;",htmlOutput("trend_table"))
+                             div(style = "height: 500px; overflow-y: scroll;",
+                                 htmlOutput("trend_table")%>% withSpinner(color="#0dc5c1"),
+                             ),
+                             
+                             
+                             div(textOutput("note"), #style = "color: red;"
+                             )
+                             
+                             
+         ),
+        
+        
+        tags$head(
+          tags$style(
+            HTML(".my-slider-div .irs-single, .my-slider-div .irs-bar-edge, .my-slider-div .irs-bar {background: #F1F1F1}
+          .my-slider-div .irs-line {border-color: #4C8BC4 !important;}.my-slider-div .irs-single {background-color: #4C8BC4 !important;border-color: #4C8BC4 !important;}")
+          )
+                             
          ),
        
          absolutePanel(id = "timecontrol_tt", class = "panel panel-default", 
@@ -27,7 +48,7 @@ uiTrendTable <- function(csite) {
                        left = "auto", right = 10, bottom = 10,
                        width = 350, height = 130, style = "opacity: 0.90",
                        
-                       div(style = "margin-left: 15px; margin-top: 5px;",
+                       div(class = "my-slider-div", style = "margin-left: 15px; margin-top: 5px;",
                            h4(textOutput("timepoint_tt_idx_label")),
                            sliderInput("timepoint_tt_idx",
                                        label="",
@@ -36,7 +57,11 @@ uiTrendTable <- function(csite) {
                                        step = 1,
                                        value = csite$ui_attr$timepoint_tt_idx,
                                        animate = animationOptions(loop = TRUE, interval = 1500)
-                           ) 
+                           #             min = min(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),   ### modifed according to the dates
+                           #             max = max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),   ### modifed according to the dates
+                           #             step = 1,
+                           #             value = max(as.Date(csite$ui_attr$timepoints, "%d-%m-%Y")),  ### modifed according to the dates
+                            ) 
                        )
          ), # end absolutePanel()
        
