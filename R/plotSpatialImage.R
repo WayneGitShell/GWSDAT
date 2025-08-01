@@ -691,10 +691,10 @@ PlotSpatialImageTIF<-function(csite, fileout, substance, timepoint,UseReducedWel
   dat1<-expand.grid(x=dat$x,y=dat$y)
   dat1$z<-as.numeric(t(dat$z))
   dat1<-data.frame(x=dat1$x,y=dat1$y,z=dat1$z)
-  r <- raster(extent(dat1[,c("x","y")]), ncol=100, nrow=100)
-  r <- rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
+  r <- raster::raster(raster::extent(dat1[,c("x","y")]), ncol=100, nrow=100)
+  r <- raster::rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
   
-  writeRaster(r,fileout,overwrite=TRUE)
+  raster::writeRaster(r,fileout,overwrite=TRUE)
   #writeRaster(r, filename=fileout, format="GTiff", overwrite=TRUE) #Geotiff format
   
 }
@@ -708,12 +708,12 @@ PlotSpatialImageAsc<-function(csite, fileout, substance, timepoint,UseReducedWel
   dat1<-expand.grid(x=dat$x,y=dat$y)
   dat1$z<-as.numeric(t(dat$z))
   dat1<-data.frame(x=dat1$x,y=dat1$y,z=dat1$z)
-  ext <- extent(dat1[,c("x","y")])
+  ext <- raster::extent(dat1[,c("x","y")])
   n_cols  <- floor((ext[2] - ext[1])/resolution)
   n_rows <- floor((ext[4] - ext[3])/resolution)
-  r <- raster(extent(dat1[,c("x","y")]), ncol=n_cols, nrow=n_rows, res = resolution)
-  r <- rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
-  writeRaster(r,fileout,format = "ascii",overwrite=TRUE)
+  r <- raster::raster(raster::extent(dat1[,c("x","y")]), ncol=n_cols, nrow=n_rows, res = resolution)
+  r <- raster::rasterize(dat1[, c("x","y")], r, dat$z, fun=mean)
+  raster::writeRaster(r,fileout,format = "ascii",overwrite=TRUE)
 }
 
 
