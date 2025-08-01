@@ -3,7 +3,6 @@
 S3method(predict,GWSDAT.PSpline)
 export(createOptions)
 export(launchApp)
-export(myloadnamespace)
 import(MASS)
 import(geometry)
 import(grDevices)
