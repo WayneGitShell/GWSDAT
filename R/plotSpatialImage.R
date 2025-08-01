@@ -656,7 +656,7 @@ plotFilledContour <- function(x = seq(0, 1, len = nrow(z)), y = seq(0, 1, len = 
         for (i in 1:length(shape_data)) {
 
             # This fixes issue #251 and might be even faster (because of st_geometry)
-            plot(st_geometry(shape_data[[i]]), add = TRUE, max.plot = 1, col = "lightblue")
+            plot(sf::st_geometry(shape_data[[i]]), add = TRUE, max.plot = 1, col = "lightblue")
 
             # Using this will produce github issue #215
             #plot(shape_data[[i]], add = TRUE, col = "lightblue", max.plot = 1)
