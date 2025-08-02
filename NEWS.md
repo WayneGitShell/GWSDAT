@@ -16,6 +16,8 @@
 
 -   Updated User Manual for version 3.3.
 
+-   Improved initial package loading time.
+
 # GWSDAT 3.2.1
 
 -   Bug fix for Trends and Threshold Indicator Table
