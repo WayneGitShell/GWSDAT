@@ -6,6 +6,7 @@ server <- function(input, output, session) {
   
   observe({
     
+    print("Searching for URL Args")
     urlArgs<-session$clientData$url_search
   
   
