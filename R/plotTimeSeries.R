@@ -387,8 +387,8 @@ plotTimeSeries <- function(csite,
     temp.col  <- "red"
     
     try({
-      temp.tex1 <- paste("Mann-Kendall P.Value=", 
-                         format.pval(Mann.test$sl, digits = 3, eps = 0.01))
+      #temp.tex1 <- paste("Mann-Kendall P.Value=", format.pval(Mann.test$sl, digits = 3, eps = 0.01))
+      temp.tex1 <- paste0("Mann-Kendall (P.Value=",format.pval(Mann.test$sl, digits = 3, eps = 0.01),paste0("; S=",as.numeric(Mann.test$S),")"))
       temp.col = if (Mann.test$sl < 0.05) {"darkgreen"} else {"red"}
     }, silent = TRUE)
 
