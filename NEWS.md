@@ -14,7 +14,7 @@
 
 -   Functionality to Select/Deselect all wells in Well Report and Spatiotemporal predictions plots.
 
--   Display of Mann-Kendall S Statistic in response to user requests: <https://github.com/WayneGitShell/GWSDAT/issues/273>.
+-   Display of Mann-Kendall S Statistic in response to user requests: <https://github.com/WayneGitShell/GWSDAT/issues/273>. 
 
 -   Updated User Manual for version 3.3.
 
