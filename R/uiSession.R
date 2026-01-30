@@ -14,7 +14,10 @@ uiSession <- function() {
       ),
       
       div(style = "float: right",
-          downloadButton("save_session_btn", label = "Download", icon = icon("save"))
+          downloadButton("save_session_backwards_compatible", label = "Ver<=3.2 Supported Download", icon = icon("save"))
+      ),br(),  br(),
+      div(style = "float: right",
+          downloadButton("save_session_btn", label =  "Ver>=3.3 Supported Download", icon = icon("save"))
       )
                 
     )

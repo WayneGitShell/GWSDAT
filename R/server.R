@@ -1547,7 +1547,39 @@ server <- function(input, output, session) {
     }
   )
   
+  output$save_session_backwards_compatible <- downloadHandler(
     
+    filename <- function() {
+      
+      fn <- input$session_filename
+      pa <- strsplit(fn, "\\.")[[1]]
+      
+      # If there is no RDS ending, append it.
+      if (tolower(pa[length(pa)]) != "rds")
+        #fn <- paste0(fn, ".RData")
+        fn <- paste0(fn, ".rds")
+      
+      return(fn)
+    },
+    
+    content <- function(file) {
+      
+      if (!is.null(csite)) {
+        
+        # Check if filename is ok.
+        csite <<- saveUIAttr(csite, input)
+        csite$ui_attr$solute_select_ts  <<- csite$ui_attr$solute_select_sp[1]
+        # Create temporary csite_list, that includes the current active data session.
+        # This will not overwrite the server csite_list.
+        csite_list <- list(csite = csite)
+        
+        class(csite_list) <- "GWSDAT_DATA_LIST"
+        
+        saveRDS(csite_list, file = file)
+      }
+    }
+  )
+  
   
   
   output$generate_spatial_anim_ppt <- downloadHandler(

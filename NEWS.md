@@ -8,6 +8,8 @@
 
 -   Functionality to select multiple wells and solutes in Well Time-Series plot. 
 
+-   Backwards compatible save session option to avoid issues with multiple well/solute selection in v3.3.  
+
 -   Functionality to specify time range of data in Well Time-Series plot. 
 
 -   CSS styling for Trends and Thresholds plot which includes scrolling to better cope with a large number of wells and/or solutes. 
@@ -19,7 +21,6 @@
 -   Updated User Manual for version 3.3.
 
 -   Improved package loading time by loading certain packages on demand. 
-
 
 # GWSDAT 3.2.1
 
