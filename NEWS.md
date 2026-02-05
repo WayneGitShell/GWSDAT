@@ -56,7 +56,7 @@
 
 -   Well Redundancy Analysis: This allows the user to very conveniently drop a well or a combination of wells from the analysis and investigate the resultant impact.
 
--   Updated User Manual: <https://gwsdat.net/gwsdat_manual>. A fully comprehensive description of GWSDAT, updated for version 3.1.
+-   Updated User Manual: <https://gwsdat.net/gwsdat_manual/>. A fully comprehensive description of GWSDAT, updated for version 3.1.
 
 -   Excel Add-in Menu: New Excel menu designed to be clearer to navigate and easier to install.
 
