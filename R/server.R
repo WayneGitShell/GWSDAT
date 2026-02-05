@@ -452,7 +452,7 @@ server <- function(input, output, session) {
                   For this reason, the order of wells is to be interpreted as a <u>guide</u> only.  </font></li></ul><br>"),
                   HTML("<ul> <li><font size='+0.5'> The well order is dependent on the current selection of omitted wells and will only be updated once the model is updated. For this reason, it is suggested to omit wells in an incremental one-by-one fashion, i.e. update the model every time a well is removed or added.  </font></li></ul><br>"),
                   HTML("<ul> <li><font size='+0.5'> Well redundancy analysis is substance specific which means the importance of wells may be different for each substance. </font></li></ul><br>"),
-                  HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='http://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
+                  HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='https://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
                   title = "GWSDAT Well Redundancy Analysis Feature",size="l",footer = modalButton("Close"),easyClose=T))
   })
   
