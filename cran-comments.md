@@ -1,4 +1,4 @@
-Version 3.3.0 New features and enhancements from GWSDAT collaborators.
+Version 3.3.0 New features and enhancements from GWSDAT collaborators.See News.md for full details. 
 
 Version 3.2.1 Bug fix - <https://github.com/WayneGitShell/GWSDAT/commit/9e0e482281d968b85cc12a2461c974aeac93e79d>
 
