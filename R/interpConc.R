@@ -1,6 +1,6 @@
 
 #' @importFrom splancs gridpts areapl
-interpConc <- function(csite, substance, timepoint,UseReducedWellSet) {
+interpConc <- function(csite, substance, timepoint,UseReducedWellSet,res = NULL) {
   
   if(UseReducedWellSet){
        model.tune     <- csite$Reduced.Fitted.Data[[substance]][["Model.tune"]]
@@ -108,7 +108,8 @@ interpConc <- function(csite, substance, timepoint,UseReducedWellSet) {
     interp.pred <- try( interpBary(model.tune$best.mod,
                                    AggDate = eval.df$AggDate[1],
                                    my.area = my.area,
-                                   type = as.character(csite$ui_attr$pred_interval)
+                                   type = as.character(csite$ui_attr$pred_interval),
+                                   res
                                            )
                         )
     

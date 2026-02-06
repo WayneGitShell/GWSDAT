@@ -5,7 +5,7 @@ uiSpatialImage <- function(csite, img_frmt) {
     shinydashboard::tabBox(width = 3, id="NewTabBox",# status = "warning", title = "Settings",
                            
                            tabPanel("Settings",selectInput("aggregate_select_sp", label = "Aggregate by", 
-                                                           choices  = csite$ui_attr$aggregate_list,
+                                                           choices  =  sort(unique(c(csite$ui_attr$aggregate_list,"SemiAnnual"))), #Backwards compatability for adding SemiAnnual
                                                            selected = csite$ui_attr$aggregate_select, 
                                                            width = "80%"),
                                     
@@ -74,7 +74,7 @@ uiSpatialImage <- function(csite, img_frmt) {
                                     
                                     div(style = "display: inline-block;", 
                                         selectInput("export_format_sp", label = "Image format", 
-                                                    choices  = img_frmt, 
+                                                    choices  = c(img_frmt,'asc'), 
                                                     selected = img_frmt[[1]]
                                         )
                                     ),
@@ -87,8 +87,8 @@ uiSpatialImage <- function(csite, img_frmt) {
                                           
                                           downloadButton("generate_spatial_anim_ppt", label = "Generate PPT Animation")#, icon = icon("file-movie-o")
                                           #actionButton("generate_spatial_anim_ppt", label = "Generate PPT Animation", icon = icon("file-movie-o"))
-                                      ) }
-                                    
+                                      ) },
+                                    uiOutput("res_ui")
                            ),
                            tabPanel("Plume Mass, Area & Conc.",
                                     

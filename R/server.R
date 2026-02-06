@@ -6,6 +6,7 @@ server <- function(input, output, session) {
   
   observe({
     
+    #print("Searching for URL Args")
     urlArgs<-session$clientData$url_search
   
   
@@ -451,7 +452,7 @@ server <- function(input, output, session) {
                   For this reason, the order of wells is to be interpreted as a <u>guide</u> only.  </font></li></ul><br>"),
                   HTML("<ul> <li><font size='+0.5'> The well order is dependent on the current selection of omitted wells and will only be updated once the model is updated. For this reason, it is suggested to omit wells in an incremental one-by-one fashion, i.e. update the model every time a well is removed or added.  </font></li></ul><br>"),
                   HTML("<ul> <li><font size='+0.5'> Well redundancy analysis is substance specific which means the importance of wells may be different for each substance. </font></li></ul><br>"),
-                  HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='http://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
+                  HTML("<font size='+0.5'> For more details see the GWSDAT user manual <a href='https://gwsdat.net/gwsdat_manual/' target='_blank'>here</a>.</font>"),
                   title = "GWSDAT Well Redundancy Analysis Feature",size="l",footer = modalButton("Close"),easyClose=T))
   })
   
@@ -505,7 +506,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$solute_select_sp, {
-    updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
+    #updateSelectInput(session, "solute_select_ts", selected = input$solute_select_sp )
     tr<-as.numeric(csite$ui_attr$plume_thresh[as.character(input$solute_select_sp)])
     updateNumericInput(session,"plume_thresh_pd",value=tr)
     
@@ -559,7 +560,14 @@ server <- function(input, output, session) {
     csite$ui_attr$ts_options[input$ts_true_options] <<- TRUE
     
     
-    plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts, input$check_threshold)
+    #plotTimeSeries(csite, input$solute_select_ts, input$sample_loc_select_ts, input$check_threshold)
+    plotTimeSeries(
+      csite=csite,
+      substance=input$solute_select_ts,
+      location=input$sample_loc_select_ts,
+      show_thresh=input$check_threshold,
+      timepoint=input$timepoint_ts_idx
+    )
     
   })
 
@@ -884,16 +892,26 @@ server <- function(input, output, session) {
     # Re-Calculate groundwater flows (depends on aggregation date).
     csite$GW.Flows <<- evalGWFlow(csite$All.Data$Agg_GW_Data)
     
-        
     # Update UI time points of slider.
     dates_tmp <- format(csite$All.Data$All_Agg_Dates, "%d-%m-%Y")
     csite$ui_attr$timepoints   <<- dates_tmp
-    
+
     # Set new time point to last date.
     new_timepoint_idx <- length(dates_tmp)
     
     # Update slider inputs: Spatial plot and in Trend table.
     outp <- pasteAggLimit(csite$ui_attr$timepoints[new_timepoint_idx], csite$GWSDAT_Options$Aggby)
+    
+    
+    if(new_timepoint_idx==input$timepoint_sp_idx){ 
+      
+    #check for event when new length time points is unchanged. Manually change to something else - so update of slider label is performed.
+    updateSliderInput(session, "timepoint_sp_idx", value = max(1,new_timepoint_idx-1),
+                      min = 1, max = length(csite$ui_attr$timepoints), label ="", step = 1)
+    updateSliderInput(session, "timepoint_tt_idx", value = max(1,new_timepoint_idx-1),
+                      min = 1, max = length(csite$ui_attr$timepoints), label = "", step = 1) 
+  
+    }
     
     updateSliderInput(session, "timepoint_sp_idx", value = new_timepoint_idx,
                       #min = 1, max = length(csite$ui_attr$timepoints), label = paste0("Time: ", outp), step = 1)
@@ -999,7 +1017,14 @@ server <- function(input, output, session) {
   })
     
   
-  
+  # 
+  # ### adding Disclaimer in the plottrendtable
+  # 
+  # output$note <- renderText({
+  #   "Disclaimer : The slider displays only the dates which are available in the data."
+  # })
+  # 
+  # # 
   
   output$trend_table <- renderUI({
     
@@ -1018,8 +1043,12 @@ server <- function(input, output, session) {
       return(NULL)
     }
 
-    plotTrendTable(csite, as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
-               input$trend_or_threshold, input$color_select_tt)
+    plotTrendTable(csite, 
+                   as.Date(csite$ui_attr$timepoints[input$timepoint_tt_idx], "%d-%m-%Y"),
+                #input$timepoint_tt_idx,
+               input$trend_or_threshold, 
+               input$color_select_tt,
+               input$substance_select_tt)
   })
 
   
@@ -1059,6 +1088,28 @@ server <- function(input, output, session) {
     
   })
   
+  
+
+  
+  observeEvent(input$selectall_stp, {
+
+    if (input$selectall_stp %% 2 == 0){
+      updateSelectInput(session, "sample_loc_select_stp",selected=csite$ui_attr$sample_loc_names)
+    }else{
+      updateSelectInput(session, "sample_loc_select_stp",selected="")
+    }
+
+    
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
   updateNAPL <- function(location, substance) {
     
     tmp_napl <- existsNAPL(csite$All.Data, location, substance) 
@@ -1085,10 +1136,8 @@ server <- function(input, output, session) {
   # to Spatial Plot panel.
   observeEvent({input$solute_select_ts; 
     input$sample_loc_select_ts}, {
-    
     updateNAPL(input$sample_loc_select_ts, input$solute_select_ts)  
-  
-    updateSelectInput(session, "solute_select_sp", selected = input$solute_select_ts ) 
+    #updateSelectInput(session, "solute_select_sp", selected = input$solute_select_ts[length(input$solute_select_ts)] ) 
   })
   
   #observeEvent(input$solute_select_sp, {
@@ -1175,7 +1224,7 @@ server <- function(input, output, session) {
       
       if (input$export_format_ts == "pptx") {
         
-        makeTimeSeriesPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,
+        makeTimeSeriesPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx,
                           width  = input$img_width_px, height = input$img_height_px)
         
       } 
@@ -1187,13 +1236,62 @@ server <- function(input, output, session) {
         if (input$export_format_ts == "jpg") jpeg(file, width = input$img_width_px, height = input$img_height_px, quality = input$img_jpg_quality) 
         if (input$export_format_ts == "wmf") grDevices::win.metafile(file, width = input$img_width_px/100, height = input$img_height_px/100)
         
-        plotTimeSeries(csite, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold)
+        plotTimeSeries(csite=csite, substance=input$solute_select_ts, location=input$sample_loc_select_ts,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx)
         dev.off()
       }
     }
   )
   
+  #-----------------------------------------------------------------------------------------------------------
   
+  #--------------------------save_spatial_plot--------------------------------------------------------
+  
+  #Below syntax used to select the asc option from the drop-down list to the save the image ing ascii format. 
+  #The resolution refers to the size of each grid cell in the spatial dataset.
+  #Common Resolution Values:
+  
+  #High Resolution (Detailed)
+  #1 meter (e.g., 1x1 m grid for small areas like urban planning)
+  #10 meters (e.g., 10x10 m grid for detailed environmental studies)
+  
+  
+  #Medium Resolution
+  #30 meters (e.g., Landsat satellite data for regional analysis)
+  #90 meters (e.g., global DEMs like SRTM for large-area analysis)
+  
+  
+  #3. Low Resolution (Generalized)
+  #100 meters (e.g., for large-scale terrain or climate models)
+  #1 kilometer (e.g., global climate or topographic models)
+  
+  
+  #Choosing Resolution:
+  #Smaller Values: More detail, larger file sizes, and longer processing time.
+  #Larger Values: Less detail, smaller file sizes, and faster processing.
+  output$res_ui <- renderUI({
+    if (input$export_format_sp == "asc") {
+      div(style = "color:red",
+          
+          numericInput("resolution", "Enter Resolution (Smaller Values: More detail/Larger Values: Less detail)*" , value = ""))
+    }
+  })
+  
+  observeEvent(input$export_format_sp , {
+    if (input$export_format_sp == "asc" ) {
+      shinyjs::disable("save_spatial_plot")
+    }
+    if (input$export_format_sp != "asc"){
+      shinyjs::enable("save_spatial_plot")
+    }
+  })
+  observeEvent(input$resolution , {
+    if (!is.na(input$resolution)) {
+      shinyjs::enable("save_spatial_plot")
+    }
+    if (is.na(input$resolution)) {
+      shinyjs::disable("save_spatial_plot")
+    }
+  })
   output$save_spatial_plot <- downloadHandler(
     
     filename <- function() { 
@@ -1213,7 +1311,18 @@ server <- function(input, output, session) {
           
           PlotSpatialImageTIF(csite, file, input$solute_select_sp, as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),UseReducedWellSet=input$ImplementReducedWellSet)
           
+        } else if (input$export_format_sp == "asc") {
+          PlotSpatialImageAsc(
+            csite,
+            file,
+            input$solute_select_sp,
+            as.Date(csite$ui_attr$timepoints[input$timepoint_sp_idx], "%d-%m-%Y"),
+            UseReducedWellSet = input$ImplementReducedWellSet,
+            resolution = input$resolution
+          )
+          
         }
+      
       else {
           
           if (input$export_format_sp == "png") png(file, width = input$img_width_px, height = input$img_height_px)
@@ -1302,6 +1411,18 @@ server <- function(input, output, session) {
       
     }
   )
+  
+  
+  observeEvent(input$selectall_wr, {
+    
+    if (input$selectall_wr %% 2 == 0){
+      updateSelectInput(session, "sample_loc_select_wr",selected=csite$ui_attr$sample_loc_names)
+    }else{
+      updateSelectInput(session, "sample_loc_select_wr",selected="")
+    }
+    
+    
+  })
   
   
   output$save_plumestats_plot <- downloadHandler(
@@ -1426,7 +1547,39 @@ server <- function(input, output, session) {
     }
   )
   
+  output$save_session_backwards_compatible <- downloadHandler(
     
+    filename <- function() {
+      
+      fn <- input$session_filename
+      pa <- strsplit(fn, "\\.")[[1]]
+      
+      # If there is no RDS ending, append it.
+      if (tolower(pa[length(pa)]) != "rds")
+        #fn <- paste0(fn, ".RData")
+        fn <- paste0(fn, ".rds")
+      
+      return(fn)
+    },
+    
+    content <- function(file) {
+      
+      if (!is.null(csite)) {
+        
+        # Check if filename is ok.
+        csite <<- saveUIAttr(csite, input)
+        csite$ui_attr$solute_select_ts  <<- csite$ui_attr$solute_select_sp[1]
+        # Create temporary csite_list, that includes the current active data session.
+        # This will not overwrite the server csite_list.
+        csite_list <- list(csite = csite)
+        
+        class(csite_list) <- "GWSDAT_DATA_LIST"
+        
+        saveRDS(csite_list, file = file)
+      }
+    }
+  )
+  
   
   
   output$generate_spatial_anim_ppt <- downloadHandler(
@@ -1454,7 +1607,7 @@ output$generate_timeseries_anim_ppt <- downloadHandler(
     
     content <- function(file) {
       
-      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,
+      makeTimeSeriesAnimationPPT(csite=csite, fileout=file, substance=input$solute_select_ts, location=input$gwwellreportsample_loc_select_wr,Layout=input$gwwellreportlayout,show_thresh=input$check_threshold,timepoint=input$timepoint_ts_idx,
                         width  = input$img_width_px, height = input$img_height_px)
       
     }

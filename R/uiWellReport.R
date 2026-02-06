@@ -6,15 +6,17 @@ uiWellReport <- function(csite, img_frmt) {
     fluidRow(
       shinydashboard::box(width = 3, title = "Settings", 
         status = "warning", 
-        div(style = "margin-bottom:30px",
-            "Exclude contaminants and wells by selecting and pressing the Delete key. Use Ctrl and Shift to select multiple elements."),
+        #div(style = "margin-bottom:30px",
+        #    "Exclude contaminants and wells by selecting and pressing the Delete key. Use Ctrl and Shift to select multiple elements."),
         
       selectInput("solute_select_wr", 'Substances', choices = csite$ui_attr$solute_names,
                   selected = csite$ui_attr$solute_select_wr, multiple = TRUE, selectize = TRUE),
       
       selectInput("sample_loc_select_wr", 'Wells', choices = csite$ui_attr$sample_loc_names,
                    selected = csite$ui_attr$sample_loc_select_wr, multiple = TRUE, selectize = TRUE),
-            
+      
+      actionButton("selectall_wr", label="Select/Deselect all Wells"),
+      
       radioButtons("logscale_wr", label = "Use Log-Scale",
                  choices = list("Yes", "No"), 
                  selected = csite$ui_attr$logscale_wr),

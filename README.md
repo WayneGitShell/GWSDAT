@@ -1,6 +1,6 @@
 # GWSDAT
 
-This is the R Shiny application of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. This package can be run locally or can be deployed on a Shiny Server. For more background see <http://www.gwsdat.net>. 
+This is the R Shiny application of the GroundWater Spatiotemporal Data Analysis Tool (GWSDAT) for the analysis of groundwater monitoring data. This package can be run locally or can be deployed on a Shiny Server. For more background see <https://gwsdat.net/>. 
 <!--- supporting multiple data sets and users, and a stand-alone mode (Excel Mode), which is limited to a single data set.and --->
 
 ## Install and Run
@@ -20,7 +20,7 @@ install.packages("GWSDAT")
 options(shiny.useragg = FALSE) #to avoid artefacts in spatial plots
 GWSDAT::launchApp()
 ```
-A couple of example data sets are already pre-loaded. See full options for interactive data input in section 6.1 of the GWSDAT user manual: <http://www.gwsdat.net/gwsdat_manual>
+A couple of example data sets are already pre-loaded. See full options for interactive data input in section 6.1 of the GWSDAT user manual: <https://gwsdat.net/gwsdat_manual/>
 
 ## Data input directly from R. 
 <!---#The Stand-Alone Mode provides a slim version of the UI for exploring a single data set.  --->

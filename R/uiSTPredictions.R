@@ -8,11 +8,13 @@ uiSTPredictions <- function(csite, img_frmt) {
                         selectInput("solute_select_stp", label = "Solute", choices = csite$ui_attr$solute_names,
                                     selected = csite$ui_attr$solute_select_stp, width = '80%'),
                         
-                        div(style = "margin-bottom:15px; margin-top:10px",
-                            "Exclude wells by selecting and pressing the Delete key. Use Ctrl and Shift to select multiple elements."),
+                        #div(style = "margin-bottom:15px; margin-top:10px",
+                        #    "Exclude wells by selecting and pressing the Delete key. Use Ctrl and Shift to select multiple elements."),
                         
                         selectInput("sample_loc_select_stp", 'Wells', choices = csite$ui_attr$sample_loc_names,
                                     selected = csite$ui_attr$sample_loc_select_stp, multiple = TRUE, selectize = TRUE),
+                        
+                        actionButton("selectall_stp", label="Select/Deselect all Wells"),
                         
                         radioButtons("logscale_stp", label = "Use Log-Scale",
                                      choices = list("Yes", "No"), 

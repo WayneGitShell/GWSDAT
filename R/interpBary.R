@@ -5,7 +5,7 @@
 #' @importFrom Matrix sparseMatrix
 #' @importFrom sp point.in.polygon
 # #' @importFrom geometry delaunay
-interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","Upper 95% CI","% sd","IQR/2")) {
+interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","Upper 95% CI","% sd","IQR/2"),res = NULL) {
   
   
   type <- match.arg(type)
@@ -18,10 +18,13 @@ interpBary <- function(model,AggDate,my.area,type=c("Predicted","Lower 95% CI","
   colnames(my.area) <- c("XCoord", "YCoord")
   
   
-  
+  if(is.null(res)){
   x0<-seq(min(my.area[,"XCoord"]),max(my.area[,"XCoord"]),length=100)
   y0<-seq(min(my.area[,"YCoord"]),max(my.area[,"YCoord"]),length=100)
-  
+  }else{
+    x0<-seq(min(my.area[,"XCoord"]),max(my.area[,"XCoord"]),length=floor((max(my.area[,"XCoord"]) - min(my.area[,"XCoord"]))/res))
+    y0<-seq(min(my.area[,"YCoord"]),max(my.area[,"YCoord"]),length=floor((max(my.area[,"YCoord"]) - min(my.area[,"YCoord"]))/res))
+  }
   x0<-sort(unique(c(x0,my.area[,1])))
   y0<-sort(unique(c(y0,my.area[,2])))
   

@@ -146,11 +146,11 @@ rm_spaces <- function(x){
 
 existsNAPL <- function(All.Data, well, solute) {
 
-  Well.Data <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$WellName) ==
-                                    well & All.Data$Cont.Data$Constituent == solute,]
+  Well.Data <- All.Data$Cont.Data[as.character(All.Data$Cont.Data$WellName) %in%
+                                    well & All.Data$Cont.Data$Constituent %in% solute,]
 
   NAPL.Present <- any("napl" %in% tolower(as.character(Well.Data$Result))) ||
-    nrow(All.Data$NAPL.Thickness.Data[as.character(All.Data$NAPL.Thickness.Data$WellName) == well,]) > 0
+    nrow(All.Data$NAPL.Thickness.Data[as.character(All.Data$NAPL.Thickness.Data$WellName) %in% well,]) > 0
 
   if (is.na( NAPL.Present)) { NAPL.Present <- FALSE }
 

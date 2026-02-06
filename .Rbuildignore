@@ -18,3 +18,7 @@
 ^dumpdata.R
 ^Evaldf.R
 ^temp.R
+^compileR-openBLAS.Rmd
+^manifest.json
+^tempy.R
+^temp1.R

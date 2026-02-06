@@ -1,0 +1,107 @@
+# Tutorial on how to compile R with OpenBLAS for Windows
+
+The following guide is based on the instructions provided by the R project on how to compile R for Windows. The instructions are available at <https://cran.r-project.org/bin/windows/base/howto-R-devel.html>. The information is blended with information from <https://www.r-bloggers.com/2022/01/building-r-4-2-for-windows-with-openblas/>. At the time of writing the latest version of R is 4.4.1. The instructions will need to be updated for future versions of R.
+
+Open source R does not link against optimized BLAS/LAPACK libraries by default. This means that the performance of R is not as good as it could be for certain operations which rely heavily on numerical linear algebra.
+
+# Required software
+
+-   MikTeX (<https://miktex.org/download>)
+-   Rtools corresponding to the version that you want to compile (<https://cran.r-project.org/bin/windows/Rtools/>). E.g. <https://cran.r-project.org/bin/windows/Rtools/rtools44/files/rtools44-6104-6039.exe> for R 4.4.x
+-   Innosetup (<https://www.jrsoftware.org/isdl.php>). E.g. <https://files.innosetup.nl/innosetup-6.3.2.exe>
+-   QPDF <https://github.com/qpdf/qpdf/releases/>. E.g. <https://github.com/qpdf/qpdf/releases/download/v11.9.1/qpdf-11.9.1-mingw64.exe>
+
+# Installation
+
+## Preparation work
+
+Make sure that if you are on the Shell network that your proxy settings are correct. Please take a look at the general instructions [here](https://github.com/sede-x/innersource-datasciencecomputation/blob/main/standard-developer-setup.md) on how to obtain a working developer setup.
+
+Create a folder in which we are going to build R e.g. `C:\Apps\tmp\compileR44`
+
+## Install MikTeX
+
+Leave everything at default settings and perform an update once the installation has completed.
+
+## Install Innosetup
+
+Leave everything at default settings.
+
+## Install QPDF
+
+Unpack into the build folder created above. E.g. `C:\Apps\tmp\compileR44\qpdf-11.9.1-mingw64`
+
+## Install Rtools
+
+-   Leave everything at default settings. I.e. install into the default directory c:/rtools44/. Note that this will require developer rights.
+-   Install the Shell certificate via the steps outlined here: <https://www.msys2.org/docs/faq/> and <https://stackoverflow.com/questions/69348953/certificate-error-when-trying-to-install-msys2-packages-on-windows-server/70398349#70398349>
+
+## Prepare Msys2 environment
+
+Start `c:/rtools44/msys2.exe` with developer rights and run the following commands:
+
+```         
+pacman -Syuu
+pacman -Sy wget subversion
+```
+
+## Compile and test R
+
+Run the following commands in the msys2 shell:
+
+```         
+TCLBUNDLE=tcltk-6094-5412.zip
+wget https://cran.r-project.org/bin/windows/Rtools/rtools44/files/$TCLBUNDLE
+
+svn checkout https://svn.r-project.org/R/tags/R-4-4-1/
+
+cd R-4-4-1
+unzip ../$TCLBUNDLE
+
+cd src/gnuwin32
+
+export PATH=/x86_64-w64-mingw32.static.posix/bin:$PATH
+export PATH=/c/Apps/repositories/buildR/miktex-portable/texmfs/install/miktex/bin/x64:$PATH
+export TAR="/usr/bin/tar"
+export TAR_OPTIONS="--force-local"
+```
+
+Create the file MkRules.local with the content mentioned below
+
+```         
+USE_ATLAS = YES
+EOPTS = -mtune=generic -pipe
+LTO = -flto -ffat-lto-objects -fuse-linker-plugin
+LTO_OPT = -flto -ffat-lto-objects -fuse-linker-plugin
+LTO_FC_OPT = -flto -ffat-lto-objects -fuse-linker-plugin
+QPDF = C:/Apps/repositories/buildR/qpdf-11.9.1-mingw64
+OPENMP = -fopenmp
+```
+
+Modify the file src/extra/blas/Makefile.win Replace the line
+
+```         
+-L../../../$(IMPDIR) -lR  -L"$(ATLAS_PATH)" -lf77blas -latlas
+```
+
+with
+
+```         
+-L../../../$(IMPDIR) -lR -fopenmp -lopenblas
+```
+
+Compile everything and create the installer via `make rsync-recommended`. If this does not work as expected you may need to modify `Makefile` in `src/gnuwin32`. Replace the line
+
+```         
+rsync --timeout=60 -rcvpC --delete \
+```
+
+with
+
+```         
+rsync -p --timeout=60 -rcvpC --delete \
+```
+
+Compile everything and create the installer via `make distribution`. You can find the resulting installer in the folder `src\gnuwin32\installer`.
+
+Check everything is working as expected by calling `make check`.

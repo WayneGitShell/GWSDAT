@@ -41,6 +41,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
   if (missing(GWSDAT_Options) && missing(session_file)) {
     
     .GlobalEnv$APP_RUN_MODE <- "MultiData"
+    if(!"shiny.useragg" %in% names(options())){options(shiny.useragg = FALSE)} #to avoid artefacts in spatial plots
     
     shinyApp(ui = uiFull(), server = server)
     
@@ -48,7 +49,15 @@ launchApp <- function(GWSDAT_Options, session_file) {
     
     .GlobalEnv$APP_RUN_MODE <- "SingleData"
     
-    
+    # Capturing the instance where session_file argument is not specified in the call to launchApp but still exists as a global variable.
+    # This could be improved upon!
+    if(missing(session_file) & exists("session_file", envir = .GlobalEnv)){ 
+      
+      print("Warning: Deleting global variable name 'session_file'")
+      rm("session_file",envir = .GlobalEnv)
+    }
+      
+      
     if (!missing(session_file)) {
       .GlobalEnv$session_file <- normalizePath(session_file)
     } else {
@@ -56,6 +65,7 @@ launchApp <- function(GWSDAT_Options, session_file) {
     }
     
     options(shiny.launch.browser = TRUE)
+    if(!"shiny.useragg" %in% names(options())){options(shiny.useragg = FALSE)} #to avoid artefacts in spatial plots
     
     shinyApp(ui = uiSimple(), server = server)
   }
