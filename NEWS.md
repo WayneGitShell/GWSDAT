@@ -1,3 +1,7 @@
+# GWSDAT 3.3.1
+
+-   Experimentation of Database integration in GWSDAT. 
+
 # GWSDAT 3.3.0
 
 -   Redesign of GWSDAT Excel based deployment for more robust installation and optimised spatiotemporal model fitting.  GWSDAT add-in now packaged up and shipped out with a portable windows version of R with open BLAS library - see <https://github.com/WayneGitShell/GWSDAT/blob/v3.30/compileR-openBLAS.Rmd> for full details.
