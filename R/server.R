@@ -3524,7 +3524,8 @@ GWWellReportModal<-function(csite){
     output$uiDataAddExcel <- renderUI(uiImportExcelData(csite_list))                             
   })
   
-  
+  if(exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)){DBModuleServer("DBActive",csite_list)}
+
   # These are the observer lists that will hold the button click actions for 
   # the Delete and Edit button.
   obsDelBtnList <- list()
@@ -3695,25 +3696,30 @@ GWWellReportModal<-function(csite){
   #   return(btn_list)
   # }
   
+  
   output$uiDataManager <- renderUI({
+    
     if (DEBUG_MODE)
       cat("* in uiDataManager <- renderUI()\n")
     
     # Observe load status of data.
     if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
     
-    ret <- uiDataManagerList(csite_list, del_btns = names(obsDelBtnList),
-                             edit_btns = names(obsEditBtnList))
+    ret <- uiDataManagerList(
+      csite_list,
+      del_btns  = names(obsDelBtnList),
+      edit_btns = names(obsEditBtnList)
+    )
     
-   
     createDelBtnObserver(ret$del_btns)
-    
     createEditBtnObserver(ret$edit_btns)
     
-    return(ret$html_out)
+    div(
+      id = session$ns("uiDataManagerDiv"),
+      ret$html_out
+    )
     
   })
-  
   
   output$rndAnalyse <- renderUI({
     if (DEBUG_MODE)

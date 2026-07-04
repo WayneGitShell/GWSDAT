@@ -17,7 +17,8 @@ uiDataManagerList <- function(csite_list, del_btns, edit_btns) {
         actionButton("add_csv_data", label = "Import .csv Data", icon = icon("arrow-down"), 
                      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("add_excel_data", label = "Import Excel File", icon = icon("arrow-down"), 
-                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+        if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {ImportDBactionButton("DBActive")}else{NULL}
     ),
      h2("Data Manager")
   )
