@@ -1640,6 +1640,13 @@ GWWellReportModal<-function(csite){
     
     ptm <- proc.time()
     
+    # Create the progress bar.
+    progress <- shiny::Progress$new()
+    progress$set(message = "Loading data", value = 0)
+    on.exit(progress$close())
+    
+    progress$set(value = 0.1, detail = paste("reading data"))
+    
     
     if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
       showNotification("Nothing to import: Could not find at least one valid row entry in contaminant table.", 
@@ -1669,13 +1676,7 @@ GWWellReportModal<-function(csite){
     }
     
     
-    # Create the progress bar.
-    progress <- shiny::Progress$new()
-    progress$set(message = "Loading data", value = 0)
-    on.exit(progress$close())
-    
-    progress$set(value = 0.1, detail = paste("reading data"))
-    
+   
     GWSDAT_Options <- createOptions(dname)
   
     # Change Well Table format to comply with internal format.  
@@ -1771,6 +1772,7 @@ GWWellReportModal<-function(csite){
   shinyjs::onclick("gotoDataManager_c", showDataMng())
   shinyjs::onclick("gotoDataManager_d", showDataMng())
   shinyjs::onclick("gotoDataManager_e", showDataMng())
+  
 
   shinyjs::onclick("restore_examples", {
     
@@ -2574,7 +2576,9 @@ GWWellReportModal<-function(csite){
   
   observeEvent(input$import_button_xls, {
     
+    
     ret<-importData(input$dname_xls, "excel")
+    #ret<<-ret
     
     #if(class(ret)=="dialogBox"){
     if(inherits(ret,"dialogBox")){
@@ -3524,7 +3528,9 @@ GWWellReportModal<-function(csite){
     output$uiDataAddExcel <- renderUI(uiImportExcelData(csite_list))                             
   })
   
-  if(exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)){DBModuleServer("DBActive",csite_list)}
+  if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {
+    DBModuleServer("DBActive", csite_list, ImportData = importData, import_tables = import_tables)
+  }
 
   # These are the observer lists that will hold the button click actions for 
   # the Delete and Edit button.
