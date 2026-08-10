@@ -3240,12 +3240,21 @@ GWWellReportModal<-function(csite){
       GWSDAT_Options <-  createOptions()
     }
     
-    
+
     
     Aq_sel <- loadOptions$aquifer
     subst_napl <- loadOptions$subst_napl
     
     solute_data <- well_data <- NULL
+    
+    
+    
+    if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {
+      tempDBdat<-APIreadDB(GWSDAT_Options)
+      solute_data = tempDBdat$conc_data
+      well_data$data= tempDBdat$well_data#, coord_unit = coord_unit)
+    }
+    
     
     # Well data and coordinates inputted as R data frames. 
     if(!is.null(GWSDAT_Options[["WellData"]]) || !is.null(GWSDAT_Options[["WellCoords"]])){
