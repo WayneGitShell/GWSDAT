@@ -3250,7 +3250,11 @@ GWWellReportModal<-function(csite){
     
     
     if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {
+      progress <- shiny::Progress$new(session, min = 0, max = 1)
+      on.exit(progress$close(), add = TRUE)
+      progress$set(message = "Importing database data", detail = "Running query...", value = 0.1)
       tempDBdat<-APIreadDB(GWSDAT_Options)
+      
       solute_data = tempDBdat$conc_data
       well_data$data= tempDBdat$well_data#, coord_unit = coord_unit)
     }
