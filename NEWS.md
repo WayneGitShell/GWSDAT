@@ -1,7 +1,7 @@
 # GWSDAT 3.3.1
 
 -   Experimentation of Database integration in GWSDAT. 
--   Bug Fixes
+-   Fixed bug in plume diagnostic plot when data directly inputted via R.
 
 # GWSDAT 3.3.0
 
