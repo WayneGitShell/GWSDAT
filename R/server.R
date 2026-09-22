@@ -1640,6 +1640,13 @@ GWWellReportModal<-function(csite){
     
     ptm <- proc.time()
     
+    # Create the progress bar.
+    progress <- shiny::Progress$new()
+    progress$set(message = "Loading data", value = 0)
+    on.exit(progress$close())
+    
+    progress$set(value = 0.1, detail = paste("reading data"))
+    
     
     if (is.null(DF_well <- parseTable(import_tables$DF_well, type = "wells"))) {
       showNotification("Nothing to import: Could not find at least one valid row entry in contaminant table.", 
@@ -1669,13 +1676,7 @@ GWWellReportModal<-function(csite){
     }
     
     
-    # Create the progress bar.
-    progress <- shiny::Progress$new()
-    progress$set(message = "Loading data", value = 0)
-    on.exit(progress$close())
-    
-    progress$set(value = 0.1, detail = paste("reading data"))
-    
+   
     GWSDAT_Options <- createOptions(dname)
   
     # Change Well Table format to comply with internal format.  
@@ -1771,6 +1772,7 @@ GWWellReportModal<-function(csite){
   shinyjs::onclick("gotoDataManager_c", showDataMng())
   shinyjs::onclick("gotoDataManager_d", showDataMng())
   shinyjs::onclick("gotoDataManager_e", showDataMng())
+  
 
   shinyjs::onclick("restore_examples", {
     
@@ -2574,7 +2576,9 @@ GWWellReportModal<-function(csite){
   
   observeEvent(input$import_button_xls, {
     
+    
     ret<-importData(input$dname_xls, "excel")
+    #ret<<-ret
     
     #if(class(ret)=="dialogBox"){
     if(inherits(ret,"dialogBox")){
@@ -3236,12 +3240,25 @@ GWWellReportModal<-function(csite){
       GWSDAT_Options <-  createOptions()
     }
     
-    
+
     
     Aq_sel <- loadOptions$aquifer
     subst_napl <- loadOptions$subst_napl
     
     solute_data <- well_data <- NULL
+    
+    
+    
+    if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {
+      progress <- shiny::Progress$new(session, min = 0, max = 1)
+      #on.exit(progress$close(), add = TRUE)
+      progress$set(message = "Importing database data", detail = "Running query...", value = 0.1)
+      tempDBdat<-APIreadDB(GWSDAT_Options)
+      progress$close()
+      solute_data = tempDBdat$conc_data
+      well_data$data= tempDBdat$well_data#, coord_unit = coord_unit)
+    }
+    
     
     # Well data and coordinates inputted as R data frames. 
     if(!is.null(GWSDAT_Options[["WellData"]]) || !is.null(GWSDAT_Options[["WellCoords"]])){
@@ -3249,7 +3266,7 @@ GWWellReportModal<-function(csite){
       tryCatch({
       solute_data<-GWSDAT_Options[["WellData"]]
       well_data<-GWSDAT_Options[["WellCoords"]]  ### output well coordinate data is a list consisting of fields data and coord_unit
-      well_data<-list(data=GWSDAT_Options[["WellCoords"]][,c("WellName","XCoord","YCoord","Aquifer")],coord_unit=GWSDAT_Options[["WellCoords"]]["CoordUnits"][1])
+      well_data<-list(data=GWSDAT_Options[["WellCoords"]][,c("WellName","XCoord","YCoord","Aquifer")],coord_unit= if(is.null(opt[["WellCoords"]]$CoordUnits[1])){""}else{opt[["WellCoords"]]$CoordUnits[1]})
       }, error = function(w){showModal(modalDialog(title = "Error Inputting WellData and/or WellCoords.", w$message, easyClose = FALSE)); Sys.sleep(5)})
 
     }
@@ -3524,7 +3541,10 @@ GWWellReportModal<-function(csite){
     output$uiDataAddExcel <- renderUI(uiImportExcelData(csite_list))                             
   })
   
-  
+  if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {
+    DBModuleServer("DBActive", csite_list, ImportData = importData, import_tables = import_tables)
+  }
+
   # These are the observer lists that will hold the button click actions for 
   # the Delete and Edit button.
   obsDelBtnList <- list()
@@ -3695,25 +3715,30 @@ GWWellReportModal<-function(csite){
   #   return(btn_list)
   # }
   
+  
   output$uiDataManager <- renderUI({
+    
     if (DEBUG_MODE)
       cat("* in uiDataManager <- renderUI()\n")
     
     # Observe load status of data.
     if (dataLoaded() < LOAD_COMPLETE) loadDefaultSessions()
     
-    ret <- uiDataManagerList(csite_list, del_btns = names(obsDelBtnList),
-                             edit_btns = names(obsEditBtnList))
+    ret <- uiDataManagerList(
+      csite_list,
+      del_btns  = names(obsDelBtnList),
+      edit_btns = names(obsEditBtnList)
+    )
     
-   
     createDelBtnObserver(ret$del_btns)
-    
     createEditBtnObserver(ret$edit_btns)
     
-    return(ret$html_out)
+    div(
+      id = session$ns("uiDataManagerDiv"),
+      ret$html_out
+    )
     
   })
-  
   
   output$rndAnalyse <- renderUI({
     if (DEBUG_MODE)

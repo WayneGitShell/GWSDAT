@@ -1,5 +1,6 @@
 # GWSDAT 3.3.1
 
+-   Experimentation of Database integration in GWSDAT. 
 -   Bug Fixes
 
 # GWSDAT 3.3.0

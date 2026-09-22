@@ -69,7 +69,8 @@ uiFull <- function() shinydashboard::dashboardPage(skin = "black",
         shinyjs::hidden( uiOutput("uiDataAddNew")),
         shinyjs::hidden( uiOutput("uiDataAddCSV")),
         shinyjs::hidden( uiOutput("uiDataAddExcel")),
-        shinyjs::hidden( uiOutput("uiDataEdit"))
+        shinyjs::hidden( uiOutput("uiDataEdit")),
+        if (exists("SDB_CUSTOM_COMPONENT", envir = .GlobalEnv)) {shinyjs::hidden(DBModuleUI("DBActive"))}else{NULL}
         
       ),
       

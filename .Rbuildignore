@@ -22,3 +22,7 @@
 ^manifest.json
 ^tempy.R
 ^temp1.R
+^APIapp.R
+^ENFOSTableFormatting.R
+^SDB_CUSTOM_COMPONENT.R
+^ShellHierarchy.RDS
