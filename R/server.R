@@ -3266,7 +3266,7 @@ GWWellReportModal<-function(csite){
       tryCatch({
       solute_data<-GWSDAT_Options[["WellData"]]
       well_data<-GWSDAT_Options[["WellCoords"]]  ### output well coordinate data is a list consisting of fields data and coord_unit
-      well_data<-list(data=GWSDAT_Options[["WellCoords"]][,c("WellName","XCoord","YCoord","Aquifer")],coord_unit=GWSDAT_Options[["WellCoords"]]["CoordUnits"][1])
+      well_data<-list(data=GWSDAT_Options[["WellCoords"]][,c("WellName","XCoord","YCoord","Aquifer")],coord_unit= if(is.null(opt[["WellCoords"]]$CoordUnits[1])){""}else{opt[["WellCoords"]]$CoordUnits[1]})
       }, error = function(w){showModal(modalDialog(title = "Error Inputting WellData and/or WellCoords.", w$message, easyClose = FALSE)); Sys.sleep(5)})
 
     }
